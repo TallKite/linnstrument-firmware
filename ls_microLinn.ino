@@ -31,6 +31,7 @@ go back to using the pre-existing lefty modes, and limit the col offsets to posi
 
 test scales/rainbows, delete initializeScales function
 fix blink mode when col offset > 1
+
 make microLinnGuitarTuning array display the edosteps from the anchor string as a number
 that number is positive for higher strings and negative for lower strings, range is 7 octaves total
 if anchor string is row N (0 is lowest row), range is -N * edo to (7-N) * edo
@@ -42,44 +43,59 @@ change handleRowOffsetNewTouch()?
 test the 6 memories
 test octave up/down footswitches while playing, does the calcTuning call make it glitchy?
 
+write code for 6 microLinn memories/presets, 6 new buttons next to the 6 standard ones (column 15 or column 22)
+for the Linn 128, move the program change number one pad to the left to make room for the new buttons
+each one saves all microLinn settings for a single edo - save the dots, rainbows and scales for the current edo only
+where to save the column offsets, in standard memories or in microLinn memories?
+  maybe if it's not set on one of the microLinConfig displays, save it to standard memories
+  thus uninstalling microLinn means adjusting the standard memory structure
+  but it makes sense to save the row/column offsets along with the edo. so who knows?
+
 write code for accepting microLinn NRPNs (see midi.txt)
 
 fix microLinnSumOfRowOffsets() case ROWOFFSET_NOOVERLAP to reflect width of the split
 
 add 3 new played modes: 
-SAM8 = same, but includes the octave-mates
-BLNK = same, but blinks slowly
-BLN8 = same, blinks, octaves too
-all 3 plus SAME should include notes on the other split, but only if the other split also has SAME
+SAM8 = like SAME, but includes the octave-mates
+BLNK = like SAME, but blinks slowly
+BLN8 = like SAME, but blinks and includes octaves too
+all 3 plus SAME should include notes on the other split, but only if the other split also has SAME, SAM8, BLNK or BLN8
+the note on the other split lights up in accordance with that split's settings for blinking or octaves
 blink modes can blink a lit LED on/off, see getLedColor function
 
 cleanup: search for "delete", "uncomment" and "bug"
 
 TO DECIDE
 Should resetTo12equal() send out pitchbends of 0 on each channel, to avoid lingering pitchbends?
-Should this also happen whenever the edo changes?
+  Should this also happen whenever the edo changes?
 Should I bother with ROWOFFSET_NOOVERLAP?
 add a 2nd shortcut on global, col 1 row 1 for 2nd config display for brightness etc.?
 delete code for col 16 and/or 17 shortcut? (search for ifndef)
-increase the number of memories/presets from 6 to 8?
 
 
 POSSIBILTIES
+incorporate the channel pressure fix from the forum (will be part of future official updates anyway)
 accept sysex82 messages for non-edo tunings? when quantize is on, the pitch starts at and/or drifts to the JI note
 run the arpeggiator and the sequencer both at once, so that the arpeggiator uses the sequencer's rhythm & velocity?
+long-press the low power button to get a dimmer display but not a lower scan rate? (in effect a crude brightness knob)
+
 hammerons/pulloffs window of 1, 2 or 3 columns for each split?
+  option to send or not send a new noteon when hammering? (guitar sound = yes, wind instrument sound = no)
+  pulloffs: old note's velocity = the new note's velocity or the original old velocity? (pull-off vs lift-off)
+
 sweeten 41edo? widen 5/4 by shifting the top note up 2¢ and the bottom note down 2¢
-ratios to widen: 5/4 5/3 5/2 10/3 5/1 20/3 10/1     (maybe 15/8 15/4 15/2?)  (maybe 10/7?)
-ratios to narrow: 6/5 8/5 12/5 16/5 24/5 32/5 48/5  (maybe 9/5 18/5 36/5?)   (maybe 7/5?)
-pitch shifts of 2¢ are unnoticeable, worst case is Cv followed by C^m making C and G shift by 4¢, which is OK
-v(vv#5) chord's 3rd is pulled both ways, so no change, even in an add8 voicing that pulls up harder than down
-  Struct Pull {boolean sharp, flat;};
-  Pull pull[MAXCOLS*MAXROWS];
-  if (pull[cell].sharp && !pull[cell].flat) sharpen(cell);
-  if (pull[cell].flat && !pull[cell].sharp) flatten(cell);
-issues: in dim2 chord or v(b5) chord, 7/5 gets worse (add 7/5 to the narrowing list?)
-in a v9 chord, 9th is sharp, and in an ^9 chord, root is flat (add 9/5 to the narrowing list?)
-in a vM7no3 or vM7(4) chord, the root-5th interval is 2¢ flat (widen 15/8?)
+  ratios to widen: 5/4 5/3 5/2 10/3 5/1 20/3 10/1     (maybe 15/8 15/4 15/2?)  (maybe 10/7?)
+  ratios to narrow: 6/5 8/5 12/5 16/5 24/5 32/5 48/5  (maybe 9/5 18/5 36/5?)   (maybe 7/5?)
+  pitch shifts of 2¢ are unnoticeable, worst case is Cv followed by C^m making C and G shift by 4¢, which is OK
+  v(vv#5) chord's 3rd is pulled both ways, so no change, even in an add8 voicing that pulls up harder than down
+    Struct Pull {boolean sharp, flat;};
+    Pull pull[MAXCOLS*MAXROWS];
+    if (pull[cell].sharp && !pull[cell].flat) sharpen(cell);
+    if (pull[cell].flat && !pull[cell].sharp) flatten(cell);
+  issues: in dim2 chord or v(b5) chord, 7/5 gets worse (add 7/5 to the narrowing list?)
+  in a v9 chord, 9th is sharp, and in an ^9 chord, root is flat (add 9/5 to the narrowing list?)
+  in a vM7no3 or vM7(4) chord, the root-5th interval is 2¢ flat (widen 15/8?)
+  would 11-limit chords become worse?
 
 *********************************************************/
 
@@ -505,10 +521,16 @@ void microLinnSetKiteGuitarDefaults() {
   Split[RIGHT].microLinn.colOffset = 2;
   Global.rowOffset = ROWOFFSET_OCTAVECUSTOM;
   Global.customRowOffset = 13;                              // 41-equal downmajor 3rds
-  Global.activeNotes = 6;
+  Global.activeNotes = 8;
   lightSettings = LIGHTS_ACTIVE;
   //Split[LEFT].playedTouchMode = playedBlink;             // uncomment once playedBlink works right
   //Split[RIGHT].playedTouchMode = playedBlink;
+  Split[LEFT].transposeOctave = 0;                          // delete these 6 lines later once transpose works right
+  Split[RIGHT].transposeOctave = 0; 
+  Split[LEFT].transposePitch = 0;
+  Split[RIGHT].transposePitch = 0; 
+  Split[LEFT].transposeLights = 0;
+  Split[RIGHT].transposeLights = 0; 
   microLinnStoreRowOffsetCents();
   microLinnStoreColOffsetCents(LEFT);
   microLinnStoreColOffsetCents(RIGHT);

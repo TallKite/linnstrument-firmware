@@ -98,7 +98,7 @@ In general, turning off microLinn disables microLinn settings.
 
 Of the 8 scales, the 1st and 2nd scales are major/downmajor (5-over) and minor/upminor (5-under).
 Scales 3-6 are blank but for the tonic, so that you can create your own scales in the lights display
-(For the smaller, weirder, edos, scales 1-2 are also blank.)
+(For the smaller, weirder edos, scales 1-2 are also blank.)
 The 7th scale is a partial rainbow, and the 8th scale is the full rainbow.
 
 The colors use the rainbow metaphor, red-yellow-green-blue = sharp to flat = supermajor to subminor
@@ -111,8 +111,11 @@ cyan / orange = a catch-all pair, e.g. 41edo 7/5 and 10/7, cyan is also for "out
 orange is used in 55edo for upmid and downmid notes
 
 The dot patterns tend to follow the conventional m3 P4 P5 M6 P8 guitar fret markers. Some edos add M2 and m7.
-Edos above 31 approximate 12edo, in other words there are dots about every 100 cents.
+Edos above 24 approximate 12edo, in other words there are dots about every 100 cents.
 41edo is an exception. It has kites like a Kite guitar.
+
+What advantages does microLinn's 12edo have over the standard, non-microLinn 12edo? 
+It can be stretched and/or detuned, plus you get multi-colored note lights.
 
 Suggestions for exploring:
 The first few edos are pretty strange. Try starting with 15, 17, 19 or 22.
