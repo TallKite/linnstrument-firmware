@@ -885,6 +885,7 @@ byte getSplitHandednessColor() {
 }
 
 byte getGuitarTuningColor() {
+  if (isMicroLinnOn()) return microLinnGetGuitarTuningColor();
   byte color = globalColor;
   if (Global.guitarTuning[0] != 30 ||
       Global.guitarTuning[1] != 35 ||
@@ -1309,6 +1310,11 @@ void paintGuitarTuning() {
     setLed(1, r, guitarTuningRowNum == r ? Split[Global.currentPerSplit].colorAccent : Split[Global.currentPerSplit].colorMain, cellOn);
   }
 
+  if (isMicroLinnOn()) {
+    microLinnPaintGuitarTuning ();
+    return;
+  }
+  
   paintNoteDataDisplay(globalColor, Global.guitarTuning[guitarTuningRowNum], LINNMODEL == 200 ? 2 : 1, 0);
 }
 

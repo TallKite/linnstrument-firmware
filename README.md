@@ -73,6 +73,15 @@ To choose a new anchor pad, tap the blue "R3C6" and then tap any pad. Change the
 When the notes per octave is greater than 12, the OCTAVE/TRANSPOSE display shows two extra rows for transposing by edosteps.
 The 2nd and 3rd rows now transpose not by semitones but by major 2nds (since most edos have several different semitones).
 
+The guitar tuning screen no longer adjusts the pitch of each "string". Instead it sets 7 independent row offsets.
+The top row of the screen adjusts the offset between the 1st and 2nd strings, the 2nd row is for the 2nd/3rd strings, etc.
+The "anchor string" is the string that the anchor pad is on. Its pitch is determined by the anchor pad, note and cents.
+Thus increasing any row offset above the anchor row (other than the 1st offset) sharpens multiple strings. 
+And increasing any row offset below the anchor row (other than the 7th offset) flattens multiple strings.
+When you touch a pad on the far left, it still sounds the pitch of that open string.
+So while you can only adjust 7 offsets, you can still hear 8 pitches.
+When you change the edo, the tuning is adjusted so that each open string's pitch in cents stays roughly the same.
+
 There are 4 new functions for switches 1 & 2 and footswitches 1 & 2: 
 EDO+ and EDO- move up or down to the next EDO, wraps around (probably best you don't play while changing!)
 SCL+ and SCL- move up or down to the next scale, wraps around (only affects the note lights).
@@ -93,13 +102,12 @@ Tap the yellow rainbow enabler button to turn off the rainbow and limit the note
 The 3 custom light patterns are totally separate from all this and are still available for use!
 This web browser lets you easily edit them: https://forrcaho.github.io/linnstrument_colorizer/
 
-When microLinn is on, the global setting of lefthandedness is ignored. Set the column offsets to -1 to get lefthandedness.
 In general, turning off microLinn disables microLinn settings.
 
 Of the 8 scales, the 1st and 2nd scales are major/downmajor (5-over) and minor/upminor (5-under).
 Scales 3-6 are blank but for the tonic, so that you can create your own scales in the lights display
 (For the smaller, weirder edos, scales 1-2 are also blank.)
-The 7th scale is a partial rainbow, and the 8th scale is the full rainbow.
+The 7th scale is a partial rainbow, and the 8th scale is always the full rainbow.
 
 The colors use the rainbow metaphor, red-yellow-green-blue = sharp to flat = supermajor to subminor
 white = 12-edo-ish = 3-limit
@@ -130,6 +138,10 @@ However this is only a comma or so difference even on long slides, which might b
 Perhaps software on the PC could fix this problem by scaling the slides by adjusting the pitch bends?
 
 
+features not yet implemented:
+raw midi output means one mide note pe edostep, doesn't use tuning bends
+good for older synths, good for creating JI scales via scala files
+noOverLap mode gives ech pad its own unique midi note # (beware, 200 pads > 128 midi notes!)
 
 ============================= technical notes ==================================
 

@@ -615,9 +615,13 @@ enum SequencerDirection {
 };
 
 struct MicroLinnSplit {
-  signed char colOffset;                  // column offsets, -32 to 32
+  signed char colOffset;                  // column offsets, -25 to 25
   signed char transposeEDOsteps;          // accessed not via displayMicroLinnConfig but via displayOctaveTranspose
   signed char transposeEDOlights;
+  boolean rawMidiOutput;                  // output in edostep format (1 midi note = 1 edostep)
+  unsigned short hammerOnWindow;          // maximum width in cents of a hammer-on before it becomes two simultaneous notes, 0 = off
+  boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
+  byte pullOffVelocity;                   // 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
 };
 
 // per-split settings
@@ -690,8 +694,15 @@ enum SplitHandednessType {
 };
 
 const byte MICROLINN_MAX_EDO = 55;                // minimum edo is 5
-const byte MICROLINN_MAX_OFFSET = 32;             // both row offset and column offset, increased from 16 to 32 (55edo's 5th)
+const byte MICROLINN_MAX_OFFSET = MAXROWS;        // both row offset and column offset, increased from 16
 const short MICROLINN_ARRAY_SIZE = (MICROLINN_MAX_EDO * (MICROLINN_MAX_EDO + 1)) / 2 - 10;     // a triangular array missing rows 1-4 = 1530
+
+struct MicroLinnDevice {
+  byte MLversion;                                 // version = official version we forked from plus 128, MLversion = microLinn version
+  byte dots[MICROLINN_ARRAY_SIZE];                // one bit per row, ignores column offsets except for lefty/righty
+  byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
+  byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for the 8 scales, except bit 8 is unused
+}
 
 struct DeviceSettings {
   byte version;                                   // the version of the configuration format
@@ -719,9 +730,7 @@ struct DeviceSettings {
   short lastLoadedPreset;                         // the last settings preset that was loaded
   short lastLoadedProject;                        // the last sequencer project that was loaded
   byte customLeds[LED_PATTERNS][LED_LAYER_SIZE];  // the custom LEDs that persist across power cycle
-  byte microLinnDots[MICROLINN_ARRAY_SIZE];       // one bit per row, ignores column offsets except for lefty/righty
-  byte microLinnRainbows[MICROLINN_ARRAY_SIZE];   // choose among the 10 colors
-  byte microLinnScales[MICROLINN_ARRAY_SIZE];     // each byte is a bitmask for the 8 scales, except bit 8 is unused
+  MicroLinnDevice microLinn;                      // microtonal data
 };
 #define Device config.device
 
@@ -772,9 +781,10 @@ struct MicroLinnGlobal {
   byte anchorRow;                            // top row is 7, bottom row is 0, but the user sees top row as 1, bottom row as 8
   byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
   signed char anchorCents;                   // ranges -100 to +100 cents, even though 50 would do, for convenience
+  short guitarTuning[MAXROWS];               // interval in edosteps from the bottom string, can be negative, independent of Global.guitarTuning
   boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
-  signed char guitarTuning[MAXROWS - 1];     // ranges -32 to 32, the edosteps between adjacent open strings, totally independent...
-};                                           // ...from Global.guitarTuning, intervals not notes because there is now an anchor string
+  boolean sweeten;                           // adjust 41edo 5/4, 5/3 by 2¢ both top and bottom to make it 4¢ closer to just?
+};
 
 struct GlobalSettings {
   void setSwitchAssignment(byte, byte, boolean);

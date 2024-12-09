@@ -2,6 +2,9 @@
     "C_Cpp.errorSquiggles": "disabled",
     "files.associations": {
         "__locale": "cpp",
-        "cstddef": "cpp"
+        "cstddef": "cpp",
+        "chrono": "cpp",
+        "limits": "cpp",
+        "algorithm": "cpp"
     }
 }
