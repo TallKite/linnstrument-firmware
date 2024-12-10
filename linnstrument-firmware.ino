@@ -694,7 +694,7 @@ enum SplitHandednessType {
 };
 
 const byte MICROLINN_MAX_EDO = 55;                // minimum edo is 5
-const byte MICROLINN_MAX_OFFSET = MAXROWS;        // both row offset and column offset, increased from 16
+const byte MICROLINN_MAX_OFFSET = MAXCOLS - 1;    // both row offset and column offset, increased from 16
 const short MICROLINN_ARRAY_SIZE = (MICROLINN_MAX_EDO * (MICROLINN_MAX_EDO + 1)) / 2 - 10;     // a triangular array missing rows 1-4 = 1530
 
 struct MicroLinnDevice {
@@ -702,7 +702,7 @@ struct MicroLinnDevice {
   byte dots[MICROLINN_ARRAY_SIZE];                // one bit per row, ignores column offsets except for lefty/righty
   byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
   byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for the 8 scales, except bit 8 is unused
-}
+};
 
 struct DeviceSettings {
   byte version;                                   // the version of the configuration format

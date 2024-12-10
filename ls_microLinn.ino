@@ -20,7 +20,9 @@ e.g. PaintMicroLinnNoteLights() is something brand new
 
 TO DO
 
-replace MICROLINN_MAX_OFFSET with MAXROWS, a 31\53 row offset makes gaps in the edo
+replace MICROLINN_MAX_OFFSET with MAXCOLS-1, a 31\53 row offset makes gaps in the edo
+check that multi-channel output works with non-MPE hardware synths
+  (may need to output channel 1 CCs to all channels)
 
 use virtual note numbers to get the midi to work
 
@@ -1256,8 +1258,8 @@ void microLinnPaintGuitarTuning() {       // called in ls_displayModes.ino
 byte microLinnGetGuitarTuningColor() {       // called in ls_displayModes.ino 
   byte color = globalColor;
   byte edo = microLinnGetEDO();
-  byte EDOfourth = (edo - MICROLINN_MAJ2ND[Global.microLinn.edo]) / 2;    // 4th = half a minor 7th
-  byte EDOthird = 2 * MICROLINN_MAJ2ND[Global.microLinn.edo];
+  byte EDOfourth = (edo - MICROLINN_MAJ2ND[Global.microLinn.EDO]) / 2;    // 4th = half a minor 7th
+  byte EDOthird = 2 * MICROLINN_MAJ2ND[Global.microLinn.EDO];
   if (edo == 6)  {EDOfourth = 2; EDOthird = 4;}                           // adjust because MICROLINN_MAJ2ND is off
   if (edo == 8)  {EDOfourth = 3; EDOthird = 4;}
   if (edo == 10) {EDOfourth = 4; EDOthird = 4;}
@@ -1305,7 +1307,7 @@ void microLinnHandleGuitarTuningNewTouch() {
   ensureMicroLinnPreviewNoteRelease();
   short edostep = Global.microLinn.guitarTuning[guitarTuningRowNum]
                 - Global.microLinn.guitarTuning[Global.microLinn.anchorRow]
-                - Split.microLinn.colOffset * Global.microLinn.anchorCol;         // bug: flip sign if lefty
+                - Split[Global.currentPerSplit].microLinn.colOffset * Global.microLinn.anchorCol;   // bug: flip sign if lefty
   microLinnGetMidiNoteAndBend(Global.currentPerSplit, edostep);
   microLinnPreviewNote = microLinnCurrNote;
   microLinnPreviewChannel = takeChannel(Global.currentPerSplit, sensorRow);
