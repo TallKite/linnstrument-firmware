@@ -615,7 +615,7 @@ enum SequencerDirection {
 };
 
 struct MicroLinnSplit {
-  signed char colOffset;                  // column offsets, -25 to 25
+  byte colOffset;                         // column offsets, 1 to 25
   signed char transposeEDOsteps;          // accessed not via displayMicroLinnConfig but via displayOctaveTranspose
   signed char transposeEDOlights;
   boolean rawMidiOutput;                  // output in edostep format (1 midi note = 1 edostep)

@@ -2124,7 +2124,8 @@ void handleSplitHandednessRelease() {
 }
 
 void handleRowOffsetNewTouch() {
-  handleNumericDataNewTouchCol(Global.customRowOffset, -MICROLINN_MAX_OFFSET-1, MICROLINN_MAX_OFFSET, true); 
+  byte range = (isMicroLinnOn() ? min (MICROLINN_MAX_OFFSET, Global.microLinn.EDO) : 16);
+  handleNumericDataNewTouchCol(Global.customRowOffset, -range-1, range, true); 
 }
 
 void handleRowOffsetRelease() {
@@ -2143,6 +2144,11 @@ void ensureGuitarTuningPreviewNoteRelease() {
 }
 
 void handleGuitarTuningNewTouch() {
+  if (isMicroLinnOn()) {
+    microLinnHandleGuitarTuningNewTouch();
+    return;
+  }
+
   if (sensorCol == 1) {
     guitarTuningRowNum = sensorRow;
     updateDisplay();

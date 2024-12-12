@@ -1305,16 +1305,15 @@ void paintRowOffset() {
 
 void paintGuitarTuning() {
   clearDisplay();
+  if (isMicroLinnOn()) {
+    microLinnPaintGuitarTuning ();
+    return;
+  }
 
   for (byte r = 0; r < NUMROWS; ++r) {
     setLed(1, r, guitarTuningRowNum == r ? Split[Global.currentPerSplit].colorAccent : Split[Global.currentPerSplit].colorMain, cellOn);
   }
 
-  if (isMicroLinnOn()) {
-    microLinnPaintGuitarTuning ();
-    return;
-  }
-  
   paintNoteDataDisplay(globalColor, Global.guitarTuning[guitarTuningRowNum], LINNMODEL == 200 ? 2 : 1, 0);
 }
 

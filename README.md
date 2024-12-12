@@ -23,8 +23,8 @@ This does delete your microtonal data, necessary in order to avoid deleting all 
 
 -------- NON-MICROTONAL FEATURES -------- 
 
-CHAINING SEQUENCES: hold the pad for sequence #2 and tap the pad for sequence #1. Now the two sequences are chained into a single 
-sequence twice as long. This is indicated by sequence #1 being accented and sequence #2 blinking.
+CHAINING SEQUENCES: hold the pad for sequence #2 and tap the pad for sequence #1. Now the two sequences are chained into a 
+single sequence twice as long. This is indicated by sequence #1 being accented and sequence #2 blinking.
 You can chain #3 and #4 together as well. Or chain all 4 together. The lights for the entire chain will blink when it's playing. 
 When making a chain, to start at the beginning of the chain not the end, hold the last sequence and tap the first one.
 The NEXT and PREV footswitches take you to the next/previous chain as expected.
@@ -36,8 +36,8 @@ BLINKING MODE: This is a variation of the SAME mode that shows you other occuren
 
 NEW SWITCH/FOOTSWITCH FUNCTIONS: SCL+ and SCL- cycle you through the 9 scales in Global Settings columns 2-4 (only affects the note lights).
 
-COLUMN OFFSETS: The column offset can be set for each split independently. This allows Wicki-Hayden layout on the left for easy chord
-playing and normal layout on the right for easy melody playing. Access it through the microLinn menu, see below.
+COLUMN OFFSETS: The column offset can be set for each split independently. This allows Wicki-Hayden layout on the left for 
+easy chord playing and normal layout on the right for easy melody playing. Access it through the microLinn menu, see below.
 
 MULTI-COLORED NOTE LIGHTS: Each of the 12 notes can be any color. Transposable. Access it through the microLinn menu, see below.
 
@@ -72,15 +72,25 @@ To choose a new anchor pad, tap the blue "R3C6" and then tap any pad. Change the
 
 When the notes per octave is greater than 12, the OCTAVE/TRANSPOSE display shows two extra rows for transposing by edosteps.
 The 2nd and 3rd rows now transpose not by semitones but by major 2nds (since most edos have several different semitones).
+A major 2nd is defined as the interval between the fourth and the fifth, e.g. 3 edosteps for 15edo but 2 edosteps for 16edo.
 
 The guitar tuning screen no longer adjusts the pitch of each "string". Instead it sets 7 independent row offsets.
-The top row of the screen adjusts the offset between the 1st and 2nd strings, the 2nd row is for the 2nd/3rd strings, etc.
+So you no longer see a note name with an octave number. Instead you see a row offset as a number (which can be negative).
+Touching the top button on the far left sounds the pitch of the top open string, as before. 
+It also makes the top two buttons light up, which indicates you're adjusting the row offset between the 1st and 2nd rows.
+The 2nd button sounds the 2nd open string and shows the offset between the 2nd and 3rd strings, and so forth.
+The bottom button doesn't show a row offset, but it does sound the pitch of the bottom open string.
+Changing 1 offset doesn't affect the other 6 offsets. In general, changing a row offset sharpens/flattens multiple strings.
+But of course only one string changes when you change the first offset or the last offset.
 The "anchor string" is the string that the anchor pad is on. Its pitch is determined by the anchor pad, note and cents.
-Thus increasing any row offset above the anchor row (other than the 1st offset) sharpens multiple strings. 
-And increasing any row offset below the anchor row (other than the 7th offset) flattens multiple strings.
-When you touch a pad on the far left, it still sounds the pitch of that open string.
-So while you can only adjust 7 offsets, you can still hear 8 pitches.
-When you change the edo, the tuning is adjusted so that each open string's pitch in cents stays roughly the same.
+Thus increasing any row offset above the anchor row sharpens multiple strings. 
+And increasing any row offset below the anchor row flattens multiple strings.
+
+MicroLinn's guitar tuning is completely independent of the standard Linnstrument guitar tuning.
+In general, turning off microLinn by setting the edo to OFF disables all microLinn settings and restores the standard ones.
+
+Changing the edo adjusts the column offsets and row offset(s) so that their size in cents stays roughly the same.
+So your keyboard layout remains roughly bosanquet, or your guitar tuning settings remain roughly EADGBE.
 
 There are 4 new functions for switches 1 & 2 and footswitches 1 & 2: 
 EDO+ and EDO- move up or down to the next EDO, wraps around (probably best you don't play while changing!)
@@ -101,8 +111,6 @@ Tap the yellow rainbow enabler button to turn off the rainbow and limit the note
 
 The 3 custom light patterns are totally separate from all this and are still available for use!
 This web browser lets you easily edit them: https://forrcaho.github.io/linnstrument_colorizer/
-
-In general, turning off microLinn disables microLinn settings.
 
 Of the 8 scales, the 1st and 2nd scales are major/downmajor (5-over) and minor/upminor (5-under).
 Scales 3-6 are blank but for the tonic, so that you can create your own scales in the lights display
@@ -132,6 +140,7 @@ The rainbow colors can be overwhelming. Try setting the played mode to BLNK or B
 Once you know an edo well, you'll probably want to switch to the fretboard dots display.
 
 To create JI or rank-2 scales with N notes, set the edo to 12 but play as if in N-edo, think one midi note per edostep.
+(Eventually: set the edo to N and turn on raw midi mode.)
 Load a scala file into your synth or run alt-tuner to produce that N-note scale.
 Each note is slightly sharper or flatter from N-edo, thus the pad's note will be different slid up to vs played directly.
 However this is only a comma or so difference even on long slides, which might be tolerable.
