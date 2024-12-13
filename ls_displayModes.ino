@@ -535,11 +535,7 @@ void paintStrumDisplayCell(byte split, byte col, byte row) {
 
 void paintNormalDisplayCell(byte split, byte col, byte row) {
   if (userFirmwareActive) return;
-
-  if (isMicroLinnOn()) {
-    microLinnPaintNormalDisplayCell(split, col, row);
-    return;
-  }
+  if (isMicroLinnOn()) {microLinnPaintNormalDisplayCell(split, col, row); return;}
 
   // by default clear the cell color
   byte colour = COLOR_OFF;
@@ -1294,8 +1290,9 @@ void paintSplitHandedness() {
 }
 
 void paintRowOffset() {
+  if (isMicroLinnOn()) {microLinnPaintRowOffset(); return;}
   clearDisplay();
-  if (Global.customRowOffset == -MICROLINN_MAX_OFFSET - 1) {
+  if (Global.customRowOffset == -17) {
     condfont_draw_string(0, 0, "-GUI", globalColor, false);
   }
   else {
@@ -1304,11 +1301,8 @@ void paintRowOffset() {
 }
 
 void paintGuitarTuning() {
+  if (isMicroLinnOn()) {microLinnPaintGuitarTuning (); return;}
   clearDisplay();
-  if (isMicroLinnOn()) {
-    microLinnPaintGuitarTuning ();
-    return;
-  }
 
   for (byte r = 0; r < NUMROWS; ++r) {
     setLed(1, r, guitarTuningRowNum == r ? Split[Global.currentPerSplit].colorAccent : Split[Global.currentPerSplit].colorMain, cellOn);

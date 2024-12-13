@@ -1154,15 +1154,8 @@ void receivedNrpn(int parameter, int value, int channel) {
       break;
     // Global Custom Row Offset Instead Of Octave
     case 253:
-      if (isMicroLinnOn()) {
-        if (inRange(value, 0, 2 * MICROLINN_MAX_OFFSET + 1)) {
-          if (value == 2 * MICROLINN_MAX_OFFSET + 1) {
-            Global.customRowOffset = -MICROLINN_MAX_OFFSET - 1;
-          } else {
-            Global.customRowOffset = value - MICROLINN_MAX_OFFSET;
-          }
-        }
-      } else if (inRange(value, 0, 33)) {
+      if (isMicroLinnOn()) {microLinnReceivedNrpn253(value); break;}
+      if (inRange(value, 0, 33)) {
         if (value == 33) {
           Global.customRowOffset = -17;
         }
@@ -1561,6 +1554,7 @@ void sendNrpnParameter(int parameter, int channel) {
       value = Device.minUSBMIDIInterval;
       break;
     case 253:
+      if (isMicroLinnOn()) {value = microLinnSendNrpn253(); break;}
       if (Global.customRowOffset == -17) {
         value = 33;
       }

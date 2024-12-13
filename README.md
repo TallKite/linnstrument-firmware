@@ -85,12 +85,10 @@ But of course only one string changes when you change the first offset or the la
 The "anchor string" is the string that the anchor pad is on. Its pitch is determined by the anchor pad, note and cents.
 Thus increasing any row offset above the anchor row sharpens multiple strings. 
 And increasing any row offset below the anchor row flattens multiple strings.
-
 MicroLinn's guitar tuning is completely independent of the standard Linnstrument guitar tuning.
-In general, turning off microLinn by setting the edo to OFF disables all microLinn settings and restores the standard ones.
 
 Changing the edo adjusts the column offsets and row offset(s) so that their size in cents stays roughly the same.
-So your keyboard layout remains roughly bosanquet, or your guitar tuning settings remain roughly EADGBE.
+So your bosanquet keyboard layout remains roughly bosanquet, and your EADGBE guitar tuning remains roughly EADGBE.
 
 There are 4 new functions for switches 1 & 2 and footswitches 1 & 2: 
 EDO+ and EDO- move up or down to the next EDO, wraps around (probably best you don't play while changing!)
@@ -130,6 +128,8 @@ The dot patterns tend to follow the conventional m3 P4 P5 M6 P8 guitar fret mark
 Edos above 24 approximate 12edo, in other words there are dots about every 100 cents.
 41edo is an exception. It has kites like a Kite guitar.
 
+All of microLinn's settings are remembered by the 6 presets except the scales, rainbows and dot patterns.
+
 What advantages does microLinn's 12edo have over the standard, non-microLinn 12edo? 
 It can be stretched and/or detuned, plus you get multi-colored note lights.
 
@@ -139,8 +139,7 @@ Be sure to try the Bosanquet layout for 31edo and the Kite guitar layout for 41e
 The rainbow colors can be overwhelming. Try setting the played mode to BLNK or BLNK8.
 Once you know an edo well, you'll probably want to switch to the fretboard dots display.
 
-To create JI or rank-2 scales with N notes, set the edo to 12 but play as if in N-edo, think one midi note per edostep.
-(Eventually: set the edo to N and turn on raw midi mode.)
+To create JI or rank-2 scales with N notes, set the edo to N. (Eventually: also turn on raw midi mode.)
 Load a scala file into your synth or run alt-tuner to produce that N-note scale.
 Each note is slightly sharper or flatter from N-edo, thus the pad's note will be different slid up to vs played directly.
 However this is only a comma or so difference even on long slides, which might be tolerable.

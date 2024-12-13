@@ -335,6 +335,7 @@ void loadSettingsFromPreset(byte p) {
   memcpy(&Split[RIGHT], &config.preset[p].split[RIGHT], sizeof(SplitSettings));
 
   applyPresetSettings();
+  setupMicroLinn();
 }
 
 void storeSettingsToPreset(byte p) {
@@ -2124,8 +2125,8 @@ void handleSplitHandednessRelease() {
 }
 
 void handleRowOffsetNewTouch() {
-  byte range = (isMicroLinnOn() ? min (MICROLINN_MAX_OFFSET, Global.microLinn.EDO) : 16);
-  handleNumericDataNewTouchCol(Global.customRowOffset, -range-1, range, true); 
+  if (isMicroLinnOn()) {microLinnHandleRowOffsetNewTouch(); return;}
+  handleNumericDataNewTouchCol(Global.customRowOffset, -17, 16, true); 
 }
 
 void handleRowOffsetRelease() {
@@ -2144,10 +2145,7 @@ void ensureGuitarTuningPreviewNoteRelease() {
 }
 
 void handleGuitarTuningNewTouch() {
-  if (isMicroLinnOn()) {
-    microLinnHandleGuitarTuningNewTouch();
-    return;
-  }
+  if (isMicroLinnOn()) {microLinnHandleGuitarTuningNewTouch(); return;}
 
   if (sensorCol == 1) {
     guitarTuningRowNum = sensorRow;

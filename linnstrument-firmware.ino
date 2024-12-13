@@ -699,9 +699,9 @@ const short MICROLINN_ARRAY_SIZE = (MICROLINN_MAX_EDO * (MICROLINN_MAX_EDO + 1))
 
 struct MicroLinnDevice {
   byte MLversion;                                 // version = official version we forked from plus 128, MLversion = microLinn version
-  byte dots[MICROLINN_ARRAY_SIZE];                // one bit per row, ignores column offsets except for lefty/righty
-  byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
   byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for the 8 scales, except bit 8 is unused
+  byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
+  byte dots[MICROLINN_ARRAY_SIZE];                // one bit per row, ignores column offsets except for lefty/righty
 };
 
 struct DeviceSettings {
@@ -794,7 +794,7 @@ struct GlobalSettings {
   byte activeNotes;                          // controls which of the 12 collections of note lights presets is active
   int mainNotes[12];                         // 12 bitmask arrays that determine which notes receive "main" lights
   int accentNotes[12];                       // 12 bitmask arrays that determine which notes receive accent lights (octaves, white keys, black keys, etc.)
-  byte rowOffset;                            // interval between rows. 0 = no overlap, 1-12 = interval, 13 = guitar
+  byte rowOffset;                            // interval between rows. 0 = no overlap, 3-7 = interval, 12 = custom, 13 = guitar, 127 = zero offset
   signed char customRowOffset;               // the custom row offset that can be configured at the location of the octave setting
   byte guitarTuning[MAXROWS];                // the notes used for each row for the guitar tuning, 0-127
   VelocitySensitivity velocitySensitivity;   // See VelocitySensitivity values
