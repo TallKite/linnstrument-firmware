@@ -37,6 +37,9 @@ also microLinnDetermineRowOffsetNote in handleTouches.ino
 possible bug: if the custom row offset is 8, I set rowOffset = 12 and customRowOffset = 8
 but Geert might set rowOffset = 8, and that might be incompatible with my code
 
+test handleMicroLinnConfigRelease, maybe delete "prevEDO = EDO" line?
+test exiting microLinn, do the offsets get adjusted?s
+
 long-press the low power button to get a dimmer display but not a lower scan rate (in effect a crude brightness knob)
 search for operatingLowPower, when done delete my code in leds.ino, other code with "brightness"
 
@@ -94,17 +97,18 @@ sweeten 41edo? widen 5/4 by shifting the top note up 2¢ and the bottom note dow
     Pull pull[MAXCOLS*MAXROWS];
     if (pull[cell].sharp && !pull[cell].flat) sharpen(cell);
     if (pull[cell].flat && !pull[cell].sharp) flatten(cell);
-  issues: in dim2 chord or v(b5) chord, 7/5 gets worse (add 7/5 to the narrowing list?)
-  in a v9 chord, 9th is sharp, and in an ^9 chord, root is flat (add 9/5 to the narrowing list?)
+  issues: in dim2 chord or v(b5) chord, 7/5 is 2¢ sharper = 5¢ sharp (add 7/5 to the narrowing list?)
+  in a v9 chord, 9th is 2¢ sharper = 3¢ sharp, and in an ^9 chord, root is 3¢ flat (add 9/5 to the narrowing list?)
   in a vM7no3 or vM7(4) chord, the root-5th interval is 2¢ flat (widen 15/8?)
   would 11-limit chords become worse?
 
 make rainbows, scales and dots exportable and importable via CC messages or sysexes or serial port transfer?
 also exportable custom lights? (they are currently importable only, via CC messages)
 
-write code for 6 microLinn memories/presets, 6 new buttons next to the 6 standard ones (column 15 or column 22)?
+write code for 6 microLinn memories/presets? 6 new buttons next to the 6 standard ones (column 15 or column 22)
   for the Linn 128, move the program change number one pad to the left to make room for the new buttons
   each one saves all microLinn settings for a single edo - save the dots, rainbows and scales for the current edo only
+  save which scale (which is also saved in the regular presets) but don't save what kind of scale it is
   where to save the column offsets, in standard memories or in microLinn memories?
     maybe if it's not set on one of the microLinConfig displays, save it to standard memories
     thus uninstalling microLinn means adjusting the standard memory structure
@@ -366,7 +370,7 @@ const byte MICROLINN_RAINBOWS[MICROLINN_ARRAY_SIZE] = {
 };
 
 const byte MICROLINN_SCALES[MICROLINN_ARRAY_SIZE] = {
-  // each byte is a bitmask for the 8 scales, except bit 8 is unused because the 8th scale always includes all the notes
+  // each byte is a bitmask for all 8 scales, except bit 8 is unused because the 8th scale always includes all the notes
   // 1st scale = yo (major), 2nd = gu (minor), 3rd-6th = blank but for the tonic, 7th = yaza rainbow, 8th = full rainbow
   127, 0,64,64, 0, // 5edo
   127,64,64, 0,64,64, // 6edo
@@ -1531,7 +1535,9 @@ void handleMicroLinnConfigRelease() {
   if (isMicroLinnConfigButton() && !isCellPastSensorHoldWait()) {         // short-press bottom row
     switch (microLinnConfigColNum) {
       case 5:
-        microLinnPrevEDO = Global.microLinn.EDO;
+        //if (microLinnPrevEDO == 4 && Global.microLinn.EDO > 4) setupMicroLinn();                        // delete?
+        //if (microLinnPrevEDO >  4 && Global.microLinn.EDO == 4) microLinnAdjustRowAndColOffsets();      // delete?
+        microLinnPrevEDO = Global.microLinn.EDO;    // delete?
         break;
       case 12:
         if (!isMicroLinnOn()) break;
@@ -1557,8 +1563,6 @@ void handleMicroLinnConfigRelease() {
         updateDisplay();
         break;
     }
-//  } else if (microLinnConfigColNum == 5 && Global.microLinn.EDO > 4 && microLinnPrevEDO == 4) {
-//    setupMicroLinn();
   } else if (microLinnConfigColNum == 12) {
     handleMicroLinnNoteLightsRelease();
   } else if (sensorRow > 0) {
