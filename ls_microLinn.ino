@@ -31,6 +31,8 @@ also adjust Global.customSwitchAssignment[switchSelect] since no EDO or SCALE up
 
 use virtual note numbers to get the midi to work
 
+make scrolling messages repeat endlessly
+
 clean up ls_midi.ino by making a new function microLinnGetNoteNumColumn (needed for raw midi mode)
 also microLinnDetermineRowOffsetNote in handleTouches.ino
 
