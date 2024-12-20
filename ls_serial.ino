@@ -210,14 +210,28 @@ void serialSendSettings() {
   clearDisplayImmediately();
   delayUsec(1000);
 
-  int32_t confSize = sizeof(Configuration);
+  int32_t confSize;
+
+  // send the actual settings
+  const uint8_t batchsize = 96;
+
+  byte* src;
+  ConfigurationVLatest configurationNonMicroLinn;
+
+  // if the user is reverting to the mainline firmware, we need to send the updater a version
+  // of the configuration that's compatible with mainline
+  if (microLinnUninstall == 1) {
+    restoreNonMicroLinnConfiguration(&configurationNonMicroLinn, &config);
+    src = (byte*)&configurationNonMicroLinn;
+    confSize = sizeof(configurationNonMicroLinn);
+  } else {
+    src = (byte*)&config;
+    confSize = sizeof(Configuration);
+  }
 
   // send the size of the settings
   Serial.write((byte*)&confSize, sizeof(int32_t));
 
-  // send the actual settings
-  const uint8_t batchsize = 96;
-  byte* src = (byte*)&config;
   lastSerialMoment = millis();
   while (confSize > 0) {
     int actual = min(confSize, batchsize);
