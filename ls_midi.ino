@@ -1554,7 +1554,7 @@ void sendNrpnParameter(int parameter, int channel) {
       value = Device.minUSBMIDIInterval;
       break;
     case 253:
-      if (isMicroLinnOn()) {value = microLinnSendNrpn253(); break;}
+      if (isMicroLinnOn()) {value = microLinnComputeNrpn253(); break;}
       if (Global.customRowOffset == -17) {
         value = 33;
       }

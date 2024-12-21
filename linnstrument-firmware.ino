@@ -792,7 +792,7 @@ struct GlobalSettings {
   byte splitPoint;                           // leftmost column number of right split (0 = leftmost column of playable area)
   byte currentPerSplit;                      // controls which split's settings are being displayed
   byte activeNotes;                          // controls which of the 12 collections of note lights presets is active
-  int mainNotes[12];                         // 12 bitmasks that determine which notes receive "main" lights, mainNotes[0] is for the 1st scale
+  int mainNotes[12];                         // 12 bitmasks that determine which notes receive "main" lights, mainNotes[0] is for the 1st scale, [9-11] no longer used
   int accentNotes[12];                       // 12 bitmasks that determine which notes receive accent lights (octaves, white keys, black keys, etc.)
   byte rowOffset;                            // interval between rows. 0 = no overlap, 3-7 = interval, 12 = custom, 13 = guitar, 127 = zero offset
   signed char customRowOffset;               // the custom row offset that can be configured at the location of the octave setting

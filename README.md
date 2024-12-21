@@ -74,6 +74,7 @@ When the notes per octave is greater than 12, the OCTAVE/TRANSPOSE display shows
 The 2nd and 3rd rows now transpose not by semitones but by major 2nds (since most edos have several different semitones).
 A major 2nd is defined as the interval between the fourth and the fifth, e.g. 3 edosteps for 15edo but 2 edosteps for 16edo.
 
+MicroLinn's guitar tuning is completely independent of the standard Linnstrument guitar tuning.
 The guitar tuning screen no longer adjusts the pitch of each "string". Instead it sets 7 independent row offsets.
 So you no longer see a note name with an octave number. Instead you see a row offset as a number (which can be negative).
 Touching the top button on the far left sounds the pitch of the top open string, as before. 
@@ -85,7 +86,6 @@ But of course only one string changes when you change the first offset or the la
 The "anchor string" is the string that the anchor pad is on. Its pitch is determined by the anchor pad, note and cents.
 Thus increasing any row offset above the anchor row sharpens multiple strings. 
 And increasing any row offset below the anchor row flattens multiple strings.
-MicroLinn's guitar tuning is completely independent of the standard Linnstrument guitar tuning.
 
 Changing the edo adjusts the column offsets and row offset(s) so that their size in cents stays roughly the same.
 So your bosanquet keyboard layout remains roughly bosanquet, and your EADGBE guitar tuning remains roughly EADGBE.
@@ -130,6 +130,8 @@ Edos above 24 approximate 12edo, in other words there are dots about every 100 c
 
 All of microLinn's settings are remembered by the 6 presets except the scales, rainbows and dot patterns.
 
+On the custom row offset screem, while microLinn is on, the "-GUI" option for reversed guitar tuning is no longer available. Set the guitar tuning manually instead.
+
 What advantages does microLinn's 12edo have over the standard, non-microLinn 12edo? 
 It can be stretched and/or detuned, plus you get multi-colored note lights.
 
@@ -149,7 +151,7 @@ Perhaps software on the PC could fix this problem by scaling the slides by adjus
 features not yet implemented:
 raw midi output means one mide note pe edostep, doesn't use tuning bends
 good for older synths, good for creating JI scales via scala files
-noOverLap mode gives ech pad its own unique midi note # (beware, 200 pads > 128 midi notes!)
+noOverLap mode gives ech pad its own unique midi note number (beware, 200 pads > 128 midi notes!)
 
 ============================= technical notes ==================================
 
