@@ -46,7 +46,7 @@ For any questions about this, contact Roger Linn Design at support@rogerlinndesi
 /******************************************** CONSTANTS ******************************************/
 
 const char* OSVersion = "234.";
-const char* OSVersionBuild = ".08A";
+const char* OSVersionBuild = ".08A"; // based on 234.072, the "A" means Device.microLinn.MLversion = 0, "B" means 1, etc.
 
 // SPI addresses
 #define SPI_LEDS    10               // Arduino pin for LED control over SPI
@@ -693,19 +693,18 @@ enum SplitHandednessType {
   reversedRight
 };
 
-const byte MICROLINN_MAX_EDO = 55;                // minimum edo is 5
-const byte MICROLINN_MAX_OFFSET = MAXCOLS - 1;    // both row offset and column offset, increased from 16
+const byte MICROLINN_MAX_EDO = 55;                // the minimum edo is 5
 const short MICROLINN_ARRAY_SIZE = (MICROLINN_MAX_EDO * (MICROLINN_MAX_EDO + 1)) / 2 - 10;     // a triangular array missing rows 1-4 = 1530
 
 struct MicroLinnDevice {
-  byte MLversion;                                 // version = official version we forked from plus 128, MLversion = microLinn version
+  byte MLversion;                                 // current version of microLinn data structures, 0 displays as A, 1 displays as B, etc.
   byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
   byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
   byte dots[MICROLINN_ARRAY_SIZE];                // one bit per row, ignores column offsets except for lefty/righty
 };
 
 struct DeviceSettings {
-  byte version;                                   // the version of the configuration format
+  byte version;                                   // the version of the configuration format, currently 16, but the microLinn version is 16 + 128 = 144
   boolean serialMode;                             // 0 = normal MIDI I/O, 1 = Arduino serial mode for OS update and serial monitor
   CalibrationX calRows[MAXCOLS+1][4];             // store four rows of calibration data
   CalibrationY calCols[9][MAXROWS];               // store nine columns of calibration data

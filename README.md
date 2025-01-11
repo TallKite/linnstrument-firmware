@@ -10,16 +10,14 @@ But the sequence chaining and the scale +/- footswitches do work.
 
 WARNING: installing this fork deletes your Linnstrument's settings and calibration (for now, fix coming soon).
 
-1) Download the latest installer (2.3.3 as of Feb '24) from https://www.rogerlinndesign.com/support/support-linnstrument-update-software. 
-2) Download the latest version of linnstrument-firmware-microLinn.bin from this github.
-3) If on a mac, put both the updater and the .bin file on your **desktop**. If on a PC, _______________.
-4) Run the updater. Don't run anything else while it's running. If it asks for permission to read files from the desktop, say yes.
-5) Confirm the update by short-pressing the OS version (Global Settings, column 16). It should be 234.08A. If not, try using the 2.3.0 updater instead. 
+1) Go to https://www.rogerlinndesign.com/support/support-linnstrument-update-software and follow the "How to Check Your Software Version" instructions. If it's not 2.3.3, follow the "How to Update Your LinnStrument Software‍" instructions to update to 2.3.3.
+2) Download the latest version of linnstrument-firmware.ino.bin from this github. Important: if on a mac, put the .bin file on your **desktop**. 
+3) Follow the "How to Update Your LinnStrument Software‍" instructions, with one difference: immediately after you download (and possibly unzip) the updater, put it in the same folder as the .bin file from step 2. Mac users: when you run the updater, if it asks for permission to read files from the desktop, say yes.
+4) Check your OS version to confirm the update. It should be 234.08A. If not, try using the 2.3.0 updater instead. 
 
-IMPORTANT: Once microLinn is installed, when you later update the OS to an even newer version, you'll be asked if you want to uninstall microLinn.
-Say no if you're updating to a new version of microLinn. This avoids deleting your microtonal data needlessly.
-Say yes otherwise (e.g. if you're installing an official version of the firmware, or someone else's OS version). 
-This does delete your microtonal data, necessary in order to avoid deleting all your user settings and calibration data.
+-------- UPGRADING/UNINSTALLING -------- 
+
+IMPORTANT: Later on when you update the OS to a different version, you'll be asked if you want to uninstall microLinn. Say no if you're updating to a new version of microLinn. This avoids deleting your microtonal data needlessly. Say yes otherwise (e.g. if you're going back to an official (non-microtonal) version of the firmware). This does delete your microtonal data, which is necessary in order to avoid deleting all your other user settings plus your calibration data.
 
 -------- NON-MICROTONAL FEATURES -------- 
 
@@ -41,8 +39,8 @@ easy chord playing and normal layout on the right for easy melody playing. Acces
 
 MULTI-COLORED NOTE LIGHTS: Each of the 12 notes can be any color. Transposable. Access it through the microLinn menu, see below.
 
-DETUNING: Detune the entire Linnstrument up or down from A-440 to match a similarly detuned recording or instrument. (No guarantee that 
-detuning to A-432 will heal your chakras lol.) Access it through microLinn's anchor cents, see below.
+DETUNING: Detune the entire Linnstrument up or down from A-440 to match a similarly detuned recording or instrument. 
+(No guarantee that detuning to A-432 will heal your chakras lol.) Access it through microLinn's anchor cents, see below.
 
 -------- MICROTONAL FEATURES -------- 
 
@@ -69,10 +67,11 @@ The menu has 10 buttons. Long-press each one to see its function. Most don't wor
 The anchor pad is a specific pad or cell that doesn't change pitch when you change the notes per octave.
 The anchor pad chooser displays the row and column of the current anchor pad, e.g. R3C6 means row 3 (from the top) and column 6. 
 To choose a new anchor pad, tap the blue "R3C6" and then tap any pad. Change the anchor cents to detune the entire Linnstrument.
+Each split can be transposed independently any number of edosteps from the anchor cell, allowing any tuning.
 
 When the notes per octave is greater than 12, the OCTAVE/TRANSPOSE display shows two extra rows for transposing by edosteps.
 The 2nd and 3rd rows now transpose not by semitones but by major 2nds (since most edos have several different semitones).
-A major 2nd is defined as the interval between the fourth and the fifth, e.g. 3 edosteps for 15edo but 2 edosteps for 16edo.
+A major 2nd is defined as the interval between the 4th and the 5th, e.g. 3 edosteps for 15edo but 2 edosteps for 16edo.
 
 MicroLinn's guitar tuning is completely independent of the standard Linnstrument guitar tuning.
 The guitar tuning screen no longer adjusts the pitch of each "string". Instead it sets 7 independent row offsets.
@@ -87,8 +86,13 @@ The "anchor string" is the string that the anchor pad is on. Its pitch is determ
 Thus increasing any row offset above the anchor row sharpens multiple strings. 
 And increasing any row offset below the anchor row flattens multiple strings.
 
+If the guitar tuning is the standard tuning, the GLOBAL screen's GUITAR pad is dark blue, otherwise it's bright blue.
+The exact notes don't matter, just that the intervals between open strings are all 4ths, except for that one major 3rd.
+The edo's perfect 4th is its closest approximation to 4/3. The edo's major 3rd is two octaves minus four 4ths.
+There's two possible 4ths for 13edo (5\13 and 6\13) and 18edo (7\18 and 8\18). Either 4th keeps the GUITAR pad dark blue.
+
 Changing the edo adjusts the column offsets and row offset(s) so that their size in cents stays roughly the same.
-So your bosanquet keyboard layout remains roughly bosanquet, and your EADGBE guitar tuning remains roughly EADGBE.
+So your bosanquet keyboard layout remains roughly bosanquet, and your F#BEADGBE guitar tuning remains roughly F#BEADGBE.
 
 There are 4 new functions for switches 1 & 2 and footswitches 1 & 2: 
 EDO+ and EDO- move up or down to the next EDO, wraps around (probably best you don't play while changing!)
@@ -101,7 +105,7 @@ The note lights display has 7 scale buttons plus the rainbow editor, the dots se
 Tap any of these buttons except the rainbow-enabler to select it. Tap any selected button to backtrack to the previous button.
 There are 7 rows of colored lights on the screen, which top to bottom are for unisons, 2nds, 3rds, 4ths, 5ths, 6ths and 7ths.
 Tap a note in a scale to toggle it on or off. Like the guitar tuning screen, a midi note is sent when you tap. 
-The rainbow editor is the 8th scale, in which all notes are always on. Tap a note to cycle it thru the rainbow. 
+The 8th scale is the rainbow editor, in which all notes are always on. Tap a note to cycle it thru the rainbow. 
 The 9th scale (guitar-like fretboard dots) isn't really a scale. It's a full-screen display like the custom light patterns.
 Tapping the dots selector makes the dots appear in blue mid-screen. Tapping the dots lets you toggle them on or off. 
 Long-press the scale buttons or the rainbow editor button or the dots selector button to reset the note lights to the default. 

@@ -3,8 +3,6 @@
 note to self:  "if (sensorCell->velocity)" means if another touch is already down on the same row
 according to the comment by handleFaderRelease in ls_faders.ino
 
-note to self: in ls_settings.ino, "Device.version = 16;"
-
 note to self: to use multi-channel output with my non-MPE s90es synth, deselect the main channel
 
 note to self: user can enter/exit microLinn only by loading a preset (directly or via NRPN) 
@@ -26,8 +24,17 @@ e.g. paintMicroLinnNoteLights() is something brand new (and only appears in this
 
 fix the user data overwriting issue by modifying ls_extstorage.ino
 the uninstall code must adjust Split[side].playedTouchMode since no BLNK mode
-(possibly store playedBlink mode as the last option, but have it appear to the user as the 3rd option)
 also adjust Global.customSwitchAssignment[switchSelect] since no EDO or SCALE up/down
+  change microLinnUninstall from a byte to a boolean? default to true for now, false after testing
+  change 128 to microLinnBaseVersion, so that Device.Version = microLinnBaseVersion + 16
+  change all (whatever)VLatest to microLinn(whatever)V16
+  settingsVersion = the old version, read from the 1st byte of the data structures
+  Device.Version = new version, explicitly set in ls_settings.ino, e.g. official fork has "Device.version = 16;"
+  copyConfigurationVLatest takes us from 16 to 144.0 
+  restoreNonMicroLinn takes us from 144.0 to 16 (rename to uninstallMicroLinn?)
+  how does Device.microLinn.MLversion work?
+  add a third option to uninstall scrolling message, press global settings to exit?
+  delete code for col 16 and/or 17 shortcuts (search for ifndef)
 
 use virtual note numbers to get the midi to work
 
@@ -43,9 +50,12 @@ test exiting microLinn, do the offsets get adjusted?
 long-press the low power button to get a dimmer display but not a lower scan rate (in effect a crude brightness knob)
 search for operatingLowPower, when done delete my code in leds.ino, other code with "brightness"
 
-test JI scales using scala files, see how the sliding feels
+guitartuning screen, edostep display doesn't update
 
-test guitartuning screen, left buttons as well
+Add code when translate guitar tunings from one edo to the next
+  add a runtime boolean microLinnIsStandardGuitarTuning
+  if true, translate the guitar tuning to the new edo's standard tuning
+  prioritze 13b and 18b over 13 and 18?
 
 test if microLinnSumOfRowOffsets() case ROWOFFSET_NOOVERLAP reflects the width of the split
 
@@ -68,6 +78,9 @@ BLN8 = like SAME, but blinks and includes octaves too
 all 3 plus SAME should include notes on the other split, but only if the other split also has SAME, SAM8, BLNK or BLN8
 the note on the other split lights up in accordance with that split's settings for blinking or octaves
 blink modes can blink a lit LED on/off, see getLedColor function
+for the readme file:
+(in the future SAME and BLNK might possibly carry over to the other split, if enabled on both splits)
+(in the future SAM8 and BLN8 might possibly exist, these will include octave-mates)
 
 cleanup: search for "delete", "uncomment" and "bug"
 
@@ -76,8 +89,11 @@ Should resetTo12equal() send out pitchbends of 0 on each channel, to avoid linge
   Should this also happen whenever the edo changes?
 On the note lights screen, move both pink walls in 1 column? move the whole display over 2 cells if on a 200 model?
 Replace microLinnSetKiteGuitarDefaults etc. with presets?
-add a 2nd shortcut on global, col 1 row 1 for 2nd config display for brightness etc.?
-delete code for col 16 and/or 17 shortcut? (search for ifndef)
+add a 2nd shortcut on global, col 1 row 1 for 2nd config display for other forks?
+should there be 2 different row offsets, one for each split? 31edo bosanquet left hand, full-31 right hand?
+  set the row offset on the SPLIT screen, runs OFF, 1, 2, 3...25. OFF (0 in the var) means use the global setting
+  can only have one guitar tuning, can't tune left DADGAD and right EADGBE, that should be fine
+  this affects the tuning tables and the note lights
 
 POSSIBILTIES
 
@@ -120,7 +136,7 @@ run the arpeggiator and the sequencer both at once, so that the arpeggiator uses
 
 *********************************************************/
 
-
+const byte MICROLINN_MAX_OFFSET = MAXCOLS - 1;             // both row offset and column offset, increased from 16 to 25
 
 const byte MICROLINN_MAJ_2ND[MICROLINN_MAX_EDO+1] = {      // used for transposePitch and transposeLights
   0,  0,  0,  0,  0,   1,  1,  1,  1,  1,    // 0-9        // is actually just a single edostep for edos 6, 8, 10 & 12
@@ -159,8 +175,8 @@ const byte MICROLINN_ROWOFFSET_RANGE[MICROLINN_MAX_EDO+1] = {    // used to limi
 };
 
 // MICROLINN_SCALEROWS: for each of the 7 degrees plus the octave, the last note in each row of the note lights display
-/********************** this table was generated with the following C program **********************
 
+/********************** this table was generated with the following C program **********************
   for (byte edo = 5; edo <= MICROLINN_MAX_EDO; ++edo) {
     byte M2 = MICROLINN_MAJ_2ND[edo];                     // actually just a single edostep for edos 6, 8, 10 & 12
     if (edo == 10 || edo == 12) M2 = 2;                   // correct 10edo and 12edo
@@ -586,6 +602,14 @@ void microLinnSet31edoBosanquetDefaults() {
   Global.microLinn.anchorCol = 11;
   Global.microLinn.anchorNote = 60;                         // middle-C
   Global.microLinn.anchorCents = 0;
+  Global.microLinn.guitarTuning[0] = 0;                     // F# B E A D G B E
+  Global.microLinn.guitarTuning[1] = 13;                    // cumulative row offsets from the bottom row
+  Global.microLinn.guitarTuning[2] = 26;
+  Global.microLinn.guitarTuning[3] = 39;
+  Global.microLinn.guitarTuning[4] = 52;
+  Global.microLinn.guitarTuning[5] = 65;
+  Global.microLinn.guitarTuning[6] = 75;
+  Global.microLinn.guitarTuning[7] = 88;
   Split[LEFT].microLinn.colOffset = 5;                      // 31-equal major 2nd
   Split[RIGHT].microLinn.colOffset = 5;
   Global.rowOffset = 3;                                     // 31-equal minor 2nd
@@ -613,6 +637,14 @@ void microLinnSetKiteGuitarDefaults() {
   Global.rowOffset = ROWOFFSET_OCTAVECUSTOM;
   Global.customRowOffset = 13;                              // 41-equal downmajor 3rds
   Global.activeNotes = 8;
+  Global.microLinn.guitarTuning[0] = 0;                     // alternating downmajor and upminor 3rds
+  Global.microLinn.guitarTuning[1] = 13;                    // cumulative row offsets from the bottom row
+  Global.microLinn.guitarTuning[2] = 24;
+  Global.microLinn.guitarTuning[3] = 37;
+  Global.microLinn.guitarTuning[4] = 48;
+  Global.microLinn.guitarTuning[5] = 61;
+  Global.microLinn.guitarTuning[6] = 72;
+  Global.microLinn.guitarTuning[7] = 85;
   lightSettings = LIGHTS_ACTIVE;
   //Split[LEFT].playedTouchMode = playedBlink;             // uncomment once playedBlink works right
   //Split[RIGHT].playedTouchMode = playedBlink;
@@ -651,6 +683,7 @@ void microLinnResetTo12equal() {
   loadCustomLedLayer(getActiveCustomLedPattern());
   Split[LEFT].playedTouchMode = playedCell;
   Split[RIGHT].playedTouchMode = playedCell;
+  // microLinnConfigColNum = 0;                         // uncomment later
 }
 
 void microLinnUpdateAnchorString() {
@@ -1234,7 +1267,7 @@ void paintMicroLinnUninstall() {
   setLed(12, 0, microLinnUninstall == 0 ? COLOR_ORANGE : COLOR_RED, cellOn);
   setLed(13, 0, COLOR_RED, cellOn);
   if (microLinnUninstallNowScrolling) {
-    small_scroll_text_row1("      UNINSTALL MICROLINN? GREEN = YES, RED = NO    UNINSTALL MICROLINN? GREEN = YES, RED = NO    UNINSTALL MICROLINN? GREEN = YES, RED = NO",
+    small_scroll_text_row1("      UNINSTALL MICROLINN? GREEN = YES, RED = NO, PRESS GLOBAL SETTINGS TO EXIT    UNINSTALL MICROLINN? GREEN = YES, RED = NO, PRESS GLOBAL SETTINGS TO EXIT    UNINSTALL MICROLINN? GREEN = YES, RED = NO, PRESS GLOBAL SETTINGS TO EXIT",
                            Split[LEFT].colorMain);
     setLed(4, 0, COLOR_GREEN, cellOn);
     setLed(5, 0, microLinnUninstall == 1 ? COLOR_CYAN : COLOR_GREEN, cellOn);
@@ -1332,7 +1365,8 @@ void microLinnPaintGuitarTuning() {          // called in ls_displayModes.ino
            Split[Global.currentPerSplit].colorAccent : Split[Global.currentPerSplit].colorMain, cellOn);
   }
   if (guitarTuningRowNum == 0) return;
-  paintNoteDataDisplay(globalColor, Global.microLinn.guitarTuning[guitarTuningRowNum], LINNMODEL == 200 ? 2 : 1, 0);
+  paintNumericDataDisplay(globalColor, Global.microLinn.guitarTuning[guitarTuningRowNum]
+                                     - Global.microLinn.guitarTuning[guitarTuningRowNum-1], 0, false);
 }
 
 byte microLinnGetGuitarTuningColor() {       // called in ls_displayModes.ino 
@@ -1348,23 +1382,23 @@ byte microLinnGetGuitarTuningColor() {       // called in ls_displayModes.ino
       Global.microLinn.guitarTuning[7] != 6*fourth + third) {
     color = globalAltColor;
   }
-  if (Global.microLinn.EDO == 13 &&
-      Global.microLinn.guitarTuning[1] ==  6 ||              // allow 13b tuning as well, 6666626
-      Global.microLinn.guitarTuning[2] == 12 ||
-      Global.microLinn.guitarTuning[3] == 18 ||
-      Global.microLinn.guitarTuning[4] == 24 ||
-      Global.microLinn.guitarTuning[5] == 30 ||
-      Global.microLinn.guitarTuning[6] == 32 ||
+  if (Global.microLinn.EDO == 13 && 
+      Global.microLinn.guitarTuning[1] ==  6 &&              // allow 13b tuning as well, 6666626
+      Global.microLinn.guitarTuning[2] == 12 &&
+      Global.microLinn.guitarTuning[3] == 18 &&
+      Global.microLinn.guitarTuning[4] == 24 &&
+      Global.microLinn.guitarTuning[5] == 30 &&
+      Global.microLinn.guitarTuning[6] == 32 &&
       Global.microLinn.guitarTuning[7] == 38) {
     color = globalColor;
   }
   if (Global.microLinn.EDO == 18 &&
-      Global.microLinn.guitarTuning[1] ==  8 ||              // allow 18b tuning as well, 8888848
-      Global.microLinn.guitarTuning[2] == 16 ||
-      Global.microLinn.guitarTuning[3] == 24 ||
-      Global.microLinn.guitarTuning[4] == 32 ||
-      Global.microLinn.guitarTuning[5] == 40 ||
-      Global.microLinn.guitarTuning[6] == 44 ||
+      Global.microLinn.guitarTuning[1] ==  8 &&              // allow 18b tuning as well, 8888848
+      Global.microLinn.guitarTuning[2] == 16 &&
+      Global.microLinn.guitarTuning[3] == 24 &&
+      Global.microLinn.guitarTuning[4] == 32 &&
+      Global.microLinn.guitarTuning[5] == 40 &&
+      Global.microLinn.guitarTuning[6] == 44 &&
       Global.microLinn.guitarTuning[7] == 52) {
     color = globalColor;
   }
@@ -1393,7 +1427,7 @@ void microLinnHandleGuitarTuningNewTouch() {       // called in ls_settings.ino
     short oldRowOffset = Global.microLinn.guitarTuning[guitarTuningRowNum]
                        - Global.microLinn.guitarTuning[guitarTuningRowNum-1];
     short newRowOffset = oldRowOffset;
-    handleNumericDataNewTouchCol(newRowOffset, -5 * microLinnGetEDO(), 5 * microLinnGetEDO(), true);    // ±5 octave range
+    handleNumericDataNewTouchCol(newRowOffset, -3 * microLinnGetEDO(), 3 * microLinnGetEDO(), true);    // ±3 octave range
     for (byte row = guitarTuningRowNum; row < MAXROWS; ++row ) {
       Global.microLinn.guitarTuning[row] += newRowOffset - oldRowOffset;
     }
