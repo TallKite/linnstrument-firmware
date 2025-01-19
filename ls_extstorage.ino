@@ -2279,7 +2279,7 @@ void copyConfigurationVLatest(void* target, void* source) {
   for (byte p = 0; p < NUMPRESETS; p++) {
     memcpy(&t->preset[p], &s->preset[p], sizeof(s->preset[p]));
   }
-  memcpy(&t->project, &s->project, sizeof(t->project));
+  memcpy(&t->project, &s->project, sizeof(s->project));
 }
 
 /* Roll back settings to latest non-MicroLinn format */
