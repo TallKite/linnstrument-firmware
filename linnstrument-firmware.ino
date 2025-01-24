@@ -615,7 +615,7 @@ enum SequencerDirection {
 };
 
 struct MicroLinnSplit {
-  byte colOffset;                         // column offsets, 1 to 25
+  byte colOffset;                         // column offset, 1 to 25
   signed char transposeEDOsteps;          // accessed not via displayMicroLinnConfig but via displayOctaveTranspose
   signed char transposeEDOlights;
   boolean rawMidiOutput;                  // output in edostep format (1 midi note = 1 edostep)
@@ -674,7 +674,7 @@ struct SplitSettings {
   boolean arpeggiator;                    // true when the arpeggiator is on, false if notes should be played directly
   boolean strum;                          // true when this split strums the touches of the other split
   boolean mpe;                            // true when MPE is active for this split
-  boolean sequencer;                      // true when the sequencer of this split is displayed
+  boolean sequencer;                      // true when the sequencer of this split is enabled
   SequencerView sequencerView;            // see SequencerView
   MicroLinnSplit microLinn;               // microtonal data
 };
@@ -697,10 +697,10 @@ const byte MICROLINN_MAX_EDO = 55;                // the minimum edo is 5
 const short MICROLINN_ARRAY_SIZE = (MICROLINN_MAX_EDO * (MICROLINN_MAX_EDO + 1)) / 2 - 10;     // a triangular array missing rows 1-4 = 1530
 
 struct MicroLinnDevice {
-  byte MLversion;                                 // current version of microLinn data structures, 0 displays as A, 1 displays as B, etc.
+  byte MLversion;                                 // current version of the microLinn data structures, 0 displays as A, 1 displays as B, etc.
   byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
   byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
-  byte dots[MICROLINN_ARRAY_SIZE];                // one bit per row, ignores column offsets except for lefty/righty
+  byte dots[MICROLINN_ARRAY_SIZE];                // one bit per row, ignores column offsets, doesn't ignore lefthandedness
 };
 
 struct DeviceSettings {

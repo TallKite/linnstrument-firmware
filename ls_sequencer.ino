@@ -369,6 +369,7 @@ void sequencerTurnOff(byte split, boolean save) {
 }
 
 void sequencerTogglePlay(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   if (Split[split].sequencer) {
     if (!seqState[split].running) {
       seqState[split].turnOn();
@@ -380,6 +381,7 @@ void sequencerTogglePlay(byte split) {
 }
 
 void sequencerToggleMute(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   seqState[split].muted = !seqState[split].muted;
   if (seqState[split].muted && seqState[split].running) {
     seqState[split].turnOffEvents();
@@ -394,12 +396,14 @@ void sequencerToggleMute(byte split) {
 }
 
 void sequencerPreviousPattern(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   if (Split[split].sequencer) {
     seqState[split].selectPreviousPattern();
   }
 }
 
 void sequencerNextPattern(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   if (Split[split].sequencer) {
     seqState[split].selectNextPattern();
   }
@@ -2347,7 +2351,8 @@ void StepSequencerState::advanceSequencer() {
       // check if the sequencer should switch to the next pattern
       if (nextPattern != -1 && (position == 0 || switchPatternOnBeat)) {
         position = 0;
-        if (!firstSeqCycle[split]) currentPattern = nextPattern;      // avoid skipping the current pattern when first running, due to patternchaining
+        // avoid skipping the current pattern when first running a patternchain
+        if (!(patternChain[split][currentPattern] >= 0 && firstSeqCycle[split])) currentPattern = nextPattern;
         firstSeqCycle[split] = false;
         nextPattern = patternChain[split][currentPattern];
         switchPatternOnBeat = false;
@@ -3183,7 +3188,7 @@ void StepSequencerState::selectPreviousPattern() {
 
 void StepSequencerState::selectNextPattern() {
   int p = currentPattern;
-  if (nextPattern != -1 && patternChain[split][p] == -1) {                 // ignore nextPattern it it's part of a chain
+  if (nextPattern != -1 && patternChain[split][p] == -1) {                 // ignore nextPattern if it's part of a chain
     p = nextPattern;
   }
   p = (p+1) % MAX_SEQUENCER_PATTERNS;
@@ -3227,7 +3232,7 @@ void StepSequencerState::selectPattern(byte pattern) {
 }
 
 /**************************************** PATTERN CHAINING, PART OF THE MICROLINN FORK ****************************************/
-// search this file for "patternChain" to see the other changes to the code
+// search this file for "patternChain" or "control the sequencer" to see the other changes to the code
 
 void setPatternChain(byte split) {
   short firstPattern = -1;

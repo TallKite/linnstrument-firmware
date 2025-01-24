@@ -20,6 +20,13 @@ e.g. microLinnPaintNormalDisplayCell() replaces PaintNormalDisplayCell() when mi
 as opposed to a function that contains "microLinn" but starts with e.g. "paint" or "handle"
 e.g. paintMicroLinnNoteLights() is something brand new (and only appears in this .ino file?)
 
+DeviceSettingsV12 = 2204 bytes
+MicroLinnDevice = 4591 bytes
+DeviceSettings  = 7549 bytes, so pre-microLinn it was 2958
+PresetSettings = 400 bytes (Global plus both splits)
+thus the 6 presets will be 2400 bytes
+total is 10349 bytes
+
 ======================= TO DO ==============================
 
 fix the user data overwriting issue by modifying ls_extstorage.ino
@@ -30,13 +37,30 @@ also adjust Global.customSwitchAssignment[switchSelect] since no EDO or SCALE up
   change all (whatever)VLatest to microLinn(whatever)V16
   settingsVersion = the old version, read from the 1st byte of the data structures
   Device.Version = new version, explicitly set in ls_settings.ino, e.g. official fork has "Device.version = 16;"
+  the microLinn fork will have "Device.version = microLinnBaseVersion + 16;" which is 144.0
   copyConfigurationVLatest takes us from 16 to 144.0 
   restoreNonMicroLinn takes us from 144.0 to 16 (rename to uninstallMicroLinn?)
   how does Device.microLinn.MLversion work?
-  add a third option to uninstall scrolling message, press global settings to exit?
   delete code for col 16 and/or 17 shortcuts (search for ifndef)
+  V14 is used by firmware v2.1.0
+    in DeviceSettings, new byte splitHandedness
+    in GlobalSettings, new unsigned short arrays ccForSwitchSustain[4] and ccForSwitchCC65[4]
+    in SplitSettings, new boolean midiChanPerRowReversed
+    in SplitSettings, new unsigned short initialRelativeY
+    other additions too
+  V15 is used by firmware v2.2.0, v2.2.1, v2.2.2
+    in GlobalSettings, new byte array guitarTuning[MAXROWS]
+    in GlobalSettings, the five switch arrays were lengthened from [4] to [5] (virtual 3rd pedal)
+    preset[4] was lengthened to preset[6]
+  microLinnV16 is used by firmware v2.3.0, v2.3.3
+    in DeviceSettings, new array of bytes customLeds[LED_PATTERNS][LED_LAYER_SIZE] (675 bytes)
+    
 
 use virtual note numbers to get the midi to work
+
+change col offsets to be a single screen with the usual green/blue split selector in the upper right
+replace 2nd col offset button with a row offsets button with split selector
+replace the 3 presets (31, 41 and 12) on the right with something-- 3 hammerOn options?
 
 clean up ls_midi.ino by making a new function microLinnGetNoteNumColumn (needed for raw midi mode)
 also microLinnDetermineRowOffsetNote in handleTouches.ino
@@ -63,18 +87,23 @@ make lots of global vars like microLinnEDO, for speed?
 
 fix same/blink mode when col offset > 1
 
+make system reset be a long press not a short press
+
 test the 6 memories
 test octave up/down footswitches while playing, does the calcTuning call make it glitchy?
 if so, copy how the original code does transposing
 
 make the sequencer microtonal somehow, see microLinnTuneNewSeqEvent
+for the release notes: https://www.kvraudio.com/forum/viewtopic.php?t=528045
 
 write code for accepting microLinn NRPNs (see midi.txt)
+improved midi message for lighting up pads: https://www.kvraudio.com/forum/viewtopic.php?t=519090
 
 add 3 new played modes: 
 SAM8 = like SAME, but includes the octave-mates
 BLNK = like SAME, but blinks slowly
 BLN8 = like SAME, but blinks and includes octaves too
+but see https://www.kvraudio.com/forum/viewtopic.php?t=595988
 all 3 plus SAME should include notes on the other split, but only if the other split also has SAME, SAM8, BLNK or BLN8
 the note on the other split lights up in accordance with that split's settings for blinking or octaves
 blink modes can blink a lit LED on/off, see getLedColor function
@@ -92,8 +121,12 @@ Replace microLinnSetKiteGuitarDefaults etc. with presets?
 add a 2nd shortcut on global, col 1 row 1 for 2nd config display for other forks?
 should there be 2 different row offsets, one for each split? 31edo bosanquet left hand, full-31 right hand?
   set the row offset on the SPLIT screen, runs OFF, 1, 2, 3...25. OFF (0 in the var) means use the global setting
-  can only have one guitar tuning, can't tune left DADGAD and right EADGBE, that should be fine
+  can only have one guitar tuning, can't tune left DADGAD and right EADGBE, that should be OK
   this affects the tuning tables and the note lights
+should there be an option to send both CC1 and CC74 for timbre? done by pressing both pads at once.
+  same for poly pressure, channel pressure and CC11 for loudness? press 2 or 3 pads at once
+  the choices could be stored in TimbreExpression and LoudnessExpression as e.g. timbreCC1+CC74
+  before coding it up, ask in the forum if there's interest, then test with a reaper jsfx that dupllicates CCs
 
 POSSIBILTIES
 
@@ -136,6 +169,7 @@ run the arpeggiator and the sequencer both at once, so that the arpeggiator uses
 
 *********************************************************/
 
+const byte MICROLINN_BASE_VERSION = 128;                   // for the updater app, Device.version = this + current version
 const byte MICROLINN_MAX_OFFSET = MAXCOLS - 1;             // both row offset and column offset, increased from 16 to 25
 
 const byte MICROLINN_MAJ_2ND[MICROLINN_MAX_EDO+1] = {      // used for transposePitch and transposeLights
@@ -571,24 +605,43 @@ void initializeMicroLinn() {                      // called in reset(), runs whe
   Global.microLinn.guitarTuning[7] = 34;
   Global.microLinn.useRainbow = true;
   Global.microLinn.sweeten = false;
+  //Global.activeNotes = 0;                       // delete? i forget why it is here
 
-  Device.microLinn.MLversion = 0;
+  Device.microLinn.MLversion = 0;                 // 0 means OSVersionBuild ends in "A", 1 means "B", etc.
   for (byte edo = 5; edo <= MICROLINN_MAX_EDO; ++edo) microLinnResetDots(edo);
   memcpy (Device.microLinn.rainbows, MICROLINN_RAINBOWS, MICROLINN_ARRAY_SIZE);
   memcpy (Device.microLinn.scales, MICROLINN_SCALES, MICROLINN_ARRAY_SIZE);
-  //Global.activeNotes = 0;                      // delete? i forget why it was there
+}
+
+void microLinnSendDebugMidi (byte channel, byte CCnum, short data) {                 // channels are numbered 1-16
+  if (data < 0) {channel += 1; data = -data;}
+  byte databyte = min (data, 127);
+  midiSendControlChange(CCnum, databyte, channel);
+}
+
+void microLinnSendDebugMidi2 (unsigned int data) {
+  byte controlval = data & 127;   data = data >> 7;
+  byte channel = (data & 15) + 1; data = data >> 4;              // channels are numbered 1-16
+  byte controlnum = data & 127;
+  midiSendControlChange(controlnum, controlval, channel);
 }
 
 void setupMicroLinn() {                          // runs when the Linnstrument powers up or a preset is loaded
-    Global.setSwitchAssignment(3, ASSIGNED_MICROLINN_EDO_UP,   false);  // for debugging, delete later
-    Global.setSwitchAssignment(2, ASSIGNED_MICROLINN_EDO_DOWN, false);  // for debugging
+    //Global.setSwitchAssignment(3, ASSIGNED_MICROLINN_EDO_UP,   false);  // for debugging, delete later
+    //Global.setSwitchAssignment(2, ASSIGNED_MICROLINN_EDO_DOWN, false);  // for debugging
+    microLinnSendDebugMidi2(sizeof(DeviceSettingsV12));                 // for debugging
+    microLinnSendDebugMidi2(sizeof(MicroLinnDevice));
+    microLinnSendDebugMidi2(sizeof(MicroLinnDevice));
+    microLinnSendDebugMidi2(sizeof(MicroLinnDevice));
+    microLinnSendDebugMidi2(sizeof(DeviceSettings));
+    microLinnSendDebugMidi2(sizeof(PresetSettings));
   if (isMicroLinnOn()) lightSettings = LIGHTS_ACTIVE;
   microLinnStoreRowOffsetCents();
   microLinnStoreColOffsetCents(LEFT);
   microLinnStoreColOffsetCents(RIGHT);
   microLinnUpdateAnchorString ();
-  microLinnPrevEDO = Global.microLinn.EDO;       // to avoid microLinnAdjustRowAndColOffsets()
-  microLinnPrevScale = Global.activeNotes;
+  microLinnPrevEDO = Global.microLinn.EDO;           // to avoid microLinnAdjustRowAndColOffsets()
+  microLinnPrevScale = Global.activeNotes;           // to disable backtracking
   microLinnCalcTuning ();
   updateDisplay();
 }
@@ -918,11 +971,6 @@ FocusCell microLinnFIndEdostep(byte split, short edostep) {
   return c;
 } **********************/
 
-void microLinnSendDebugMidi (byte channel, byte CCnum, short data) {                 // channels are numbered 1-16
-  if (data < 0) {channel += 1; data = -data;}
-  byte databyte = min (data, 127);
-  midiSendControlChange(CCnum, databyte, channel);
-}
 
 void microLinnTuneNewSeqEvent() {
 
@@ -1841,6 +1889,21 @@ void microLinnChangeScale(int delta) {                                // called 
 
 
 /********************* OBSOLETE CODE  ****************
+
+
+byte patternChainOtherSplit (byte split, byte role) {  // probably won't work for midi NRPN messages
+  if (Split[split].sequencer) return split;
+  boolean switchFound = false;                   // switch won't be found only if switchBothSplits was false
+  for (byte i = 0; i < 5; ++i) {
+    if (Global.switchAssignment[i] == ASSIGNED_TAP_TEMPO 
+     && Global.customSwitchAssignment[i] == role
+     && Global.switchBothSplits[i]) {
+        switchFound = true;
+     }
+  }
+  if (switchFound) split = RIGHT - split;        // use the other split instead
+  return split;
+}
 
 
 byte microLinnKiteGuitarDots[MAXCOLS][MAXROWS];

@@ -10,14 +10,15 @@ But the sequence chaining and the scale +/- footswitches do work.
 
 WARNING: installing this fork deletes your Linnstrument's settings and calibration (for now, fix coming soon).
 
-1) Go to https://www.rogerlinndesign.com/support/support-linnstrument-update-software and follow the "How to Check Your Software Version" instructions. If it's not 2.3.3, follow the "How to Update Your LinnStrument Software‍" instructions to update to 2.3.3.
+1) Go to https://www.rogerlinndesign.com/support/support-linnstrument-update-software and follow the "How to Check Your Software Version" instructions. If it's not 2.3.3, follow the "How to Update Your LinnStrument Software‍" instructions to update to 2.3.3. Afterwards, turn off UPDATE OS mode, otherwise the Linnstrument won't send midi.
 2) Download the latest version of linnstrument-firmware.ino.bin from this github. Important: if on a mac, put the .bin file on your **desktop**. 
-3) Follow the "How to Update Your LinnStrument Software‍" instructions, with one difference: immediately after you download (and possibly unzip) the updater, put it in the same folder as the .bin file from step 2. Mac users: when you run the updater, if it asks for permission to read files from the desktop, say yes.
-4) Check your OS version to confirm the update. It should be 234.08A. If not, try using the 2.3.0 updater instead. 
+3) Follow the "How to Update Your LinnStrument Software‍" instructions, with one difference: after you download (and possibly unzip) the updater and before running it, put it in the same folder as the .bin file from step 2. Mac users: when you run the updater, if it asks for permission to read files from the desktop, say yes.
+4) Check your OS version to confirm the update. It should be 234.08A. If not, reboot and try again, or try using the 2.3.0 updater instead. 
+5) Turn off UPDATE OS mode, otherwise the Linnstrument won't send midi.
 
 -------- UPGRADING/UNINSTALLING -------- 
 
-IMPORTANT: Later on when you update the OS to a different version, you'll be asked if you want to uninstall microLinn. Say no if you're updating to a new version of microLinn. This avoids deleting your microtonal data needlessly. Say yes otherwise (e.g. if you're going back to an official (non-microtonal) version of the firmware). This does delete your microtonal data, which is necessary in order to avoid deleting all your other user settings plus your calibration data.
+IMPORTANT: Later on when you update the OS to a different version, you'll be asked if you want to uninstall microLinn. Say no if you're updating to a new version of microLinn. This avoids deleting your microtonal user settings needlessly. Say yes otherwise (e.g. if you're going back to an official (non-microtonal) version of the firmware). This does delete your microtonal user settings, which is necessary in order to avoid deleting all your other user settings plus your calibration data.
 
 -------- NON-MICROTONAL FEATURES -------- 
 
@@ -29,6 +30,9 @@ The NEXT and PREV footswitches take you to the next/previous chain as expected.
 You can still select sequences and chains on the fly as the sequencer is playing. You can also chain and unchain on the fly. 
 Straight/dotted/triplet/swing and quarter/eighth/sixteenth are still set individually for each sequence, so 1 chain can mix these together.
 To clear all chains in a split, tap the hidden switch immediately to the left of the 4 selector pads. Or just unplug the Linnstrument.
+
+SEQUENCER: When playing in one split and using the other split as a sequencer, it's no longer necessary to switch to the 
+other split before using the following pedals (or switches or midi NRPN messages): PLAY, PREV, NEXT and MUTE.
 
 BLINKING MODE: This is a variation of the SAME mode that shows you other occurences of the currently played note.
 
