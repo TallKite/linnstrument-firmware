@@ -2275,9 +2275,17 @@ void copyConfigurationVLatest(void* target, void* source) {
 
   memcpy(&t->device, &s->device, sizeof(s->device));
   t->device.version = 16 + 128;
-  memcpy(&t->settings, &s->settings, sizeof(s->settings));
+
+  memcpy(&t->settings.global, &s->settings.global, sizeof(s->settings.global));
+  for (int split = 0; split < NUMSPLITS; split++) {
+    memcpy(&t->settings.split[split], &s->settings.split[split], sizeof(s->settings.split[split]));
+  }
+
   for (byte p = 0; p < NUMPRESETS; p++) {
-    memcpy(&t->preset[p], &s->preset[p], sizeof(s->preset[p]));
+    memcpy(&t->preset[p].global, &s->preset[p].global, sizeof(s->preset[p].global));
+    for (int split = 0; split < NUMSPLITS; split++) {
+      memcpy(&t->preset[p].split[split], &s->preset[p].split[split], sizeof(s->preset[p].split[split]));
+    }
   }
   memcpy(&t->project, &s->project, sizeof(s->project));
 }
@@ -2288,9 +2296,17 @@ void restoreNonMicroLinnConfiguration(void* target, void* source) {
   Configuration* s = (Configuration*)source;
 
   memcpy(&t->device, &s->device, sizeof(t->device));
-  memcpy(&t->settings, &s->settings, sizeof(t->settings));
+
+  memcpy(&t->settings.global, &s->settings.global, sizeof(t->settings.global));
+  for (int split = 0; split < NUMSPLITS; split++) {
+    memcpy(&t->settings.split[split], &s->settings.split[split], sizeof(t->settings.split[split]));
+  }
+
   for (byte p = 0; p < NUMPRESETS; p++) {
-    memcpy(&t->preset[p], &s->preset[p], sizeof(t->preset[p]));
+    memcpy(&t->preset[p].global, &s->preset[p].global, sizeof(t->preset[p].global));
+    for (int split = 0; split < NUMSPLITS; split++) {
+      memcpy(&t->preset[p].split[split], &s->preset[p].split[split], sizeof(t->preset[p].split[split]));
+    }
   }
   memcpy(&t->project, &s->project, sizeof(t->project));
   t->device.version = 16;
