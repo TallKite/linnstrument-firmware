@@ -706,8 +706,23 @@ void handleNonPlayingTouch() {
     case displayCustomLedsEditor:
       handleCustomLedsEditorNewTouch();
       break;
+    case displayForkMenu:
+      handleForkMenuNewTouch();
+      break;
     case displayMicroLinnConfig:
       handleMicroLinnConfigNewTouch();
+      break;
+    case displayMicroLinnAnchorChooser:
+      handleMicroLinnAnchorChooserNewTouch();
+      break;
+    case displayMicroLinnDotsEditor:
+      handleMicroLinnDotsEditorNewTouch();
+      break;
+    case displayMicroLinnUninstall: 
+      handleMicroLinnUninstallNewTouch();
+      break;
+    case displayBrightness:
+      handleBrightnessNewTouch();
       break;
   }
 }
@@ -751,6 +766,14 @@ boolean handleXYZupdate() {
       case displayCustomLedsEditor:
         handleCustomLedsEditorHold();
         return false;
+
+      case displayForkMenu:
+        handleForkMenuHold();
+        break;                              // should this line be "return false;"?
+
+      case displayMicroLinnConfig:
+        handleMicroLinnConfigHold();
+        break;                              // should this line be "return false;"?
 
       default:
         // other displays don't need hold features
@@ -1232,7 +1255,8 @@ void prepareNewNote(signed char notenum) {
     if (Split[sensorSplit].playedTouchMode == playedCell) {
       setLed(sensorCol, sensorRow, Split[sensorSplit].colorPlayed, cellOn, LED_LAYER_PLAYED);
     }
-    else if (Split[sensorSplit].playedTouchMode == playedSame) {
+    else if (Split[sensorSplit].playedTouchMode == playedSame ||
+             Split[sensorSplit].playedTouchMode == playedBlink) {
       highlightPossibleNoteCells(sensorSplit, sensorCell->note);
     }
     else {
@@ -1249,7 +1273,9 @@ void sendNewNote() {
     // if we've switched from pitch X enabled to pitch X disabled and the last
     // pitch bend value was not neutral, reset it first to prevent skewed pitches
     if (!Split[sensorSplit].sendX && hasPreviousPitchBendValue(sensorCell->channel)) {
+      //int microLinnTuningBend = (isMicroLinnOn() ? microLinnFineTuning[sensorSplit][sensorCol][sensorRow] : 0);
       preSendPitchBend(sensorSplit, 0, sensorCell->channel);
+      //preSendPitchBend(sensorSplit, microLinnTuningBend, sensorCell->channel);
     }
 
     // reset pressure to 0 before sending the note, the actually pressure value will
@@ -1636,6 +1662,9 @@ boolean handleNonPlayingRelease() {
       case displayCustomLedsEditor:
         handleCustomLedsEditorRelease();
         break;
+      case displayForkMenu:
+        handleForkMenuRelease();
+        break;
       case displayMicroLinnConfig:
         handleMicroLinnConfigRelease();
         break;
@@ -1771,7 +1800,8 @@ void handleTouchRelease() {
         setLed(sensorCol, sensorRow, COLOR_OFF, cellOff, LED_LAYER_PLAYED);
       }
       // if no notes are active anymore, reset the highlighted cells
-      else if (Split[sensorSplit].playedTouchMode == playedSame) {
+      else if (Split[sensorSplit].playedTouchMode == playedSame ||
+               Split[sensorSplit].playedTouchMode == playedBlink) {
         // calculate the difference between the octave offset when the note was turned on and the octave offset
         // that is currently in use on the split, since the octave can change on the fly, while playing,
         // hence changing the position of notes on the surface
@@ -1934,6 +1964,9 @@ inline void updateSensorCell() {
 // getNoteNumber:
 // computes MIDI note number from current row, column, row offset, octave button and transposition amount
 byte getNoteNumber(byte split, byte col, byte row) {
+  if (isMicroLinnOn()) {
+    //return microLinnGetNoteNumber(split, col, row);              // uncomment once midi code is done
+  }
   byte notenum = 0;
 
   // return the computed note based on the selected rowOffset
@@ -1944,10 +1977,10 @@ byte getNoteNumber(byte split, byte col, byte row) {
 
   signed char transposeLights = Split[split].transposeLights;
 
-  if (isSkipFretting(split)) {
-    // subtract 1 needed everywhere, so do it again when doubling - this lets us start at note 0 instead of 1
-    noteCol = noteCol*2 - 1;
-    transposeLights = transposeLights*2;
+  if (Split[split].microLinn.colOffset != 1) {
+    // subtract 1 to be zero-based, scale it up, then add 1 again - this lets us start at note 0 instead of 1
+    noteCol = (noteCol - 1) * Split[split].microLinn.colOffset + 1;
+    transposeLights = transposeLights * Split[split].microLinn.colOffset;
   }
 
   notenum = determineRowOffsetNote(split, row) + noteCol - 1;
@@ -1958,16 +1991,18 @@ byte getNoteNumber(byte split, byte col, byte row) {
 // determine the start note of a given row.
 short determineRowOffsetNote(byte split, byte row) {
   short lowest = 30;                                  // 30 = F#2, which is 10 semitones below guitar low E (E3/52). High E = E5/76
+  if (isMicroLinnOn()) lowest = 0;                    // start at note 0 so that we show as many as possible and all disabled pads are in one place
 
   if (Global.rowOffset <= 12) {                       // if rowOffset is 12 or lower
     short offset = Global.rowOffset;
 
-    if (Global.rowOffset == ROWOFFSET_OCTAVECUSTOM) { // Global.rowOffset is not the offset if a custom one is set
+    if (Global.rowOffset == ROWOFFSET_OCTAVECUSTOM) {
       offset = Global.customRowOffset;
     }
 
     if (offset < 0) {
       lowest = 65;
+      if (isMicroLinnOn()) lowest = 127;
     }
 
     if (Global.rowOffset == ROWOFFSET_NOOVERLAP) {    // no overlap mode
@@ -1988,14 +2023,10 @@ short determineRowOffsetNote(byte split, byte row) {
       }
     }
 
-    else if (offset >= 12) {
-      if (isSkipFretting(split)) {                    // handle skip fretting with high row offset (kite guitar is 13, only fills 194 pads)
-        lowest = 0;                                   // start at note 0 (why -1 gets us 0?) so that we show as many as possible and all disabled notes are in one place
-      } else {
-        lowest = 18;                                  // start the octave offset one octave lower to prevent having disabled notes at the top in the default configuration
-      }
+    else if (offset >= 12 && !isMicroLinnOn()) {
+      lowest = 18;                                  // start the octave offset one octave lower to prevent having disabled notes at the top in the default configuration
     }
-    else if (offset <= -12) {
+    else if (offset <= -12 && !isMicroLinnOn()) {
       lowest = 18 - 7 * offset;
     }
 
