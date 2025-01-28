@@ -20,13 +20,6 @@ e.g. microLinnPaintNormalDisplayCell() replaces PaintNormalDisplayCell() when mi
 as opposed to a function that contains "microLinn" but starts with e.g. "paint" or "handle"
 e.g. paintMicroLinnNoteLights() is something brand new (and only appears in this .ino file?)
 
-DeviceSettingsV12 = 2204 bytes
-MicroLinnDevice = 4591 bytes
-DeviceSettings  = 7549 bytes, so pre-microLinn it was 2958
-PresetSettings = 400 bytes (Global plus both splits)
-thus the 6 presets will be 2400 bytes
-total is 10349 bytes
-
 ======================= TO DO ==============================
 
 fix the user data overwriting issue by modifying ls_extstorage.ino
@@ -55,6 +48,26 @@ also adjust Global.customSwitchAssignment[switchSelect] since no EDO or SCALE up
   microLinnV16 is used by firmware v2.3.0, v2.3.3
     in DeviceSettings, new array of bytes customLeds[LED_PATTERNS][LED_LAYER_SIZE] (675 bytes)
     
+
+PROPOSED DATA STRUCTURES:
+struct PresetSettings {
+  GlobalSettings global;
+  SplitSettings split[NUMSPLITS];
+};
+struct MicroLinnPresetSettings {
+  MicroLinnGlobalSettings microLinnGlobal;
+  MicroLinnSplitSettings microLinnSplit[NUMSPLITS];
+};
+struct Configuration {
+  DeviceSettings device;
+  PresetSettings settings;
+  PresetSettings preset[NUMPRESETS];
+  SequencerProject project;
+  MicroLinnDeviceSettings microLinnDevice;
+  MicroLinnPresetSettings microLinnSettings;
+  MicroLinnPresetSettings microLinnPreset[NUMPRESETS];
+};
+struct Configuration config;
 
 use virtual note numbers to get the midi to work
 
@@ -573,21 +586,15 @@ byte micoLinnGetFret (byte side, byte col) {
 
 /************** called from linnstrument_firmware.ino ************************/
 
-void initializeMicroLinn() {                      // called in reset(), runs when microLinn firmware is first installed
-  Split[LEFT].microLinn.colOffset = 1;            // or when the user does a global reset 
-  Split[RIGHT].microLinn.colOffset = 1;
+void initializeMicroLinn() {                             // called in reset(), runs when microLinn firmware is first installed
+  Split[LEFT].microLinn.colOffset = 1;                   // or when the user does a global reset
   Split[LEFT].microLinn.transposeEDOsteps = 0;
-  Split[RIGHT].microLinn.transposeEDOsteps = 0;
   Split[LEFT].microLinn.transposeEDOlights = 0;
-  Split[RIGHT].microLinn.transposeEDOlights = 0;
   Split[LEFT].microLinn.rawMidiOutput = false;
-  Split[RIGHT].microLinn.rawMidiOutput = false;
-  Split[LEFT].microLinn.hammerOnWindow = 0;       // 150¢ is a good default
-  Split[RIGHT].microLinn.hammerOnWindow = 0;
+  Split[LEFT].microLinn.hammerOnWindow = 0;              // 150¢ is a good default
   Split[LEFT].microLinn.hammerOnNewNoteOn = false;
-  Split[RIGHT].microLinn.hammerOnNewNoteOn = false;
   Split[LEFT].microLinn.pullOffVelocity = 0;
-  Split[RIGHT].microLinn.pullOffVelocity = 0;
+  memcpy (&Split[RIGHT].microLinn, &Split[LEFT].microLinn, sizeof(MicroLinnSplit));
 
   Global.microLinn.EDO = 4;                       // 4 = OFF
   Global.microLinn.octaveStretch = 0;
@@ -609,8 +616,16 @@ void initializeMicroLinn() {                      // called in reset(), runs whe
 
   Device.microLinn.MLversion = 0;                 // 0 means OSVersionBuild ends in "A", 1 means "B", etc.
   for (byte edo = 5; edo <= MICROLINN_MAX_EDO; ++edo) microLinnResetDots(edo);
-  memcpy (Device.microLinn.rainbows, MICROLINN_RAINBOWS, MICROLINN_ARRAY_SIZE);
-  memcpy (Device.microLinn.scales, MICROLINN_SCALES, MICROLINN_ARRAY_SIZE);
+  memcpy (&Device.microLinn.rainbows, &MICROLINN_RAINBOWS, MICROLINN_ARRAY_SIZE);
+  memcpy (&Device.microLinn.scales, &MICROLINN_SCALES, MICROLINN_ARRAY_SIZE);
+
+  for (byte p = 0; p < NUMPRESETS; ++p) {
+    memcpy (&config.preset[p].split[LEFT].microLinn,  &Split[LEFT].microLinn,  sizeof(MicroLinnSplit));
+    memcpy (&config.preset[p].split[RIGHT].microLinn, &Split[RIGHT].microLinn, sizeof(MicroLinnSplit));
+    memcpy (&config.preset[p].global.microLinn, &Global.microLinn, sizeof(MicroLinnGlobal));
+  }
+
+  setupMicroLinn();
 }
 
 void microLinnSendDebugMidi (byte channel, byte CCnum, short data) {                 // channels are numbered 1-16
@@ -629,12 +644,6 @@ void microLinnSendDebugMidi2 (unsigned int data) {
 void setupMicroLinn() {                          // runs when the Linnstrument powers up or a preset is loaded
     //Global.setSwitchAssignment(3, ASSIGNED_MICROLINN_EDO_UP,   false);  // for debugging, delete later
     //Global.setSwitchAssignment(2, ASSIGNED_MICROLINN_EDO_DOWN, false);  // for debugging
-    microLinnSendDebugMidi2(sizeof(DeviceSettingsV12));                 // for debugging
-    microLinnSendDebugMidi2(sizeof(MicroLinnDevice));
-    microLinnSendDebugMidi2(sizeof(MicroLinnDevice));
-    microLinnSendDebugMidi2(sizeof(MicroLinnDevice));
-    microLinnSendDebugMidi2(sizeof(DeviceSettings));
-    microLinnSendDebugMidi2(sizeof(PresetSettings));
   if (isMicroLinnOn()) lightSettings = LIGHTS_ACTIVE;
   microLinnStoreRowOffsetCents();
   microLinnStoreColOffsetCents(LEFT);
@@ -900,8 +909,14 @@ void microLinnCalcTuning() {
   // also called for octave up/down via switch1/switch2 control buttons or footswitch presses
   // needed for any change on microLinnConfig, row offsets, col offsets, transpose or bendrange
 
+/*********** not needed? delete later
+    if (microLinnPrevEDO == 4 && Global.microLinn.EDO > 4) setupMicroLinn();                        // entering microLinn?
+    if (microLinnPrevEDO >  4 && Global.microLinn.EDO == 4) microLinnAdjustRowAndColOffsets();      // exiting  microLinn?
+************/
+
   //clearDisplay();                                            // to avoid flickering while all this runs, not sure it works, delete?
   microLinnAdjustRowAndColOffsets();
+  if (isMicroLinnOn()) lightSettings = LIGHTS_ACTIVE;
 
   //if (ignoreSlides && sensorCell->velocity) return;         // don't calc on releases caused by slides, causes flickering, delete?
   byte edo = microLinnGetEDO();
@@ -1628,15 +1643,11 @@ void handleMicroLinnConfigHold() {
 void handleMicroLinnConfigRelease() {
   if (isMicroLinnConfigButton() && !isCellPastSensorHoldWait()) {         // short-press bottom row
     switch (microLinnConfigColNum) {
-      case 5:
-        if (microLinnPrevEDO == 4 && Global.microLinn.EDO > 4) setupMicroLinn();                        // entering microLinn?
-        if (microLinnPrevEDO >  4 && Global.microLinn.EDO == 4) microLinnAdjustRowAndColOffsets();      // exiting  microLinn?
-        microLinnPrevEDO = Global.microLinn.EDO;    // delete these 3 lines? (test first)
-        break;
       case 12:
-        if (!isMicroLinnOn()) break;
-        microLinnCalcTuning();                                            // note lights display needs to know the current tuning
-        updateDisplay();
+        if (isMicroLinnOn()) {
+          microLinnCalcTuning();                                            // note lights display needs to know the current tuning
+          updateDisplay();
+        }
         break;
       case 14:
         resetNumericDataChange();

@@ -10,11 +10,11 @@ But the sequence chaining and the scale +/- footswitches do work.
 
 WARNING: installing this fork deletes your Linnstrument's settings and calibration (for now, fix coming soon).
 
-1) Go to https://www.rogerlinndesign.com/support/support-linnstrument-update-software and follow the "How to Check Your Software Version" instructions. If it's not 2.3.3, follow the "How to Update Your LinnStrument Software‍" instructions to update to 2.3.3. Afterwards, turn off UPDATE OS mode, otherwise the Linnstrument won't send midi.
+1) Go to https://www.rogerlinndesign.com/support/support-linnstrument-update-software and follow the "How to Check Your Software Version" instructions. If it's not 2.3.3, follow the "How to Update Your LinnStrument Software‍" instructions to update to 2.3.3.
 2) Download the latest version of linnstrument-firmware.ino.bin from this github. Important: if on a mac, put the .bin file on your **desktop**. 
 3) Follow the "How to Update Your LinnStrument Software‍" instructions, with one difference: after you download (and possibly unzip) the updater and before running it, put it in the same folder as the .bin file from step 2. Mac users: when you run the updater, if it asks for permission to read files from the desktop, say yes.
-4) Check your OS version to confirm the update. It should be 234.08A. If not, reboot and try again, or try using the 2.3.0 updater instead. 
-5) Turn off UPDATE OS mode, otherwise the Linnstrument won't send midi.
+4) Check your OS version to confirm the update. It should be 234.072A. If not, reboot your computer and try again.
+5) Important, read the next section about uninstalling!
 
 -------- UPGRADING/UNINSTALLING -------- 
 
@@ -26,13 +26,24 @@ CHAINING SEQUENCES: hold the pad for sequence #2 and tap the pad for sequence #1
 single sequence twice as long. This is indicated by sequence #1 being accented and sequence #2 blinking.
 You can chain #3 and #4 together as well. Or chain all 4 together. The lights for the entire chain will blink when it's playing. 
 When making a chain, to start at the beginning of the chain not the end, hold the last sequence and tap the first one.
-The NEXT and PREV footswitches take you to the next/previous chain as expected.
 You can still select sequences and chains on the fly as the sequencer is playing. You can also chain and unchain on the fly. 
-Straight/dotted/triplet/swing and quarter/eighth/sixteenth are still set individually for each sequence, so 1 chain can mix these together.
+Straight/dotted/triplet/swing and quarter/8th/16th are still set individually for each sequence, so 1 chain can mix these together.
 To clear all chains in a split, tap the hidden switch immediately to the left of the 4 selector pads. Or just unplug the Linnstrument.
 
-SEQUENCER: When playing in one split and using the other split as a sequencer, it's no longer necessary to switch to the 
-other split before using the following pedals (or switches or midi NRPN messages): PLAY, PREV, NEXT and MUTE.
+SEQUENCER PEDALS: When playing in one split and using the other split as a sequencer, it's no longer necessary to switch 
+to the other split before using the following pedals (or switches or midi NRPN messages): PLAY, PREV, NEXT and MUTE.
+Outside of a chain, the NEXT and PREV footswitches take you to the next/previous sequence as before. 
+You can double-tap or triple-tap the NEXT and PREV footswitches to skip forward/backward multiple sequences.
+Thus triple-tapping NEXT is the same as single-tapping PREV, which means you only need one pedal to go anywhere.
+From within a chain, NEXT and PREV operate relative to the upcoming sequence in the chain, not the current one.
+Thus pressing PREV repeats the current sequence and pressing NEXT goes forward two sequences, not one.
+One exception: from the rightmost sequence of a chain, NEXT exits the chain. (Otherwise one could never exit.)
+
+SEQUENCER PROJECTS: in the Load/Save screen, the projects now run top to bottom, with the top row being 1-4 not 13-16.
+This is more intuitive because it matches how people read, for example how you are reading this very paragraph right now.
+(These project numbers only matter when using the Updater app to export/import projects to/from your computer.)
+As a result, projects you might have previously saved to the top row are now in the bottom row.
+To move them, load them from the bottom row and save them to the top row.
 
 BLINKING MODE: This is a variation of the SAME mode that shows you other occurences of the currently played note.
 
