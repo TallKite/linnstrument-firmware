@@ -1,5 +1,5 @@
 /**************************************** MICROLINN ****************************************
-testing syncing
+
 note to self:  "if (sensorCell->velocity)" means if another touch is already down on the same row
 according to the comment by handleFaderRelease in ls_faders.ino
 
