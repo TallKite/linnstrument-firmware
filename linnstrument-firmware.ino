@@ -46,7 +46,7 @@ For any questions about this, contact Roger Linn Design at support@rogerlinndesi
 /******************************************** CONSTANTS ******************************************/
 
 const char* OSVersion = "234.";
-const char* OSVersionBuild = ".08K";
+const char* OSVersionBuild = ".08A"; // based on 234.072, the "A" means Device.microLinn.MLversion = 0, "B" means 1, etc.
 
 // SPI addresses
 #define SPI_LEDS    10               // Arduino pin for LED control over SPI
@@ -197,7 +197,11 @@ byte NUMROWS = 8;                    // number of touch sensor rows
 #define ASSIGNED_SEQUENCER_NEXT         15
 #define ASSIGNED_STANDALONE_MIDI_CLOCK  16
 #define ASSIGNED_SEQUENCER_MUTE         17
-#define MAX_ASSIGNED                    ASSIGNED_SEQUENCER_MUTE
+#define ASSIGNED_MICROLINN_SCALE_UP     18
+#define ASSIGNED_MICROLINN_SCALE_DOWN   19
+#define ASSIGNED_MICROLINN_EDO_UP       20
+#define ASSIGNED_MICROLINN_EDO_DOWN     21
+#define MAX_ASSIGNED                    ASSIGNED_MICROLINN_EDO_DOWN
 #define ASSIGNED_DISABLED               255
 
 #define GLOBAL_SETTINGS_ROW  0
@@ -430,6 +434,7 @@ struct NoteTouchMapping {
 };
 NoteTouchMapping noteTouchMapping[NUMSPLITS];
 
+
 /**************************************** DISPLAY STATE ******************************************/
 
 enum CellDisplay {
@@ -486,7 +491,12 @@ enum DisplayMode {
   displaySequencerDrum0814,
   displaySequencerColors,
   displayCustomLedsEditor,
-  displayMicroLinnConfig
+  displayForkMenu,
+  displayMicroLinnConfig,
+  displayMicroLinnAnchorChooser,
+  displayMicroLinnDotsEditor,
+  displayMicroLinnUninstall,
+  displayBrightness
 };
 DisplayMode displayMode = displayNormal;
 
@@ -526,6 +536,7 @@ struct __attribute__ ((packed)) CalibrationY {
 enum PlayedTouchMode {
   playedCell,
   playedSame,
+  playedBlink,
   playedCrosses,
   playedCircles,
   playedSquares,
@@ -603,6 +614,16 @@ enum SequencerDirection {
   sequencerPingPong
 };
 
+struct MicroLinnSplit {
+  byte colOffset;                         // column offset, 1 to 25
+  signed char transposeEDOsteps;          // accessed not via displayMicroLinnConfig but via displayOctaveTranspose
+  signed char transposeEDOlights;
+  boolean rawMidiOutput;                  // output in edostep format (1 midi note = 1 edostep)
+  unsigned short hammerOnWindow;          // maximum width in cents of a hammer-on before it becomes two simultaneous notes, 0 = off
+  boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
+  byte pullOffVelocity;                   // 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
+};
+
 // per-split settings
 struct SplitSettings {
   byte midiMode;                          // 0 = one channel, 1 = note per channel, 2 = row per channel
@@ -653,8 +674,9 @@ struct SplitSettings {
   boolean arpeggiator;                    // true when the arpeggiator is on, false if notes should be played directly
   boolean strum;                          // true when this split strums the touches of the other split
   boolean mpe;                            // true when MPE is active for this split
-  boolean sequencer;                      // true when the sequencer of this split is displayed
+  boolean sequencer;                      // true when the sequencer of this split is enabled
   SequencerView sequencerView;            // see SequencerView
+  MicroLinnSplit microLinn;               // microtonal data
 };
 
 #define Split config.settings.split
@@ -671,8 +693,18 @@ enum SplitHandednessType {
   reversedRight
 };
 
+const byte MICROLINN_MAX_EDO = 55;                // the minimum edo is 5
+const short MICROLINN_ARRAY_SIZE = (MICROLINN_MAX_EDO * (MICROLINN_MAX_EDO + 1)) / 2 - 10;     // a triangular array missing rows 1-4 = 1530
+
+struct MicroLinnDevice {
+  byte MLversion;                                 // current version of the microLinn data structures, 0 displays as A, 1 displays as B, etc.
+  byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
+  byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
+  byte dots[MICROLINN_ARRAY_SIZE];                // one bit per row, ignores column offsets, doesn't ignore lefthandedness
+};
+
 struct DeviceSettings {
-  byte version;                                   // the version of the configuration format
+  byte version;                                   // the version of the configuration format, currently 16, but the microLinn version is 16 + 128 = 144
   boolean serialMode;                             // 0 = normal MIDI I/O, 1 = Arduino serial mode for OS update and serial monitor
   CalibrationX calRows[MAXCOLS+1][4];             // store four rows of calibration data
   CalibrationY calCols[9][MAXROWS];               // store nine columns of calibration data
@@ -697,6 +729,7 @@ struct DeviceSettings {
   short lastLoadedPreset;                         // the last settings preset that was loaded
   short lastLoadedProject;                        // the last sequencer project that was loaded
   byte customLeds[LED_PATTERNS][LED_LAYER_SIZE];  // the custom LEDs that persist across power cycle
+  MicroLinnDevice microLinn;                      // microtonal data
 };
 #define Device config.device
 
@@ -740,15 +773,27 @@ enum SustainBehavior {
   sustainLatch
 };
 
+struct MicroLinnGlobal {
+  byte EDO;                                  // ranges 5-55, plus 4 for OFF
+  signed char octaveStretch;                 // ranges -120 to 120 cents, for non-octave tunings such as bohlen-pierce
+  byte anchorCol;                            // ranges 1-25, setting to a number > 16 on a Linnstrument 128 is allowed
+  byte anchorRow;                            // top row is 7, bottom row is 0, but the user sees top row as 1, bottom row as 8
+  byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
+  signed char anchorCents;                   // ranges -100 to +100 cents, even though 50 would do, for convenience
+  short guitarTuning[MAXROWS];               // interval in edosteps from the bottom string, can be negative, independent of Global.guitarTuning
+  boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
+  boolean sweeten;                           // adjust 41edo 5/4, 5/3 by 2¢ both top and bottom to make it 4¢ closer to just?
+};
+
 struct GlobalSettings {
   void setSwitchAssignment(byte, byte, boolean);
 
   byte splitPoint;                           // leftmost column number of right split (0 = leftmost column of playable area)
   byte currentPerSplit;                      // controls which split's settings are being displayed
-  byte activeNotes;                          // controls which collection of note lights presets is active
-  int mainNotes[12];                         // bitmask array that determines which notes receive "main" lights
-  int accentNotes[12];                       // bitmask array that determines which notes receive accent lights (octaves, white keys, black keys, etc.)
-  byte rowOffset;                            // interval between rows. 0 = no overlap, 1-12 = interval, 13 = guitar
+  byte activeNotes;                          // controls which of the 12 collections of note lights presets is active
+  int mainNotes[12];                         // 12 bitmasks that determine which notes receive "main" lights, mainNotes[0] is for the 1st scale, [9-11] no longer used
+  int accentNotes[12];                       // 12 bitmasks that determine which notes receive accent lights (octaves, white keys, black keys, etc.)
+  byte rowOffset;                            // interval between rows. 0 = no overlap, 3-7 = interval, 12 = custom, 13 = guitar, 127 = zero offset
   signed char customRowOffset;               // the custom row offset that can be configured at the location of the octave setting
   byte guitarTuning[MAXROWS];                // the notes used for each row for the guitar tuning, 0-127
   VelocitySensitivity velocitySensitivity;   // See VelocitySensitivity values
@@ -768,6 +813,7 @@ struct GlobalSettings {
   signed char arpOctave;                     // the number of octaves that the arpeggiator has to operate over: 0, +1, or +2
   SustainBehavior sustainBehavior;           // the way the sustain pedal influences the notes
   boolean splitActive;                       // false = split off, true = split on
+  MicroLinnGlobal microLinn;                 // microtonal data
 };
 #define Global config.settings.global
 
@@ -862,139 +908,6 @@ struct Configuration {
   SequencerProject project;
 };
 struct Configuration config;
-
-
-/**************************************** SKIP FRETTING and MICROLINN ****************************************/
-
-/********************* OLD WAY  ****************
-// extend audience message #8 by 2 chars, to store the user's choice of skip fretting or not for each split as 2 pseudo-booleans
-const char ASCII_FALSE = ' ';                                                      // ascii 32, the lowest ascii char allowed in audienceMessages
-const char ASCII_TRUE  = '!';                                                      // ascii 33, the 2nd lowest, plus it looks good!
-const byte skipFrettingMsg = 7;                                                    // "HELLO NEW YORK" becomes "HELLO NEW YORK!!"
-char * skipFretting = (char *)Device.audienceMessages + 31 * skipFrettingMsg;      // the skipFretting[2] array overlaps the messages array
-
-void checkSkipFrettingAudienceMessage () {                                         // called before reading or writing either pseudo-boolean
-  byte len = strlen (Device.audienceMessages[skipFrettingMsg]);
-  skipFretting = (char *)Device.audienceMessages + 31 * skipFrettingMsg + len - 2; // find the 2nd to last char of message #8
-  if (!(skipFretting[0] == ASCII_TRUE || skipFretting[0] == ASCII_FALSE)           // if either trailing char is not valid,
-   || !(skipFretting[1] == ASCII_TRUE || skipFretting[1] == ASCII_FALSE)) {        // (1st run of this fork, or the user edited the message)
-    skipFretting += min (2, 30 - len);                                             // extend the message (if no room, overwrite the last 2 chars)
-    skipFretting[LEFT] = skipFretting[RIGHT] = ASCII_FALSE;                        // if there were invalid chars, best to initialize to false
-    skipFretting[RIGHT + 1] = '\0';                                                // this line shouldn't be needed, but do it anyway just in case
-  }
-}
-
-boolean isSkipFrettingOLD (byte side) {                          
-  checkSkipFrettingAudienceMessage ();
-  return skipFretting[side] == ASCII_TRUE;                       // an invalid char (not a space or exclamation point) is assumed to be = FALSE
-}
-
-struct SkipFrettingData {                           // used to keep track of transposing, which is done via CCs to the LinnstrumentMicrotonal app
-  signed char transposeOctave;
-  signed char transposeTone;
-  signed char transposeArrow;
-};
-SkipFrettingData skipFrettingData[NUMSPLITS];
-*/
-
-/************************************ NEW WAY ******************************************/
-
-const byte microLinnMsg = 7;           // "HELLO NEW YORK!" will be truncated to make room for the user's settings
-const byte microLinnMsgLength = 24;    // 30 minus the 6 bytes we need for data storage makes 24 chars left
-
-struct MicroLinn {                     // overlaps the audience messages array
-  char nullTerminator;                 // truncates the audience message to 24 chars
-  byte EDO;                            // limited to 5-72
-  byte anchorPad;                      // numbered 8-207, same for both splits, anchorPad = 8 * anchorCol + anchorRow
-  byte anchorNote;                     // any midi note 0-127, same for both splits
-  signed char anchorCents;             // limited to ± 100 cents, same for both splits
-  boolean skipFretting[2];
-};  
-MicroLinn* microLinn = (MicroLinn*)(Device.audienceMessages + 31 * microLinnMsg + microLinnMsgLength);
-// anchorPad format:                 
-//           left edge    right edge           anchorRow          anchorRowUser              
-// top row:  15 23 31...  135 or 207              7                     1
-// 2nd row:  14 22 30...                          6                     2
-// ...                                           ...                   ...
-// low row:   8 16 24...  128 or 200              0                     8
-
-
-boolean isSkipFretting (byte side) {                          
-  return microLinn->skipFretting[side];         // to do: global replace isSkipFretting(side) with microLinn->skipFretting[side]
-}
-
-byte microLinnAnchorRow;                        // numbered 0-7 bottom to top as usual
-byte microLinnAnchorRowUser;                    // what the user sees, numbered 1-8 top to bottom, more intuitive for the general public
-byte microLinnAnchorCol;                        // numbered 1-25 as usual
-signed char microLinnAnchorCentsUser;           // what the user sees, ranges from -60 to 60, stored in the string as 4 to 114
-float microLinnAnchorPitch;                     // midi note, but with 2 decimal places for anchorCents
-byte microLinnEDOtone;                          // 9/8 in edosteps, used in transposing
-
-void updateMicroLinnVars () {                                                      // called when user releases a touch in displayMicroLinnConfig
-  microLinnAnchorRow = 8 - microLinnAnchorRowUser;                                 // also when user long-presses the skip-fretting pad
-  microLinn->anchorPad = 8 * microLinnAnchorCol + microLinnAnchorRow;
-  microLinn->anchorCents = microLinnAnchorCentsUser + 64;
-  microLinnAnchorPitch = microLinn->anchorNote + microLinn->anchorCents/100;
-  microLinnEDOtone = 2 * round (microLinn->EDO * log (3/2) / log (2)) - microLinn->EDO;     // whole tone = 9/8, calc as two 5ths minus an octave
-}
-
-byte microLinnMidiNote[NUMSPLITS][MAXROWS][MAXCOLS-1];         // the midi note that is output for each pad
-short microLinnFineTuning[NUMSPLITS][MAXROWS][MAXCOLS-1];      // the deviation from 12edo for each pad, as a pitch bend number from -8192 to 8191
-short microLinnTuningBend[NUMSPLITS][16][10];                  // 16 midi channels, up to 10 touches, tuning bends come from microLinnFineTuning
-short microLinnSlideBend[NUMSPLITS][16][10];                   // 16 midi channels, up to 10 touches, slide bends come from sliding along the Linnstrument
-
-short microLinnSumOfRowOffsets (byte row1, byte row2) {
-  switch (Global.rowOffset) {
-    case ROWOFFSET_OCTAVECUSTOM: return Global.customRowOffset  * (row1 - row2);
-    case ROWOFFSET_GUITAR:       return Global.guitarTuning[row1] - Global.guitarTuning[row2];
-    case ROWOFFSET_NOOVERLAP:    return (NUMCOLS - 1) * (row1 - row2);
-    case ROWOFFSET_ZERO:         return 0;
-    default:                     return Global.rowOffset * (row1 - row2); 
-  }
-}
-
-void microLinnCalcTuningOfEachPad () {                                           // maps e.g. pad[LEFT][4][13] to note #60 - 5.0¢
-  for (byte side = 0; side < 2; side++) {                                        // called on change to EDO, anchor, transpose, skipFretting, lefty
-    for (byte row = 0; row < 8; row++) {
-      for (byte col = 1; col <= 25; col++) {
-        short padDistance = col - microLinnAnchorCol;                            // padDistance = distance from the anchor pad in edosteps
-        if (isLeftHandedSplit(side)) {padDistance *= -1;}
-        if (microLinn->skipFretting[side]) {padDistance *= 2;}
-        padDistance += microLinnSumOfRowOffsets (microLinnAnchorRow, row);
-        padDistance += Split[side].transposeOctave * microLinn->EDO;
-        padDistance += Split[side].transposePitch * microLinnEDOtone;
-        padDistance += Split[side].transposeLights;
-        float note = microLinnAnchorPitch + padDistance * 12 / microLinn->EDO;   // convert to fractional 12edo midi note
-        note = min (max (note, 0), 127); 
-        microLinnMidiNote[side][row][col] = round (note);
-        float bend = note - microLinnMidiNote[side][row][col];                   // fine-tuning bend as fraction of a semitone
-        bend *= 8192 / getBendRange (side);                                      // fine-tuning bend as a zero-centered signed 13-bit integer
-        microLinnFineTuning[side][row][col] = round (bend);                      // (to convert to midi, add 8192 and split into two bytes)
-      }
-    }
-  }
-}
-
-void initializeMicroLinn () {                 // called in setup()
-  if (microLinn->nullTerminator != '\0'       // if user had lengthened the audience message and we haven't truncated it yet,
-   || microLinn->EDO == 0) {                  // or if user has never set the EDO, then this fork must be running for the very first time
-    microLinn->nullTerminator = '\0';
-    microLinn->EDO = 12;                      
-    microLinn->anchorPad = 53;                // in 12edo, anchorPad and anchorNote are ignored
-    microLinn->anchorNote = 62;               // D3, Kite guitar standard tuning
-    microLinn->anchorCents = 4;               // 4 is really zero
-    microLinn->skipFretting[LEFT] = false;
-    microLinn->skipFretting[RIGHT] = false;
-  }
-  microLinnAnchorRow = microLinn->anchorPad % 8;
-  microLinnAnchorRowUser = 8 - microLinnAnchorRow;
-  microLinnAnchorCol = microLinn->anchorPad >> 3;
-  microLinnAnchorCentsUser = microLinn->anchorCents - 64;
-  microLinnAnchorPitch = microLinn->anchorNote + microLinn->anchorCents/100;
-  microLinnEDOtone = 2 * round (microLinn->EDO * log (3/2) / log (2)) - microLinn->EDO;     // whole tone = 9/8, calc as two 5ths minus an octave
-  microLinnCalcTuningOfEachPad ();
-}
-
 
 /**************************************** SECRET SWITCHES ****************************************/
 
@@ -1204,8 +1117,6 @@ byte guitarTuningRowNum = 0;                        // active row number for con
 short guitarTuningPreviewNote = -1;                 // active note that is previewing the guitar tuning pitch
 short guitarTuningPreviewChannel = -1;              // active channel that is previewing the guitar tuning pitch
 
-byte microLinnConfigRowNum = 5;                     // active row number for configuring the EDO and anchor data
-
 byte customLedColor = COLOR_GREEN;                  // color is used for drawing in the custom LED editor
 
 /************************* FUNCTION DECLARATIONS TO WORK AROUND COMPILER *************************/
@@ -1235,7 +1146,7 @@ inline unsigned short calculatePreferredPressureRange(unsigned short sensorRange
 
 /********************************************** SETUP ********************************************/
 
-void reset() {                                // called when user presses updateOS and notesOff simultaneously, among other times
+void reset() {
   lastReset = millis();
 
   Global.currentPerSplit = LEFT;
@@ -1268,6 +1179,7 @@ void reset() {                                // called when user presses update
 
   initializeSwitches();
 
+  initializeMicroLinn();
 }
 
 boolean switchPressAtStartup(byte switchRow) {
@@ -1527,7 +1439,7 @@ void setup() {
   SWITCH_FREERAM = true;
 #endif
 
-  initializeMicroLinn ();  
+  setupMicroLinn ();  
 
   setupDone = true;
 

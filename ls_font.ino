@@ -584,7 +584,7 @@ static Character small_P = { 4,
   "0   "
   "    " };
 
-static Character small_Q = { 4,
+static Character small_Q = { 5,
   "     "
   "     "
   " 00  "
@@ -2403,14 +2403,18 @@ void font_scroll_text_flipped(struct Font* font, const char* str, byte color) {
 }
 
 void small_scroll_text(const char* str, byte color) {
-  font_scroll_text(&smallFont, str, color);
+  font_scroll_text(&smallFont, str, color, 0);
+}
+
+void small_scroll_text_row1(const char* str, byte color) {
+  font_scroll_text(&smallFont, str, color, 1);
 }
 
 void big_scroll_text(const char* str, byte color) {
-  font_scroll_text(&bigFont, str, color);
+  font_scroll_text(&bigFont, str, color, 0);
 }
 
-void font_scroll_text(struct Font* font, const char* str, byte color) {
+void font_scroll_text(struct Font* font, const char* str, byte color, byte row) {
   unsigned long origInterval = ledRefreshInterval;
   ledRefreshInterval = 200;
 
@@ -2419,7 +2423,7 @@ void font_scroll_text(struct Font* font, const char* str, byte color) {
 
   int totalwidth = font_width_string(str, font);
   for (int i = 0; i < totalwidth && !stopAnimation; ++i) {
-    font_draw_string( -i, 0, str, color, font, true, false, COLOR_OFF);
+    font_draw_string( -i, row, str, color, font, true, false, COLOR_OFF);
     delayUsecWithScanning(40000);
   }
 

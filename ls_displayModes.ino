@@ -60,7 +60,12 @@ displaySequencerDrum0107      : sequencer first 7 drum notes
 displaySequencerDrum0814      : sequencer second 7 drum notes
 displaySequencerColors        : sequencer low row colors
 displayCustomLedsEditor       : editor for custom LEDs
-displayMicroLinnConfig        : editor for EDO and anchor data
+displayForkMenu               : menu to access config screens of various forks
+displayMicroLinnConfig        : select EDO, anchor data and column offsets
+displayMicroLinnAnchorChooser : choose the anchor cell from the performance display
+displayMicroLinnDotsEditor    : edit the fret markers for the current edo
+displayMicroLinnUninstall     : ask user if they want to uninstall microLinn, deleting microtonal data
+displayBrightness             : brightness knob
 
 These routines handle the painting of these display modes on LinnStument's 208 LEDs.
 **************************************************************************************************/
@@ -231,8 +236,27 @@ void updateDisplay() {
     case displayCustomLedsEditor:
       paintCustomLedsEditor();
       break;
+    case displayForkMenu:
+      paintForkMenu();
+      break;
     case displayMicroLinnConfig:
       paintMicroLinnConfig();
+      break;
+    case displayMicroLinnAnchorChooser:
+      if (!customLedPatternActive) {
+        paintNormalDisplay();
+      } else {
+        loadCustomLedLayer(getActiveCustomLedPattern());          // bug: doesn't load anything
+      }
+      break; 
+    case displayMicroLinnDotsEditor:
+      paintMicroLinnDotsEditor(true);
+      break;
+    case displayMicroLinnUninstall:
+      paintMicroLinnUninstall();
+      break;
+    case displayBrightness:
+      paintBrightnessScreen();
       break;
   }
 
@@ -411,6 +435,7 @@ void paintNormalDisplay() {
   }
   else {
     clearLed(0, OCTAVE_ROW);
+    microLinnLightOctaveSwitch();
   }
 }
 
@@ -510,6 +535,7 @@ void paintStrumDisplayCell(byte split, byte col, byte row) {
 
 void paintNormalDisplayCell(byte split, byte col, byte row) {
   if (userFirmwareActive) return;
+  if (isMicroLinnOn()) {microLinnPaintNormalDisplayCell(split, col, row); return;}
 
   // by default clear the cell color
   byte colour = COLOR_OFF;
@@ -645,14 +671,6 @@ void paintPerSplitDisplay(byte side) {
 
   if (Split[side].pitchResetOnRelease == true) {
     setLed(8, 3, Split[side].colorMain, cellOn);
-  }
-
-  if (Global.rowOffset == ROWOFFSET_OCTAVECUSTOM && Global.customRowOffset == 13 && isSkipFretting(side)) {
-    // kite settings are enabled, show in accent color
-    setLed(8, 0, Split[side].colorAccent, cellOn);
-  } else if (isSkipFretting(side)) {
-    // skip fretting is on, show main color
-    setLed(8, 0, Split[side].colorMain, cellOn);
   }
 
   // set Timbre/Y settings
@@ -863,6 +881,7 @@ byte getSplitHandednessColor() {
 }
 
 byte getGuitarTuningColor() {
+  if (isMicroLinnOn()) return microLinnGetGuitarTuningColor();
   byte color = globalColor;
   if (Global.guitarTuning[0] != 30 ||
       Global.guitarTuning[1] != 35 ||
@@ -1022,6 +1041,9 @@ void paintPlayedTouchModeDisplay(byte side) {
       break;
     case playedSame:
       adaptfont_draw_string(0, 0, LINNMODEL == 200 ? "SAME" : "SAM", Split[side].colorMain, true);
+      break;
+    case playedBlink:
+      adaptfont_draw_string(0, 0, "BLNK", Split[side].colorMain, true);
       break;
     case playedCrosses:
       adaptfont_draw_string(0, 0, "CROS", Split[side].colorMain, true);
@@ -1188,6 +1210,18 @@ void paintCustomSwitchAssignmentConfigDisplay() {
     case ASSIGNED_SEQUENCER_MUTE:
       adaptfont_draw_string(0, 0, "MUTE", globalColor, true);
       break;
+    case ASSIGNED_MICROLINN_EDO_UP:
+      adaptfont_draw_string(0, 0, "EDO+", globalColor, true);
+      break;
+    case ASSIGNED_MICROLINN_EDO_DOWN:
+      adaptfont_draw_string(0, 0, "EDO-", globalColor, true);
+      break;
+    case ASSIGNED_MICROLINN_SCALE_UP:
+      adaptfont_draw_string(0, 0, "SCL+", globalColor, true);
+      break;
+    case ASSIGNED_MICROLINN_SCALE_DOWN:
+      adaptfont_draw_string(0, 0, "SCL-", globalColor, true);
+      break;
   }
 }
 
@@ -1256,6 +1290,7 @@ void paintSplitHandedness() {
 }
 
 void paintRowOffset() {
+  if (isMicroLinnOn()) {microLinnPaintRowOffset(); return;}
   clearDisplay();
   if (Global.customRowOffset == -17) {
     condfont_draw_string(0, 0, "-GUI", globalColor, false);
@@ -1266,46 +1301,14 @@ void paintRowOffset() {
 }
 
 void paintGuitarTuning() {
+  if (isMicroLinnOn()) {microLinnPaintGuitarTuning (); return;}
   clearDisplay();
 
   for (byte r = 0; r < NUMROWS; ++r) {
     setLed(1, r, guitarTuningRowNum == r ? Split[Global.currentPerSplit].colorAccent : Split[Global.currentPerSplit].colorMain, cellOn);
   }
 
-  paintNoteDataDisplay(globalColor, Global.guitarTuning[guitarTuningRowNum], LINNMODEL == 200 ? 2 : 1);
-}
-
-void paintMicroLinnConfig() {
-  clearDisplay();
-
-  if (microLinn->skipFretting[LEFT]) {
-    setLed(1, 7, Split[LEFT].colorMain, cellOn);
-  }
-  if (microLinn->skipFretting[RIGHT]) {
-    setLed(2, 7, Split[RIGHT].colorMain, cellOn);
-  }
-
-  for (byte r = 0; r < 6; ++r) {
-    setLed(1, r, microLinnConfigRowNum == r ? Split[LEFT].colorAccent : Split[LEFT].colorMain, cellOn);
-    if (r == 3) {r = 4;}   // skip over row 4
-  }
-  switch (microLinnConfigRowNum) {    
-    case 0: 
-      paintNumericDataDisplay(globalColor, microLinnAnchorCentsUser, microLinnAnchorCentsUser < -9 ? -3 : 0, false);
-      break;
-    case 1: 
-      paintNoteDataDisplay(globalColor, microLinn->anchorNote, LINNMODEL == 200 ? 2 : 1);
-      break;
-    case 2:  
-      paintNumericDataDisplay(globalColor, microLinnAnchorCol, 0, false);
-      break;  
-    case 3:   
-      paintNumericDataDisplay(globalColor, microLinnAnchorRowUser, 0, false);
-      break;      
-    case 5: 
-      paintNumericDataDisplay(globalColor, microLinn->EDO, 0, false);
-      break;
-  }
+  paintNoteDataDisplay(globalColor, Global.guitarTuning[guitarTuningRowNum], LINNMODEL == 200 ? 2 : 1, 0);
 }
 
 void paintMIDIThrough() {
@@ -1385,7 +1388,42 @@ void paintNumericDataDisplay(byte color, short value, short offset, boolean cond
   }
 }
 
-void paintNoteDataDisplay(byte color, short noteNumber, short offset) {
+void paintNumericDataDisplayRow(byte color, short value, short offset, byte row, boolean condensed) {
+  char str[10];
+  const char* format;
+  byte pos;
+
+  if (value < 100) {
+    format = "%2d";
+    pos = condensed ? 3 : 5;
+  }
+  else if (value >= 100 && value < 200) {
+    // Handle the "1" character specially, to get the spacing right
+    if (condensed) {
+      condfont_draw_string(offset, row, "1", color, false);
+    }
+    else {
+      smallfont_draw_string(offset + 2, row, "1", color, false);
+    }
+    value -= 100;
+    format = "%02d";     // to make sure a leading zero is included
+    pos = condensed ? 3 : 5;
+  }
+  else {
+    format = "%-d";
+    pos = 0;
+  }
+
+  snprintf(str, sizeof(str), format, value);
+  if (condensed) {
+    condfont_draw_string(pos+offset, row, str, color, false);
+  }
+  else {
+    smallfont_draw_string(pos+offset, row, str, color, false);
+  }
+}
+
+void paintNoteDataDisplay(byte color, short noteNumber, short offset, byte row) {
   char str[10];
   const char* format;
 
@@ -1406,7 +1444,7 @@ void paintNoteDataDisplay(byte color, short noteNumber, short offset) {
   }
 
   snprintf(str, sizeof(str), format, int(noteNumber/12) - 2);
-  condfont_draw_string(offset, 0, str, color, false);
+  condfont_draw_string(offset, row, str, color, false);
 }
 
 // draw a horizontal line to indicate volume for a particular side
@@ -1420,68 +1458,7 @@ void paintVolumeDisplayRow(byte side) {
   paintCCFaderDisplayRow(side, 5, Split[side].colorMain, 7, 1, NUMCOLS-2);
 }
 
-/**************************** DELETE THIS ONCE NEW MIDI IS WORKING ******************
-
-void paintOctaveTransposeDisplaySkipFretting(byte side) {     // alternate version of paintOctaveTransposeDisplay
-  clearDisplay();                                             // see handleOctaveTransposeNewTouchSplit in ls_settings.ino
-  blinkMiddleRootNote = true;
-
-  // Paint the octave shift value
-  if (!doublePerSplit || skipFrettingData[LEFT].transposeOctave == skipFrettingData[RIGHT].transposeOctave) {
-    paintOctave(Split[Global.currentPerSplit].colorMain, 8, OCTAVE_ROW, 12 * skipFrettingData[side].transposeOctave);
-  }
-  else if (doublePerSplit) {
-    if (abs(skipFrettingData[LEFT].transposeOctave) > abs(skipFrettingData[RIGHT].transposeOctave)) {
-      paintOctave(Split[LEFT].colorMain,  8, OCTAVE_ROW, 12 * skipFrettingData[LEFT].transposeOctave);
-      paintOctave(Split[RIGHT].colorMain, 8, OCTAVE_ROW, 12 * skipFrettingData[RIGHT].transposeOctave);
-    }
-    else {
-      paintOctave(Split[RIGHT].colorMain, 8, OCTAVE_ROW, 12 * skipFrettingData[RIGHT].transposeOctave);
-      paintOctave(Split[LEFT].colorMain,  8, OCTAVE_ROW, 12 * skipFrettingData[LEFT].transposeOctave);
-    }
-  }
-
-  // Paint the whole tone transpose values
-  if (!doublePerSplit || skipFrettingData[LEFT].transposeTone == skipFrettingData[RIGHT].transposeTone) {
-    paintTranspose(Split[Global.currentPerSplit].colorMain, SWITCH_1_ROW, skipFrettingData[side].transposeTone);
-  }
-  else if (doublePerSplit) {
-    if (abs(skipFrettingData[LEFT].transposeTone) > abs(skipFrettingData[RIGHT].transposeTone)) {
-      paintTranspose(Split[LEFT].colorMain,  SWITCH_1_ROW, skipFrettingData[LEFT].transposeTone);
-      paintTranspose(Split[RIGHT].colorMain, SWITCH_1_ROW, skipFrettingData[RIGHT].transposeTone);
-    }
-    else {
-      paintTranspose(Split[RIGHT].colorMain, SWITCH_1_ROW, skipFrettingData[RIGHT].transposeTone);
-      paintTranspose(Split[LEFT].colorMain,  SWITCH_1_ROW, skipFrettingData[LEFT].transposeTone);
-    }
-  }
-
-  // Paint the arrow transpose values
-  if (!doublePerSplit || skipFrettingData[LEFT].transposeArrow == skipFrettingData[RIGHT].transposeArrow) {
-    paintTranspose(Split[Global.currentPerSplit].colorMain, SWITCH_2_ROW, skipFrettingData[side].transposeArrow);
-  }
-  else if (doublePerSplit) {
-    if (abs(skipFrettingData[LEFT].transposeArrow) > abs(skipFrettingData[RIGHT].transposeArrow)) {
-      paintTranspose(Split[LEFT].colorMain,  SWITCH_2_ROW, skipFrettingData[LEFT].transposeArrow);
-      paintTranspose(Split[RIGHT].colorMain, SWITCH_2_ROW, skipFrettingData[RIGHT].transposeArrow);
-    }
-    else {
-      paintTranspose(Split[RIGHT].colorMain, SWITCH_2_ROW, skipFrettingData[RIGHT].transposeArrow);
-      paintTranspose(Split[LEFT].colorMain,  SWITCH_2_ROW, skipFrettingData[LEFT].transposeArrow);
-    }
-  }
-
-  paintShowSplitSelection(side);
-}
-********************************* DELETE CALL BELOW TO THIS FUNCTION TOO ************************/
-
 void paintOctaveTransposeDisplay(byte side) {
-
-  if (isSkipFretting(side) && Global.rowOffset > 7) {         // rowOffset > 7 to exclude 12edo Wicki-Hayden users
-    //paintOctaveTransposeDisplaySkipFretting (side);
-    //return;
-  }
-    
   clearDisplay();
   blinkMiddleRootNote = true;
 
@@ -1529,6 +1506,8 @@ void paintOctaveTransposeDisplay(byte side) {
       paintTranspose(Split[LEFT].colorMain, SWITCH_2_ROW, Split[LEFT].transposeLights);
     }
   }
+
+  microLinnPaintEdostepTranspose (doublePerSplit, side);
 
   paintShowSplitSelection(side);
 }
@@ -1621,6 +1600,10 @@ void paintSwitchAssignment(byte mode) {
     case ASSIGNED_SEQUENCER_NEXT:
     case ASSIGNED_STANDALONE_MIDI_CLOCK:
     case ASSIGNED_SEQUENCER_MUTE:
+    case ASSIGNED_MICROLINN_EDO_UP:
+    case ASSIGNED_MICROLINN_EDO_DOWN:
+    case ASSIGNED_MICROLINN_SCALE_UP:
+    case ASSIGNED_MICROLINN_SCALE_DOWN:
       setLed(9, 3, getSwitchTapTempoColor(), cellOn);
       break;
     case ASSIGNED_AUTO_OCTAVE:
@@ -1736,6 +1719,10 @@ void paintGlobalSettingsDisplay() {
 
     if (Device.otherHanded) {
       setLed(1, 3, getSplitHandednessColor(), cellOn);
+    }
+
+    if (isMicroLinnOn()) {
+      setLed(1, 0, globalAltColor, cellOn);
     }
 
     switch (lightSettings) {

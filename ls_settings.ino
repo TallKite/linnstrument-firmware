@@ -49,18 +49,6 @@ const byte CUSTOM_LEDS_PATTERN1[LED_LAYER_SIZE] = {
    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
-const byte CUSTOM_LEDS_PATTERN2[LED_LAYER_SIZE] = {          // two rainbow zones for 41edo skipFretting
-   0, 41, 25, 17,  9,  0, 41, 25, 17,  9,  0,  0,  0,  0,  0, 33, 49, 65, 41, 25, 17,  9, 65, 49,  0,  0,
-   0, 49, 65, 41, 25, 17,  9, 65, 49, 33,  0,  0,  0,  0,  0, 41, 25, 17,  9,  0, 41, 25, 17,  9,  0,  0,
-   0,  0, 33, 49, 65, 41, 25, 17,  9, 65, 49,  0,  0,  0,  0, 49, 65, 41, 25, 17,  9, 65, 49, 33,  0,  0,
-   0,  0, 41, 25, 17,  9,  0, 41, 25, 17,  9,  0,  0,  0,  0,  0, 33, 49, 65, 41, 25, 17,  9, 65, 49,  0,
-   0,  0, 49, 65, 41, 25, 17,  9, 65, 49, 33,  0,  0,  0,  0,  0, 41, 25, 17,  9,  0, 41, 25, 17,  9,  0,
-   0,  0,  0, 33, 49, 65, 41, 25, 17,  9, 65, 49,  0,  0,  0,  0, 49, 65, 41, 25, 17,  9, 65, 49, 33,  0,
-   0,  0,  0, 41, 25, 17,  9,  0, 41, 25, 17,  9,  0,  0,  0,  0,  0, 33, 49, 65, 41, 25, 17,  9, 65, 49,
-   0,  0,  0, 49, 65, 41, 25, 17,  9, 65, 49, 33,  0,  0,  0,  0,  0, 41, 25, 17,  9,  0, 41, 25, 17,  9
-};
-
-/************************* original pattern #2 **************************
 const byte CUSTOM_LEDS_PATTERN2[LED_LAYER_SIZE] = {
    0,  0, 41,  0,  9,  0, 17, 33,  0, 49,  0, 73, 25,  0, 41,  0,  9,  0, 17, 33,  0, 49,  0, 73, 25,  0,
    0, 17, 33,  0, 49,  0, 73, 25,  0, 41,  0,  9,  0, 17, 33,  0, 49,  0, 73, 25,  0, 41,  0,  9,  0, 17,
@@ -70,17 +58,6 @@ const byte CUSTOM_LEDS_PATTERN2[LED_LAYER_SIZE] = {
    0, 41,  0,  9,  0, 17, 33,  0, 49,  0, 73, 25,  0, 41,  0,  9,  0, 17, 33,  0, 49,  0, 73, 25,  0, 41,
    0, 33,  0, 49,  0, 73, 25,  0, 41,  0,  9,  0, 17, 33,  0, 49,  0, 73, 25,  0, 41,  0,  9,  0, 17, 33,
    0, 25,  0, 41,  0,  9,  0, 17, 33,  0, 49,  0, 73, 25,  0, 41,  0,  9,  0, 17, 33,  0, 49,  0, 73, 25
-}; **********************************************************************/
-
-const byte CUSTOM_LEDS_PATTERN3[LED_LAYER_SIZE] = {            // two green kites for 41edo Kite guitar
-   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-   0,  0,  0,  0,  0,  0,  0,  0,  0, 25,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 25,  0,  0,  0,  0,
-   0,  0,  0,  0,  0, 25,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 25,  0,  0,  0,  0,  0,  0,  0,  0,
-   0, 25,  0,  0,  0,  0,  0,  0,  0, 25,  0,  0,  0, 25,  0,  0,  0,  0,  0,  0,  0, 25,  0,  0,  0, 25,
-   0,  0,  0,  0,  0, 25,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 25,  0,  0,  0,  0,  0,  0,  0,  0,
-   0,  0,  0,  0,  0,  0,  0,  0,  0, 25,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 25,  0,  0,  0,  0,
-   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
 };
 
 unsigned long tempoChangeTime = 0;           // time of last touch for tempo change
@@ -358,6 +335,7 @@ void loadSettingsFromPreset(byte p) {
   memcpy(&Split[RIGHT], &config.preset[p].split[RIGHT], sizeof(SplitSettings));
 
   applyPresetSettings();
+  setupMicroLinn();
 }
 
 void storeSettingsToPreset(byte p) {
@@ -369,7 +347,7 @@ void storeSettingsToPreset(byte p) {
 // The first time after new code is loaded into the Linnstrument, this sets the initial defaults of all settings.
 // On subsequent startups, these values are overwritten by loading the settings stored in flash.
 void initializeDeviceSettings() {
-  Device.version = 16;
+  Device.version = MICROLINN_BASE_VERSION + 16;      // 16 is the latest non-MicroLinn version (created in 2023)
   Device.serialMode = false;
   Device.sleepAnimationActive = false;
   Device.sleepActive = false;
@@ -387,9 +365,8 @@ void initializeDeviceSettings() {
   initializeAudienceMessages();
 
   memcpy(&Device.customLeds[0][0], &CUSTOM_LEDS_PATTERN1[0], LED_LAYER_SIZE);
-  memcpy(&Device.customLeds[1][0], &CUSTOM_LEDS_PATTERN2[0], LED_LAYER_SIZE);      // two rainbow zones for 41edo skipFretting
-  memcpy(&Device.customLeds[2][0], &CUSTOM_LEDS_PATTERN3[0], LED_LAYER_SIZE);      // two green kites for 41edo Kite guitar
-  //memset(&Device.customLeds[2][0], 0, LED_LAYER_SIZE);                           // what the official code used to do - blank pattern
+  memcpy(&Device.customLeds[1][0], &CUSTOM_LEDS_PATTERN2[0], LED_LAYER_SIZE);
+  memset(&Device.customLeds[2][0], 0, LED_LAYER_SIZE);
 }
 
 void initializeAudienceMessages() {
@@ -982,6 +959,11 @@ void handleControlButtonRelease() {
     // and save the global settings which may have been changed.
 
     case GLOBAL_SETTINGS_ROW:                                // global settings button released
+      if (displayMode == displayMicroLinnUninstall){
+        setDisplayMode(displayGlobal);
+        updateDisplay();
+        break;
+      }
       if (displayMode == displayReset) {
         // ensure that MPE is actively disabled before resetting
         disableMpe(LEFT);
@@ -998,7 +980,7 @@ void handleControlButtonRelease() {
     case PRESET_ROW:                                         // preset button released
 
       clearLed(0, sensorRow);
-
+      microLinnCalcTuning();
       setDisplayMode(displayNormal);
       storeSettings();
       updateDisplay();
@@ -1346,10 +1328,6 @@ void handlePerSplitSettingNewTouch() {
         case 3:
           Split[Global.currentPerSplit].pitchResetOnRelease = !Split[Global.currentPerSplit].pitchResetOnRelease;
           break;
-
-        case 0:
-          // handled on release
-          break;
       }
       break;
 
@@ -1506,15 +1484,6 @@ void handlePerSplitSettingNewTouch() {
       }
       break;
 
-    case 8:
-      // custom skip-key setting button, long press for kite settings
-      switch (sensorRow) {
-        case 0:
-          setLed(sensorCol, sensorRow, Split[sensorSplit].colorAccent, cellSlowPulse);
-          break;
-      }
-      break;
-
     case 9:
       switch (sensorRow) {
         case 7:
@@ -1599,28 +1568,6 @@ void handlePerSplitSettingHold() {
           case 4:
             resetNumericDataChange();
             setDisplayMode(displayBendRange);
-            updateDisplay();
-            break;
-        }
-        break;
-
-      case 8: 
-        switch (sensorRow) {
-          case 0:                                             // long-press hidden skip fretting button
-            Global.rowOffset = ROWOFFSET_OCTAVECUSTOM;        // use custom row offset to get 13
-            Global.customRowOffset = 13;                      // kite guitar uses +13 row offset
-            Split[LEFT].playedTouchMode = playedSame;         // turn on same-note lighting for familiarity
-            Split[RIGHT].playedTouchMode = playedSame;
-            microLinn->skipFretting[LEFT] = true;
-            microLinn->skipFretting[RIGHT] = true;
-            microLinn->EDO = 41;
-            microLinnAnchorRowUser = 3;
-            microLinnAnchorCol = 6;
-            microLinn->anchorNote = 62;                       // D3, Kite guitar standard tuning
-            microLinnAnchorCentsUser = 0;
-            updateMicroLinnVars();
-            microLinnCalcTuningOfEachPad();
-            setDisplayMode(displayNormal);
             updateDisplay();
             break;
         }
@@ -1721,18 +1668,6 @@ void handlePerSplitSettingRelease() {
                                        Split[Global.currentPerSplit].bendRangeOption == bendRange24 ? cellOn : cellOff)) {
             Split[Global.currentPerSplit].bendRangeOption = bendRange24;
             midiSendMpePitchBendRange(Global.currentPerSplit);
-          }
-          break;
-      }
-      break;
-
-    case 8:
-      switch (sensorRow) {
-        case 0:                                                                      // short-press hidden skip-fretting button
-          if (ensureCellBeforeHoldWait(Split[Global.currentPerSplit].colorAccent,
-                 isSkipFretting(Global.currentPerSplit) ? cellOn : cellOff)) {
-            microLinn->skipFretting[Global.currentPerSplit] = !microLinn->skipFretting[Global.currentPerSplit];
-            microLinnCalcTuningOfEachPad();
           }
           break;
       }
@@ -2186,16 +2121,17 @@ void handleSplitHandednessNewTouch() {
 }
 
 void handleSplitHandednessRelease() {
-  microLinnCalcTuningOfEachPad();
   handleNumericDataReleaseCol(false);
 }
 
 void handleRowOffsetNewTouch() {
-  handleNumericDataNewTouchCol(Global.customRowOffset, -17, 31, true);    // increased from 16 to 31 for microLinn users
-}                                                                         // 31 because 53edo's 5th is 31 edosteps
+  if (isMicroLinnOn()) {microLinnHandleRowOffsetNewTouch(); return;}
+  handleNumericDataNewTouchCol(Global.customRowOffset, -17, 16, true);
+}
 
 void handleRowOffsetRelease() {
   handleNumericDataReleaseCol(false);
+  microLinnStoreRowOffsetCents();
 }
 
 void ensureGuitarTuningPreviewNoteRelease() {
@@ -2209,6 +2145,8 @@ void ensureGuitarTuningPreviewNoteRelease() {
 }
 
 void handleGuitarTuningNewTouch() {
+  if (isMicroLinnOn()) {microLinnHandleGuitarTuningNewTouch(); return;}
+
   if (sensorCol == 1) {
     guitarTuningRowNum = sensorRow;
     updateDisplay();
@@ -2224,43 +2162,10 @@ void handleGuitarTuningNewTouch() {
 }
 
 void handleGuitarTuningRelease() {
-  handleNumericDataReleaseCol(false); // false because guitar tuning editor does not do splits, fixes #5
+  handleNumericDataReleaseCol(false);              // false because guitar tuning editor does not do splits, fixes microLinn issue #5
   if (cellsTouched == 0) {
     ensureGuitarTuningPreviewNoteRelease();
   }
-}
-
-void handleMicroLinnConfigNewTouch() {
-  if (sensorCol == 1) {
-    if (sensorRow != 4 && sensorRow < 6) {
-      microLinnConfigRowNum = sensorRow;
-      updateDisplay();
-    }
-  } else {
-    switch (microLinnConfigRowNum) {
-      case 0: 
-        handleNumericDataNewTouchCol(microLinnAnchorCentsUser, -60, 60, true); 
-        break;
-      case 1: 
-        handleNumericDataNewTouchCol(microLinn->anchorNote, 1, 127, true);       // minimum is 1 to avoid a string-terminating null
-        break;
-      case 2: 
-        handleNumericDataNewTouchCol(microLinnAnchorCol, 1, NUMCOLS-1, true); 
-        break;
-      case 3: 
-        handleNumericDataNewTouchCol(microLinnAnchorRowUser, 1, 8, true);
-        break;
-      case 5: 
-        handleNumericDataNewTouchCol(microLinn->EDO, 5, 72, true); 
-        break;
-    }
-  }
-}
-
-void handleMicroLinnConfigRelease() {
-  updateMicroLinnVars();
-  microLinnCalcTuningOfEachPad();
-  handleNumericDataReleaseCol(true);
 }
 
 void handleMinUSBMIDIIntervalNewTouch() {
@@ -2415,55 +2320,7 @@ void handleOctaveTransposeNewTouch() {
   updateDisplay();
 }
 
-/**************************** DELETE THIS ONCE NEW MIDI IS WORKING ******************
-void handleOctaveTransposeNewTouchSplitSkipFretting(byte side) {
-  // alternate version of handleOctaveTransposeNewTouchSplit
-  // send CCs reporting the transposes to LinnstrumentMicrotonal app, it will do the transposing
-  // use the CC that the right foot switch is assigned to via long-pressing the CC65 option
-  // repurpose semitones to be whole tones and lights to be arrows/edosteps, so that ±7 of each covers 41edo
-  // midi for octave transposing via footswitch reports each increment/decrement, plus a 0 CC for pedal release
-  // but midi from here directly reports the current amount of transpose, no zero CCs
-  // the CCvalue is 93-99 for ±3 octaves, 57-71 for ±7 tones, or 25-39 for ±7 arrows
-  // see also paintOctaveTransposeDisplay function in ls_displayModes.ino
-
-  signed char newTransposeOctave = skipFrettingData[side].transposeOctave; 
-  signed char newTransposeTone   = skipFrettingData[side].transposeTone;
-  signed char newTransposeArrow  = skipFrettingData[side].transposeArrow;
-
-  if (sensorCol > 0 && sensorCol < 16) {
-         if (sensorRow == OCTAVE_ROW)   {newTransposeOctave = sensorCol - 8;}
-    else if (sensorRow == SWITCH_1_ROW) {newTransposeTone   = sensorCol - 8;}
-    else if (sensorRow == SWITCH_2_ROW) {newTransposeArrow  = sensorCol - 8;}
-  }
-  newTransposeOctave = min (max (newTransposeOctave, -3), 3);
-
-  byte chan = (side == LEFT ? 1 : 16);                                        // midi channel
-  byte CCnum = Global.ccForSwitchCC65[SWITCH_FOOT_R];
-    
-  if (newTransposeOctave != skipFrettingData[side].transposeOctave) {
-    skipFrettingData[side].transposeOctave = newTransposeOctave;                           
-    midiSendControlChange (CCnum, 96 + newTransposeOctave, chan, true);       // range is 93-99                   
-  }
-
-  if (newTransposeTone != skipFrettingData[side].transposeTone) { 
-    skipFrettingData[side].transposeTone = newTransposeTone;                           
-    midiSendControlChange (CCnum, 64 + newTransposeTone, chan, true);         // range is 57-71                   
-  }
-
-  if (newTransposeArrow != skipFrettingData[side].transposeArrow) { 
-    skipFrettingData[side].transposeArrow = newTransposeArrow;                           
-    midiSendControlChange (CCnum, 32 + newTransposeArrow, chan, true);        // range is 25-39             
-  }
-}
-********************************* DELETE CALL BELOW TO THIS FUNCTION TOO ************************/
-
 void handleOctaveTransposeNewTouchSplit(byte side) {
-
-  if (isSkipFretting(side) && Global.rowOffset > 7) {                     // rowOffset > 7 to exclude 12edo Wicki-Hayden users,
-    //handleOctaveTransposeNewTouchSplitSkipFretting (side);                // who will want to transpose normally
-    //return;
-  }
-
   if (sensorRow == OCTAVE_ROW) {
     switch (sensorCol) {
       case 3: Split[side].transposeOctave = -60; break;
@@ -2490,10 +2347,11 @@ void handleOctaveTransposeNewTouchSplit(byte side) {
       Split[side].transposeLights = sensorCol - 8;
     }
   }
+
+  microLinnHandleOctaveTransposeNewTouchSplit (side); 
 }
 
 void handleOctaveTransposeRelease() {
-  microLinnCalcTuningOfEachPad();
   handleShowSplit();  // see if one of the "Show Split" cells have been hit
 }
 
@@ -2693,7 +2551,7 @@ void handleGlobalSettingNewTouch() {
       }
       else {
         if (sensorRow == 1) {
-          //setDisplayMode(displayOsVersion);                  // this is now handled on release instead, to accomodate  microLinnConfig
+          //setDisplayMode(displayOsVersion);      // now handled on release instead, see ls_forkMenu.ino
         }
         // reset feature
         else if ((sensorRow == 2 && cell(sensorCol, 0).touched != untouchedCell) ||
@@ -2720,9 +2578,13 @@ void handleGlobalSettingNewTouch() {
       case 1:
         switch (sensorRow) {
           case LIGHTS_MAIN:
+            if (isMicroLinnOn()) {
+              enterMicroLinnConfig();
+              break;
+            }
           case LIGHTS_ACCENT:
           case LIGHTS_ACTIVE:
-            if (!customLedPatternActive) {
+            if (!customLedPatternActive && !isMicroLinnOn()) {
               lightSettings = sensorRow;
             }
             break;
@@ -2792,6 +2654,7 @@ void handleGlobalSettingNewTouch() {
             }
             break;
         }
+        microLinnStoreRowOffsetCents();
         break;
 
       // select more row offsets
@@ -2804,6 +2667,7 @@ void handleGlobalSettingNewTouch() {
             else {
               Global.rowOffset = 4;
             }
+            microLinnStoreRowOffsetCents();
             break;
           case 1:
             if (Global.rowOffset == 6) {
@@ -2812,6 +2676,7 @@ void handleGlobalSettingNewTouch() {
             else {
               Global.rowOffset = 6;
             }
+            microLinnStoreRowOffsetCents();
             break;
           case 2:
           case 3:
@@ -3001,6 +2866,12 @@ void handleGlobalSettingNewTouch() {
             break;
         }
         break;
+#ifndef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
+      case 17: 
+        if (sensorRow == 1) enterForkMenu();
+        if (sensorRow == 2) enterMicroLinnUninstallMenu();
+        break;
+#endif
     }
   }
 
@@ -3019,7 +2890,7 @@ void handleGlobalSettingNewTouch() {
       case 2:
       case 3:
       case 4:
-        if (lightSettings == LIGHTS_ACTIVE && sensorRow == 3) {
+        if (lightSettings == LIGHTS_ACTIVE && sensorRow <= 3) {             // microLinn allows long-press of scales 1-9 too
           setLed(sensorCol, sensorRow, globalColor, cellSlowPulse);
         }
         break;
@@ -3083,8 +2954,8 @@ void handleGlobalSettingNewTouch() {
 
     case 16:
       switch (sensorRow) {
-        case 1: 
-          setLed(sensorCol, sensorRow, globalColor, cellSlowPulse);          // now handled here on release, for microLinnConfig to work
+        case 1:                                                        // OS version is now handled on release
+          setLed(sensorCol, sensorRow, globalColor, cellSlowPulse);    // to allow longpress to the fork menu
           break;
         case 2:
           if (displayMode != displayReset) {
@@ -3121,6 +2992,9 @@ void handleGlobalSettingHold() {
     switch (sensorCol) {
       case 1:
         switch (sensorRow) {
+          case 0:
+            enterMicroLinnConfig();
+            break;        
           case 3:
             resetNumericDataChange();
             setDisplayMode(displaySplitHandedness);
@@ -3138,6 +3012,7 @@ void handleGlobalSettingHold() {
             setDisplayMode(displayCustomLedsEditor);
             updateDisplay();
         }
+        else {microLinnHandleGlobalScaleHold();}
         break;
 
       case 6:
@@ -3222,12 +3097,12 @@ void handleGlobalSettingHold() {
       case 16:
         switch (sensorRow) {
           case 1:
-            resetNumericDataChange();
-            setDisplayMode(displayMicroLinnConfig);                // config EDO and anchor data
-            updateDisplay();
+            enterForkMenu();
             break;
-          case 2:                                                  // handle switch to/from User Firmware Mode
-            if (cell(16, 0).touched == untouchedCell) {            // ensure that this is not a reset operation instead
+          // handle switch to/from User Firmware Mode
+          case 2:
+            // ensure that this is not a reset operation instead
+            if (cell(16, 0).touched == untouchedCell) {
               changeUserFirmwareMode(!userFirmwareActive);
             }
             break;
@@ -3248,16 +3123,12 @@ void handleGlobalSettingHold() {
 
       // fill in all 30 spaces of the message
       int strl = strlen(Device.audienceMessages[audienceMessageToEdit]);
-      byte maxLen = 30;
-      if (audienceMessageToEdit == microLinnMsg) {                        // truncate message, store skipFretting/microLinn data there
-        maxLen = microLinnMsgLength;
-      }
-      if (strl < maxLen) {
-        for (byte ch = strl; ch < maxLen; ++ch) {
-          Device.audienceMessages[audienceMessageToEdit][ch] = ' ';       // extend to full length will trailing spaces
+      if (strl < 30) {
+        for (byte ch = strl; ch < 30; ++ch) {
+          Device.audienceMessages[audienceMessageToEdit][ch] = ' ';
         }
       }
-      Device.audienceMessages[audienceMessageToEdit][maxLen] = '\0';      // null-terminated
+      Device.audienceMessages[audienceMessageToEdit][30] = '\0';
 
       // calculate the length of the message to edit
       audienceMessageLength = font_width_string(Device.audienceMessages[audienceMessageToEdit], &bigFont) - NUMCOLS;
@@ -3272,7 +3143,6 @@ void handleGlobalSettingRelease() {
   if (sensorCol == 1 && sensorRow == 3 &&
       ensureCellBeforeHoldWait(getSplitHandednessColor(), Device.otherHanded ? cellOn : cellOff)) {
     Device.otherHanded = !Device.otherHanded;
-    microLinnCalcTuningOfEachPad();
   }
   else if (sensorCol == 6 && sensorRow == 2 &&
       ensureCellBeforeHoldWait(globalColor, Global.rowOffset == ROWOFFSET_OCTAVECUSTOM ? cellOn : cellOff)) {
@@ -3335,8 +3205,8 @@ void handleGlobalSettingRelease() {
     }
   }
   else if (sensorCol == 16) {
-      if (sensorRow == 1) {                       // now handled here on release not on touch, to accomodate microLinnConfig
-        setDisplayMode(displayOsVersion);
+      if (sensorRow == 1) {                       // OS version is now handled here on release not on touch
+        setDisplayMode(displayOsVersion);         // to allow a long-press to display the fork menu
       }
       // Toggle UPDATE OS value
       else if (sensorRow == 2) {

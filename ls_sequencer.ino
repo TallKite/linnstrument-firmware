@@ -219,6 +219,9 @@ struct StepSequencerState {
 };
 StepSequencerState seqState[MAX_SEQUENCERS];
 
+signed char patternChain[NUMSPLITS][MAX_SEQUENCER_PATTERNS] = {-1};          // which pattern comes next automatically, -1 means nothing specified
+boolean firstSeqCycle[NUMSPLITS];                                            // firstSeqCycle is part of the patternChain fork
+
 void initializeSequencer() {
   SEQ_MUTER_COLUMN = NUMCOLS - 1 - 1;  
   SEQ_PATTERN_SELECTOR_RIGHT = SEQ_MUTER_COLUMN - 1;
@@ -366,6 +369,7 @@ void sequencerTurnOff(byte split, boolean save) {
 }
 
 void sequencerTogglePlay(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   if (Split[split].sequencer) {
     if (!seqState[split].running) {
       seqState[split].turnOn();
@@ -377,6 +381,7 @@ void sequencerTogglePlay(byte split) {
 }
 
 void sequencerToggleMute(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   seqState[split].muted = !seqState[split].muted;
   if (seqState[split].muted && seqState[split].running) {
     seqState[split].turnOffEvents();
@@ -391,12 +396,14 @@ void sequencerToggleMute(byte split) {
 }
 
 void sequencerPreviousPattern(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   if (Split[split].sequencer) {
     seqState[split].selectPreviousPattern();
   }
 }
 
 void sequencerNextPattern(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   if (Split[split].sequencer) {
     seqState[split].selectNextPattern();
   }
@@ -577,6 +584,10 @@ void handleSequencerTouch(boolean newVelocity) {
     // handle pattern selection
     else if (newVelocity && isWithinSequencerPatternArea()) {
       handleSequencerPatternTouch();
+    }
+    // handle pattern chain clearing
+    else if (newVelocity && isWithinSequencerPatternChainClearArea()) {
+      handleSequencerPatternChainClearTouch();
     }
     // handle fader editing
     else if (isWithinSequencerFaderArea()) {
@@ -1122,6 +1133,7 @@ void handleSequencerPatternTouch() {
     }
   }
   else {
+    setPatternChain(patternSplit);
     state.selectPattern(pattern);
   }
 }
@@ -1977,6 +1989,7 @@ void StepSequencerState::clear() {
     nextPosition = -1;
     currentPattern = 0;
     nextPattern = -1;
+    resetPatternChain();
     switchPatternOnBeat = false;
     editing = false;
     running = false;
@@ -2151,6 +2164,7 @@ void StepSequencerState::turnOn() {
   }
 
   running = true;
+  firstSeqCycle[split] = true;                                   // firstSeqCycle is part of the patternChain fork
   switch2Waiting = false;
   if (!hasFocus() && !getCurrentPattern().loopScreen) {
     positionOffset = 0;
@@ -2173,7 +2187,7 @@ void StepSequencerState::turnOff(boolean save) {
   nextPosition = -1;
   ticksUntilNextStep = 0;
   clock24PPQOffset = 0;
-  nextPattern = -1;
+  nextPattern = patternChain[split][currentPattern];
   switchPatternOnBeat = false;
 
   turnOffEvents();
@@ -2337,8 +2351,10 @@ void StepSequencerState::advanceSequencer() {
       // check if the sequencer should switch to the next pattern
       if (nextPattern != -1 && (position == 0 || switchPatternOnBeat)) {
         position = 0;
-        currentPattern = nextPattern;
-        nextPattern = -1;
+        // avoid skipping the current pattern when first running a patternchain
+        if (!(patternChain[split][currentPattern] >= 0 && firstSeqCycle[split])) currentPattern = nextPattern;
+        firstSeqCycle[split] = false;
+        nextPattern = patternChain[split][currentPattern];
         switchPatternOnBeat = false;
         positionOffset = 0;
         clearAllFocus();
@@ -2713,6 +2729,7 @@ void StepSequencerState::paintPatternSelector() {
     int col = SEQ_PATTERN_SELECTOR_LEFT + pattern;
     byte leftColor = (pattern == seqState[LEFT].currentPattern ? Split[LEFT].colorAccent : Split[LEFT].colorMain);
     CellDisplay leftDisplay = (pattern == seqState[LEFT].nextPattern ? cellSlowPulse : cellOn);
+    if (isPatternChained(LEFT, pattern)) leftDisplay = cellSlowPulse;
     if (sequencerCopySplitSource == LEFT && sequencerCopyPatternSource == pattern) {
       leftDisplay = cellFastPulse;
     }
@@ -2721,6 +2738,7 @@ void StepSequencerState::paintPatternSelector() {
 
     byte rightColor = (pattern == seqState[RIGHT].currentPattern ? Split[RIGHT].colorAccent : Split[RIGHT].colorMain);
     CellDisplay rightDisplay = (pattern == seqState[RIGHT].nextPattern ? cellSlowPulse : cellOn);
+    if (isPatternChained(RIGHT, pattern)) rightDisplay = cellSlowPulse;
     if (sequencerCopySplitSource == RIGHT && sequencerCopyPatternSource == pattern) {
       rightDisplay = cellFastPulse;
     }
@@ -3162,12 +3180,15 @@ void StepSequencerState::selectPreviousPattern() {
   if (p < 0) {
     p += MAX_SEQUENCER_PATTERNS;
   }
+  if (patternChain[split][p] != -1) {                                      // jump to the start of the chain
+    p = patternChain[split][p];
+  }
   selectPattern(p);
 }
 
 void StepSequencerState::selectNextPattern() {
   int p = currentPattern;
-  if (nextPattern != -1) {
+  if (nextPattern != -1 && patternChain[split][p] == -1) {                 // ignore nextPattern if it's part of a chain
     p = nextPattern;
   }
   p = (p+1) % MAX_SEQUENCER_PATTERNS;
@@ -3178,7 +3199,7 @@ void StepSequencerState::selectPattern(byte pattern) {
   // clear the next pattern if the current pattern is selected again
   if (currentPattern == pattern) {
       if (nextPattern != -1) {
-        nextPattern = -1;
+        nextPattern = patternChain[split][currentPattern];
         switchPatternOnBeat = false;
       }
   }
@@ -3186,7 +3207,7 @@ void StepSequencerState::selectPattern(byte pattern) {
     // when the sequencer is not running, switch immediately
     if (!isRunning()) {
       currentPattern = pattern;
-      nextPattern = -1;
+      nextPattern = patternChain[split][currentPattern];
       switchPatternOnBeat = false;
       clearAllFocus();
       if (isVisibleSequencerForSplit(split)) {
@@ -3196,7 +3217,7 @@ void StepSequencerState::selectPattern(byte pattern) {
     else {
       // a double tap on an already scheduled next pattern, schedules it at the beginning of the next beat
       if (nextPattern == pattern) {
-        switchPatternOnBeat = true;
+        switchPatternOnBeat = patternChainTouches(split) < 2;      // don't schedule immediately if it's part of a chaining touch
       }
       // schedule the pattern as the next one
       else {
@@ -3208,4 +3229,69 @@ void StepSequencerState::selectPattern(byte pattern) {
   if (isVisibleSequencer()) {
     paintPatternSelector();
   }
+}
+
+/**************************************** PATTERN CHAINING, PART OF THE MICROLINN FORK ****************************************/
+// search this file for "patternChain" or "control the sequencer" to see the other changes to the code
+
+void setPatternChain(byte split) {
+  short firstPattern = -1;
+  short lastPattern = -1;
+  for (byte p = 0; p < 4; ++p) {
+    if (cell(SEQ_PATTERN_SELECTOR_LEFT + p, SEQ_PATTERN_SELECTOR_TOP - split).touched == touchedCell) {
+      if (firstPattern == -1) firstPattern = p;        
+      lastPattern = p;
+    }
+  }
+  if (firstPattern == lastPattern) return;
+
+  for (byte p = firstPattern; p < lastPattern; ++p) {
+    patternChain[split][p] = p + 1;                            // patternChain says which pattern comes next automatically
+  }
+  patternChain[split][lastPattern] = firstPattern;
+
+  // with only 4 patterns, the only way to have two chains is if 0 & 1 are chained, and 2 & 3 are also chained --> [1 0 3 2]
+  if (patternChain[split][1] == 0 && patternChain[split][3] == 2) return;
+  // if that's not the case, unchain everything else in this split
+  memset(&patternChain[split][0], -1, firstPattern);
+  memset(&patternChain[split][lastPattern + 1], -1, 3 - lastPattern);
+}
+
+void resetPatternChain() {
+  memset(patternChain, -1, sizeof(patternChain));            // both splits
+}
+
+boolean isWithinSequencerPatternChainClearArea() {           // 2 hidden switches immediately to the left of the pattern selectors
+  return sensorCol == SEQ_PATTERN_SELECTOR_LEFT - 1 && sensorRow >= SEQ_PATTERN_SELECTOR_BOTTOM && sensorRow <= SEQ_PATTERN_SELECTOR_TOP;
+}
+
+void handleSequencerPatternChainClearTouch() {
+  byte split = SEQ_PATTERN_SELECTOR_TOP - sensorRow;
+  memset(&patternChain[split][0], -1, 4);
+  seqState[split].nextPattern = -1;
+  seqState[split].paintPatternSelector();                    // so that the nextPattern pad isn't blinking
+}
+
+boolean isPatternChained (byte split, byte pattern) {
+  if (patternChain[split][pattern] == -1) return false;                            // the entire pattern chain should blink,
+  if (pattern == seqState[split].currentPattern) return false;                     // ...except the current pattern shouldn't blink
+  if (patternChain[split][seqState[split].currentPattern] == -1) return false;     // only blink when this chain is playing,
+  if (patternChain[split][seqState[split].nextPattern] == -1) return false;        // ...and will continue to play
+  if (patternChain[split][1] == 0 && patternChain[split][3] == 2) {                // handle the double-chain situation [1 0 3 2]
+    if (pattern <= 1 && seqState[split].currentPattern >= 2) return false;
+    if (pattern >= 2 && seqState[split].currentPattern <= 1) return false;
+    if (pattern <= 1 && seqState[split].nextPattern >= 2) return false;
+    if (pattern >= 2 && seqState[split].nextPattern <= 1) return false;
+  }
+  return true;
+}
+
+byte patternChainTouches(byte split) {          // count the touches on the row of 4 pattern selectors
+  byte touches = 0;
+  for (byte p = 0; p < 4; ++p) {
+    if (cell(SEQ_PATTERN_SELECTOR_LEFT + p, SEQ_PATTERN_SELECTOR_TOP - split).touched == touchedCell) {
+      ++touches;
+    }
+  }
+  return touches;
 }
