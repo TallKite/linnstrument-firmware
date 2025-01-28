@@ -1424,7 +1424,7 @@ void paintSequencerProjects() {
     if (p == Device.lastLoadedProject) {
       color = COLOR_CYAN;
     }
-    setLed(6 + p%4, 2 + p/4, color, cellOn);
+    setLed(6 + p%4, 5 - p/4, color, cellOn);    // projects now run top to bottom, part of the patternChaining fork
   }
 
   paintSequencerSettingsLowRow();
@@ -1473,7 +1473,7 @@ void handleSequencerProjectsHold() {
     // store to the selected project
     sequencersTurnOff(true);
 
-    byte project = sensorCol-6 + (sensorRow-2) * 4;
+    byte project = sensorCol-6 + (5-sensorRow) * 4;    // projects now run top to bottom, part of the patternChaining fork
 
     writeProjectToFlash(project);
     sensorCell->lastTouch = 0;
@@ -1490,7 +1490,7 @@ void handleSequencerProjectsRelease() {
     // load the selected project
     sequencersTurnOff(true);
 
-    byte project = sensorCol-6 + (sensorRow-2) * 4;
+    byte project = sensorCol-6 + (5-sensorRow) * 4;    // projects now run top to bottom, part of the patternChaining fork
     Device.lastLoadedProject = project;
     loadProject(project);
     sensorCell->lastTouch = 0;
@@ -3180,15 +3180,17 @@ void StepSequencerState::selectPreviousPattern() {
   if (p < 0) {
     p += MAX_SEQUENCER_PATTERNS;
   }
-  if (patternChain[split][p] != -1) {                                      // jump to the start of the chain
-    p = patternChain[split][p];
-  }
+//  if (patternChain[split][p] != -1) {                                      // jump to the start of the chain
+//    p = patternChain[split][p];
+//  }
   selectPattern(p);
 }
 
 void StepSequencerState::selectNextPattern() {
   int p = currentPattern;
-  if (nextPattern != -1 && patternChain[split][p] == -1) {                 // ignore nextPattern if it's part of a chain
+  // ignore nextPattern if it goes backwards to the first pattern in the chain, this lets NEXT pedal exit the chain
+  // but don't ignore it if all four patterns are in one long chain, which means patternChain[split][3] must be zero
+  if (nextPattern != -1 && !(nextPattern == patternChain[split][p] && nextPattern < p && patternChain[split][3] != 0)) { 
     p = nextPattern;
   }
   p = (p+1) % MAX_SEQUENCER_PATTERNS;
@@ -3199,7 +3201,8 @@ void StepSequencerState::selectPattern(byte pattern) {
   // clear the next pattern if the current pattern is selected again
   if (currentPattern == pattern) {
       if (nextPattern != -1) {
-        nextPattern = patternChain[split][currentPattern];
+        // if within a chain, selecting the current pattern means repeating it, instead of advancing
+        nextPattern = (patternChain[split][currentPattern] == -1 ? -1 : currentPattern);
         switchPatternOnBeat = false;
       }
   }
@@ -3217,7 +3220,7 @@ void StepSequencerState::selectPattern(byte pattern) {
     else {
       // a double tap on an already scheduled next pattern, schedules it at the beginning of the next beat
       if (nextPattern == pattern) {
-        switchPatternOnBeat = patternChainTouches(split) < 2;      // don't schedule immediately if it's part of a chaining touch
+        switchPatternOnBeat = patternChainTouches(split) < 2;   // don't switch early if the double-tap is part of a chaining touch
       }
       // schedule the pattern as the next one
       else {
@@ -3258,7 +3261,7 @@ void setPatternChain(byte split) {
 }
 
 void resetPatternChain() {
-  memset(patternChain, -1, sizeof(patternChain));            // both splits
+  memset(&patternChain, -1, sizeof(patternChain));            // both splits
 }
 
 boolean isWithinSequencerPatternChainClearArea() {           // 2 hidden switches immediately to the left of the pattern selectors
