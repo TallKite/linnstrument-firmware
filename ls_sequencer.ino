@@ -366,6 +366,7 @@ void sequencerTurnOff(byte split, boolean save) {
 }
 
 void sequencerTogglePlay(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   if (Split[split].sequencer) {
     if (!seqState[split].running) {
       seqState[split].turnOn();
@@ -377,6 +378,7 @@ void sequencerTogglePlay(byte split) {
 }
 
 void sequencerToggleMute(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   seqState[split].muted = !seqState[split].muted;
   if (seqState[split].muted && seqState[split].running) {
     seqState[split].turnOffEvents();
@@ -391,12 +393,14 @@ void sequencerToggleMute(byte split) {
 }
 
 void sequencerPreviousPattern(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   if (Split[split].sequencer) {
     seqState[split].selectPreviousPattern();
   }
 }
 
 void sequencerNextPattern(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   if (Split[split].sequencer) {
     seqState[split].selectNextPattern();
   }
