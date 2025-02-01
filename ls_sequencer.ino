@@ -1412,7 +1412,7 @@ void paintSequencerProjects() {
     if (p == Device.lastLoadedProject) {
       color = COLOR_CYAN;
     }
-    setLed(6 + p%4, 2 + p/4, color, cellOn);
+    setLed(6 + p%4, 5 - p/4, color, cellOn);
   }
 
   paintSequencerSettingsLowRow();
@@ -1451,7 +1451,7 @@ void startProjectLEDBlink(byte p, byte color) {
   }
   projectBlinkStart[p] = now;
 
-  setLed(6 + p%4, 2 + p/4, color, cellFastPulse);
+  setLed(6 + p%4, 5 - p/4, color, cellFastPulse);
 }
 
 void handleSequencerProjectsHold() {
@@ -1461,7 +1461,7 @@ void handleSequencerProjectsHold() {
     // store to the selected project
     sequencersTurnOff(true);
 
-    byte project = sensorCol-6 + (sensorRow-2) * 4;
+    byte project = sensorCol-6 + (5-sensorRow) * 4;
 
     writeProjectToFlash(project);
     sensorCell->lastTouch = 0;
@@ -1478,7 +1478,7 @@ void handleSequencerProjectsRelease() {
     // load the selected project
     sequencersTurnOff(true);
 
-    byte project = sensorCol-6 + (sensorRow-2) * 4;
+    byte project = sensorCol-6 + (5-sensorRow) * 4;
     Device.lastLoadedProject = project;
     loadProject(project);
     sensorCell->lastTouch = 0;
