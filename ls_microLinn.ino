@@ -73,20 +73,22 @@ use virtual note numbers to get the midi to work
 
 change col offsets to be a single screen with the usual green/blue split selector in the upper right
 replace 2nd col offset button with a row offsets button with split selector
-replace the 3 presets (31, 41 and 12) on the right with something-- 3 hammerOn options?
+replace the 3 presets (31, 41 and 12) on the right with 1 button for hammerOn options
+(brings up a screen with a few buttons on the far left, to choose which option to change)
+room for more buttons -- locator CCs?
 
 clean up ls_midi.ino by making a new function microLinnGetNoteNumColumn (needed for raw midi mode)
 also microLinnDetermineRowOffsetNote in handleTouches.ino
 
 possible bug: if the custom row offset is 8, I set rowOffset = 12 and customRowOffset = 8
 but Geert might set rowOffset = 8, and that might be incompatible with my code
+use sendDebugMidi to investigate
 
-test setting the edo in handleMicroLinnConfigRelease, maybe delete "prevEDO = EDO" line?
+test setting the edo in handleMicroLinnConfigRelease, maybe add "else if (microLinnConfigColNum == 5) prevEDO = EDO"?
 test exiting microLinn, do the offsets get adjusted?
 
 long-press the low power button to get a dimmer display but not a lower scan rate (in effect a crude brightness knob)
-search for operatingLowPower, when done delete my code in leds.ino, other code with "brightness"
-change operatingLowPower from a boolean to a byte, 0 = off, 1 = dim & slow, 2 = dim
+change operatingLowPower from a boolean to a byte, 0 = normal, 1 = dim & slow, 2 = dim
 
 guitartuning screen, edostep display doesn't update
 
@@ -124,6 +126,11 @@ for the readme file: (in the future SAME and BLNK might possibly carry over to t
 
 test that sending note-ons/offs to the Linn lights up the correct pads when in an edo and/or skip-fretting
 
+make rainbows, scales and dots exportable and importable via CC messages or sysexes or serial port transfer?
+also exportable custom lights? (they are currently importable only, via CC messages)
+  make linnstrument importer/exporter: duplicate the updater, delete the updater part,
+  and add new copies of the sequencer project part for the other types of data
+
 cleanup: search for "delete", "uncomment" and "bug"
 
 TO DECIDE
@@ -131,7 +138,6 @@ Should resetTo12equal() send out pitchbends of 0 on each channel, to avoid linge
   Should this also happen whenever the edo changes?
 On the note lights screen, move both pink walls in 1 column? move the whole display over 2 cells if on a 200 model?
 Replace microLinnSetKiteGuitarDefaults etc. with presets?
-add a 2nd shortcut on global, col 1 row 1 for 2nd config display for other forks?
 should there be 2 different row offsets, one for each split? 31edo bosanquet left hand, full-31 right hand?
   set the row offset on the SPLIT screen, runs OFF, 1, 2, 3...25. OFF (0 in the var) means use the global setting
   can only have one guitar tuning, can't tune left DADGAD and right EADGBE, that should be OK
@@ -161,9 +167,6 @@ sweeten 41edo? widen 5/4 by shifting the top note up 2¢ and the bottom note dow
   in a v9 chord, 9th is 2¢ sharper = 3¢ sharp, and in an ^9 chord, root is 3¢ flat (add 9/5 to the narrowing list?)
   in a vM7no3 or vM7(4) chord, the root-5th interval is 2¢ flat (widen 15/8?)
   would 11-limit chords become worse?
-
-make rainbows, scales and dots exportable and importable via CC messages or sysexes or serial port transfer?
-also exportable custom lights? (they are currently importable only, via CC messages)
 
 write code for 6 microLinn memories/presets? 6 new buttons next to the 6 standard ones (column 15 or column 22)
   for the Linn 128, move the program change number one pad to the left to make room for the new buttons
@@ -508,17 +511,6 @@ int microLinnCurrBend = 0;                                   // zero-centered
 short microLinnPreviewNote = -1;                             // active note that is previewing the note lights pitch
 short microLinnPreviewChannel = -1;                          // active channel that is previewing the note lights pitch
 boolean microLinnSendCellLocation = false;                   // send CC 30 or 31 with row/column location for each note-on
-
-/**************************************** FORK MENU ****************************************/
-const byte NUM_FORKS = 3;
-const byte MAX_LONGPRESS_MESSAGES = 3;     // after the 3rd long-press of OS version since power-up,
-byte numTimesForkMenu = 0;                 // stop showing the "LONG-PRESS FOR FORK NAMES" message
-byte forkMenuColNum = 0;                   // active column number in fork menu, 0 means nothing active
-boolean forkMenuNowScrolling = false;
-
-/**************************************** BRIGHTNESS FORK ****************************************/
-byte brightness = 12;                      // ranges from 1 to 12
-
 
 int microLinnMod (int num, int base) {          // -13 % 10 = -3, but microLinnMod (-13, 10) = 7
   num %= base;
@@ -1387,44 +1379,6 @@ void paintMicroLinnUninstall() {
   }
 }
 
-void paintForkMenuButtons() {
-  for (byte col = 1; col <= NUM_FORKS; ++col) {
-    setLed(col, 0, col == forkMenuColNum ? Split[LEFT].colorAccent : Split[LEFT].colorMain, cellOn);
-  }
-}
-
-void paintForkMenu() {
-  clearDisplay();
-  paintForkMenuButtons();
-  // leading spaces ensure the string first appears on the right edge, not on the left edge
-  switch (forkMenuColNum) {    
-    case 0:
-      if (numTimesForkMenu <= MAX_LONGPRESS_MESSAGES) {
-        small_scroll_text_row1("       LONG-PRESS FOR FORK NAMES", Split[LEFT].colorMain);
-      }
-      break;
-    case 1: 
-      small_scroll_text_row1("      MICROLINN", Split[LEFT].colorMain);
-      break;
-    case 2: 
-      small_scroll_text_row1("      BRIGHTNESS", Split[LEFT].colorMain);
-      break;
-    case 3:
-      small_scroll_text_row1("      YOUR FORK HERE", Split[LEFT].colorMain);
-      break;  
-  }
-  paintForkMenuButtons();
-}
-
-void paintBrightnessScreen() {
-  clearDisplay();
-  setLed(2, 6, Split[LEFT].colorAccent, cellOn);                       // zero marker, like on the transpose screen
-  for (byte col = 14; col > 2; --col ) {
-    setLed(col, 6, col - 2 > brightness ? COLOR_BLACK : Split[LEFT].colorMain, cellOn);       // black erases
-  }
-}
-
-
 /************** functions called in ls_settings.ino ************************/
 
 
@@ -1552,57 +1506,6 @@ void microLinnHandleGuitarTuningNewTouch() {       // called in ls_settings.ino
   microLinnPreviewChannel = takeChannel(Global.currentPerSplit, sensorRow);
   midiSendPitchBend(microLinnCurrBend, microLinnPreviewChannel);
   midiSendNoteOn(Global.currentPerSplit, microLinnPreviewNote, 96, microLinnPreviewChannel);
-}
-
-void enterForkMenu () {
-  forkMenuColNum = 0;
-  numTimesForkMenu += 1;
-  resetNumericDataChange();
-  setDisplayMode(displayForkMenu);
-  paintForkMenu();                            // use paintForkMenu, updateDisplay() doesn't work here
-}
-
-void handleForkMenuNewTouch() {
-  // start tracking the touch duration to be able to enable hold functionality
-  sensorCell->lastTouch = millis();
-  forkMenuNowScrolling = false;
-  if (sensorRow == 0 && sensorCol <= NUM_FORKS) { 
-    if (forkMenuColNum > 0 && forkMenuColNum != sensorCol) {
-      setLed(forkMenuColNum, 0, Split[LEFT].colorMain, cellOn);   // turn off old button
-    }
-    forkMenuColNum = sensorCol;
-    setLed(sensorCol, 0, Split[LEFT].colorAccent, cellOn);        // turn on new button
-  }
-}
-
-void handleForkMenuHold() {
-  if (sensorRow == 0 && sensorCol <= NUM_FORKS
-      && isCellPastSensorHoldWait() && !forkMenuNowScrolling) {          // long-press bottom row
-    forkMenuNowScrolling = true;
-    paintForkMenu();                                                     // scroll the name of the fork
-  }
-}
-
-void handleForkMenuRelease() {
-  if (sensorRow == 0 && sensorCol <= NUM_FORKS && !isCellPastSensorHoldWait()) {    // short-press bottom row
-    forkMenuColNum = 0;
-    switch (sensorCol) {
-      case 1:
-        microLinnConfigNowScrolling = false;
-        resetNumericDataChange();
-        setDisplayMode(displayMicroLinnConfig);
-        updateDisplay();
-        break;
-      case 2:
-        resetNumericDataChange();
-        setDisplayMode(displayBrightness);  
-        updateDisplay();
-        break;
-      case 3:
-        forkMenuColNum = 3;
-        break;
-    }
-  }
 }
 
 void enterMicroLinnConfig () {
@@ -1891,13 +1794,6 @@ void handleMicroLinnUninstallNewTouch() {
   }
 }
 
-void handleBrightnessNewTouch() {
-  if (sensorRow >= 5 && sensorCol <= 16) {
-    brightness = min (max (sensorCol - 2, 1), 12);
-    updateDisplay(); 
-  }
-}
-
 
 /************** functions called in ls_midi.ino ************************/
 
@@ -1947,6 +1843,107 @@ void microLinnChangeScale(int delta) {                                // called 
 
 /********************* OBSOLETE CODE  ****************
 
+const byte NUM_FORKS = 3;
+const byte MAX_LONGPRESS_MESSAGES = 3;     // after the 3rd long-press of OS version since power-up,
+byte numTimesForkMenu = 0;                 // stop showing the "LONG-PRESS FOR FORK NAMES" message
+byte forkMenuColNum = 0;                   // active column number in fork menu, 0 means nothing active
+boolean forkMenuNowScrolling = false;
+
+void paintForkMenu() {
+  clearDisplay();
+  paintForkMenuButtons();
+  // leading spaces ensure the string first appears on the right edge, not on the left edge
+  switch (forkMenuColNum) {    
+    case 0:
+      if (numTimesForkMenu <= MAX_LONGPRESS_MESSAGES) {
+        small_scroll_text_row1("       LONG-PRESS FOR FORK NAMES", Split[LEFT].colorMain);
+      }
+      break;
+    case 1: 
+      small_scroll_text_row1("      MICROLINN", Split[LEFT].colorMain);
+      break;
+    case 2: 
+      small_scroll_text_row1("      BRIGHTNESS", Split[LEFT].colorMain);
+      break;
+    case 3:
+      small_scroll_text_row1("      YOUR FORK HERE", Split[LEFT].colorMain);
+      break;  
+  }
+  paintForkMenuButtons();
+}
+
+void paintForkMenuButtons() {
+  for (byte col = 1; col <= NUM_FORKS; ++col) {
+    setLed(col, 0, col == forkMenuColNum ? Split[LEFT].colorAccent : Split[LEFT].colorMain, cellOn);
+  }
+}
+
+void enterForkMenu () {
+  forkMenuColNum = 0;
+  numTimesForkMenu += 1;
+  resetNumericDataChange();
+  setDisplayMode(displayForkMenu);
+  paintForkMenu();                            // use paintForkMenu, updateDisplay() doesn't work here
+}
+
+void handleForkMenuNewTouch() {
+  // start tracking the touch duration to be able to enable hold functionality
+  sensorCell->lastTouch = millis();
+  forkMenuNowScrolling = false;
+  if (sensorRow == 0 && sensorCol <= NUM_FORKS) { 
+    if (forkMenuColNum > 0 && forkMenuColNum != sensorCol) {
+      setLed(forkMenuColNum, 0, Split[LEFT].colorMain, cellOn);   // turn off old button
+    }
+    forkMenuColNum = sensorCol;
+    setLed(sensorCol, 0, Split[LEFT].colorAccent, cellOn);        // turn on new button
+  }
+}
+
+void handleForkMenuHold() {
+  if (sensorRow == 0 && sensorCol <= NUM_FORKS
+      && isCellPastSensorHoldWait() && !forkMenuNowScrolling) {          // long-press bottom row
+    forkMenuNowScrolling = true;
+    paintForkMenu();                                                     // scroll the name of the fork
+  }
+}
+
+void handleForkMenuRelease() {
+  if (sensorRow == 0 && sensorCol <= NUM_FORKS && !isCellPastSensorHoldWait()) {    // short-press bottom row
+    forkMenuColNum = 0;
+    switch (sensorCol) {
+      case 1:
+        microLinnConfigNowScrolling = false;
+        resetNumericDataChange();
+        setDisplayMode(displayMicroLinnConfig);
+        updateDisplay();
+        break;
+      case 2:
+        resetNumericDataChange();
+        setDisplayMode(displayBrightness);  
+        updateDisplay();
+        break;
+      case 3:
+        forkMenuColNum = 3;
+        break;
+    }
+  }
+}
+
+
+void paintBrightnessScreen() {
+  clearDisplay();
+  setLed(2, 6, Split[LEFT].colorAccent, cellOn);                       // zero marker, like on the transpose screen
+  for (byte col = 14; col > 2; --col ) {
+    setLed(col, 6, col - 2 > brightness ? COLOR_BLACK : Split[LEFT].colorMain, cellOn);       // black erases
+  }
+}
+
+void handleBrightnessNewTouch() {
+  if (sensorRow >= 5 && sensorCol <= 16) {
+    brightness = min (max (sensorCol - 2, 1), 12);
+    updateDisplay(); 
+  }
+}
 
 byte patternChainOtherSplit (byte split, byte role) {  // probably won't work for midi NRPN messages
   if (Split[split].sequencer) return split;

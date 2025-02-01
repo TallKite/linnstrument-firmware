@@ -2551,7 +2551,7 @@ void handleGlobalSettingNewTouch() {
       }
       else {
         if (sensorRow == 1) {
-          //setDisplayMode(displayOsVersion);      // now handled on release instead, see ls_forkMenu.ino
+          setDisplayMode(displayOsVersion);
         }
         // reset feature
         else if ((sensorRow == 2 && cell(sensorCol, 0).touched != untouchedCell) ||
@@ -2868,7 +2868,6 @@ void handleGlobalSettingNewTouch() {
         break;
 #ifndef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
       case 17: 
-        if (sensorRow == 1) enterForkMenu();
         if (sensorRow == 2) enterMicroLinnUninstallMenu();
         break;
 #endif
@@ -2954,9 +2953,6 @@ void handleGlobalSettingNewTouch() {
 
     case 16:
       switch (sensorRow) {
-        case 1:                                                        // OS version is now handled on release
-          setLed(sensorCol, sensorRow, globalColor, cellSlowPulse);    // to allow longpress to the fork menu
-          break;
         case 2:
           if (displayMode != displayReset) {
             setLed(sensorCol, sensorRow, globalColor, cellSlowPulse);
@@ -3096,9 +3092,6 @@ void handleGlobalSettingHold() {
 
       case 16:
         switch (sensorRow) {
-          case 1:
-            enterForkMenu();
-            break;
           // handle switch to/from User Firmware Mode
           case 2:
             // ensure that this is not a reset operation instead
@@ -3205,11 +3198,8 @@ void handleGlobalSettingRelease() {
     }
   }
   else if (sensorCol == 16) {
-      if (sensorRow == 1) {                       // OS version is now handled here on release not on touch
-        setDisplayMode(displayOsVersion);         // to allow a long-press to display the fork menu
-      }
       // Toggle UPDATE OS value
-      else if (sensorRow == 2) {
+      if (sensorRow == 2) {
         byte resetColor = COLOR_BLACK;
         CellDisplay resetDisplay = cellOff;
         if (Device.serialMode) {

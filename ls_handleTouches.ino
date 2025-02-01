@@ -706,9 +706,6 @@ void handleNonPlayingTouch() {
     case displayCustomLedsEditor:
       handleCustomLedsEditorNewTouch();
       break;
-    case displayForkMenu:
-      handleForkMenuNewTouch();
-      break;
     case displayMicroLinnConfig:
       handleMicroLinnConfigNewTouch();
       break;
@@ -720,9 +717,6 @@ void handleNonPlayingTouch() {
       break;
     case displayMicroLinnUninstall: 
       handleMicroLinnUninstallNewTouch();
-      break;
-    case displayBrightness:
-      handleBrightnessNewTouch();
       break;
   }
 }
@@ -766,10 +760,6 @@ boolean handleXYZupdate() {
       case displayCustomLedsEditor:
         handleCustomLedsEditorHold();
         return false;
-
-      case displayForkMenu:
-        handleForkMenuHold();
-        break;                              // should this line be "return false;"?
 
       case displayMicroLinnConfig:
         handleMicroLinnConfigHold();
@@ -1662,9 +1652,6 @@ boolean handleNonPlayingRelease() {
         break;
       case displayCustomLedsEditor:
         handleCustomLedsEditorRelease();
-        break;
-      case displayForkMenu:
-        handleForkMenuRelease();
         break;
       case displayMicroLinnConfig:
         handleMicroLinnConfigRelease();

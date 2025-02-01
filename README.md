@@ -181,7 +181,7 @@ noOverLap mode gives ech pad its own unique midi note number (beware, 200 pads >
 
 ============================= technical notes ==================================
 
-To find all changes to the code, search for "microlinn" or "patternChain" or "playedBlink" or "brightness"
+To find all changes to the code, search for "microlinn" or "patternChain" or "playedBlink" or "control the sequencer"
 
 "Skip-fretting" is a column offset of 2 - each subsequent pad represents every other MIDI note, so note 0 2 4 6 8 ... instead of 0 1 2 3 4. 
 The name is in reference to the microtonal [kite guitar](https://kiteguitar.com/), which obviously uses frets and not keys, but the

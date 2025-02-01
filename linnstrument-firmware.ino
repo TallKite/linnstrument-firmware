@@ -491,12 +491,10 @@ enum DisplayMode {
   displaySequencerDrum0814,
   displaySequencerColors,
   displayCustomLedsEditor,
-  displayForkMenu,
   displayMicroLinnConfig,
   displayMicroLinnAnchorChooser,
   displayMicroLinnDotsEditor,
-  displayMicroLinnUninstall,
-  displayBrightness
+  displayMicroLinnUninstall
 };
 DisplayMode displayMode = displayNormal;
 

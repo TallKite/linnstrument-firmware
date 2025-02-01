@@ -3180,9 +3180,6 @@ void StepSequencerState::selectPreviousPattern() {
   if (p < 0) {
     p += MAX_SEQUENCER_PATTERNS;
   }
-//  if (patternChain[split][p] != -1) {                                      // jump to the start of the chain
-//    p = patternChain[split][p];
-//  }
   selectPattern(p);
 }
 
