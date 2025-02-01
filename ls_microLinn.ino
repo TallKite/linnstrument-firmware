@@ -86,10 +86,11 @@ test exiting microLinn, do the offsets get adjusted?
 
 long-press the low power button to get a dimmer display but not a lower scan rate (in effect a crude brightness knob)
 search for operatingLowPower, when done delete my code in leds.ino, other code with "brightness"
+change operatingLowPower from a boolean to a byte, 0 = off, 1 = dim & slow, 2 = dim
 
 guitartuning screen, edostep display doesn't update
 
-Add code when translate guitar tunings from one edo to the next
+Add code when translating guitar tunings from one edo to the next
   add a runtime boolean microLinnIsStandardGuitarTuning
   if true, translate the guitar tuning to the new edo's standard tuning
   prioritze 13b and 18b over 13 and 18?
@@ -102,6 +103,10 @@ fix same/blink mode when col offset > 1
 
 make system reset be a long press not a short press
 
+implement microLinnSendCellLocation (just needs a GUI), lets people program "zones" that do special things
+make it a permanent var, not just runtime? Or make it always enabled?
+Or make it a constant, set to true for the "hacker's version" of microLinn, false for vanilla version?
+
 test the 6 memories
 test octave up/down footswitches while playing, does the calcTuning call make it glitchy?
 if so, copy how the original code does transposing
@@ -110,19 +115,14 @@ make the sequencer microtonal somehow, see microLinnTuneNewSeqEvent
 for the release notes: https://www.kvraudio.com/forum/viewtopic.php?t=528045
 
 write code for accepting microLinn NRPNs (see midi.txt)
-improved midi message for lighting up pads: https://www.kvraudio.com/forum/viewtopic.php?t=519090
 
-add 3 new played modes: 
-SAM8 = like SAME, but includes the octave-mates
-BLNK = like SAME, but blinks slowly
-BLN8 = like SAME, but blinks and includes octaves too
-but see https://www.kvraudio.com/forum/viewtopic.php?t=595988
-all 3 plus SAME should include notes on the other split, but only if the other split also has SAME, SAM8, BLNK or BLN8
-the note on the other split lights up in accordance with that split's settings for blinking or octaves
-blink modes can blink a lit LED on/off, see getLedColor function
-for the readme file:
-(in the future SAME and BLNK might possibly carry over to the other split, if enabled on both splits)
-(in the future SAM8 and BLN8 might possibly exist, these will include octave-mates)
+test PolyPressure for LED Control (https://www.kvraudio.com/forum/viewtopic.php?t=519090)
+
+SAME and BLNK could include notes on the other split, but only if the other split also has SAME or BLNK
+the note on the other split lights up in accordance with that split's settings for blinking
+for the readme file: (in the future SAME and BLNK might possibly carry over to the other split, if enabled on both splits)
+
+test that sending note-ons/offs to the Linn lights up the correct pads when in an edo and/or skip-fretting
 
 cleanup: search for "delete", "uncomment" and "bug"
 
@@ -184,6 +184,8 @@ run the arpeggiator and the sequencer both at once, so that the arpeggiator uses
 
 const byte MICROLINN_BASE_VERSION = 128;                   // for the updater app, Device.version = this + current version
 const byte MICROLINN_MAX_OFFSET = MAXCOLS - 1;             // both row offset and column offset, increased from 16 to 25
+const byte MICROLINN_LOCATOR_CC_1 = 30;                    // send row/col for each note-on, see microLinnSendLocatorCC()
+const byte MICROLINN_LOCATOR_CC_2 = 31;
 
 const byte MICROLINN_MAJ_2ND[MICROLINN_MAX_EDO+1] = {      // used for transposePitch and transposeLights
   0,  0,  0,  0,  0,   1,  1,  1,  1,  1,    // 0-9        // is actually just a single edostep for edos 6, 8, 10 & 12
@@ -505,6 +507,7 @@ short microLinnCurrNote = -1;                                // -1 = out of rang
 int microLinnCurrBend = 0;                                   // zero-centered
 short microLinnPreviewNote = -1;                             // active note that is previewing the note lights pitch
 short microLinnPreviewChannel = -1;                          // active channel that is previewing the note lights pitch
+boolean microLinnSendCellLocation = false;                   // send CC 30 or 31 with row/column location for each note-on
 
 /**************************************** FORK MENU ****************************************/
 const byte NUM_FORKS = 3;
@@ -1131,6 +1134,49 @@ void microLinnLightOctaveSwitch() {
 }
 
 // these functions don't augment or replace existing functions, they do something new
+
+// send locator CC after each note-on to indicate pad's row/column, thanks to KVR forum member vorp40 for the code!
+void microLinnSendLocatorCC() {            
+  if (!microLinnSendCellLocation) return;
+  if (sensorCol < 16) {
+    midiSendControlChange(MICROLINN_LOCATOR_CC_1, sensorRow + 8 * sensorCol, sensorCell->channel);
+  } else {
+    midiSendControlChange(MICROLINN_LOCATOR_CC_2, sensorRow + 8 * (sensorCol - 16), sensorCell->channel);
+  }
+}
+
+// PolyPressure now controls LED colors, faster than CCs 20-22, thanks to KVR forum member dr_loop for the code!
+void microLinnReceivePolyPressure(byte midiData1, byte midiData2, byte midiChannel, byte midiCellColCC, byte midiCellRowCC) {     
+  if (displayMode != displayNormal) return;
+  byte acc = 0;
+	// set column
+  acc = midiData1 / 8 + 1;
+  
+	// for LS-200 use MIDI-Chn 2 for columns 17 to 25
+  if (midiChannel == 1) {
+    acc = acc + 16;
+  }
+  if (acc < NUMCOLS) {
+    midiCellColCC = acc;
+  }
+	// set Row
+  acc = 7 - (midiData1 % 8);
+  if (acc < NUMROWS) {
+    midiCellRowCC = acc;
+  }
+  
+  byte layer = LED_LAYER_CUSTOM1;
+  if (userFirmwareActive) {
+    layer = LED_LAYER_CUSTOM2;
+  }
+  if (midiData2 <= COLOR_PINK && midiData2 != COLOR_OFF) {
+    setLed(midiCellColCC, midiCellRowCC, midiData2, cellOn, layer);
+  }
+  else {
+    setLed(midiCellColCC, midiCellRowCC, COLOR_OFF, cellOff, layer);
+  }
+  checkRefreshLedColumn(micros());
+}
 
 void paintMicroLinnConfigButtons() {
   for (byte col = 2; col <= 16; ++col) { 

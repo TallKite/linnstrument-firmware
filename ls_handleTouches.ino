@@ -1292,6 +1292,7 @@ void sendNewNote() {
 
     // send the note on
     midiSendNoteOn(sensorSplit, sensorCell->note, sensorCell->velocity, sensorCell->channel);
+    microLinnSendLocatorCC ();
   }
 }
 

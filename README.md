@@ -57,6 +57,13 @@ MULTI-COLORED NOTE LIGHTS: Each of the 12 notes can be any color. Transposable. 
 DETUNING: Detune the entire Linnstrument up or down from A-440 to match a similarly detuned recording or instrument. 
 (No guarantee that detuning to A-432 will heal your chakras lol.) Access it through microLinn's anchor cents, see below.
 
+FOR CODERS: The Linnstrument now sends a locator CC message along with every note-on, indicating the row and column.
+This lets code on your laptop assign a specific function to a specific pad, e.g. upper lefthand corner = all sound off.
+Format: for cols 1-16, CC #30 data value = row + 8 * col. For cols 17-25, CC #31 data value = row + 8 * (col - 16).
+The Linnstrument now accepts a single poly pressure message that lights an LED, much quicker than using CCs 20-22.
+Format: for cols 1-16, use channel 0. For cols 17-25, use channel 1. Key = row/col as above, velocity = color (0-11).
+Thanks to KVR forum members vorp40 and dr_loop for the code!
+
 -------- MICROTONAL FEATURES -------- 
 
 On the Global Settings screen, long-press col 1 bottom row (VIEW MAIN) to go to the main microLinn menu.

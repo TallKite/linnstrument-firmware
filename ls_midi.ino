@@ -295,6 +295,12 @@ void handleMidiInput(unsigned long nowMicros) {
     }
 
     switch (midiStatus) {
+      case MIDIPolyphonicPressure:
+      {
+        microLinnReceivePolyPressure(midiData1, midiData2, midiChannel, midiCellColCC, midiCellRowCC);
+        break;
+      }
+
       case MIDISongPositionPointer:
       {
         unsigned pos = midiData2 << 7 | midiData1;

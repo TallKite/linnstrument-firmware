@@ -1463,7 +1463,7 @@ void startProjectLEDBlink(byte p, byte color) {
   }
   projectBlinkStart[p] = now;
 
-  setLed(6 + p%4, 2 + p/4, color, cellFastPulse);
+  setLed(6 + p%4, 5 - p/4, color, cellFastPulse);       // projects now run top to bottom, part of the patternChaining fork
 }
 
 void handleSequencerProjectsHold() {
