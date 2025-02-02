@@ -46,7 +46,7 @@ For any questions about this, contact Roger Linn Design at support@rogerlinndesi
 /******************************************** CONSTANTS ******************************************/
 
 const char* OSVersion = "234.";
-const char* OSVersionBuild = "072A"; // the "A" means Device.microLinn.MLversion = 0, "B" means 1, etc.
+const char* OSVersionBuild = ".072A";   // the "A" means Device.microLinn.MLversion = 0, "B" means 1, etc.
 
 // SPI addresses
 #define SPI_LEDS    10               // Arduino pin for LED control over SPI

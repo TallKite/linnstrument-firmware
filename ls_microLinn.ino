@@ -87,7 +87,7 @@ use sendDebugMidi to investigate
 test setting the edo in handleMicroLinnConfigRelease, maybe add "else if (microLinnConfigColNum == 5) prevEDO = EDO"?
 test exiting microLinn, do the offsets get adjusted?
 
-long-press the low power button to get a dimmer display but not a lower scan rate (in effect a crude brightness knob)
+long-press the low power button to get a dimmer display but not a lower scan rate (in effect a crude brightness knob)?
 change operatingLowPower from a boolean to a byte, 0 = normal, 1 = dim & slow, 2 = dim
 
 guitartuning screen, edostep display doesn't update
@@ -103,7 +103,7 @@ make lots of global vars like microLinnEDO, for speed?
 
 fix same/blink mode when col offset > 1
 
-make system reset be a long press not a short press
+make system reset be a long press not a short press?
 
 implement microLinnSendCellLocation (just needs a GUI), lets people program "zones" that do special things
 make it a permanent var, not just runtime? Or make it always enabled?
@@ -510,7 +510,7 @@ short microLinnCurrNote = -1;                                // -1 = out of rang
 int microLinnCurrBend = 0;                                   // zero-centered
 short microLinnPreviewNote = -1;                             // active note that is previewing the note lights pitch
 short microLinnPreviewChannel = -1;                          // active channel that is previewing the note lights pitch
-boolean microLinnSendCellLocation = false;                   // send CC 30 or 31 with row/column location for each note-on
+boolean microLinnSendCellLocation = true;                    // send CC 30 or 31 with row/column location for each note-on
 
 int microLinnMod (int num, int base) {          // -13 % 10 = -3, but microLinnMod (-13, 10) = 7
   num %= base;
@@ -1130,43 +1130,28 @@ void microLinnLightOctaveSwitch() {
 // send locator CC after each note-on to indicate pad's row/column, thanks to KVR forum member vorp40 for the code!
 void microLinnSendLocatorCC() {            
   if (!microLinnSendCellLocation) return;
-  if (sensorCol < 16) {
-    midiSendControlChange(MICROLINN_LOCATOR_CC_1, sensorRow + 8 * sensorCol, sensorCell->channel);
+  if (sensorCol <= 16) {
+    midiSendControlChange(MICROLINN_LOCATOR_CC_1, (7 - sensorRow) + 8 * (sensorCol - 1), sensorCell->channel);
   } else {
-    midiSendControlChange(MICROLINN_LOCATOR_CC_2, sensorRow + 8 * (sensorCol - 16), sensorCell->channel);
+    midiSendControlChange(MICROLINN_LOCATOR_CC_2, (7 - sensorRow) + 8 * (sensorCol - 17), sensorCell->channel);
   }
 }
 
 // PolyPressure now controls LED colors, faster than CCs 20-22, thanks to KVR forum member dr_loop for the code!
-void microLinnReceivePolyPressure(byte midiData1, byte midiData2, byte midiChannel, byte midiCellColCC, byte midiCellRowCC) {     
+void microLinnReceivePolyPressure(byte midiData1, byte midiData2, byte midiChannel) {
   if (displayMode != displayNormal) return;
-  byte acc = 0;
-	// set column
-  acc = midiData1 / 8 + 1;
-  
-	// for LS-200 use MIDI-Chn 2 for columns 17 to 25
-  if (midiChannel == 1) {
-    acc = acc + 16;
-  }
-  if (acc < NUMCOLS) {
-    midiCellColCC = acc;
-  }
-	// set Row
-  acc = 7 - (midiData1 % 8);
-  if (acc < NUMROWS) {
-    midiCellRowCC = acc;
-  }
+
+  byte row = 7 - (midiData1 % 8);
+  byte col = midiData1 / 8 + 1;
+  if (midiChannel == 1) col += 16;    	// for LS-200 use MIDI-Chan 2 for columns 17 to 25
+  if (col >= NUMCOLS) return;
   
   byte layer = LED_LAYER_CUSTOM1;
   if (userFirmwareActive) {
     layer = LED_LAYER_CUSTOM2;
   }
-  if (midiData2 <= COLOR_PINK && midiData2 != COLOR_OFF) {
-    setLed(midiCellColCC, midiCellRowCC, midiData2, cellOn, layer);
-  }
-  else {
-    setLed(midiCellColCC, midiCellRowCC, COLOR_OFF, cellOff, layer);
-  }
+  if (midiData2 > COLOR_PINK) midiData2 = COLOR_OFF;
+  setLed(col, row, midiData2, cellOn, layer);
   checkRefreshLedColumn(micros());
 }
 

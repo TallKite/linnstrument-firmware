@@ -333,15 +333,14 @@ void refreshLedColumn(unsigned long now) {
       if (displayInterval[actualCol][rowCount] % 2 != 0) {
         cellDisplay = cellOff;
       }
-    } 
+    }
 
     // if this LED is not off, process it
     // set the color bytes to the correct color
     if (cellDisplay) {
       // construct composite colors
-
       if ((!Device.operatingLowPower && displayInterval[actualCol][rowCount] % 2 != 0) ||
-           (Device.operatingLowPower && displayInterval[actualCol][rowCount] % 4 != 0)) {
+          (Device.operatingLowPower && displayInterval[actualCol][rowCount] % 4 != 0)) {
         switch (color)
         {
           case COLOR_WHITE:

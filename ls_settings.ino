@@ -1794,7 +1794,8 @@ boolean handleShowSplit() {
         if (displayMode != displayPreset &&
             displayMode != displayVolume &&
             displayMode != displayOctaveTranspose &&
-            displayMode != displayGuitarTuning &&      // these screens should never be exited on split change
+            displayMode != displayGuitarTuning &&
+            displayMode != displayMicroLinnConfig &&      // these screens should never be exited on split change
             !isSequencerSettingsDisplayMode()) {
           setDisplayMode(displayPerSplit);
         }

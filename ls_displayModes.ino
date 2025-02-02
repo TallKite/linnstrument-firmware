@@ -911,7 +911,8 @@ void paintOSVersionBuildDisplay() {
 
   byte color = Split[LEFT].colorAccent;
   if (LINNMODEL == 200) smallfont_draw_string(0, 0, OSVersionBuild, color);
-  else condfont_draw_string(0, 0, OSVersionBuild, color);        // use a smaller font to fit in the microLinn version
+  // to fit in the microLinn version letter, use a condensed font and omit the period
+  else condfont_draw_string(-2, 0, OSVersionBuild, color);
 }
 
 // paint the current preset number for a particular side, in large block characters

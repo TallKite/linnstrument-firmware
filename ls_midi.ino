@@ -297,7 +297,7 @@ void handleMidiInput(unsigned long nowMicros) {
     switch (midiStatus) {
       case MIDIPolyphonicPressure:
       {
-        microLinnReceivePolyPressure(midiData1, midiData2, midiChannel, midiCellColCC, midiCellRowCC);
+        microLinnReceivePolyPressure(midiData1, midiData2, midiChannel);
         break;
       }
 
