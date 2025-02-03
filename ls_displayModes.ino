@@ -1403,7 +1403,8 @@ void paintNoteDataDisplay(byte color, short noteNumber, short offset) {
   }
 
   snprintf(str, sizeof(str), format, int(noteNumber/12) - 2);
-  condfont_draw_string(offset, 0, str, color, false);
+  byte microLinnRow = (displayMode == displayMicroLinnConfig ? 1 : 0);  // avoid the low row buttons
+  condfont_draw_string(offset, microLinnRow, str, color, false);
 }
 
 // draw a horizontal line to indicate volume for a particular side

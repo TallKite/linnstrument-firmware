@@ -510,8 +510,6 @@ byte microLinnUninstall = 2;                                 // 0 = false, 1 = t
 boolean microLinnUninstallNowScrolling = false;
 short microLinnCurrNote = -1;                                // -1 = out of range midi note, or no current note
 int microLinnCurrBend = 0;                                   // zero-centered
-short microLinnPreviewNote = -1;                             // active note that is previewing the note lights pitch
-short microLinnPreviewChannel = -1;                          // active channel that is previewing the note lights pitch
 boolean microLinnSendCellLocation = true;                    // send CC 30 or 31 with row/column location for each note-on
 
 
@@ -815,17 +813,6 @@ FocusCell microLinnFIndEdostep(byte split, short edostep) {
 } **********************/
 
 /**************  TEMPORARY CODE, DELETE LATER  ************************/
-
-// replace with ensureGuitarPreviewNoteRelease
-void ensureMicroLinnPreviewNoteRelease() {
-  if (microLinnPreviewNote != -1 &&
-      microLinnPreviewChannel != -1) {
-    midiSendNoteOff(Global.currentPerSplit, microLinnPreviewNote, microLinnPreviewChannel);
-    releaseChannel(Global.currentPerSplit, microLinnPreviewChannel);
-    microLinnPreviewNote = -1;
-    microLinnPreviewChannel = -1;
-  }
-}
 
 void microLinnTuneNewSeqEvent() {
   if (!isMicroLinnOn()) return;
@@ -1291,7 +1278,7 @@ void paintMicroLinnConfig() {
       break;  
     case 9: 
       if (!isMicroLinnOn()) break;
-      microLinnPaintNoteDataDisplay(globalColor, Global.microLinn.anchorNote, LINNMODEL == 200 ? 2 : 1);
+      PaintNoteDataDisplay(globalColor, Global.microLinn.anchorNote, LINNMODEL == 200 ? 2 : 1);
       break;
     case 10: 
       if (!isMicroLinnOn()) break;
@@ -1311,30 +1298,6 @@ void paintMicroLinnConfig() {
     case 16:
       break;
   }
-}
-
-void microLinnPaintNoteDataDisplay(byte color, short noteNumber, short offset) {
-  char str[10];
-  const char* format;
-
-  switch (noteNumber % 12) {
-    case 0: format = "C%d"; break;
-    case 1: format = "C#%d"; break;
-    case 2: format = "D%d"; break;
-    case 3: format = "Eb%d"; break;
-    case 4: format = "E%d"; break;
-    case 5: format = "F%d"; break;
-    case 6: format = "F#%d"; break;
-    case 7: format = "G%d"; break;
-    case 8: format = "G#%d"; break;
-    case 9: format = "A%d"; break;
-    case 10: format = "Bb%d"; break;
-    case 11: format = "B%d"; break;
-    default: format = "%d"; break;
-  }
-
-  snprintf(str, sizeof(str), format, int(noteNumber/12) - 2);
-  condfont_draw_string(offset, 1, str, color, false);
 }
 
 void paintMicroLinnNoteLights() {
@@ -1618,16 +1581,16 @@ void microLinnHandleGuitarTuningNewTouch() {
     }
   }
 
-  ensureMicroLinnPreviewNoteRelease();
+  ensureGuitarTuningPreviewNoteRelease();
   unsigned char lefty = isLeftHandedSplit(Global.currentPerSplit) ? -1 : 1;
   short edostep = Global.microLinn.guitarTuning[guitarTuningRowNum]
                 - Global.microLinn.guitarTuning[Global.microLinn.anchorRow]
                 - lefty * Split[Global.currentPerSplit].microLinn.colOffset * Global.microLinn.anchorCol;
   microLinnGetMidiNoteAndBend(Global.currentPerSplit, edostep);
-  microLinnPreviewNote = microLinnCurrNote;
-  microLinnPreviewChannel = takeChannel(Global.currentPerSplit, sensorRow);
-  midiSendPitchBend(microLinnCurrBend, microLinnPreviewChannel);
-  midiSendNoteOn(Global.currentPerSplit, microLinnPreviewNote, 96, microLinnPreviewChannel);
+  guitarTuningPreviewNote = microLinnCurrNote;
+  guitarTuningPreviewChannel = takeChannel(Global.currentPerSplit, sensorRow);
+  midiSendPitchBend(microLinnCurrBend, guitarTuningPreviewChannel);
+  midiSendNoteOn(Global.currentPerSplit, guitarTuningPreviewNote, 96, guitarTuningPreviewChannel);
 }
 
 void enterMicroLinnConfig () {
@@ -1691,15 +1654,15 @@ void handleMicroLinnNoteLightsNewTouch() {
     } else if (Global.activeNotes < 7) {
       Device.microLinn.scales[triIndex(edo, edostep)] ^= (1 << Global.activeNotes);      // xor to toggle the bit
       if (Device.microLinn.scales[triIndex(edo, edostep)] & (1 << Global.activeNotes)) {
-        ensureMicroLinnPreviewNoteRelease();
+        ensureGuitarTuningPreviewNoteRelease();
         if (edostep > MICROLINN_SCALEROWS[edo][6]) {
           edostep -= edo;                                        // adjust notes in the first row below the tonic
         }
         microLinnGetMidiNoteAndBend(Global.currentPerSplit, edostep);
-        microLinnPreviewNote = microLinnCurrNote;
-        microLinnPreviewChannel = takeChannel(Global.currentPerSplit, sensorRow);
-        midiSendPitchBend(microLinnCurrBend, microLinnPreviewChannel);
-        midiSendNoteOn(Global.currentPerSplit, microLinnPreviewNote, 96, microLinnPreviewChannel);
+        guitarTuningPreviewNote = microLinnCurrNote;
+        guitarTuningPreviewChannel = takeChannel(Global.currentPerSplit, sensorRow);
+        midiSendPitchBend(microLinnCurrBend, guitarTuningPreviewChannel);
+        midiSendNoteOn(Global.currentPerSplit, guitarTuningPreviewNote, 96, guitarTuningPreviewChannel);
       }
     }
     updateDisplay(); 
@@ -1756,7 +1719,7 @@ void handleMicroLinnNoteLightsRelease() {
     }
   }
   if (cellsTouched == 0) {
-    ensureMicroLinnPreviewNoteRelease();
+    ensureGuitarTuningPreviewNoteRelease();
   }
 }
 
