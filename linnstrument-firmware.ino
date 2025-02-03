@@ -778,7 +778,7 @@ struct MicroLinnGlobal {
   byte anchorRow;                            // top row is 7, bottom row is 0, but the user sees top row as 1, bottom row as 8
   byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
   signed char anchorCents;                   // ranges -100 to +100 cents, even though 50 would do, for convenience
-  short guitarTuning[MAXROWS];               // interval in edosteps from the bottom string, can be negative, independent of Global.guitarTuning
+  short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, [0] is unused, can be negative, independent of Global.guitarTuning
   boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
   boolean sweeten;                           // adjust 41edo 5/4, 5/3 by 2¢ both top and bottom to make it 4¢ closer to just?
 };

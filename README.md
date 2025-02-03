@@ -59,17 +59,15 @@ DETUNING: Detune the entire Linnstrument up or down from A-440 to match a simila
 
 FOR CODERS: The Linnstrument can now send a locator CC message along with every note-on, indicating the row and column.
 This lets code on your laptop assign a specific function to a specific pad, e.g. upper lefthand corner = all sound off.
-Format: for cols 1-16, CC #30 data value = row + 8 * col. For cols 17-25, CC #31 data value = row + 8 * (col - 16).
-The top row is entered as row 0 and the leftmost column is entered as column 0.
-Also, the Linnstrument now accepts a single poly pressure message that lights an LED, much quicker than using CCs 20-22.
-Format: for cols 1-16, use channel 0. For cols 17-25, use channel 1. Key = row/col as above, velocity = color (0-11).
-Thanks to KVR forum members vorp40 and dr_loop for their code!
+Format: for cols 1-16, CC data value = (row - 1) + 8 * (col - 1). For cols 17-25, CC data value = (row - 1) + 8 * (col - 17).
+The top row is row 1 and the leftmost column is column 1. Enable it and choose the CC through the microLinn menu, see below.
+Thanks to KVR forum member vorp40 for the code!
 
 -------- MICROTONAL FEATURES -------- 
 
 On the Global Settings screen, long-press col 1 bottom row (VIEW MAIN) to go to the main microLinn menu.
 Once the edo (notes per octave) is set to anything other than OFF, VIEW MAIN turns light blue and you can short-press it.
-The menu has 10 buttons. Long-press each one to see its function. Most don't work until you set the edo.
+The menu has 10 buttons. *Long-press each one* to see its function. Many don't work until you set the edo.
 
 1) left column offset
 2) right column offset
@@ -98,16 +96,17 @@ A major 2nd is defined as the interval between the 4th and the 5th, e.g. 3 edost
 
 MicroLinn's guitar tuning is completely independent of the standard Linnstrument guitar tuning.
 The guitar tuning screen no longer adjusts the pitch of each "string". Instead it sets 7 independent row offsets.
-So you no longer see a note name with an octave number. Instead you see a row offset as a number (which can be negative).
-Touching the top button on the far left sounds the pitch of the top open string, as before. 
-It also makes the top two buttons light up, which indicates you're adjusting the row offset between the 1st and 2nd rows.
-The 2nd button sounds the 2nd open string and shows the offset between the 2nd and 3rd strings, and so forth.
-The bottom button doesn't show a row offset, but it does sound the pitch of the bottom open string.
-Changing 1 offset doesn't affect the other 6 offsets. In general, changing a row offset sharpens/flattens multiple strings.
-But of course only one string changes when you change the first offset or the last offset.
-The "anchor string" is the string that the anchor pad is on. Its pitch is determined by the anchor pad, note and cents.
-Thus increasing any row offset above the anchor row sharpens multiple strings. 
-And increasing any row offset below the anchor row flattens multiple strings.
+The "anchor string" is the row that the anchor pad is on. Its pitch is determined solely by the anchor pad, note and cents.
+On the far left, the anchor string is red, or orange if lit up. The others are green, or cyan if lit up.
+Tap any button on the far left except the red one to select it. It lights up and sounds that open string.
+One of the neighboring strings, whichever one is closest to the anchor, also lights up.
+You won't see a note name with an octave number. Instead you'll see a row offset as a number (which can be negative). 
+This is the row offset between the two lit-up strings. Swipe right or left on it as before to increase or decrease it.
+(Selecting the anchor string doesn't show a row offset, but it does sound the pitch of the anchor open string.)
+Changing one row offset doesn't affect the other six row offsets.
+Thus increasing any row offset above the anchor string sharpens the current string and all strings above it.
+And increasing any row offset below the anchor string flattens the current string and all strings below it.
+(Of the two lit-up buttons, the current string is always the one furthest from the anchor string.)
 
 If the guitar tuning is the standard tuning, the GLOBAL screen's GUITAR pad is dark blue, otherwise it's bright blue.
 The exact notes don't matter, just that the intervals between open strings are all 4ths, except for that one major 3rd.
@@ -137,7 +136,7 @@ Tap the yellow rainbow enabler button to turn off the rainbow and limit the note
 The 3 custom light patterns are totally separate from all this and are still available for use!
 This web browser lets you easily edit them: https://forrcaho.github.io/linnstrument_colorizer/
 
-Of the 8 scales, the 1st and 2nd scales are major/downmajor (5-over) and minor/upminor (5-under).
+Of the 8 scales, the 1st and 2nd scales are 5-limit major and 5-limit minor.
 Scales 3-6 are blank but for the tonic, so that you can create your own scales in the lights display
 (For the smaller, weirder edos, scales 1-2 are also blank.)
 The 7th scale is a partial rainbow, and the 8th scale is always the full rainbow.
@@ -157,7 +156,8 @@ Edos above 24 approximate 12edo, in other words there are dots about every 100 c
 
 All of microLinn's settings are remembered by the 6 presets except the scales, rainbows and dot patterns.
 
-On the custom row offset screem, while microLinn is on, the "-GUI" option for reversed guitar tuning is no longer available. Set the guitar tuning manually instead.
+On the custom row offset screem, while microLinn is on, the "-GUI" option for reversed guitar tuning is no longer available.
+To get this tuning, set the guitar tuning manually instead.
 
 What advantages does microLinn's 12edo have over the standard, non-microLinn 12edo? 
 It can be stretched and/or detuned, plus you get multi-colored note lights.
@@ -165,7 +165,7 @@ It can be stretched and/or detuned, plus you get multi-colored note lights.
 Suggestions for exploring:
 The first few edos are pretty strange. Try starting with 15, 17, 19 or 22.
 Be sure to try the Bosanquet layout for 31edo and the Kite guitar layout for 41edo.
-The rainbow colors can be overwhelming. Try setting the played mode to BLNK or BLNK8.
+The rainbow colors can be overwhelming. Try setting the played mode to BLNK.
 Once you know an edo well, you'll probably want to switch to the fretboard dots display.
 
 To create JI or rank-2 scales with N notes, set the edo to N. (Eventually: also turn on raw midi mode.)
