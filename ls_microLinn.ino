@@ -1068,7 +1068,7 @@ void microLinnPaintNormalDisplayCell(byte split, byte col, byte row) {
   }
 }
 
-void  microLinnPaintEdostepTranspose(bool doublePerSplit, byte side) {
+void  microLinnPaintEdostepTranspose(byte side) {
   // paint the 2 new rows on the transpose display
   if (!isMicroLinnOn()) return;
   if (MICROLINN_MAJ_2ND[Global.microLinn.EDO] == 1) return;
@@ -1162,6 +1162,12 @@ void paintMicroLinnConfigButtons() {
   }
 }
 
+void microLinnScrollSmall (String text) {
+  char tripleText[200];                                      // 200 to fit in the uninstall message, the longest message
+  snprintf(tripleText, sizeof(tripleText), "      %s     %s     %s", text.c_str(), text.c_str(), text.c_str());
+  font_scroll_text(&smallFont, tripleText, Split[LEFT].colorMain, 1);          // use row 1 to avoid the low row buttons
+}
+
 void paintMicroLinnConfig() {
   clearDisplay();
   paintMicroLinnConfigButtons();
@@ -1170,57 +1176,57 @@ void paintMicroLinnConfig() {
     // leading spaces ensure the string first appears on the right edge, not on the left edge
     switch (microLinnConfigColNum) {
       case 2: 
-        small_scroll_text_row1("      LEFT COLUMN OFFSET    LEFT COLUMN OFFSET    LEFT COLUMN OFFSET", Split[LEFT].colorMain);
+        microLinnScrollSmall("LEFT COLUMN OFFSET");
         break;
       case 3: 
-        small_scroll_text_row1("      RIGHT COLUMN OFFSET    RIGHT COLUMN OFFSET    RIGHT COLUMN OFFSET", Split[RIGHT].colorMain);
+        microLinnScrollSmall("RIGHT COLUMN OFFSETT");
         break;
       case 5: 
-        small_scroll_text_row1("      EDO (NOTES PER OCTAVE)    EDO (NOTES PER OCTAVE)    EDO (NOTES PER OCTAVE)", Split[LEFT].colorMain);
+        microLinnScrollSmall("EDO (NOTES PER OCTAVE)");
         break;
       case 6: 
         if (isMicroLinnOn()) {
-          small_scroll_text_row1("      OCTAVE STRETCH IN CENTS    OCTAVE STRETCH IN CENTS    OCTAVE STRETCH IN CENTS", Split[LEFT].colorMain);
+          microLinnScrollSmall("OCTAVE STRETCH IN CENTS");
         } else {
-          small_scroll_text_row1("      FIRST SELECT AN EDO    FIRST SELECT AN EDO    FIRST SELECT AN EDO", Split[LEFT].colorMain);
+          microLinnScrollSmall("FIRST SELECT AN EDO");
         }
         break;
       case 8: 
         if (isMicroLinnOn()) {
-          small_scroll_text_row1("      ANCHOR PAD    ANCHOR PAD    ANCHOR PAD", Split[LEFT].colorMain);
+          microLinnScrollSmall("ANCHOR PAD");
         } else {
-          small_scroll_text_row1("      FIRST SELECT AN EDO    FIRST SELECT AN EDO    FIRST SELECT AN EDO", Split[LEFT].colorMain);
+          microLinnScrollSmall("FIRST SELECT AN EDO");
         }
         break;
       case 9: 
         if (isMicroLinnOn()) {
-          small_scroll_text_row1("      ANCHOR NOTE    ANCHOR NOTE    ANCHOR NOTE", Split[LEFT].colorMain);
+          microLinnScrollSmall("ANCHOR NOTE");
         } else {
-          small_scroll_text_row1("      FIRST SELECT AN EDO    FIRST SELECT AN EDO    FIRST SELECT AN EDO", Split[LEFT].colorMain);
+          microLinnScrollSmall("FIRST SELECT AN EDO");
         }
         break;
       case 10: 
         if (isMicroLinnOn()) {
-          small_scroll_text_row1("      ANCHOR CENTS    ANCHOR CENTS    ANCHOR CENTS", Split[LEFT].colorMain);
+          microLinnScrollSmall("ANCHOR CENTS");
         } else {
-          small_scroll_text_row1("      FIRST SELECT AN EDO    FIRST SELECT AN EDO    FIRST SELECT AN EDO", Split[LEFT].colorMain);
+          microLinnScrollSmall("FIRST SELECT AN EDO");
         }
         break;
       case 12: 
         if (isMicroLinnOn()) {
-          small_scroll_text_row1("      SET NOTE LIGHTS    SET NOTE LIGHTS    SET NOTE LIGHTS", Split[LEFT].colorMain);
+          microLinnScrollSmall("SET NOTE LIGHTS");
         } else {
-          small_scroll_text_row1("      FIRST SELECT AN EDO    FIRST SELECT AN EDO    FIRST SELECT AN EDO", Split[LEFT].colorMain);
+          microLinnScrollSmall("FIRST SELECT AN EDO");
         }
         break;
       case 14: 
-        small_scroll_text_row1("      SET TO 31EDO BOSANQUET    SET TO 31EDO BOSANQUET    SET TO 31EDO BOSANQUET", Split[LEFT].colorMain);
+        microLinnScrollSmall("SET TO 31EDO BOSANQUET");
         break;
       case 15: 
-        small_scroll_text_row1("      SET TO 41EDO KITE GUITAR    SET TO 41EDO KITE GUITAR    SET TO 41EDO KITE GUITAR", Split[LEFT].colorMain);
+        microLinnScrollSmall("SET TO 41EDO KITE GUITAR");
         break;
       case 16: 
-        small_scroll_text_row1("      RESET TO 12EDO    RESET TO 12EDO    RESET TO 12EDO", Split[LEFT].colorMain);
+        microLinnScrollSmall("RESET TO 12EDO");
         break;
     }
     paintMicroLinnConfigButtons();
@@ -1229,16 +1235,16 @@ void paintMicroLinnConfig() {
   signed char offset = 0;
   switch (microLinnConfigColNum) {
     case 2:
-      paintNumericDataDisplayRow(Split[LEFT].colorMain, Split[LEFT].microLinn.colOffset, 0, 1, false);
+      paintNumericDataDisplay(Split[LEFT].colorMain, Split[LEFT].microLinn.colOffset, 0, false);
       break;
     case 3: 
-      paintNumericDataDisplayRow(Split[RIGHT].colorMain, Split[RIGHT].microLinn.colOffset, 0, 1, false);
+      paintNumericDataDisplay(Split[RIGHT].colorMain, Split[RIGHT].microLinn.colOffset, 0, false);
       break;
     case 5: 
       if (Global.microLinn.EDO < 5) {
         smallfont_draw_string(4, 1, "OFF", globalColor, false);
       } else {
-        paintNumericDataDisplayRow(globalColor, Global.microLinn.EDO, 0, 1, false);
+        paintNumericDataDisplay(globalColor, Global.microLinn.EDO, 0, false);
       }
       break;
     case 6: 
@@ -1248,7 +1254,7 @@ void paintMicroLinnConfig() {
       } else if (Global.microLinn.octaveStretch <= -10) {
         offset = -3;
       }
-      paintNumericDataDisplayRow(globalColor, Global.microLinn.octaveStretch, offset, 1, false);
+      paintNumericDataDisplay(globalColor, Global.microLinn.octaveStretch, offset, false);
       break;
     case 8:  
       if (!isMicroLinnOn()) break;
@@ -1269,7 +1275,7 @@ void paintMicroLinnConfig() {
       } else if (Global.microLinn.anchorCents <= -10) {
         offset = -3;
       }
-      paintNumericDataDisplayRow(globalColor, Global.microLinn.anchorCents, offset, 1, false);
+      paintNumericDataDisplay(globalColor, Global.microLinn.anchorCents, offset, false);
       break;
     case 12:
       if (!isMicroLinnOn()) break;
@@ -1344,23 +1350,24 @@ void paintMicroLinnDotsEditor(boolean fullScreen) {
   }
 }
 
+void paintMicroLinnUninstallButtons () {
+  setLed(3, 0, COLOR_GREEN, cellOn);
+  setLed(4, 0, microLinnUninstall == 1 ? COLOR_CYAN : COLOR_GREEN, cellOn);
+  setLed(5, 0, COLOR_GREEN, cellOn);
+  setLed(8, 0, COLOR_RED, cellOn);
+  setLed(9, 0, microLinnUninstall == 0 ? COLOR_ORANGE : COLOR_RED, cellOn);
+  setLed(10, 0, COLOR_RED, cellOn);
+  setLed(13, 0, COLOR_BLUE, cellOn);
+  setLed(14, 0, COLOR_BLUE, cellOn);
+  setLed(15, 0, COLOR_BLUE, cellOn);
+}
+
 void paintMicroLinnUninstall() {
   clearDisplay();
-  setLed(4, 0, COLOR_GREEN, cellOn);
-  setLed(5, 0, microLinnUninstall == 1 ? COLOR_CYAN : COLOR_GREEN, cellOn);
-  setLed(6, 0, COLOR_GREEN, cellOn);
-  setLed(11, 0, COLOR_RED, cellOn);
-  setLed(12, 0, microLinnUninstall == 0 ? COLOR_ORANGE : COLOR_RED, cellOn);
-  setLed(13, 0, COLOR_RED, cellOn);
+  paintMicroLinnUninstallButtons();
   if (microLinnUninstallNowScrolling) {
-    small_scroll_text_row1("      UNINSTALL MICROLINN? GREEN = YES, RED = NO, PRESS GLOBAL SETTINGS TO EXIT    UNINSTALL MICROLINN? GREEN = YES, RED = NO, PRESS GLOBAL SETTINGS TO EXIT    UNINSTALL MICROLINN? GREEN = YES, RED = NO, PRESS GLOBAL SETTINGS TO EXIT",
-                           Split[LEFT].colorMain);
-    setLed(4, 0, COLOR_GREEN, cellOn);
-    setLed(5, 0, microLinnUninstall == 1 ? COLOR_CYAN : COLOR_GREEN, cellOn);
-    setLed(6, 0, COLOR_GREEN, cellOn);
-    setLed(11, 0, COLOR_RED, cellOn);
-    setLed(12, 0, microLinnUninstall == 0 ? COLOR_ORANGE : COLOR_RED, cellOn);
-    setLed(13, 0, COLOR_RED, cellOn);
+    microLinnScrollSmall("UNINSTALL MICROLINN? GREEN = YES, RED = NO, BLUE = EXIT");
+    paintMicroLinnUninstallButtons();
   }
 }
 
@@ -1394,11 +1401,6 @@ void microLinnHandleOctaveTransposeNewTouchSplit(byte side) {
            sensorCol > 0 && sensorCol < 16) {
     Split[side].microLinn.transposeEDOlights = sensorCol - 8;
   }
-}
-
-void microLinnPaintRowOffset() {
-  clearDisplay();
-  paintNumericDataDisplay(globalColor, Global.customRowOffset, 0, false);
 }
 
 void microLinnHandleRowOffsetNewTouch() {
@@ -1656,7 +1658,7 @@ void handleMicroLinnNoteLightsNewTouch() {
     edostep = microLinnMod (edostep, edo);
     if (Global.activeNotes == 7) {                                            // rainbow editor
       short ptr = triIndex(edo, edostep);
-      switch (Device.microLinn.rainbows[ptr]) {                   // cycle through the colors
+      switch (Device.microLinn.rainbows[ptr]) {                   // cycle through the colors in rainbow order
         case 8:  Device.microLinn.rainbows[ptr] = 1;  break;      // white to red
         case 1:  Device.microLinn.rainbows[ptr] = 9;  break;      // red to orange
         case 9:  Device.microLinn.rainbows[ptr] = 2;  break;      // orange
@@ -1765,16 +1767,21 @@ void enterMicroLinnUninstallMenu() {
 
 void handleMicroLinnUninstallNewTouch() {
   microLinnUninstallNowScrolling = false;
-  if (sensorRow == 0 && sensorCol >= 4 && sensorCol <= 6) {
+  if (sensorRow > 0) return;
+  if (sensorCol >= 3 && sensorCol <= 5) {          // green button
     microLinnUninstall = 1;
     switchSerialMode(true);
     storeSettings();
     updateDisplay(); 
   }
-  else if (sensorRow == 0 && sensorCol >= 11 && sensorCol <= 13) {
+  else if (sensorCol >= 8 && sensorCol <= 10) {    // red
     microLinnUninstall = 0;
     switchSerialMode(true);
     storeSettings();
+    updateDisplay(); 
+  }
+  else if (sensorCol >= 13 && sensorCol <= 15) {   // blue
+    setDisplayMode(displayGlobal);
     updateDisplay(); 
   }
 }

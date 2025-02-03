@@ -1284,9 +1284,8 @@ void paintSplitHandedness() {
 }
 
 void paintRowOffset() {
-  if (isMicroLinnOn()) {microLinnPaintRowOffset(); return;}
   clearDisplay();
-  if (Global.customRowOffset == -17) {
+  if (Global.customRowOffset == -17 && !isMicroLinnOn()) {
     condfont_draw_string(0, 0, "-GUI", globalColor, false);
   }
   else {
@@ -1351,6 +1350,7 @@ void paintNumericDataDisplay(byte color, short value, short offset, boolean cond
   char str[10];
   const char* format;
   byte pos;
+  byte microLinnRow = (displayMode == displayMicroLinnConfig ? 1 : 0);  // avoid the low row buttons
 
   if (value < 100) {
     format = "%2d";
@@ -1359,10 +1359,10 @@ void paintNumericDataDisplay(byte color, short value, short offset, boolean cond
   else if (value >= 100 && value < 200) {
     // Handle the "1" character specially, to get the spacing right
     if (condensed) {
-      condfont_draw_string(offset, 0, "1", color, false);
+      condfont_draw_string(offset, microLinnRow, "1", color, false);
     }
     else {
-      smallfont_draw_string(offset + 2, 0, "1", color, false);
+      smallfont_draw_string(offset + 2, microLinnRow, "1", color, false);
     }
     value -= 100;
     format = "%02d";     // to make sure a leading zero is included
@@ -1375,45 +1375,10 @@ void paintNumericDataDisplay(byte color, short value, short offset, boolean cond
 
   snprintf(str, sizeof(str), format, value);
   if (condensed) {
-    condfont_draw_string(pos+offset, 0, str, color, false);
+    condfont_draw_string(pos+offset, microLinnRow, str, color, false);
   }
   else {
-    smallfont_draw_string(pos+offset, 0, str, color, false);
-  }
-}
-
-void paintNumericDataDisplayRow(byte color, short value, short offset, byte row, boolean condensed) {
-  char str[10];
-  const char* format;
-  byte pos;
-
-  if (value < 100) {
-    format = "%2d";
-    pos = condensed ? 3 : 5;
-  }
-  else if (value >= 100 && value < 200) {
-    // Handle the "1" character specially, to get the spacing right
-    if (condensed) {
-      condfont_draw_string(offset, row, "1", color, false);
-    }
-    else {
-      smallfont_draw_string(offset + 2, row, "1", color, false);
-    }
-    value -= 100;
-    format = "%02d";     // to make sure a leading zero is included
-    pos = condensed ? 3 : 5;
-  }
-  else {
-    format = "%-d";
-    pos = 0;
-  }
-
-  snprintf(str, sizeof(str), format, value);
-  if (condensed) {
-    condfont_draw_string(pos+offset, row, str, color, false);
-  }
-  else {
-    smallfont_draw_string(pos+offset, row, str, color, false);
+    smallfont_draw_string(pos+offset, microLinnRow, str, color, false);
   }
 }
 
@@ -1501,7 +1466,7 @@ void paintOctaveTransposeDisplay(byte side) {
     }
   }
 
-  microLinnPaintEdostepTranspose (doublePerSplit, side);
+  microLinnPaintEdostepTranspose (side);
 
   paintShowSplitSelection(side);
 }

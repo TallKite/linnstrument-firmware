@@ -2406,10 +2406,6 @@ void small_scroll_text(const char* str, byte color) {
   font_scroll_text(&smallFont, str, color, 0);
 }
 
-void small_scroll_text_row1(const char* str, byte color) {
-  font_scroll_text(&smallFont, str, color, 1);
-}
-
 void big_scroll_text(const char* str, byte color) {
   font_scroll_text(&bigFont, str, color, 0);
 }
