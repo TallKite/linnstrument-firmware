@@ -1301,7 +1301,7 @@ void paintGuitarTuning() {
     setLed(1, r, guitarTuningRowNum == r ? Split[Global.currentPerSplit].colorAccent : Split[Global.currentPerSplit].colorMain, cellOn);
   }
 
-  paintNoteDataDisplay(globalColor, Global.guitarTuning[guitarTuningRowNum], LINNMODEL == 200 ? 2 : 1, 0);
+  paintNoteDataDisplay(globalColor, Global.guitarTuning[guitarTuningRowNum], LINNMODEL == 200 ? 2 : 1);
 }
 
 void paintMIDIThrough() {
@@ -1382,7 +1382,7 @@ void paintNumericDataDisplay(byte color, short value, short offset, boolean cond
   }
 }
 
-void paintNoteDataDisplay(byte color, short noteNumber, short offset, byte row) {
+void paintNoteDataDisplay(byte color, short noteNumber, short offset) {
   char str[10];
   const char* format;
 
@@ -1403,7 +1403,7 @@ void paintNoteDataDisplay(byte color, short noteNumber, short offset, byte row) 
   }
 
   snprintf(str, sizeof(str), format, int(noteNumber/12) - 2);
-  condfont_draw_string(offset, row, str, color, false);
+  condfont_draw_string(offset, 0, str, color, false);
 }
 
 // draw a horizontal line to indicate volume for a particular side

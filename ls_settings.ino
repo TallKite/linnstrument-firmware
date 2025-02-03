@@ -3009,7 +3009,7 @@ void handleGlobalSettingHold() {
             setDisplayMode(displayCustomLedsEditor);
             updateDisplay();
         }
-        else {microLinnHandleGlobalScaleHold();}
+        else microLinnHandleGlobalScaleHold();
         break;
 
       case 6:
