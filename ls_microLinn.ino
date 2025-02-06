@@ -48,8 +48,12 @@ also adjust Global.customSwitchAssignment[switchSelect] since no EDO or SCALE up
   microLinnV16 is used by firmware v2.3.0, v2.3.3
     in DeviceSettings, new array of bytes customLeds[LED_PATTERNS][LED_LAYER_SIZE] (675 bytes)
     
+write code for 6 microLinn memories/presets, 6 new buttons next to the 6 standard ones (column 15 or column 22)
+  for the Linn 128, move the program change number one pad to the left to make room for the new buttons
+  each one saves all microLinn settings for a single edo - save the dots, rainbows and scales for the current edo only
+  save which scale (which is also saved in the regular presets) but don't save what kind of scale it is
+  save the column offsets in microLinn memories
 
-PROPOSED DATA STRUCTURES:
 struct PresetSettings {
   GlobalSettings global;
   SplitSettings split[NUMSPLITS];
@@ -165,15 +169,6 @@ sweeten 41edo? widen 5/4 by shifting the top note up 2¢ and the bottom note dow
   in a v9 chord, 9th is 2¢ sharper = 3¢ sharp, and in an ^9 chord, root is 3¢ flat (add 9/5 to the narrowing list?)
   in a vM7no3 or vM7(4) chord, the root-5th interval is 2¢ flat (widen 15/8?)
   would 11-limit chords become worse?
-
-write code for 6 microLinn memories/presets? 6 new buttons next to the 6 standard ones (column 15 or column 22)
-  for the Linn 128, move the program change number one pad to the left to make room for the new buttons
-  each one saves all microLinn settings for a single edo - save the dots, rainbows and scales for the current edo only
-  save which scale (which is also saved in the regular presets) but don't save what kind of scale it is
-  where to save the column offsets, in standard memories or in microLinn memories?
-    maybe if it's not set on one of the microLinConfig displays, save it to standard memories
-    thus uninstalling microLinn means adjusting the standard memory structure
-    but it makes sense to save the row/column offsets along with the edo. so who knows?
 
 incorporate the channel pressure fix from the forum (will be part of future official updates anyway)
 
@@ -1288,38 +1283,39 @@ void paintMicroLinnConfig() {
       }
       break;
     case 6: 
-      if (!isMicroLinnOn()) break;
-      if (Global.microLinn.octaveStretch <= -100) {
-        offset = -5;
-      } else if (Global.microLinn.octaveStretch <= -10) {
-        offset = -3;
+      if (isMicroLinnOn()) {
+        if (Global.microLinn.octaveStretch <= -100) {
+          offset = -5;
+        } else if (Global.microLinn.octaveStretch <= -10) {
+          offset = -3;
+        }
+        paintNumericDataDisplay(globalColor, Global.microLinn.octaveStretch, offset, false);
       }
-      paintNumericDataDisplay(globalColor, Global.microLinn.octaveStretch, offset, false);
       break;
     case 8:  
-      if (!isMicroLinnOn()) break;
-      if (LINNMODEL == 200) {
-        smallfont_draw_string(1, 1, microLinnAnchorString, globalColor);
-      } else {
-        condfont_draw_string(1, 1, microLinnAnchorString, globalColor);
+      if (isMicroLinnOn()) {
+        if (LINNMODEL == 200) {
+          smallfont_draw_string(1, 1, microLinnAnchorString, globalColor);
+        } else {
+          condfont_draw_string(1, 1, microLinnAnchorString, globalColor);
+        }
       }
-      break;  
+      break;
     case 9: 
-      if (!isMicroLinnOn()) break;
-      paintNoteDataDisplay(globalColor, Global.microLinn.anchorNote, LINNMODEL == 200 ? 2 : 1);
+      if (isMicroLinnOn()) paintNoteDataDisplay(globalColor, Global.microLinn.anchorNote, LINNMODEL == 200 ? 2 : 1);
       break;
     case 10: 
-      if (!isMicroLinnOn()) break;
-      if (Global.microLinn.anchorCents <= -100) {
-        offset = -5;
-      } else if (Global.microLinn.anchorCents <= -10) {
-        offset = -3;
+      if (isMicroLinnOn()) {
+        if (Global.microLinn.anchorCents <= -100) {
+          offset = -5;
+        } else if (Global.microLinn.anchorCents <= -10) {
+          offset = -3;
+        }
+        paintNumericDataDisplay(globalColor, Global.microLinn.anchorCents, offset, false);
       }
-      paintNumericDataDisplay(globalColor, Global.microLinn.anchorCents, offset, false);
       break;
     case 12:
-      if (!isMicroLinnOn()) break;
-      paintMicroLinnNoteLights();
+      if (isMicroLinnOn()) paintMicroLinnNoteLights();
       break; 
     case 14:
     case 15:

@@ -2869,7 +2869,7 @@ void handleGlobalSettingNewTouch() {
         break;
 #ifndef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
       case 17: 
-        if (sensorRow == 2) enterMicroLinnUninstallMenu();
+        if (sensorRow == 2) enterMicroLinnUninstallMenu();   // move this button to col 16 once it's fully tested
         break;
 #endif
     }
