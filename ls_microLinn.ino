@@ -6,7 +6,8 @@ according to the comment by handleFaderRelease in ls_faders.ino
 note to self: to use multi-channel output with my non-MPE s90es synth, deselect the main channel
 
 note to self: user can enter/exit microLinn only by loading a preset (directly or via NRPN) 
-or by going to microLinnConfig and changing the edo from 4 (or using 31edo/41edo buttons, but they are going away)
+or by going to microLinnConfig and changing the edo from 4 
+(or using 31edo/41edo buttons, but they are going away)
 the EDO+ and EDO- switches/pedals don't let you enter or exit
 
 a few ideas I had, probably not needed
@@ -47,6 +48,15 @@ also adjust Global.customSwitchAssignment[switchSelect] since no EDO or SCALE up
     preset[4] was lengthened to preset[6]
   microLinnV16 is used by firmware v2.3.0, v2.3.3
     in DeviceSettings, new array of bytes customLeds[LED_PATTERNS][LED_LAYER_SIZE] (675 bytes)
+
+  DeviceSettingsV12 = 2204 bytes
+  MicroLinnDevice = 4591 bytes
+  DeviceSettings  = 7549 bytes, so pre-microLinn it was 2958
+  PresetSettings = 400 bytes (Global plus both splits)
+  thus the 6 presets will be 2400 bytes
+  total is 10349 bytes
+
+  microLinn sizeof(config) = 16564 bytes
     
 write code for 6 microLinn memories/presets, 6 new buttons next to the 6 standard ones (column 15 or column 22)
   for the Linn 128, move the program change number one pad to the left to make room for the new buttons
@@ -79,39 +89,28 @@ change col offsets to be a single screen with the usual green/blue split selecto
 replace 2nd col offset button with a row offsets button with split selector
 replace the 3 presets (31, 41 and 12) on the right with 2 buttons
   hammerOn options, brings up a screen with a few buttons on the far left, to choose which option to change
-  locator CC options, choose which 2 CCs to use
-_ row col _ hammer _ locator _ edo stretch _ scales _ anchorPad anchorNote anchorCents
+_ col row _ hammer _ locator _ edo stretch _ scales _ anchorPad anchorNote anchorCents
 on the 200, move everything but the far left columns over 2 cells
 after moving config buttons around, check handleMicroLinnConfigHold() for "1st pick an edo" messages
-
-clean up ls_midi.ino by making a new function microLinnGetNoteNumColumn (needed for raw midi mode)
-also microLinnDetermineRowOffsetNote in handleTouches.ino
-
-possible bug: if the custom row offset is 8, I set rowOffset = 12 and customRowOffset = 8
-but Geert might set rowOffset = 8, and that might be incompatible with my code
-use sendDebugMidi to investigate
 
 test setting the edo in handleMicroLinnConfigRelease, maybe add "else if (microLinnConfigColNum == 5) prevEDO = EDO"?
 test exiting microLinn, do the offsets get adjusted?
 
 long-press the low power button to get a dimmer display but not a lower scan rate (in effect a crude brightness knob)?
-change operatingLowPower from a boolean to a byte, 0 = normal, 1 = dim & slow, 2 = dim
+change operatingLowPower from a boolean to a byte (both are the same size), 0 = normal, 1 = dim & slow, 2 = dim
 
 Add code when translating guitar tunings from one edo to the next?
   add a runtime boolean microLinnIsStandardGuitarTuning
   if true, translate the guitar tuning to the new edo's standard tuning
   prioritze 13b and 18b over 13 and 18?
 
-test if microLinnSumOfRowOffsets() case ROWOFFSET_NOOVERLAP reflects the width of the split
-
 make lots of global vars like microLinnEDO, for speed?
-
-fix same/blink mode when col offset > 1
 
 make system reset be a long press not a short press?
 
 implement microLinnSendCellLocation, lets people program "zones" that do special things
-make it a permanent var, not just runtime
+  make it a permanent var, not just runtime
+  locator CC options, choose which 2 CCs to use, runs OFF, 0, 1, ... 119 (OFF is -1 internally)
 
 test the 6 memories
 test octave up/down footswitches while playing, does the calcTuning call make it glitchy?
@@ -798,6 +797,11 @@ void microLinnGetMidiNoteAndBend(byte side, short edostep) {                    
   }
 }
 
+short microLinnDetermineRowOffsetNote(byte split, byte row) {          // determine the start note of a given row
+  //change this to microLinnMidiNote once the midi works
+  return microLinnEdostep[split][1][row] - microLinnEdostep[split][1][0];
+}
+
 void microLinnSendPreviewNote (short edostep) {                        // edosteps from the anchor cell
   microLinnGetMidiNoteAndBend(Global.currentPerSplit, edostep);
   ensureGuitarTuningPreviewNoteRelease();
@@ -1029,7 +1033,7 @@ void microLinnPaintNormalDisplayCell(byte split, byte col, byte row) {
     else if (currScale == 8) {
       byte fret = micoLinnGetFret (split, col);
       if (Device.microLinn.dots[triIndex(edo, fret)] & (1 << row)) {
-        colour = Split[LEFT].colorMain;
+        colour = Split[split].colorMain;
         cellDisplay = cellOn;
       }
     } 
@@ -1773,7 +1777,6 @@ void handleMicroLinnUninstallNewTouch() {
 /************** functions called in ls_midi.ino ************************/
 
 byte microLinnGetCellColor(byte split, short col, byte row) {
-  if (Global.activeNotes == 8) return Split[LEFT].colorMain;
   byte edo = Global.microLinn.EDO;
   byte edostep = microLinnMod(microLinnEdostep[split][col][row], edo);          // octave-reduced
   if (Global.microLinn.useRainbow) {

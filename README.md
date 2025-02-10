@@ -52,6 +52,9 @@ NEW SWITCH/FOOTSWITCH FUNCTIONS: SCL+ and SCL- cycle you through the 9 scales in
 
 COLUMN OFFSETS: The column offset can be set for each split independently. This allows Wicki-Hayden layout on the left for 
 easy chord playing and normal layout on the right for easy melody playing. Access it through the microLinn menu, see below.
+Beware, if the column offset is 2 and the row offset is an even number, you only get a whoe-tone scale.
+In general, the column offset and the row offset should not have any common factors.
+(In NO OVERLAP mode, the row offset isn't affected by increasing the column offset, it remains the width of the split.)
 
 MULTI-COLORED NOTE LIGHTS: Each of the 12 notes can be any color. Transposable. Access it through the microLinn menu, see below.
 
@@ -87,7 +90,7 @@ Main menu, LONG-PRESS EACH BUTTON to see its function.
 10) set to 41edo Kite guitar (row offset 13, column offset 2)
 11) reset to 12edo
 
-Buttons 4-8 don't work until you set the edo.
+See above for the column offset. Buttons 4-8 don't work until you set the edo. 
 
 The anchor pad is a specific pad or cell that doesn't change pitch when you change the edo (the notes per octave).
 The anchor pad chooser displays the row and column of the current anchor pad, e.g. R3C6 means row 3 (from the top) and column 6. 
@@ -137,7 +140,8 @@ Tap a note in a scale to toggle it on or off. Like the guitar tuning screen, a m
 The 8th scale is the rainbow editor, in which all notes are always on. Tap a note to cycle it thru the rainbow. 
 The 9th scale (guitar-like fretboard dots) isn't really a scale. It's a full-screen display like the custom light patterns.
 Tapping the dots selector makes the dots appear in blue mid-screen. Tapping the dots lets you toggle them on or off. 
-Long-press the scale buttons or the rainbow editor button or the dots selector button to reset the note lights to the default. 
+To change the color of the dots, after editing go to Per-Split Settings and in column 11 change the main color.
+Long-press the scale buttons or the rainbow editor button or the dots selector button to reset the note lights to the default.
 Tap the yellow rainbow enabler button to turn off the rainbow and limit the note lights to the usual two colors.
 
 The 3 custom light patterns are totally separate from all this and are still available for use!

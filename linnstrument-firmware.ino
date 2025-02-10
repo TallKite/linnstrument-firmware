@@ -197,11 +197,11 @@ byte NUMROWS = 8;                    // number of touch sensor rows
 #define ASSIGNED_SEQUENCER_NEXT         15
 #define ASSIGNED_STANDALONE_MIDI_CLOCK  16
 #define ASSIGNED_SEQUENCER_MUTE         17
-#define ASSIGNED_MICROLINN_SCALE_UP     18
-#define ASSIGNED_MICROLINN_SCALE_DOWN   19
-#define ASSIGNED_MICROLINN_EDO_UP       20
-#define ASSIGNED_MICROLINN_EDO_DOWN     21
-#define MAX_ASSIGNED                    ASSIGNED_MICROLINN_EDO_DOWN
+#define ASSIGNED_MICROLINN_EDO_UP       18
+#define ASSIGNED_MICROLINN_EDO_DOWN     19
+#define ASSIGNED_MICROLINN_SCALE_UP     20
+#define ASSIGNED_MICROLINN_SCALE_DOWN   21
+#define MAX_ASSIGNED                    ASSIGNED_MICROLINN_SCALE_DOWN
 #define ASSIGNED_DISABLED               255
 
 #define GLOBAL_SETTINGS_ROW  0
@@ -698,7 +698,7 @@ struct MicroLinnDevice {
   byte MLversion;                                 // current version of the microLinn data structures, 0 displays as A, 1 displays as B, etc.
   byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
   byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
-  byte dots[MICROLINN_ARRAY_SIZE];                // one bit per row, ignores column offsets, doesn't ignore lefthandedness
+  byte dots[MICROLINN_ARRAY_SIZE];                // one bit per row, transposable, lefthandedness reverses it, ignores column offsets
 };
 
 struct DeviceSettings {
