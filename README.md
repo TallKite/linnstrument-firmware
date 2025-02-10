@@ -46,7 +46,7 @@ This is more intuitive because it matches how people read, for example how you a
 As a result, projects you might have previously saved to the top row are now in the bottom row.
 To move them, load them from the bottom row and save them to the top row.
 
-BLINKING MODE: This is a variation of the SAME mode that shows you other occurences of the currently played note.
+BLINKING MODE: Like the SAME mode, it shows you other occurences of the currently played note. But instead of changing color, the other occurences blink. It's good for busy displays like the custom note lights #2 (the one marked as A#). 
 
 NEW SWITCH/FOOTSWITCH FUNCTIONS: SCL+ and SCL- cycle you through the 9 scales in Global Settings columns 2-4 (only affects the note lights).
 

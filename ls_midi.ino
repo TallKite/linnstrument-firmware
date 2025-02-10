@@ -1678,11 +1678,11 @@ void highlightPossibleNoteCells(byte split, byte notenum) {
   for (; row < NUMROWS; ++row) {
     short col = getNoteNumColumn(split, notenum, row);
     if (col > 0) {
-      if (Split[sensorSplit].playedTouchMode == playedBlink) {
+      if (Split[split].playedTouchMode == playedBlink) {
         byte color = getLedColor(col, row, Global.activeNotes >= 9 ? LED_LAYER_CUSTOM1 : LED_LAYER_MAIN);
-        if (color == COLOR_OFF) color = Split[split].colorPlayed;
-        if (isMicroLinnOn() && Global.activeNotes <= 7 && Global.microLinn.useRainbow) {
-          color = microLinnGetCellColor(split, col, row);                // rainbow colors
+        if (color == COLOR_OFF) {
+          if (isMicroLinnOn()) color = microLinnRevealRainbowColor(split, col, row);
+          else color = Split[split].colorPlayed;
         }
         setLed(col, row, color, cellSlowPulse, LED_LAYER_PLAYED);
       } else {

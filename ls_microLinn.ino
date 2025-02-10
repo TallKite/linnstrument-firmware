@@ -1776,14 +1776,12 @@ void handleMicroLinnUninstallNewTouch() {
 
 /************** functions called in ls_midi.ino ************************/
 
-byte microLinnGetCellColor(byte split, short col, byte row) {
+byte microLinnRevealRainbowColor(byte split, short col, byte row) {        // used for blank cells in playedBlink mode
+  if (Global.activeNotes > 7) return Split[split].colorPlayed;             // only for the 8 scales
+  if (!Global.microLinn.useRainbow) return Split[split].colorPlayed;       // only if rainbow is enables
   byte edo = Global.microLinn.EDO;
-  byte edostep = microLinnMod(microLinnEdostep[split][col][row], edo);          // octave-reduced
-  if (Global.microLinn.useRainbow) {
-    return Device.microLinn.rainbows[triIndex(edo, edostep)];
-  } else {
-    return (edostep == 0 ? Split[split].colorAccent : Split[split].colorMain);
-  }
+  byte edostep = microLinnMod(microLinnEdostep[split][col][row], edo);     // octave-reduced
+  return Device.microLinn.rainbows[triIndex(edo, edostep)];
 }
 
 void microLinnReceivedNrpn253(int value) {

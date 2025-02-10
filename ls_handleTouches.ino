@@ -1248,6 +1248,12 @@ void prepareNewNote(signed char notenum) {
     else if (Split[sensorSplit].playedTouchMode == playedSame ||
              Split[sensorSplit].playedTouchMode == playedBlink) {
       highlightPossibleNoteCells(sensorSplit, sensorCell->note);
+      byte otherSide = otherSplit(sensorSplit);
+      if (Global.splitActive &&
+          (Split[otherSide].playedTouchMode == playedSame ||            // why not show the matching cells on the other split too?
+           Split[otherSide].playedTouchMode == playedBlink) &&
+          !Split[otherSide].ccFaders && !Split[otherSide].strum && !Split[otherSide].sequencer)
+        highlightPossibleNoteCells(otherSide, sensorCell->note);
     }
     else {
       startTouchAnimation(sensorCol, sensorRow, calcTouchAnimationSpeed(Split[sensorSplit].playedTouchMode, sensorCell->velocity));
@@ -1823,6 +1829,13 @@ void handleTouchRelease() {
 
         if (allNotesOff) {
           resetPossibleNoteCells(sensorSplit, realSensorNote);
+          byte otherSide = otherSplit(sensorSplit);
+          if (Global.splitActive &&
+              (Split[otherSide].playedTouchMode == playedSame ||          // reset any same/blink notes on the other split
+               Split[otherSide].playedTouchMode == playedBlink) &&
+              !Split[otherSide].ccFaders && !Split[otherSide].strum && !Split[otherSide].sequencer) {
+                  resetPossibleNoteCells(otherSide, realSensorNote);
+          }
         }
       }
     }
