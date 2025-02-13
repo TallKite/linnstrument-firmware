@@ -2126,8 +2126,8 @@ void handleSplitHandednessRelease() {
 }
 
 void handleRowOffsetNewTouch() {
-  if (isMicroLinnOn()) {microLinnHandleRowOffsetNewTouch(); return;}
-  handleNumericDataNewTouchCol(Global.customRowOffset, -17, 16, true);
+  if (isMicroLinnOn()) microLinnHandleRowOffsetNewTouch();
+  else handleNumericDataNewTouchCol(Global.customRowOffset, -17, 16, true);
 }
 
 void handleRowOffsetRelease() {

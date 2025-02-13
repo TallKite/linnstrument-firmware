@@ -2,7 +2,7 @@
 
 
 WARNING: unfinished, many features don't work yet. In particular, the microtonal features require a helper app, microLinn.jsfx.
-But the sequence chaining and the scale +/- footswitches do work.
+But the sequence chaining does work.
 
 
 
@@ -46,12 +46,13 @@ This is more intuitive because it matches how people read, for example how you a
 As a result, projects you might have previously saved to the top row are now in the bottom row.
 To move them, load them from the bottom row and save them to the top row.
 
-BLINKING MODE: Like the SAME mode, it shows you other occurences of the currently played note. But instead of changing color, the other occurences blink. It's good for busy displays like the custom note lights #2 (the one marked as A#). 
-
-NEW SWITCH/FOOTSWITCH FUNCTIONS: SCL+ and SCL- cycle you through the 9 scales in Global Settings columns 2-4 (only affects the note lights).
+BLINKING MODE: Like the SAME mode, BLNK shows you other occurences of the currently played note. But instead of changing color, the other occurences blink. It's good for busy displays like the custom note lights #2 (the one marked as A#). 
+Both SAME and BLNK now carry over to the other split, but only if either one is enabled on both splits.
+(Don't confuse BLNK for blinking with BLIN for blinders.)
 
 COLUMN OFFSETS: The column offset can be set for each split independently. This allows Wicki-Hayden layout on the left for 
 easy chord playing and normal layout on the right for easy melody playing. Access it through the microLinn menu, see below.
+To set both column offsets at once, press both split buttons at once.
 Beware, if the column offset is 2 and the row offset is an even number, you only get a whoe-tone scale.
 In general, the column offset and the row offset should not have any common factors.
 (In NO OVERLAP mode, the row offset isn't affected by increasing the column offset, it remains the width of the split.)
@@ -65,7 +66,7 @@ LOCATOR CCs: The Linnstrument can now send a locator CC message along with every
 This lets code on your laptop assign a specific function to a specific pad, e.g. upper lefthand corner = all sound off.
 Format: for cols 1-16, CC data value = (row - 1) + 8 * (col - 1). For cols 17-25, CC data value = (row - 1) + 8 * (col - 17).
 The top row is row 1 and the leftmost column is column 1. Enable it and choose the CC through the microLinn menu, see below.
-Thanks to KVR forum member vorp40 for the idea!
+Access it through the microLinn menu, see below. Thanks to KVR forum member vorp40 for the idea!
 
 -------- MICROTONAL FEATURES -------- 
 

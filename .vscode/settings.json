@@ -16,6 +16,15 @@
         "unordered_map": "cpp",
         "vector": "cpp",
         "locale": "cpp",
-        "stdexcept": "cpp"
+        "stdexcept": "cpp",
+        "__bit_reference": "cpp",
+        "__node_handle": "cpp",
+        "atomic": "cpp",
+        "__memory": "cpp",
+        "optional": "cpp",
+        "ratio": "cpp",
+        "system_error": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp"
     }
 }

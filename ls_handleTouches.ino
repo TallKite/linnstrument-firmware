@@ -1248,12 +1248,7 @@ void prepareNewNote(signed char notenum) {
     else if (Split[sensorSplit].playedTouchMode == playedSame ||
              Split[sensorSplit].playedTouchMode == playedBlink) {
       highlightPossibleNoteCells(sensorSplit, sensorCell->note);
-      byte otherSide = otherSplit(sensorSplit);
-      if (Global.splitActive &&
-          (Split[otherSide].playedTouchMode == playedSame ||            // why not show the matching cells on the other split too?
-           Split[otherSide].playedTouchMode == playedBlink) &&
-          !Split[otherSide].ccFaders && !Split[otherSide].strum && !Split[otherSide].sequencer)
-        highlightPossibleNoteCells(otherSide, sensorCell->note);
+      microLinnCarryOverSameAndBlinkToOtherSplit();
     }
     else {
       startTouchAnimation(sensorCol, sensorRow, calcTouchAnimationSpeed(Split[sensorSplit].playedTouchMode, sensorCell->velocity));
@@ -1965,9 +1960,8 @@ inline void updateSensorCell() {
 // getNoteNumber:
 // computes MIDI note number from current row, column, row offset, octave button and transposition amount
 byte getNoteNumber(byte split, byte col, byte row) {
-  if (isMicroLinnOn()) {
-    //return microLinnGetNoteNumber(split, col, row);              // uncomment once midi code is done
-  }
+  //if (isMicroLinnOn()) return microLinnGetNoteNumber(split, col, row);        // uncomment once midi code is done
+
   byte notenum = 0;
 
   // return the computed note based on the selected rowOffset
@@ -1975,23 +1969,20 @@ byte getNoteNumber(byte split, byte col, byte row) {
   if (isLeftHandedSplit(split)) {
     noteCol = (NUMCOLS - col);
   }
-
-  signed char transposeLights = Split[split].transposeLights;
-
   if (Split[split].microLinn.colOffset != 1) {
-    // subtract 1 to be zero-based, scale it up, then add 1 again - this lets us start at note 0 instead of 1
+    // subtract 1 to be zero-based, scale it up, then add 1 again
     noteCol = (noteCol - 1) * Split[split].microLinn.colOffset + 1;
-    transposeLights = transposeLights * Split[split].microLinn.colOffset;
+    notenum = determineRowOffsetNote(split, row) + noteCol - 1;
+    return notenum - Split[split].transposeLights * Split[split].microLinn.colOffset;
   }
 
   notenum = determineRowOffsetNote(split, row) + noteCol - 1;
 
-  return notenum - transposeLights;
+  return notenum - Split[split].transposeLights;
 }
 
-// determine the start note of a given row
 short determineRowOffsetNote(byte split, byte row) {
-  if (isMicroLinnOn()) return microLinnDetermineRowOffsetNote(split, row);
+  if (isMicroLinnOn()) return microLinnDetermineRowOffsetNote(split, row);   // determine the start note of a given row
   
   short lowest = 30;                                  // 30 = F#2, which is 10 semitones below guitar low E (E3/52). High E = E5/76
 
@@ -2023,7 +2014,6 @@ short determineRowOffsetNote(byte split, byte row) {
         lowest -= 1;
       }
     }
-
     else if (offset >= 12) {                          // start the octave offset one octave lower to prevent having disabled notes at the top in the default configuration
       lowest = 18;
     }
