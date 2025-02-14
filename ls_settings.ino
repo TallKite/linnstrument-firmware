@@ -2132,7 +2132,7 @@ void handleRowOffsetNewTouch() {
 
 void handleRowOffsetRelease() {
   handleNumericDataReleaseCol(false);
-  microLinnStoreRowOffsetCents();
+  microLinnStoreGlobalRowOffsetCents();
 }
 
 void ensureGuitarTuningPreviewNoteRelease() {
@@ -2655,7 +2655,7 @@ void handleGlobalSettingNewTouch() {
             }
             break;
         }
-        microLinnStoreRowOffsetCents();
+        microLinnStoreGlobalRowOffsetCents();
         break;
 
       // select more row offsets
@@ -2668,7 +2668,7 @@ void handleGlobalSettingNewTouch() {
             else {
               Global.rowOffset = 4;
             }
-            microLinnStoreRowOffsetCents();
+            microLinnStoreGlobalRowOffsetCents();
             break;
           case 1:
             if (Global.rowOffset == 6) {
@@ -2677,7 +2677,7 @@ void handleGlobalSettingNewTouch() {
             else {
               Global.rowOffset = 6;
             }
-            microLinnStoreRowOffsetCents();
+            microLinnStoreGlobalRowOffsetCents();
             break;
           case 2:
           case 3:

@@ -57,6 +57,10 @@ Beware, if the column offset is 2 and the row offset is an even number, you only
 In general, the column offset and the row offset should not have any common factors.
 (In NO OVERLAP mode, the row offset isn't affected by increasing the column offset, it remains the width of the split.)
 
+PER-SPLIT ROW OFFSETS: Setting the row offset for a split overrides the global setting for that split only. 
+No overlap appears as NOVR. Guitar tunings are not supported (but are still available globally). 
+Access it through the microLinn menu, see below.
+
 MULTI-COLORED NOTE LIGHTS: Each of the 12 notes can be any color. Transposable. Access it through the microLinn menu, see below.
 
 DETUNING: Detune the entire Linnstrument up or down from A-440 to match a similarly detuned recording or instrument. 
@@ -66,7 +70,7 @@ LOCATOR CCs: The Linnstrument can now send a locator CC message along with every
 This lets code on your laptop assign a specific function to a specific pad, e.g. upper lefthand corner = all sound off.
 Format: for cols 1-16, CC data value = (row - 1) + 8 * (col - 1). For cols 17-25, CC data value = (row - 1) + 8 * (col - 17).
 The top row is row 1 and the leftmost column is column 1. Enable it and choose the CC through the microLinn menu, see below.
-Access it through the microLinn menu, see below. Thanks to KVR forum member vorp40 for the idea!
+Thanks to KVR forum member vorp40 for the idea!
 
 -------- MICROTONAL FEATURES -------- 
 
@@ -75,8 +79,8 @@ Once the edo (notes per octave) is set to anything other than OFF, VIEW MAIN tur
 
 Main menu, LONG-PRESS EACH BUTTON to see its function.
 
-1) left column offset
-2) right column offset
+1) left/right column offset
+2) left/right row offset
 
 3) edo (notes per octave)
 4) octave stretch in cents

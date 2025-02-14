@@ -1960,7 +1960,7 @@ inline void updateSensorCell() {
 // getNoteNumber:
 // computes MIDI note number from current row, column, row offset, octave button and transposition amount
 byte getNoteNumber(byte split, byte col, byte row) {
-  //if (isMicroLinnOn()) return microLinnGetNoteNumber(split, col, row);        // uncomment once midi code is done
+  return microLinnGetNoteNumber(split, col, row);       // the rest of this function is now unneeded, big latency savings!
 
   byte notenum = 0;
 
@@ -1969,12 +1969,14 @@ byte getNoteNumber(byte split, byte col, byte row) {
   if (isLeftHandedSplit(split)) {
     noteCol = (NUMCOLS - col);
   }
+
+  /**************** no longer needed, delete later *******************
   if (Split[split].microLinn.colOffset != 1) {
     // subtract 1 to be zero-based, scale it up, then add 1 again
     noteCol = (noteCol - 1) * Split[split].microLinn.colOffset + 1;
     notenum = determineRowOffsetNote(split, row) + noteCol - 1;
     return notenum - Split[split].transposeLights * Split[split].microLinn.colOffset;
-  }
+  }  **********************************************/
 
   notenum = determineRowOffsetNote(split, row) + noteCol - 1;
 
