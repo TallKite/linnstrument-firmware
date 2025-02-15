@@ -25,7 +25,7 @@ Say no (the red button) if you're updating to a newer version of microLinn. This
 
 COLUMN OFFSETS: The column offset can be set for each split independently. This allows Wicki-Hayden layout on the left for 
 easy chord playing and normal layout on the right for easy melody playing. Access it through the microLinn menu, see below.
-To set both column offsets at once, press both split buttons at once.
+To set both column offsets at once, press both split buttons at once. (If they are different, doing so equates them.)
 Beware, if the column offset is 2 and the row offset is an even number, you only get a whole-tone scale.
 In general, the column offset and the row offset should not have any common factors.
 (In NO OVERLAP mode, the row offset isn't affected by increasing the column offset, it remains the width of the split.)

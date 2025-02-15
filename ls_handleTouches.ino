@@ -1248,7 +1248,7 @@ void prepareNewNote(signed char notenum) {
     else if (Split[sensorSplit].playedTouchMode == playedSame ||
              Split[sensorSplit].playedTouchMode == playedBlink) {
       highlightPossibleNoteCells(sensorSplit, sensorCell->note);
-      microLinnCarryOverSameAndBlinkToOtherSplit(true, sensorCell->note);
+      microLinnApplySameAndBlinkToOtherSplit(true, sensorCell->note);
     }
     else {
       startTouchAnimation(sensorCol, sensorRow, calcTouchAnimationSpeed(Split[sensorSplit].playedTouchMode, sensorCell->velocity));
@@ -1825,7 +1825,7 @@ void handleTouchRelease() {
 
         if (allNotesOff) {
           resetPossibleNoteCells(sensorSplit, realSensorNote);
-          microLinnCarryOverSameAndBlinkToOtherSplit(false, realSensorNote);
+          microLinnApplySameAndBlinkToOtherSplit(false, realSensorNote);
         }
       }
     }
