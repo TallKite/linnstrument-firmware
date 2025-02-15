@@ -1248,7 +1248,7 @@ void prepareNewNote(signed char notenum) {
     else if (Split[sensorSplit].playedTouchMode == playedSame ||
              Split[sensorSplit].playedTouchMode == playedBlink) {
       highlightPossibleNoteCells(sensorSplit, sensorCell->note);
-      microLinnCarryOverSameAndBlinkToOtherSplit();
+      microLinnCarryOverSameAndBlinkToOtherSplit(true, sensorCell->note);
     }
     else {
       startTouchAnimation(sensorCol, sensorRow, calcTouchAnimationSpeed(Split[sensorSplit].playedTouchMode, sensorCell->velocity));
@@ -1264,8 +1264,9 @@ void sendNewNote() {
     // if we've switched from pitch X enabled to pitch X disabled and the last
     // pitch bend value was not neutral, reset it first to prevent skewed pitches
     if (!Split[sensorSplit].sendX && hasPreviousPitchBendValue(sensorCell->channel)) {
-      //int microLinnTuningBend = (isMicroLinnOn() ? microLinnFineTuning[sensorSplit][sensorCol][sensorRow] : 0);
       preSendPitchBend(sensorSplit, 0, sensorCell->channel);
+      // possible method to implement microLinn:
+      //int microLinnTuningBend = (isMicroLinnOn() ? microLinnFineTuning[sensorSplit][sensorCol][sensorRow] : 0);
       //preSendPitchBend(sensorSplit, microLinnTuningBend, sensorCell->channel);
     }
 
@@ -1824,13 +1825,7 @@ void handleTouchRelease() {
 
         if (allNotesOff) {
           resetPossibleNoteCells(sensorSplit, realSensorNote);
-          byte otherSide = otherSplit(sensorSplit);
-          if (Global.splitActive &&
-              (Split[otherSide].playedTouchMode == playedSame ||          // reset any same/blink notes on the other split
-               Split[otherSide].playedTouchMode == playedBlink) &&
-              !Split[otherSide].ccFaders && !Split[otherSide].strum && !Split[otherSide].sequencer) {
-                  resetPossibleNoteCells(otherSide, realSensorNote);
-          }
+          microLinnCarryOverSameAndBlinkToOtherSplit(false, realSensorNote);
         }
       }
     }
@@ -1970,21 +1965,13 @@ byte getNoteNumber(byte split, byte col, byte row) {
     noteCol = (NUMCOLS - col);
   }
 
-  /**************** no longer needed, delete later *******************
-  if (Split[split].microLinn.colOffset != 1) {
-    // subtract 1 to be zero-based, scale it up, then add 1 again
-    noteCol = (noteCol - 1) * Split[split].microLinn.colOffset + 1;
-    notenum = determineRowOffsetNote(split, row) + noteCol - 1;
-    return notenum - Split[split].transposeLights * Split[split].microLinn.colOffset;
-  }  **********************************************/
-
   notenum = determineRowOffsetNote(split, row) + noteCol - 1;
 
   return notenum - Split[split].transposeLights;
 }
 
-short determineRowOffsetNote(byte split, byte row) {
-  if (isMicroLinnOn()) return microLinnDetermineRowOffsetNote(split, row);   // determine the start note of a given row
+short determineRowOffsetNote(byte split, byte row) {  // determine the start note of a given row
+  return microLinnGetNoteNumber(split, 1, row);       // the rest of this function is now unneeded, big latency savings!
   
   short lowest = 30;                                  // 30 = F#2, which is 10 semitones below guitar low E (E3/52). High E = E5/76
 

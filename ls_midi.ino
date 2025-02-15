@@ -1731,17 +1731,15 @@ void resetPossibleNoteCells(byte split, byte notenum) {
 }
 
 short getNoteNumColumn(byte split, byte notenum, byte row) {
-  short row_offset_note = determineRowOffsetNote(split, row);
-  row_offset_note += Split[split].transposeOctave + Split[split].transposePitch - Split[split].transposeLights; // transpose first...
-  if ((notenum - row_offset_note) % Split[split].microLinn.colOffset != 0) return -1;  // then check if the column offset makes us skip over the note
-  short col = (notenum - row_offset_note) / Split[split].microLinn.colOffset + 1;      // add 1 so if notenum = row_offset_note, we get col 1 not col 0
-  if (isLeftHandedSplit(split)) {
-    col = NUMCOLS - col;
-  }
+  short row_offset_note = determineRowOffsetNote(split, row);        // col 1 note, includes transpositions and lefthandedness
+  signed char colOffset = Split[split].microLinn.colOffset;
+  if ((notenum - row_offset_note) % colOffset != 0) return -1;       // check if the column offset makes us skip over the note
+  if (isLeftHandedSplit(split)) colOffset *= -1;
+  short col = (notenum - row_offset_note) / colOffset + 1;           // add 1 so if notenum = row_offset_note, we get col 1 not col 0
 
   byte lowColSplit, highColSplit;
   getSplitBoundaries(split, lowColSplit, highColSplit);
-  if (col < lowColSplit || col >= highColSplit) {                                      // only return columns that are valid for the split
+  if (col < lowColSplit || col >= highColSplit) {                    // only return columns that are valid for the split
     col = -1;
   }
 

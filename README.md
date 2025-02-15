@@ -23,6 +23,20 @@ Say no (the red button) if you're updating to a newer version of microLinn. This
 
 -------- NON-MICROTONAL FEATURES -------- 
 
+COLUMN OFFSETS: The column offset can be set for each split independently. This allows Wicki-Hayden layout on the left for 
+easy chord playing and normal layout on the right for easy melody playing. Access it through the microLinn menu, see below.
+To set both column offsets at once, press both split buttons at once.
+Beware, if the column offset is 2 and the row offset is an even number, you only get a whole-tone scale.
+In general, the column offset and the row offset should not have any common factors.
+(In NO OVERLAP mode, the row offset isn't affected by increasing the column offset, it remains the width of the split.)
+
+PER-SPLIT ROW OFFSETS: Setting the row offset for a split overrides the global setting for that split only. 
+No overlap appears as NOVR. Guitar tunings are not supported (but are still available globally). 
+Access it through the microLinn menu, see below.
+
+DETUNING: Detune the entire Linnstrument up or down from A-440 to match a similarly detuned recording or instrument. 
+(No guarantee that detuning to A-432 will heal your chakras lol.) Access it through microLinn's anchor cents, see below.
+
 CHAINING SEQUENCES: hold the pad for sequence #2 and tap the pad for sequence #1. Now the two sequences are chained into a 
 single sequence twice as long. This is indicated by sequence #1 being accented and sequence #2 blinking.
 You can chain #3 and #4 together as well. Or chain all 4 together. The lights for the entire chain will blink when it's playing. 
@@ -40,31 +54,18 @@ From within a chain, NEXT and PREV operate relative to the upcoming sequence in 
 Thus pressing PREV repeats the current sequence and pressing NEXT goes forward two sequences, not one.
 One exception: from the rightmost sequence of a chain, NEXT exits the chain. (Otherwise one could never exit.)
 
-SEQUENCER PROJECTS: in the Load/Save screen, the projects now run top to bottom, with the top row being 1-4 not 13-16.
+SEQUENCER PROJECTS LOAD/SAVE SCREEN: The projects now run top to bottom, with the top row being 1-4 not 13-16.
 This is more intuitive because it matches how people read, for example how you are reading this very paragraph right now.
 (These project numbers only matter when using the Updater app to export/import projects to/from your computer.)
 As a result, projects you might have previously saved to the top row are now in the bottom row.
 To move them, load them from the bottom row and save them to the top row.
 
 BLINKING MODE: Like the SAME mode, BLNK shows you other occurences of the currently played note. But instead of changing color, the other occurences blink. It's good for busy displays like the custom note lights #2 (the one marked as A#). 
-Both SAME and BLNK now carry over to the other split, but only if either one is enabled on both splits.
-(Don't confuse BLNK for blinking with BLIN for blinders.)
+The BLNK option appears right after CELL and SAME. (Don't confuse BLNK for blinking with BLIN for blinders.)
 
-COLUMN OFFSETS: The column offset can be set for each split independently. This allows Wicki-Hayden layout on the left for 
-easy chord playing and normal layout on the right for easy melody playing. Access it through the microLinn menu, see below.
-To set both column offsets at once, press both split buttons at once.
-Beware, if the column offset is 2 and the row offset is an even number, you only get a whoe-tone scale.
-In general, the column offset and the row offset should not have any common factors.
-(In NO OVERLAP mode, the row offset isn't affected by increasing the column offset, it remains the width of the split.)
+SAME/BLINK CARRY OVER: If both splits are set to SAME or BLNK, playing in one split shows matching notes in the other split too.
 
-PER-SPLIT ROW OFFSETS: Setting the row offset for a split overrides the global setting for that split only. 
-No overlap appears as NOVR. Guitar tunings are not supported (but are still available globally). 
-Access it through the microLinn menu, see below.
-
-MULTI-COLORED NOTE LIGHTS: Each of the 12 notes can be any color. Transposable. Access it through the microLinn menu, see below.
-
-DETUNING: Detune the entire Linnstrument up or down from A-440 to match a similarly detuned recording or instrument. 
-(No guarantee that detuning to A-432 will heal your chakras lol.) Access it through microLinn's anchor cents, see below.
+MULTI-COLORED NOTE LIGHTS: Each of the 12 (or more!) notes can be any color. Transposable. Access it through the microLinn menu, see below.
 
 LOCATOR CCs: The Linnstrument can now send a locator CC message along with every note-on, indicating the row and column.
 This lets code on your laptop assign a specific function to a specific pad, e.g. upper lefthand corner = all sound off.
