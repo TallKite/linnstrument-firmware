@@ -69,8 +69,9 @@ MULTI-COLORED NOTE LIGHTS: Each of the 12 (or more!) notes can be any color. Tra
 
 LOCATOR CCs: The Linnstrument can now send a locator CC message along with every note-on, indicating the row and column.
 This lets code on your laptop assign a specific function to a specific pad, e.g. upper lefthand corner = all sound off.
-Format: for cols 1-16, CC data value = (row - 1) + 8 * (col - 1). For cols 17-25, CC data value = (row - 1) + 8 * (col - 17).
-The top row is row 1 and the leftmost column is column 1. Enable it and choose the CC through the microLinn menu, see below.
+One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25.
+Format: for cols 1-16, data value = (row - 1) + 8 * (col - 1). For cols 17-25, data value = (row - 1) + 8 * (col - 17).
+The top row is row 1 and the leftmost column is column 1. Choose the two CC types through the microLinn menu, see below.
 Thanks to KVR forum member vorp40 for the idea!
 
 -------- MICROTONAL FEATURES -------- 
@@ -86,23 +87,22 @@ Main menu, LONG-PRESS EACH BUTTON to see its function.
 3) edo (notes per octave)
 4) octave stretch in cents
 
-5) anchor pad
+5) anchor pad chooser
 6) anchor note
 7) anchor cents
 
 8) set note lights
 
-9) set to 31edo Bosanquet (row offset 3, column offset 5)
+9) set locator CCs
 10) set to 41edo Kite guitar (row offset 13, column offset 2)
 11) reset to 12edo
 
 See above for the column offset. Buttons 4-8 don't work until you set the edo. 
 
-The anchor pad is a specific pad or cell that doesn't change pitch when you change the edo (the notes per octave).
-The anchor pad chooser displays the row and column of the current anchor pad, e.g. R3C6 means row 3 (from the top) and column 6. 
-To choose a new anchor pad, tap the blue "R3C6" and then tap any pad. Change the anchor cents to detune the entire Linnstrument.
-Like the guitar tuning screen, a midi note is sent when you change either the anchor note or the anchor cents.
+The anchor pad is a specific pad or cell that doesn't change pitch when you change the edo (the notes per octave). The anchor pad chooser displays the row and column of the current anchor pad, e.g. R4C11 means row 4 (from the top) and column 11. Tap the blue "R4C11" and you'll see the normal display with the anchor pad blinking. Tap any pad to set a new anchor cell. All the lights will shify accordingly.
+Change the anchor note to transpose by 12edo semitones. Change the anchor cents to detune the entire Linnstrument.
 Each split can be transposed independently any number of edosteps from the anchor cell, allowing any tuning.
+Like the guitar tuning screen, a midi note is sent when you change either the anchor note or the anchor cents.
 
 When the notes per octave is greater than 12, the OCTAVE/TRANSPOSE screen shows two extra rows for transposing by edosteps.
 The 2nd and 3rd rows now transpose not by semitones but by major 2nds (since most edos have several different semitones).
@@ -140,7 +140,8 @@ To edit a scale and its colors, instead go to the main microLinn menu and go to 
 Shortcut: you can long-press the scale's pad in cols 2-4 in the Global Settings screen to go directly to that scale.
 
 The note lights screen has 7 scale buttons plus the rainbow editor, the dots selector and the yellow rainbow-enabler button.
-Tap any of these buttons except the rainbow-enabler to select it. Tap any selected button to backtrack to the previous button.
+Excluding the rainbow enabler, there are 9 buttons, corresponding to the 9 scales in cols 2-4 in the Global Settings screen.
+Tap any of these 9 buttons to select it. Tap any already-selected button to backtrack to the previous button.
 There are 7 rows of colored lights on the screen, which top to bottom are for unisons, 2nds, 3rds, 4ths, 5ths, 6ths and 7ths.
 Tap a note in a scale to toggle it on or off. Like the guitar tuning screen, a midi note is sent when you tap. 
 The 8th scale is the rainbow editor, in which all notes are always on. Tap a note to cycle it thru the rainbow. 
@@ -175,6 +176,8 @@ All of microLinn's settings are remembered by the 6 presets except the scales, r
 
 On the custom row offset screem, while microLinn is on, the "-GUI" option for reversed guitar tuning is no longer available.
 To get this reversed tuning, set the guitar tuning manually instead.
+
+The 6th memory from the top is 41edo Kite guitar (row offset 13, column offset 2), with an alternating-3rds guitar tuning.
 
 What advantages does microLinn's 12edo have over the standard, non-microLinn 12edo? 
 It can be stretched and/or detuned, plus you get multi-colored note lights.

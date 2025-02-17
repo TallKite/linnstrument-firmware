@@ -238,10 +238,11 @@ void updateDisplay() {
       paintMicroLinnConfig();
       break;
     case displayMicroLinnAnchorChooser:
-      if (!customLedPatternActive) {
+      if (customLedPatternActive) {
+        //loadCustomLedLayer(getActiveCustomLedPattern());          // bug: doesn't load anything
         paintNormalDisplay();
       } else {
-        loadCustomLedLayer(getActiveCustomLedPattern());          // bug: doesn't load anything
+        paintNormalDisplay();
       }
       break; 
     case displayMicroLinnDotsEditor:

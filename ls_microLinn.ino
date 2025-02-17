@@ -95,6 +95,10 @@ struct Configuration config;
 use virtual note numbers to get the midi to work
 
 
+fix anchor chooser, it doesn't show the normal display when the scale is > 7
+
+Add new color between yellow and green
+
 finish microLinnCalcRowStarts, optimizes calcTuning?
 
 investigate bug: when switching midi modes, timbre/loudness gets reset, but channel 8 is missing
@@ -568,7 +572,7 @@ short microLinnLCM (short x,  short y) {        // returns the least common mult
 
 /************** lookup functions ************************/
 
-short triIndex (byte edo, byte edostep) {              // index into a triangular array
+short MLtriIndex (byte edo, byte edostep) {            // index into a triangular array
   return (edo * (edo - 1)) / 2 + edostep - 10;         // -10 to skip over edos 1-4
 }
 
@@ -775,7 +779,7 @@ void microLinnSetupKitesPersonalPrefs () {       // speed up debugging cycle, de
 
 void setupMicroLinn() {                              // runs when the Linnstrument powers up or a preset is loaded
   microLinnSetupKitesPersonalPrefs();
-  microLinnRowOffset[LEFT]  = -MICROLINN_ROWOFFSET_RANGE[Global.microLinn.EDO] - 1;      // delete later
+  microLinnRowOffset[LEFT]  = -MICROLINN_ROWOFFSET_RANGE[Global.microLinn.EDO] - 1;      // OFF, delete later
   microLinnRowOffset[RIGHT] = -MICROLINN_ROWOFFSET_RANGE[Global.microLinn.EDO] - 1;
 
   if (isMicroLinnOn()) lightSettings = LIGHTS_ACTIVE;
@@ -792,7 +796,7 @@ void setupMicroLinn() {                              // runs when the Linnstrume
 }
 
 void microLinnResetDots (byte edo) {
-  short start1 = triIndex (edo, 0);                    // index into microLinn.dots
+  short start1 = MLtriIndex (edo, 0);                  // index into microLinn.dots
   short start2 = 6 * (edo - 5);                        // index into MICROLINN_DOTS
   memset (&Device.microLinn.dots[start1], 0, edo);
 
@@ -895,7 +899,7 @@ void microLinnResetTo12equal() {
   microLinnPrevEDO = 4;                                 // to avoid microLinnAdjustRowAndColOffsets()
   microLinnCalcTuning();
   lightSettings = LIGHTS_MAIN;
-  Global.activeNotes = 0;                               // set display to the major scale
+  Global.activeNotes = 9;                               // set display to the fretboard
   loadCustomLedLayer(getActiveCustomLedPattern());
   Split[LEFT].playedTouchMode = playedCell;
   Split[RIGHT].playedTouchMode = playedCell;
@@ -987,7 +991,6 @@ void microLinnAdjustRowAndColOffsets() {
 
   microLinnAdjustColOffset(LEFT);
   microLinnAdjustColOffset(RIGHT);
-
   microLinnAdjustRowOffset(LEFT);
   microLinnAdjustRowOffset(RIGHT);
 
@@ -1191,7 +1194,7 @@ void microLinnCalcTuning() {
           microLinnFineTuning[side][col][row] = round (note);
         }
       }
-      //performContinuousTasks();                                                      // to avoid flickering, not sure it works, delete?
+      performContinuousTasks();                                                      // to avoid flickering, not sure it works, delete?
     }
   }
 }
@@ -1271,24 +1274,24 @@ void microLinnPaintNormalDisplayCell(byte split, byte col, byte row) {
   if (midiNote <= 127 && !customLedPatternActive) {
     // either an anchor cell being chosen...
     if (displayMode == displayMicroLinnAnchorChooser &&
-             col == Global.microLinn.anchorCol && 
-             row == Global.microLinn.anchorRow)  {
-      colour = Device.microLinn.rainbows[triIndex(edo, 0)];
-      if (colour == COLOR_OFF) colour = COLOR_WHITE;
+        col == Global.microLinn.anchorCol && 
+        row == Global.microLinn.anchorRow)  {
+      colour = Device.microLinn.rainbows[MLtriIndex(edo, 0)];
+      if (colour == COLOR_OFF) colour = microLinnRevealRainbowColor(split, col, row);
       cellDisplay = cellSlowPulse;
     }
     // ...or dots...
     else if (currScale == 8) {
       byte fret = microLinnGetFret (split, col);
-      if (Device.microLinn.dots[triIndex(edo, fret)] & (1 << row)) {
+      if (Device.microLinn.dots[MLtriIndex(edo, fret)] & (1 << row)) {
         colour = Split[split].colorMain;
         cellDisplay = cellOn;
       }
     } 
     // ...or rainbows
-    else if (currScale == 7 || Device.microLinn.scales[triIndex(edo, edostep)] & (1 << currScale)) {
+    else if (currScale == 7 || Device.microLinn.scales[MLtriIndex(edo, edostep)] & (1 << currScale)) {
       if (Global.microLinn.useRainbow) {
-        colour = Device.microLinn.rainbows[triIndex(edo, edostep)];
+        colour = Device.microLinn.rainbows[MLtriIndex(edo, edostep)];
       } else {
         colour = (edostep == 0 ? Split[split].colorAccent : Split[split].colorMain);
       }
@@ -1325,11 +1328,14 @@ void microLinnPaintNormalDisplayCell(byte split, byte col, byte row) {
 }
 
 byte microLinnRevealRainbowColor(byte split, short col, byte row) {        // used for blank cells in playedBlink mode
-  if (Global.activeNotes > 7) return Split[split].colorPlayed;             // only for the 8 scales
-  if (!Global.microLinn.useRainbow) return Split[split].colorPlayed;       // only if rainbow is enabled
+  if (Global.activeNotes > 7 || !Global.microLinn.useRainbow) {            // and for the blinking anchor cell
+    if (displayMode == displayMicroLinnAnchorChooser) {                    // but only for the first 8 scales 
+      return Split[split].colorAccent;                                     // and only if rainbow is enabled
+    } else return Split[split].colorPlayed;
+  }
   byte edo = Global.microLinn.EDO;
   byte edostep = microLinnMod(microLinnEdostep[split][col][row], edo);     // octave-reduced
-  return Device.microLinn.rainbows[triIndex(edo, edostep)];
+  return Device.microLinn.rainbows[MLtriIndex(edo, edostep)];
 }
 
 void microLinnApplySameAndBlinkToOtherSplit(boolean calledOnNoteOn, short note) {
@@ -1560,8 +1566,8 @@ void handleMicroLinnConfigNewTouch() {
     return;
   }
   
-  byte range = MICROLINN_ROWOFFSET_RANGE[Global.microLinn.EDO];
   if (sensorRow > 0) {                                                         // rows 1-7 are handled right away
+    byte range = MICROLINN_ROWOFFSET_RANGE[Global.microLinn.EDO];
     switch (microLinnConfigColNum) {
       case 2:
         microLinnHandleColOffsetNewTouch();
@@ -1678,9 +1684,12 @@ void microLinnHandleColOffsetNewTouch() {
 }
 
 void handleMicroLinnAnchorChooserNewTouch() {
-  Global.microLinn.anchorRow = sensorRow;
   Global.microLinn.anchorCol = sensorCol;
+  Global.microLinn.anchorRow = sensorRow;
+  microLinnCalcTuning();                                   // update the edostep of each cell, and hence the color
+  paintNormalDisplay();
   cellTouched(ignoredCell);                                // so that choosing a row 0 note won't trigger a scrolling message
+  delayUsec(1000000);
   microLinnUpdateAnchorString();
   setDisplayMode(displayMicroLinnConfig); 
   updateDisplay(); 
@@ -1743,7 +1752,7 @@ void handleMicroLinnLocatorCCsHold() {
   }
 }
 
-void handleMicroLinnLocatorCCsRelease () {
+void handleMicroLinnLocatorCCsRelease () {        // short-press
   if (sensorCol == 1) {
     updateDisplay(); 
   }
@@ -1765,9 +1774,9 @@ void paintMicroLinnNoteLights() {
         stepspan += 1;
         col -= MICROLINN_SCALEROWS[edo][stepspan] - MICROLINN_SCALEROWS[edo][stepspan - 1];
       }
-      if (currScale == 7 || Device.microLinn.scales[triIndex(edo, edostep)] & (1 << currScale)) {
+      if (currScale == 7 || Device.microLinn.scales[MLtriIndex(edo, edostep)] & (1 << currScale)) {
         if (Global.microLinn.useRainbow) {
-          color = Device.microLinn.rainbows[triIndex(edo, edostep)];
+          color = Device.microLinn.rainbows[MLtriIndex(edo, edostep)];
         } else {
           color = (edostep == 0 ? Split[LEFT].colorAccent : Split[LEFT].colorMain);
         }
@@ -1800,7 +1809,7 @@ void paintMicroLinnNoteLights() {
 
 void handleMicroLinnNoteLightsNewTouch() {
   if ((sensorCol == 1 && sensorRow > 0) ||                                    // scale selectors or
-      (sensorCol == 3 && (sensorRow == 5 || sensorRow == 7))) {               // rainbow editor or dots selector
+      (sensorCol == 3 && (sensorRow == 7 || sensorRow == 5))) {               // rainbow editor or dots selector
     byte currScale = 7 - sensorRow;                                           // currScale = what user just touched
     if (sensorCol == 3) currScale = (sensorRow == 7 ? 7 : 8);
     if (Global.activeNotes != currScale) {                                    // did user touch a green button?
@@ -1834,7 +1843,7 @@ void handleMicroLinnNoteLightsNewTouch() {
      (stepspan == 0 && edostep > MICROLINN_SCALEROWS[edo][6] - edo))) {
     edostep = microLinnMod (edostep, edo);
     if (Global.activeNotes == 7) {                                            // rainbow editor
-      short ptr = triIndex(edo, edostep);
+      short ptr = MLtriIndex(edo, edostep);
       switch (Device.microLinn.rainbows[ptr]) {                   // cycle through the colors in rainbow order
         case 8:  Device.microLinn.rainbows[ptr] = 1;  break;      // white to red
         case 1:  Device.microLinn.rainbows[ptr] = 9;  break;      // red to orange
@@ -1848,8 +1857,8 @@ void handleMicroLinnNoteLightsNewTouch() {
         case 11: Device.microLinn.rainbows[ptr] = 8;  break;      // pink
       }
     } else if (Global.activeNotes < 7) {
-      Device.microLinn.scales[triIndex(edo, edostep)] ^= (1 << Global.activeNotes);      // xor to toggle the bit
-      if (Device.microLinn.scales[triIndex(edo, edostep)] & (1 << Global.activeNotes)) {
+      Device.microLinn.scales[MLtriIndex(edo, edostep)] ^= (1 << Global.activeNotes);      // xor to toggle the bit
+      if (Device.microLinn.scales[MLtriIndex(edo, edostep)] & (1 << Global.activeNotes)) {
         if (edostep > MICROLINN_SCALEROWS[edo][6]) {
           edostep -= edo;                                        // adjust notes in the first row below the tonic
         }
@@ -1868,20 +1877,20 @@ void handleMicroLinnNoteLightsHold() {
 
   if (currScale == 7 - sensorRow && sensorCol == 1 && sensorRow > 0) {            // scale selector button
     for (byte edostep = 0; edostep < edo; ++edostep) {                            // reset the scale
-      bitWrite (Device.microLinn.scales[triIndex(edo, edostep)], currScale, 
-              bitRead(MICROLINN_SCALES[triIndex(edo, edostep)], currScale));
+      bitWrite (Device.microLinn.scales[MLtriIndex(edo, edostep)], currScale, 
+               bitRead(MICROLINN_SCALES[MLtriIndex(edo, edostep)], currScale));
     }
     updateDisplay();
     return;
   }
 
-  if (currScale == 7 && sensorCol == 3 && sensorRow == 7) {                                                // color editor button
-    memcpy (&Device.microLinn.rainbows[triIndex(edo, 0)], &MICROLINN_RAINBOWS[triIndex(edo, 0)], edo);      // reset the rainbow
+  if (currScale == 7 && sensorCol == 3 && sensorRow == 7) {                                                 // color editor button
+    memcpy (&Device.microLinn.rainbows[MLtriIndex(edo, 0)], &MICROLINN_RAINBOWS[MLtriIndex(edo, 0)], edo);  // reset the rainbow
     updateDisplay();
     return;
   }
 
-  if (currScale == 8 && sensorCol == 3 && sensorRow == 5) {                                                // dots selector button
+  if (currScale == 8 && sensorCol == 3 && sensorRow == 5) {                                                 // dots selector button
     microLinnResetDots (edo);
     updateDisplay();
   }
@@ -1920,7 +1929,7 @@ void paintMicroLinnDotsEditor(boolean fullScreen) {       // fullscreen is true 
   for (byte col = (fullScreen ? 1 : 4); col < NUMCOLS; ++col) {
     byte fret = microLinnGetFret (Global.currentPerSplit, col);
     for (byte row = (fullScreen ? 0 : 1); row < MAXROWS; ++row) {
-      if (Device.microLinn.dots[triIndex(edo, fret)] & (1 << row)) {
+      if (Device.microLinn.dots[MLtriIndex(edo, fret)] & (1 << row)) {
         setLed(col, row, globalColor, cellOn);
       }
     }
@@ -1930,7 +1939,7 @@ void paintMicroLinnDotsEditor(boolean fullScreen) {       // fullscreen is true 
 void handleMicroLinnDotsEditorNewTouch() {
   byte edo = microLinnGetEDO();
   byte fret = microLinnGetFret (Global.currentPerSplit, sensorCol);
-  Device.microLinn.dots[triIndex(edo, fret)] ^= (1 << sensorRow);          // xor to toggle the bit
+  Device.microLinn.dots[MLtriIndex(edo, fret)] ^= (1 << sensorRow);          // xor to toggle the bit
   updateDisplay();
 }
 
