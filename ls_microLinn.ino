@@ -1,13 +1,12 @@
 /**************************************** MICROLINN ****************************************
 
 This code mostly augments the official code and does not replace any of it
-The code that actually handles playing in real time is unchanged
-So there should be no increases in latency
+The code that actually handles playing in real time is unchanged, so there should be no increases in latency
 (That's the plan anyway, changing the midi output from edostep-based to pitch-bend based might change this)
 
 When the user releases a column 0 button, there is about a 1/8 second delay before one can play
-When microLinn is installed, whether it's on or not, there's an extra ~1/8 second delay while caculating tuning tables
-But getNoteNumber() now uses these tables, which should speed up the playing experience
+When microLinn is on, there's an extra ~1/8 second delay while caculating tuning tables
+But getNoteNumber() will use these tables, which should speed up the playing experience
 
 note to self:  "if (sensorCell->velocity)" means if another touch is already down on the same row
 according to the comment by handleFaderRelease in ls_faders.ino
@@ -29,6 +28,8 @@ a function that starts with "microLinn" can replace or augment a previously exis
 e.g. microLinnPaintNormalDisplayCell() replaces PaintNormalDisplayCell() when microLinn is on
 as opposed to a function that contains "microLinn" but starts with e.g. "paint" or "handle"
 e.g. paintMicroLinnNoteLights() is something brand new (and only appears in this .ino file?)
+
+starts microLinn = only called from this .ino file?
 
 ======================= TO DO ==============================
 
@@ -592,19 +593,8 @@ byte microLinnGetEDO() {
 }
 
 byte microLinnGetNoteNumber(byte side, byte col, byte row) {
-  if (Global.microLinn.EDO == 4) {
-    return microLinnMidiNote[side][col][row];          // use midiNote array because there's no anchor pad
-  }
-  return microLinnEdostep[side][col][row] - microLinnEdostep[side][1][0];    // anchor pad is always note 0
+  return microLinnEdostep[side][col][row] - microLinnEdostep[side][1][0];        // anchor pad is always note 0
 }
-
-  /**************** no longer needed, used to be in getNoteNumber(), delete later **************
-  if (Split[split].microLinn.colOffset != 1) {
-    // subtract 1 to be zero-based, scale it up, then add 1 again
-    noteCol = (noteCol - 1) * Split[split].microLinn.colOffset + 1;
-    notenum = determineRowOffsetNote(split, row) + noteCol - 1;
-    return notenum - Split[split].transposeLights * Split[split].microLinn.colOffset;
-  }  **********************************************/
 
 /************* uncalled, delete later 
 short microLinnDetermineRowOffsetNote(byte split, byte row) {          // determine the start note of a given row
@@ -918,6 +908,14 @@ short microLinnEDOstepsToCents (short edosteps) {
   return cents;
 }
 
+void microLinnStoreColOffsetCents(byte split) {
+  microLinnColOffsetCents[split] = microLinnEDOstepsToCents(Split[split].microLinn.colOffset);
+}
+
+void microLinnStoreRowOffsetCents(byte side) {
+  microLinnRowOffsetCents[side] = microLinnEDOstepsToCents(microLinnRowOffset[side]);
+}
+
 void microLinnStoreGlobalRowOffsetCents() {               // called from handleGlobalSettingNewTouch, handleGlobalSettingHold
   short offset = (Global.rowOffset == ROWOFFSET_OCTAVECUSTOM ? Global.customRowOffset : Global.rowOffset);
   microLinnGlobalRowOffsetCents = microLinnEDOstepsToCents(offset);
@@ -926,22 +924,14 @@ void microLinnStoreGlobalRowOffsetCents() {               // called from handleG
   }
 }
 
-void microLinnStoreRowOffsetCents(byte side) {
-  microLinnRowOffsetCents[side] = microLinnEDOstepsToCents(microLinnRowOffset[side]);
-}
-
-void microLinnStoreColOffsetCents(byte split) {
-  microLinnColOffsetCents[split] = microLinnEDOstepsToCents(Split[split].microLinn.colOffset);
-}
-
 short microLinnCheckRowOffset(short rowOffset, byte edo, short cents) {
   // ensure coprime row/col offsets so that all notes of the edo are present
   // e.g. 12edo +5 +2 --> 24edo +10 +4 --> 24edo +9 +4
   // bug: ideally if the col offset were bigger than the row offset, and non-guitar tuning, the col offset would get adjusted
-  byte max = MICROLINN_ROWOFFSET_RANGE[edo];
+  byte range = MICROLINN_ROWOFFSET_RANGE[edo];
   short colOffsetLCM = microLinnLCM (Split[LEFT].microLinn.colOffset, Split[RIGHT].microLinn.colOffset); 
   short zigzagBy = (rowOffset * 1200 > cents * edo) ? -1 : 1;    // really (rowOffset/edo > cents/1200)
-  while (microLinnGCD (rowOffset, colOffsetLCM) > 1 || abs(rowOffset) > max) {  // exits when rowOffset is a prime number if not sooner
+  while (microLinnGCD (rowOffset, colOffsetLCM) > 1 || abs(rowOffset) > range) {  // exits when rowOffset is a prime number if not sooner
     rowOffset += zigzagBy;
     zigzagBy += zigzagBy > 0 ? 1 : -1;                           // zigzag through the nearest numbers,
     zigzagBy *= -1;                                              // e.g. 9 --> 8 --> 10 --> 7
@@ -980,27 +970,13 @@ void microLinnAdjustRowOffset (byte side) {
   microLinnRowOffset[side] = newOffset;
 }
 
-void microLinnAdjustRowAndColOffsets() {
-  // going from e.g. 12edo to 19edo adjusts the row offset from +5 (12edo 4th) to +8 (19edo 4th)
-  byte edo = Global.microLinn.EDO;
-  if (edo == microLinnPrevEDO) return;
-  if (microLinnPrevEDO == 4 && Global.customRowOffset == -17) {     // -GUI tuning not allowed in microLinn
-    Global.customRowOffset = -5;
-  }
-  if (edo == 4) edo = 12;
-
-  microLinnAdjustColOffset(LEFT);
-  microLinnAdjustColOffset(RIGHT);
-  microLinnAdjustRowOffset(LEFT);
-  microLinnAdjustRowOffset(RIGHT);
-
-  microLinnPrevEDO = edo;
-
+void microLinnAdjustGlobalRowOffset () {
   if (Global.rowOffset == ROWOFFSET_NOOVERLAP ||
       Global.rowOffset == ROWOFFSET_ZERO) {
     return;
   }
 
+  byte edo = Global.microLinn.EDO;
   if (Global.rowOffset == ROWOFFSET_GUITAR) {
     for (byte row = 1; row < NUMROWS; ++row) {                   // row = 1 because microLinnGuitarTuningCents[0] is unused
       short rowOffset = round ((edo * microLinnGuitarTuningCents[row]) / 1200.0);         // avoid drift as user changes edos
@@ -1023,6 +999,24 @@ void microLinnAdjustRowAndColOffsets() {
   } else {
     Global.rowOffset = rowOffset;
   }
+}
+
+void microLinnAdjustRowAndColOffsets() {
+  // going from e.g. 12edo to 19edo adjusts the row offset from +5 (12edo 4th) to +8 (19edo 4th)
+  byte edo = Global.microLinn.EDO;
+  if (edo == microLinnPrevEDO) return;
+  if (microLinnPrevEDO == 4 && Global.customRowOffset == -17) {     // -GUI tuning not allowed in microLinn
+    Global.customRowOffset = -5;
+  }
+  if (edo == 4) edo = 12;
+
+  microLinnAdjustColOffset(LEFT);
+  microLinnAdjustColOffset(RIGHT);
+  microLinnAdjustRowOffset(LEFT);
+  microLinnAdjustRowOffset(RIGHT);
+  microLinnAdjustGlobalRowOffset();
+
+  microLinnPrevEDO = edo;
 }
 
 short microLinnTransposition(byte side) {                                  // # of edosteps to transpose by
@@ -1060,7 +1054,27 @@ short microLinnSumGuitarOffsets(byte row1, byte row2) {
   return sum;
 }
 
-/****************** experiment, delete?
+short microLinnSumOfRowOffsets (byte side, byte row1, byte row2) {      // edosteps from row1 to row2
+  // use this split's row offset if it's not OFF
+  signed char offset = microLinnRowOffset[side];
+  byte range = MICROLINN_ROWOFFSET_RANGE[Global.microLinn.EDO];
+  if (offset == range + 1) {
+    return microLinnGetSplitWidth() * (row2 - row1);                    // no overlap
+  }
+  if (offset >= -range && offset <= range) { 
+    return offset * (row2 - row1);
+  }
+  // otherwise fallback to the global row offset
+  switch (Global.rowOffset) {
+    case ROWOFFSET_OCTAVECUSTOM: return Global.customRowOffset  * (row2 - row1);
+    case ROWOFFSET_GUITAR:       return microLinnSumGuitarOffsets(row1, row2);
+    case ROWOFFSET_NOOVERLAP:    return microLinnGetSplitWidth() * (row2 - row1);
+    case ROWOFFSET_ZERO:         return 0;
+    default:                     return Global.rowOffset * (row2 - row1);
+  }
+}
+
+/****************** experiment to speed up microLinnSumOfRowOffsets, delete?
 short microLinnRowStarts[NUMROWS];  // add splits?
 void microLinnCalcRowStarts () {      // edosteps of column 1 cells
   switch (Global.rowOffset) {
@@ -1082,60 +1096,6 @@ void microLinnCalcRowStarts () {      // edosteps of column 1 cells
 }
 ************************/
 
-short microLinnSumOfRowOffsets (byte side, byte row1, byte row2) {      // edosteps from row1 to row2
-  // use this split's row offset if it's not OFF
-  signed char offset = microLinnRowOffset[side];
-  byte range = MICROLINN_ROWOFFSET_RANGE[Global.microLinn.EDO];
-  if (offset == range + 1) {
-    return microLinnGetSplitWidth() * (row2 - row1);                    // no overlap
-  }
-  if (offset >= -range && offset <= range) { 
-    return offset * (row2 - row1);
-  }
-  // otherwise fallback to the global row offset
-  switch (Global.rowOffset) {
-    case ROWOFFSET_OCTAVECUSTOM: return Global.customRowOffset  * (row2 - row1);
-    case ROWOFFSET_GUITAR:       return microLinnSumGuitarOffsets(row1, row2);
-    case ROWOFFSET_NOOVERLAP:    return microLinnGetSplitWidth() * (row2 - row1);
-    case ROWOFFSET_ZERO:         return 0;
-    default:                     return Global.rowOffset * (row2 - row1);
-  }
-}
-
-float microLinnCalc12edoAnchorPitch (byte side) {     // mimics how determineRowOffsetNote() calcs the "lowest" variable
-  // try this split's row offset first
-  signed char offset = microLinnRowOffset[side]; 
-  if (offset == 17) {    // no overlap
-    if (Global.splitActive && side == RIGHT) {        // if the right split is displayed, change the column so that the lower left starting
-      return 30 - (Global.splitPoint - 1);            // point starts at the same point as the left split, behaving as if there were two independent
-    }                                                 // LinnStruments next to each-other (the lower left cell of the right split will be 30)
-    return 30;
-  }
-  if (offset >= 12)  return 18;                       // 8th string of a guitar, down an octave
-  if (offset >= 0)   return 30;                       // 8th string of a guitar
-  if (offset >= -11) return 65;
-  if (offset >= -16) return 18 - 7 * offset;          // ensures lower left cell is 18
-
-  // fall back to the global row offset
-  offset = Global.rowOffset;
-  if (offset == ROWOFFSET_ZERO) return 30;
-  if (offset == ROWOFFSET_GUITAR) return Global.guitarTuning[0];
-  if (offset == ROWOFFSET_NOOVERLAP) {
-    if (Global.splitActive && side == RIGHT) {        // see above
-      return 30 - (Global.splitPoint - 1);
-    }
-    return 30;
-  }
-  if (offset == ROWOFFSET_OCTAVECUSTOM) {
-    offset = Global.customRowOffset;
-  }
-  if (offset >= 12)  return 18;
-  if (offset >= 0)   return 30;
-  if (offset >= -11) return 65;
-  if (offset >= -16) return 18 - 7 * offset;
-  return 64;                                          // offset must be -17 which is -GUI, lowest = guitar's high E string
-}
-
 void microLinnCalcTuning() { 
   // calcs microLinnEdostep, microLinnMidiNote and microLinnFineTuning
   // called when any column 0 button is released and the user returns to normal playing mode
@@ -1150,11 +1110,12 @@ void microLinnCalcTuning() {
 
   //clearDisplay();                                            // to avoid flickering while all this runs, not sure it works, delete?
   microLinnAdjustRowAndColOffsets();
-  if (isMicroLinnOn()) lightSettings = LIGHTS_ACTIVE;
+  if (!isMicroLinnOn()) return;
+  lightSettings = LIGHTS_ACTIVE;
 
   //if (ignoreSlides && sensorCell->velocity) return;         // don't calc on releases caused by slides, causes flickering, delete?
-  byte edo = microLinnGetEDO();
 
+  byte edo = microLinnGetEDO();
   byte anchorCol = Global.microLinn.anchorCol;
   byte anchorRow = Global.microLinn.anchorRow; 
   // anchorPitch = a 12edo midi note, but with 2 decimal places for anchorCents
@@ -1163,18 +1124,9 @@ void microLinnCalcTuning() {
   float edostepSize = (1200 + Global.microLinn.octaveStretch) / (100.0 * edo);
   short rowDistance, cellDistance; float note;   // pre-declared for speed
 
-  if (Global.microLinn.EDO == 4) {
-    edostepSize = 1;
-    anchorRow = 0; 
-  }
-
   //microLinnRowStarts[side][anchorRow] = (1 - anchorCol) * colOffset;   // possible optimization, delete?
 
   for (byte side = 0; side < NUMSPLITS; ++side) {
-    if (Global.microLinn.EDO == 4) {
-      anchorCol = isLeftHandedSplit(side) ? (NUMCOLS - 1) : 1; 
-      anchorPitch = microLinnCalc12edoAnchorPitch(side);
-    }
     short colOffset = Split[side].microLinn.colOffset;
     if (isLeftHandedSplit(side)) colOffset *= -1;
     short transpose = microLinnTransposition(side);
@@ -1190,7 +1142,7 @@ void microLinnCalcTuning() {
         } else {
           microLinnMidiNote[side][col][row] = round (note);
           note -= microLinnMidiNote[side][row][col];                                 // fine-tuning bend as fraction of a semitone
-          note *= 8192.0 / getBendRange (side);                                      // fine-tuning bend as a zero-centered signed 13-bit integer
+          note *= 8192.0 / getBendRange(side);                                       // fine-tuning bend as a zero-centered signed 13-bit integer
           microLinnFineTuning[side][col][row] = round (note);
         }
       }
@@ -1258,8 +1210,7 @@ void microLinnChangeScale(int delta) {                                // called 
   updateDisplay();
 }
 
-
-/************** misc painting functions for the playing surface ************************/
+/************** misc painting functions for the performance display ************************/
 
 void microLinnPaintNormalDisplayCell(byte split, byte col, byte row) {
   // by default clear the cell color
@@ -1450,13 +1401,13 @@ void paintMicroLinnConfig() {
         break;
       case 12: 
         if (isMicroLinnOn()) {
-          microLinnScrollSmall("SET NOTE LIGHTS");
+          microLinnScrollSmall("NOTE LIGHTS");
         } else {
           microLinnScrollSmall("FIRST SELECT AN EDO");
         }
         break;
       case 14: 
-        microLinnScrollSmall("SET LOCATOR CCS");
+        microLinnScrollSmall("LOCATOR CCS");
         break;
       case 15: 
         microLinnScrollSmall("SET TO 41EDO KITE GUITAR");
@@ -2188,6 +2139,41 @@ void microLinnSendDebugMidi2 (unsigned int data) {
 }
 
 /********************* OBSOLETE CODE  ****************
+
+ // used to be called in calcTunings() when edo == 4 
+ float microLinnCalc12edoAnchorPitch (byte side) {     // mimics how determineRowOffsetNote() calcs the "lowest" variable
+  // try this split's row offset first
+  signed char offset = microLinnRowOffset[side]; 
+  if (offset == 17) {    // no overlap
+    if (Global.splitActive && side == RIGHT) {        // if the right split is displayed, change the column so that the lower left starting
+      return 30 - (Global.splitPoint - 1);            // point starts at the same point as the left split, behaving as if there were two independent
+    }                                                 // LinnStruments next to each-other (the lower left cell of the right split will be 30)
+    return 30;
+  }
+  if (offset >= 12)  return 18;                       // 8th string of a guitar, down an octave
+  if (offset >= 0)   return 30;                       // 8th string of a guitar
+  if (offset >= -11) return 65;
+  if (offset >= -16) return 18 - 7 * offset;          // ensures lower left cell is 18
+
+  // fall back to the global row offset
+  offset = Global.rowOffset;
+  if (offset == ROWOFFSET_ZERO) return 30;
+  if (offset == ROWOFFSET_GUITAR) return Global.guitarTuning[0];
+  if (offset == ROWOFFSET_NOOVERLAP) {
+    if (Global.splitActive && side == RIGHT) {        // see above
+      return 30 - (Global.splitPoint - 1);
+    }
+    return 30;
+  }
+  if (offset == ROWOFFSET_OCTAVECUSTOM) {
+    offset = Global.customRowOffset;
+  }
+  if (offset >= 12)  return 18;
+  if (offset >= 0)   return 30;
+  if (offset >= -11) return 65;
+  if (offset >= -16) return 18 - 7 * offset;
+  return 64;                                          // offset must be -17 which is -GUI, lowest = guitar's high E string
+}
 
 const byte NUM_FORKS = 3;
 const byte MAX_LONGPRESS_MESSAGES = 3;     // after the 3rd long-press of OS version since power-up,

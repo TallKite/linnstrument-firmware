@@ -81,17 +81,17 @@ Once the edo (notes per octave) is set to anything other than OFF, VIEW MAIN tur
 
 Main menu, LONG-PRESS EACH BUTTON to see its function.
 
-1) left/right column offset
-2) left/right row offset
+1) set left/right column offset
+2) set left/right row offset
 
-3) edo (notes per octave)
-4) octave stretch in cents
+3) set edo (notes per octave)
+4) set octave stretch in cents
 
-5) anchor pad chooser
-6) anchor note
-7) anchor cents
+5) choose anchor pad
+6) set anchor note
+7) set anchor cents
 
-8) set note lights
+8) choose note lights
 
 9) set locator CCs
 10) set to 41edo Kite guitar (row offset 13, column offset 2)
@@ -99,14 +99,10 @@ Main menu, LONG-PRESS EACH BUTTON to see its function.
 
 See above for the column offset. Buttons 4-8 don't work until you set the edo. 
 
-The anchor pad is a specific pad or cell that doesn't change pitch when you change the edo (the notes per octave). The anchor pad chooser displays the row and column of the current anchor pad, e.g. R4C11 means row 4 (from the top) and column 11. Tap the blue "R4C11" and you'll see the normal display with the anchor pad blinking. Tap any pad to set a new anchor cell. All the lights will shify accordingly.
-Change the anchor note to transpose by 12edo semitones. Change the anchor cents to detune the entire Linnstrument.
-Each split can be transposed independently any number of edosteps from the anchor cell, allowing any tuning.
-Like the guitar tuning screen, a midi note is sent when you change either the anchor note or the anchor cents.
+The anchor pad is a specific pad or cell that doesn't change pitch when you change the edo (the notes per octave). The anchor pad chooser displays the row and column of the current anchor pad, e.g. R4C11 means row 4 (from the top) and column 11. Tap the blue "R4C11" anywhere and you'll see the normal display with the anchor pad blinking. Tap any pad to set a new anchor cell. All the lights will shify accordingly.
+Change the anchor note to transpose by 12edo semitones. Change the anchor cents to detune the entire Linnstrument. Each split can be transposed independently any number of edosteps from the anchor cell, allowing any tuning. Like the guitar tuning screen, a midi note is sent when you change either the anchor note or the anchor cents.
 
-When the notes per octave is greater than 12, the OCTAVE/TRANSPOSE screen shows two extra rows for transposing by edosteps.
-The 2nd and 3rd rows now transpose not by semitones but by major 2nds (since most edos have several different semitones).
-A major 2nd is defined as the interval between the 4th and the 5th, e.g. 3 edosteps for 15edo but 2 edosteps for 16edo.
+When the notes per octave is greater than 12, the OCTAVE/TRANSPOSE screen shows two extra rows for transposing by edosteps. The 2nd and 3rd rows now transpose not by semitones but by major 2nds (since most edos have several different semitones). A major 2nd is defined as the interval between the 4th and the 5th, e.g. 3 edosteps for 15edo but 2 edosteps for 16edo.
 
 MicroLinn's guitar tuning is completely independent of the standard Linnstrument guitar tuning.
 The guitar tuning screen no longer adjusts the pitch of each "string". Instead it sets 7 independent row offsets.

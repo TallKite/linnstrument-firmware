@@ -1955,7 +1955,7 @@ inline void updateSensorCell() {
 // getNoteNumber:
 // computes MIDI note number from current row, column, row offset, octave button and transposition amount
 byte getNoteNumber(byte split, byte col, byte row) {
-  return microLinnGetNoteNumber(split, col, row);       // the rest of this function is now unneeded, big latency savings!
+  if (isMicroLinnOn()) return microLinnGetNoteNumber(split, col, row);
 
   byte notenum = 0;
 
@@ -1964,14 +1964,18 @@ byte getNoteNumber(byte split, byte col, byte row) {
   if (isLeftHandedSplit(split)) {
     noteCol = (NUMCOLS - col);
   }
-
+  if (Split[split].microLinn.colOffset != 1) {
+    // subtract 1 to be zero-based, scale it up, then add 1 again
+    noteCol = (noteCol - 1) * Split[split].microLinn.colOffset + 1;
+  }
+  
   notenum = determineRowOffsetNote(split, row) + noteCol - 1;
 
-  return notenum - Split[split].transposeLights;
+  return notenum - Split[split].transposeLights * Split[split].microLinn.colOffset;
 }
 
-short determineRowOffsetNote(byte split, byte row) {  // determine the start note of a given row
-  return microLinnGetNoteNumber(split, 1, row);       // the rest of this function is now unneeded, big latency savings!
+short determineRowOffsetNote(byte split, byte row) {  // determine the col 1 note of a given row (col 25 if lefty)
+  if (isMicroLinnOn()) return microLinnGetNoteNumber(split, 1, row);      // but this note is col 1 even if lefty
   
   short lowest = 30;                                  // 30 = F#2, which is 10 semitones below guitar low E (E3/52). High E = E5/76
 
