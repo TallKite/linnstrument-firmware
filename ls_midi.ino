@@ -1154,7 +1154,7 @@ void receivedNrpn(int parameter, int value, int channel) {
       break;
     // Global Custom Row Offset Instead Of Octave
     case 253:
-      if (isMicroLinnOn()) {microLinnReceivedNrpn253(value);}
+      if (isMicroLinnOn()) {receiveMicroLinnNrpn253(value);}
       else if (inRange(value, 0, 33)) {
         if (value == 33) {
           Global.customRowOffset = -17;
@@ -1554,7 +1554,7 @@ void sendNrpnParameter(int parameter, int channel) {
       value = Device.minUSBMIDIInterval;
       break;
     case 253:
-      if (isMicroLinnOn()) {value = microLinnComputeNrpn253();}
+      if (isMicroLinnOn()) {value = computeMicroLinnNrpn253();}
       else if (Global.customRowOffset == -17) {
         value = 33;
       }
@@ -1682,7 +1682,7 @@ void highlightPossibleNoteCells(byte split, byte notenum) {
         byte color = getLedColor(col, row, Global.activeNotes >= 9 ? LED_LAYER_CUSTOM1 : LED_LAYER_MAIN);
         if (color == COLOR_OFF) {
           if (isMicroLinnOn()) {
-            color = microLinnRevealRainbowColor(split, col, row);
+            color = revealMicroLinnRainbowColor(split, col, row);
           }
           else color = Split[split].colorPlayed;
         }

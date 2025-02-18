@@ -980,7 +980,7 @@ void handleControlButtonRelease() {
     case PRESET_ROW:                                         // preset button released
 
       clearLed(0, sensorRow);
-      microLinnCalcTuning();
+      calcMicroLinnTuning();
       setDisplayMode(displayNormal);
       storeSettings();
       updateDisplay();
@@ -2126,13 +2126,13 @@ void handleSplitHandednessRelease() {
 }
 
 void handleRowOffsetNewTouch() {
-  if (isMicroLinnOn()) microLinnHandleRowOffsetNewTouch();
+  if (isMicroLinnOn()) handleMicroLinnRowOffsetNewTouch();
   else handleNumericDataNewTouchCol(Global.customRowOffset, -17, 16, true);
+  storeMicroLinnCustomRowOffsetCents();
 }
 
 void handleRowOffsetRelease() {
   handleNumericDataReleaseCol(false);
-  microLinnStoreGlobalRowOffsetCents();
 }
 
 void ensureGuitarTuningPreviewNoteRelease() {
@@ -2146,7 +2146,7 @@ void ensureGuitarTuningPreviewNoteRelease() {
 }
 
 void handleGuitarTuningNewTouch() {
-  if (isMicroLinnOn()) {microLinnHandleGuitarTuningNewTouch(); return;}
+  if (isMicroLinnOn()) {handleMicroLinnGuitarTuningNewTouch(); return;}
 
   if (sensorCol == 1) {
     guitarTuningRowNum = sensorRow;
@@ -2349,7 +2349,7 @@ void handleOctaveTransposeNewTouchSplit(byte side) {
     }
   }
 
-  microLinnHandleOctaveTransposeNewTouchSplit (side); 
+  handleMicroLinnOctaveTransposeNewTouchSplit(side); 
 }
 
 void handleOctaveTransposeRelease() {
@@ -2655,7 +2655,7 @@ void handleGlobalSettingNewTouch() {
             }
             break;
         }
-        microLinnStoreGlobalRowOffsetCents();
+        storeMicroLinnGlobalRowOffsetCents();
         break;
 
       // select more row offsets
@@ -2668,7 +2668,7 @@ void handleGlobalSettingNewTouch() {
             else {
               Global.rowOffset = 4;
             }
-            microLinnStoreGlobalRowOffsetCents();
+            storeMicroLinnGlobalRowOffsetCents();
             break;
           case 1:
             if (Global.rowOffset == 6) {
@@ -2677,7 +2677,7 @@ void handleGlobalSettingNewTouch() {
             else {
               Global.rowOffset = 6;
             }
-            microLinnStoreGlobalRowOffsetCents();
+            storeMicroLinnGlobalRowOffsetCents();
             break;
           case 2:
           case 3:
@@ -3009,7 +3009,7 @@ void handleGlobalSettingHold() {
             setDisplayMode(displayCustomLedsEditor);
             updateDisplay();
         }
-        else microLinnHandleGlobalScaleHold();
+        else handleMicroLinnScaleHold();
         break;
 
       case 6:

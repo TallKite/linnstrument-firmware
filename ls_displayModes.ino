@@ -428,7 +428,7 @@ void paintNormalDisplay() {
   }
   else {
     clearLed(0, OCTAVE_ROW);
-    microLinnLightOctaveSwitch();
+    paintMicroLinnOctaveTransposeButton();
   }
 }
 
@@ -528,7 +528,7 @@ void paintStrumDisplayCell(byte split, byte col, byte row) {
 
 void paintNormalDisplayCell(byte split, byte col, byte row) {
   if (userFirmwareActive) return;
-  if (isMicroLinnOn()) {microLinnPaintNormalDisplayCell(split, col, row); return;}
+  if (isMicroLinnOn()) {paintMicroLinnNormalDisplayCell(split, col, row); return;}
 
   // by default clear the cell color
   byte colour = COLOR_OFF;
@@ -874,7 +874,7 @@ byte getSplitHandednessColor() {
 }
 
 byte getGuitarTuningColor() {
-  if (isMicroLinnOn()) return microLinnGetGuitarTuningColor();
+  if (isMicroLinnOn()) return getMicroLinnGuitarTuningColor();
   byte color = globalColor;
   if (Global.guitarTuning[0] != 30 ||
       Global.guitarTuning[1] != 35 ||
@@ -1295,7 +1295,7 @@ void paintRowOffset() {
 }
 
 void paintGuitarTuning() {
-  if (isMicroLinnOn()) {microLinnPaintGuitarTuning (); return;}
+  if (isMicroLinnOn()) {paintMicroLinnGuitarTuning (); return;}
   clearDisplay();
 
   for (byte r = 0; r < NUMROWS; ++r) {
@@ -1468,7 +1468,7 @@ void paintOctaveTransposeDisplay(byte side) {
     }
   }
 
-  microLinnPaintEdostepTranspose (side);
+  paintMicroLinnEdostepTranspose(side);
 
   paintShowSplitSelection(side);
 }
@@ -1823,7 +1823,7 @@ void paintGlobalSettingsDisplay() {
     char str[4];
     const char* format = "%3d";
     snprintf(str, sizeof(str), format, FXD4_TO_INT(fxd4CurrentTempo));
-    microLinnDebugDump();   // temporary, delete later and uncomment following line later
+    paintMicroLinnDebugDump();   // temporary, delete later and uncomment following line later
     //tinyfont_draw_string(0, 4, str, color);
   }
 
@@ -1846,6 +1846,7 @@ void paintCustomLedsEditor() {
 }
 
 byte getRowOffsetColor() {
+  if (isMicroLinnOn()) return getMicroLinnRowOffsetColor();
   if (Global.customRowOffset != 12) {
     return globalAltColor;
   }

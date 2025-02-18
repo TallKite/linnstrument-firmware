@@ -1248,7 +1248,7 @@ void prepareNewNote(signed char notenum) {
     else if (Split[sensorSplit].playedTouchMode == playedSame ||
              Split[sensorSplit].playedTouchMode == playedBlink) {
       highlightPossibleNoteCells(sensorSplit, sensorCell->note);
-      microLinnApplySameAndBlinkToOtherSplit(true, sensorCell->note);
+      applySameAndMicroLinnBlinkToOtherSplit(true, sensorCell->note);
     }
     else {
       startTouchAnimation(sensorCol, sensorRow, calcTouchAnimationSpeed(Split[sensorSplit].playedTouchMode, sensorCell->velocity));
@@ -1284,7 +1284,7 @@ void sendNewNote() {
 
     // send the note on
     midiSendNoteOn(sensorSplit, sensorCell->note, sensorCell->velocity, sensorCell->channel);
-    microLinnSendLocatorCC ();
+    sendMicroLinnLocatorCC();
   }
 }
 
@@ -1825,7 +1825,7 @@ void handleTouchRelease() {
 
         if (allNotesOff) {
           resetPossibleNoteCells(sensorSplit, realSensorNote);
-          microLinnApplySameAndBlinkToOtherSplit(false, realSensorNote);
+          applySameAndMicroLinnBlinkToOtherSplit(false, realSensorNote);
         }
       }
     }
@@ -1955,7 +1955,7 @@ inline void updateSensorCell() {
 // getNoteNumber:
 // computes MIDI note number from current row, column, row offset, octave button and transposition amount
 byte getNoteNumber(byte split, byte col, byte row) {
-  if (isMicroLinnOn()) return microLinnGetNoteNumber(split, col, row);
+  if (isMicroLinnOn()) return getMicroLinnNoteNumber(split, col, row);
 
   byte notenum = 0;
 
@@ -1975,7 +1975,7 @@ byte getNoteNumber(byte split, byte col, byte row) {
 }
 
 short determineRowOffsetNote(byte split, byte row) {  // determine the col 1 note of a given row (col 25 if lefty)
-  if (isMicroLinnOn()) return microLinnGetNoteNumber(split, 1, row);      // but this note is col 1 even if lefty
+  if (isMicroLinnOn()) return getMicroLinnNoteNumber(split, 1, row);      // but this note is col 1 even if lefty
   
   short lowest = 30;                                  // 30 = F#2, which is 10 semitones below guitar low E (E3/52). High E = E5/76
 
