@@ -2869,7 +2869,7 @@ void handleGlobalSettingNewTouch() {
         break;
 #ifndef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
       case 17: 
-        if (sensorRow == 2) enterMicroLinnUninstallMenu();   // move this button to col 16 once it's fully tested
+        if (sensorRow == 2) enterMicroLinnUninstall();   // move this button to col 16 once it's fully tested
         break;
 #endif
     }
@@ -3016,6 +3016,7 @@ void handleGlobalSettingHold() {
         switch (sensorRow) {
           case 2:
             Global.rowOffset = ROWOFFSET_OCTAVECUSTOM;
+            clearMicroLinnGlobalRowOffsetCents();
             resetNumericDataChange();
             setDisplayMode(displayRowOffset);
             updateDisplay();
@@ -3145,6 +3146,7 @@ void handleGlobalSettingRelease() {
       }
       else {
         Global.rowOffset = ROWOFFSET_OCTAVECUSTOM;
+        clearMicroLinnGlobalRowOffsetCents();
       }
   }
   else if (sensorCol == 6 && sensorRow == 3 &&

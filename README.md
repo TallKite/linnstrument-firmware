@@ -99,7 +99,7 @@ Main menu, LONG-PRESS EACH BUTTON to see its function.
 
 See above for the column offset. Buttons 4-8 don't work until you set the edo. 
 
-The anchor pad is a specific pad or cell that doesn't change pitch when you change the edo (the notes per octave). The anchor pad chooser displays the row and column of the current anchor pad, e.g. R4C11 means row 4 (from the top) and column 11. Tap the blue "R4C11" anywhere and you'll see the normal display with the anchor pad blinking. Tap any pad to set a new anchor cell. All the lights will shify accordingly.
+The anchor pad is a specific pad or cell that doesn't change pitch when you change the edo (the notes per octave). The anchor pad chooser displays the row and column of the current anchor pad, e.g. R4C11 means row 4 (from the top) and column 11. Tap the blue "R4C11" anywhere and you'll see the normal display with the anchor pad blinking. Tap any pad to set it as the new anchor pad. This pad beomes the new tonic, and all the lights will shift accordingly.
 Change the anchor note to transpose by 12edo semitones. Change the anchor cents to detune the entire Linnstrument. Each split can be transposed independently any number of edosteps from the anchor cell, allowing any tuning. Like the guitar tuning screen, a midi note is sent when you change either the anchor note or the anchor cents.
 
 When the notes per octave is greater than 12, the OCTAVE/TRANSPOSE screen shows two extra rows for transposing by edosteps. The 2nd and 3rd rows now transpose not by semitones but by major 2nds (since most edos have several different semitones). A major 2nd is defined as the interval between the 4th and the 5th, e.g. 3 edosteps for 15edo but 2 edosteps for 16edo.

@@ -1437,7 +1437,7 @@ void setup() {
   SWITCH_FREERAM = true;
 #endif
 
-  setupMicroLinn ();  
+  setupMicroLinn ();
 
   setupDone = true;
 
