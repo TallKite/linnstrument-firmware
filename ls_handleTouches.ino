@@ -501,6 +501,7 @@ short cellTransposedNote(byte split) {
 }
 
 short transposedNote(byte split, byte col, byte row) {
+  if (isMicroLinnOn()) return getMicroLinnNoteNumber(split, col, row);    // tuning tables are pre-transposed
   return getNoteNumber(split, col, row) + Split[split].transposePitch + Split[split].transposeOctave;
 }
 
@@ -1265,9 +1266,6 @@ void sendNewNote() {
     // pitch bend value was not neutral, reset it first to prevent skewed pitches
     if (!Split[sensorSplit].sendX && hasPreviousPitchBendValue(sensorCell->channel)) {
       preSendPitchBend(sensorSplit, 0, sensorCell->channel);
-      // possible method to implement microLinn:
-      //int microLinnTuningBend = (isMicroLinnOn() ? microLinnFineTuning[sensorSplit][sensorCol][sensorRow] : 0);
-      //preSendPitchBend(sensorSplit, microLinnTuningBend, sensorCell->channel);
     }
 
     // reset pressure to 0 before sending the note, the actually pressure value will
@@ -1283,6 +1281,7 @@ void sendNewNote() {
     }
 
     // send the note on
+    //signed char noteNum = isMicroLinnOn() ? getMicroLinnMidiNote() : sensorCell->note;
     midiSendNoteOn(sensorSplit, sensorCell->note, sensorCell->velocity, sensorCell->channel);
     sendMicroLinnLocatorCC();
   }
@@ -1318,6 +1317,7 @@ void sendReleasedNote() {
     }
 
     // if there are no other touches down with the same note and channel, send the note off message
+    //signed char noteNum = isMicroLinnOn() ? getMicroLinnMidiNote() : sensorCell->note;
     midiSendNoteOffWithVelocity(sensorSplit, sensorCell->note, sensorCell->velocity, sensorCell->channel);
   }
 }
@@ -1975,7 +1975,7 @@ byte getNoteNumber(byte split, byte col, byte row) {
 }
 
 short determineRowOffsetNote(byte split, byte row) {  // determine the col 1 note of a given row (col 25 if lefty)
-  if (isMicroLinnOn()) return getMicroLinnNoteNumber(split, 1, row);      // but this note is col 1 even if lefty
+  if (isMicroLinnOn()) return getMicroLinnNoteNumber(split, 1, row);      // but the microLinn note is col 1 even if lefty
   
   short lowest = 30;                                  // 30 = F#2, which is 10 semitones below guitar low E (E3/52). High E = E5/76
 

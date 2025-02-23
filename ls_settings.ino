@@ -2360,6 +2360,7 @@ void handleSplitPointNewTouch() {
   if (sensorCol < 2) return;
   changedSplitPoint = true;
   Global.splitPoint = sensorCol;
+  if (isMicroLinnNoOverlap()) calcMicroLinnTuning();
   updateDisplay();
 }
 

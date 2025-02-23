@@ -947,6 +947,7 @@ void receivedNrpn(int parameter, int value, int channel) {
     case 202:
       if (inRange(value, 2, 25)) {
         Global.splitPoint = value;
+        if (isMicroLinnNoOverlap()) calcMicroLinnTuning();
       }
       break;
     // Global Main Note Lights
@@ -1733,9 +1734,10 @@ void resetPossibleNoteCells(byte split, byte notenum) {
 short getNoteNumColumn(byte split, byte notenum, byte row) {
   short row_offset_note = determineRowOffsetNote(split, row);
   signed char colOffset = Split[split].microLinn.colOffset;
-  row_offset_note += Split[split].transposeOctave + Split[split].transposePitch - Split[split].transposeLights; // transpose first...
-  if ((notenum - row_offset_note) % colOffset != 0) return -1;       // then check if the column offset makes us skip over the note
-  short col = (notenum - row_offset_note) / colOffset + 1;           // add 1 so if notenum = row_offset_note, we get col 1 not col 0
+  if (!isMicroLinnOn())                                              // microLinn's tuning tables take transposition into account already
+    row_offset_note += Split[split].transposeOctave + Split[split].transposePitch - Split[split].transposeLights;
+  if ((notenum - row_offset_note) % colOffset != 0) return -1;       // check if the column offset makes us skip over the note
+  short col = (notenum - row_offset_note) / colOffset + 1;           // add 1 because row_offset_note is in col 1
   if (isLeftHandedSplit(split) && !isMicroLinnOn()) {                // microLinn's tuning tables take handedness into account already
     col = NUMCOLS - col;
   }
@@ -1908,6 +1910,7 @@ void preSendPitchBend(byte split, int pitchValue) {
 
 // Called to send a Pitch Bend message. Depending on mode, sends different Bend data
 void preSendPitchBend(byte split, int pitchValue, byte channel) {
+  //if (isMicroLinnOn()) pitchValue += getMicroLinnTuningBend();
   midiSendPitchBend(scalePitch(split, pitchValue), channel);    // Send the bend amount as a difference from bend center (8192)
 }
 

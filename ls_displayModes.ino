@@ -239,7 +239,7 @@ void updateDisplay() {
       break;
     case displayMicroLinnAnchorChooser:
       if (customLedPatternActive) {
-        //loadCustomLedLayer(getActiveCustomLedPattern());          // bug: doesn't load anything
+        loadCustomLedLayer(getActiveCustomLedPattern());          // bug: doesn't load anything
         paintNormalDisplay();
       } else {
         paintNormalDisplay();

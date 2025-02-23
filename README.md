@@ -18,61 +18,31 @@ WARNING: installing this fork deletes your Linnstrument's settings and calibrati
 
 -------- UPGRADING/UNINSTALLING -------- 
 
-IMPORTANT: Later on when you update the OS to a different version, you'll be asked if you want to uninstall microLinn. 
-Say no (the red button) if you're updating to a newer version of microLinn. This avoids needlessly deleting your microtonal user settings. Say yes (the green button) otherwise, e.g. if you're going back to an official (non-microtonal) version of the firmware. This does delete your microtonal user settings, which is necessary in order to avoid deleting all your other user settings plus your calibration data.
+IMPORTANT: Later on when you update the OS to a different version, you'll be asked if you want to uninstall microLinn. Say no (the red button) if you're updating to a newer version of microLinn. This avoids needlessly deleting your microtonal user settings. Say yes (the green button) otherwise, e.g. if you're going back to an official (non-microtonal) version of the firmware. This does delete your microtonal user settings, which is necessary in order to avoid deleting all your other user settings plus your calibration data.
 
 -------- NON-MICROTONAL FEATURES -------- 
 
-COLUMN OFFSETS: The column offset can be set for each split independently. This allows Wicki-Hayden layout on the left for 
-easy chord playing and normal layout on the right for easy melody playing. Access it through the microLinn menu, see below.
-To set both column offsets at once, press both split buttons at once. (If they are different, doing so equates them.)
-Beware, if the column offset is 2 and the row offset is an even number, you only get a whole-tone scale.
-In general, the column offset and the row offset should not have any common factors.
-(In NO OVERLAP mode, the row offset isn't affected by increasing the column offset, it remains the width of the split.)
+COLUMN OFFSETS: The column offset can be set for each split independently. This allows Wicki-Hayden layout on the left for easy chord playing and normal layout on the right for easy melody playing. Access it through the microLinn menu, see below. To set both column offsets at once, press both split buttons at once. (If they are different, doing so equates them.) Beware, if the column offset is 2 and the row offset is an even number, you only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors. (In NO OVERLAP mode, the row offset isn't affected by increasing the column offset, it remains the width of the split.)
 
-PER-SPLIT ROW OFFSETS: Setting the row offset for a split overrides the global setting for that split only. 
-No overlap appears as NOVR. Guitar tunings are not supported (but are still available globally). 
-Access it through the microLinn menu, see below.
+PER-SPLIT ROW OFFSETS: Setting the row offset for a split overrides the global setting for that split only. No overlap appears as NOVR. Guitar tunings are not supported (but are still available globally). Access it through the microLinn menu, see below.
 
-DETUNING: Detune the entire Linnstrument up or down from A-440 to match a similarly detuned recording or instrument. 
-(No guarantee that detuning to A-432 will heal your chakras lol.) Access it through microLinn's anchor cents, see below.
+DETUNING: Detune the entire Linnstrument up or down from A-440 to match a similarly detuned recording or instrument. (No guarantee that detuning to A-432 will heal your chakras lol.) Access it through microLinn's anchor cents, see below.
 
-CHAINING SEQUENCES: hold the pad for sequence #2 and tap the pad for sequence #1. Now the two sequences are chained into a 
-single sequence twice as long. This is indicated by sequence #1 being accented and sequence #2 blinking.
-You can chain #3 and #4 together as well. Or chain all 4 together. The lights for the entire chain will blink when it's playing. 
-When making a chain, to start at the beginning of the chain not the end, hold the last sequence and tap the first one.
-You can still select sequences and chains on the fly as the sequencer is playing. You can also chain and unchain on the fly. 
-Straight/dotted/triplet/swing and quarter/8th/16th are still set individually for each sequence, so 1 chain can mix these together.
-To clear all chains in a split, tap the hidden switch immediately to the left of the 4 selector pads. Or just unplug the Linnstrument.
+CHAINING SEQUENCES: hold the pad for sequence #2 and tap the pad for sequence #1. Now the two sequences are chained into a single sequence twice as long. This is indicated by sequence #1 being accented and sequence #2 blinking. You can chain #3 and #4 together as well. Or chain all 4 together. The lights for the entire chain will blink when it's playing. When making a chain, to start at the beginning of the chain not the end, hold the last sequence and tap the first one. You can still select sequences and chains on the fly as the sequencer is playing. You can also chain and unchain on the fly. Straight/dotted/triplet/swing and quarter/8th/16th are still set individually for each sequence, so 1 chain can mix these together. To clear all chains in a split, tap the hidden switch immediately to the left of the 4 selector pads. Or just unplug the Linnstrument.
 
-SEQUENCER PEDALS: When playing in one split and using the other split as a sequencer, it's no longer necessary to switch 
-to the other split before using the following pedals (or switches or midi NRPN messages): PLAY, PREV, NEXT and MUTE.
-Outside of a chain, the NEXT and PREV footswitches take you to the next/previous sequence as before. 
-You can double-tap or triple-tap the NEXT and PREV footswitches to skip forward/backward multiple sequences.
-Thus triple-tapping NEXT is the same as single-tapping PREV, which means you only need one pedal to go anywhere.
-From within a chain, NEXT and PREV operate relative to the upcoming sequence in the chain, not the current one.
-Thus pressing PREV repeats the current sequence and pressing NEXT goes forward two sequences, not one.
-One exception: from the rightmost sequence of a chain, NEXT exits the chain. (Otherwise one could never exit.)
+SEQUENCER PEDALS: When playing in one split and using the other split as a sequencer, it's no longer necessary to switch to the other split before using the following pedals (or switches or midi NRPN messages): PLAY, PREV, NEXT and MUTE. Outside of a chain, the NEXT and PREV footswitches take you to the next/previous sequence as before. You can double-tap or triple-tap the NEXT and PREV footswitches to skip forward/backward multiple sequences. Thus triple-tapping NEXT is the same as single-tapping PREV, which means you only need one pedal to go anywhere. From within a chain, NEXT and PREV operate relative to the upcoming sequence in the chain, not the current one. Thus pressing PREV repeats the current sequence and pressing NEXT goes forward two sequences, not one. One exception: from the rightmost sequence of a chain, NEXT exits the chain. (Otherwise one could never exit.)
 
-SEQUENCER PROJECTS LOAD/SAVE SCREEN: The projects now run top to bottom, with the top row being 1-4 not 13-16.
-This is more intuitive because it matches how people read, for example how you are reading this very paragraph right now.
-(These project numbers only matter when using the Updater app to export/import projects to/from your computer.)
-As a result, projects you might have previously saved to the top row are now in the bottom row.
-To move them, load them from the bottom row and save them to the top row.
+SEQUENCER PROJECTS LOAD/SAVE SCREEN: The projects now run top to bottom, with the top row being 1-4 not 13-16. This is more intuitive because it matches how people read, for example how you are reading this very paragraph right now. (These project numbers only matter when using the Updater app to export/import projects to/from your computer.) As a result, projects you might have previously saved to the top row are now in the bottom row. To move them, load them from the bottom row and save them to the top row.
 
-BLINKING MODE: Like the SAME mode, BLNK shows you other occurences of the currently played note. But instead of changing color, the other occurences blink. It's good for busy displays like the custom note lights #2 (the one marked as A#). 
-The BLNK option appears right after CELL and SAME. (Don't confuse BLNK for blinking with BLIN for blinders.)
+BLINKING MODE: Like the SAME mode, BLNK shows you other occurences of the currently played note. But instead of changing color, the other occurences blink. It's good for busy displays like the custom note lights #2 (the one marked as A#). The BLNK option appears right after CELL and SAME. (Don't confuse BLNK for blinking with BLIN for blinders.)
 
 SAME/BLINK CARRY OVER: If both splits are set to SAME or BLNK, playing in one split shows matching notes in the other split too.
 
 MULTI-COLORED NOTE LIGHTS: Each of the 12 (or more!) notes can be any color. Transposable. Access it through the microLinn menu, see below.
 
-LOCATOR CCs: The Linnstrument can now send a locator CC message along with every note-on, indicating the row and column.
-This lets code on your laptop assign a specific function to a specific pad, e.g. upper lefthand corner = all sound off.
-One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25.
-Format: for cols 1-16, data value = (row - 1) + 8 * (col - 1). For cols 17-25, data value = (row - 1) + 8 * (col - 17).
-The top row is row 1 and the leftmost column is column 1. Choose the two CC types through the microLinn menu, see below.
-Thanks to KVR forum member vorp40 for the idea!
+LOCATOR CCs: The Linnstrument can now send a locator CC message along with every note-on, indicating the row and column. This lets code on your laptop assign a specific function to a specific pad, e.g. upper lefthand corner = all sound off. 
+
+Details: one type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. Format: for cols 1-16, data value = (row - 1) + 8 * (col - 1). For cols 17-25, data value = (row - 1) + 8 * (col - 17). The top row is row 1 and the leftmost column is column 1. Choose the two CC types through the microLinn menu, see below. Thanks to KVR forum member vorp40 for the idea!
 
 -------- MICROTONAL FEATURES -------- 
 
@@ -104,56 +74,25 @@ Change the anchor note to transpose by 12edo semitones. Change the anchor cents 
 
 When the notes per octave is greater than 12, the OCTAVE/TRANSPOSE screen shows two extra rows for transposing by edosteps. The 2nd and 3rd rows now transpose not by semitones but by major 2nds (since most edos have several different semitones). A major 2nd is defined as the interval between the 4th and the 5th, e.g. 3 edosteps for 15edo but 2 edosteps for 16edo.
 
-MicroLinn's guitar tuning is completely independent of the standard Linnstrument guitar tuning.
-The guitar tuning screen no longer adjusts the pitch of each "string". Instead it sets 7 independent row offsets.
-The "anchor string" is the row that the anchor pad is on. Its pitch is determined solely by the anchor pad, note and cents.
-On the far left, the anchor string is red, or orange if lit up. The others are green, or cyan if lit up.
-Tap any button on the far left to select a string. The button lights up and sounds that open string.
-Assuming it's not the anchor string, one of the neighboring strings, whichever one is closest to the anchor, also lights up.
-You won't see a note name with an octave number. Instead you'll see a row offset as a number (which can be negative). 
-This is the row offset between the two lit-up strings. Swipe right or left on it as before to increase or decrease it.
-(Selecting the anchor string doesn't show a row offset.) Changing one row offset doesn't affect the other six row offsets.
-Thus increasing any row offset above the anchor string sharpens the current string and all strings above it.
-And increasing any row offset below the anchor string *flattens* the current string and all strings below it.
-(Of the two lit-up buttons, the current string is always the one furthest from the anchor string.)
+MicroLinn's guitar tuning is completely independent of the standard Linnstrument guitar tuning. The guitar tuning screen no longer adjusts the pitch of each "string". Instead it sets 7 independent row offsets. The "anchor string" is the row that the anchor pad is on. Its pitch is determined solely by the anchor pad, note and cents. On the far left, the anchor string is red, or orange if lit up. The others are green, or cyan if lit up. Tap any button on the far left to select a string. The button lights up and sounds that open string. Assuming it's not the anchor string, one of the neighboring strings, whichever one is closest to the anchor, also lights up. You won't see a note name with an octave number. Instead you'll see a row offset as a number (which can be negative). This is the row offset between the two lit-up strings. Swipe right or left on it as before to increase or decrease it. (Selecting the anchor string doesn't show a row offset.) Changing one row offset doesn't affect the other six row offsets. Thus increasing any row offset above the anchor string sharpens the current string and all strings above it. And increasing any row offset below the anchor string *flattens* the current string and all strings below it. (Of the two lit-up buttons, the current string is always the one furthest from the anchor string.)
 
-If the guitar tuning is the standard tuning, the GLOBAL screen's GUITAR pad is dark blue, otherwise it's bright blue.
-The exact notes don't matter, just that the intervals between open strings are all 4ths, except for that one major 3rd.
-The edo's perfect 4th is its closest approximation to 4/3. The edo's major 3rd is two octaves minus four 4ths.
-There's two possible 4ths for 13edo (5\13 and 6\13) and 18edo (7\18 and 8\18). Either 4th keeps the GUITAR pad dark blue.
+If the guitar tuning is the standard tuning, the GLOBAL screen's GUITAR pad is dark blue, otherwise it's bright blue. The exact notes don't matter, just that the intervals between open strings are all 4ths, except for that one major 3rd. The edo's perfect 4th is its closest approximation to 4/3. The edo's major 3rd is two octaves minus four 4ths. There's two possible 4ths for 13edo (5\13 and 6\13) and 18edo (7\18 and 8\18). Either 4th keeps the GUITAR pad dark blue.
 
-Changing the edo adjusts the column offsets and row offset(s) so that their size in cents stays roughly the same.
-So your bosanquet keyboard layout remains roughly bosanquet, and your F#BEADGBE guitar tuning remains roughly F#BEADGBE.
+Changing the edo adjusts the column offsets and row offset(s) so that their size in cents stays roughly the same. So your bosanquet keyboard layout remains roughly bosanquet, and your F#BEADGBE guitar tuning remains roughly F#BEADGBE.
 
-There are 4 new functions for switches 1 & 2 and footswitches 1 & 2: 
+There are 3 new functions for switches 1 & 2 and footswitches 1 & 2: 
+
 EDO+ and EDO- move up or down to the next EDO, wraps around (probably best you don't play while changing!)
-SCL+ and SCL- move up or down to the next scale, wraps around (only affects the note lights).
+8VE± flips back and forth between two octaves.
 
-The 9 scales in Global Settings columns 2-4 are now microtonal and change for each edo. You can still select a scale
-using columns 2-4, but you can no longer edit a scale there, because for larger edos there are too many notes to fit.
-As a result, when microLinn is on, the VIEW MAIN and VIEW ACCENT buttons do not work, and the SCALE SELECT button is always on.
-To edit a scale and its colors, instead go to the main microLinn menu and go to the note lights screen.
-Shortcut: you can long-press the scale's pad in cols 2-4 in the Global Settings screen to go directly to that scale.
+The 9 scales in Global Settings columns 2-4 are now microtonal and change for each edo. You can still select a scale using columns 2-4, but you can no longer edit a scale there, because for larger edos there are too many notes to fit. As a result, when microLinn is on, the VIEW MAIN and VIEW ACCENT buttons do not work, and the SCALE SELECT button is always on. To edit a scale and its colors, instead go to the main microLinn menu and go to the note lights screen. Shortcut: you can long-press the scale's pad in cols 2-4 in the Global Settings screen to go directly to that scale.
 
-The note lights screen has 7 scale buttons plus the rainbow editor, the dots selector and the yellow rainbow-enabler button.
-Excluding the rainbow enabler, there are 9 buttons, corresponding to the 9 scales in cols 2-4 in the Global Settings screen.
-Tap any of these 9 buttons to select it. Tap any already-selected button to backtrack to the previous button.
-There are 7 rows of colored lights on the screen, which top to bottom are for unisons, 2nds, 3rds, 4ths, 5ths, 6ths and 7ths.
-Tap a note in a scale to toggle it on or off. Like the guitar tuning screen, a midi note is sent when you tap. 
-The 8th scale is the rainbow editor, in which all notes are always on. Tap a note to cycle it thru the rainbow. 
-The 9th scale (guitar-like fretboard dots) isn't really a scale. It's a full-screen display like the custom light patterns.
-Tapping the dots selector makes the dots appear in blue mid-screen. Tapping the dots lets you toggle them on or off. 
-To change the color of the dots, after editing go to Per-Split Settings and in column 11 change the main color.
-Long-press the scale buttons or the rainbow editor button or the dots selector button to reset the note lights to the default.
-Tap the yellow rainbow enabler button to turn off the rainbow and limit the note lights to the usual two colors.
+The note lights screen has 7 scale buttons plus the rainbow editor, the dots selector and the yellow rainbow-enabler button. Excluding the rainbow enabler, there are 9 buttons, corresponding to the 9 scales in cols 2-4 in the Global Settings screen. Tap any of these 9 buttons to select it. Tap any already-selected button to backtrack to the previous button. There are 7 rows of colored lights on the screen, which top to bottom are for unisons, 2nds, 3rds, 4ths, 5ths, 6ths and 7ths. Tap a note in a scale to toggle it on or off. Like the guitar tuning screen, a midi note is sent when you tap. The 8th scale is the rainbow editor, in which all notes are always on. Tap a note to cycle it thru the rainbow. The 9th scale (guitar-like fretboard dots) isn't really a scale. It's a full-screen display like the custom light patterns. Tapping the dots selector makes the dots appear in blue mid-screen. Tapping the dots lets you toggle them on or off. To change the color of the dots, after editing go to Per-Split Settings and in column 11 change the main color. Long-press the scale buttons or the rainbow editor button or the dots selector button to reset the note lights to the default. Tap the yellow rainbow enabler button to turn off the rainbow and limit the note lights to the usual two colors.
 
 The 3 custom light patterns are totally separate from all this and are still available for use!
 This web browser lets you easily edit them: https://forrcaho.github.io/linnstrument_colorizer/
 
-Default scales: of the 8 scales, the 1st and 2nd scales are 5-limit major and 5-limit minor.
-Scales 3-6 are blank but for the tonic, so that you can create your own scales on the note lights screen.
-(For the smaller, weirder edos, scales 1-2 are also blank.)
-The 7th scale is a partial rainbow, and the 8th scale is always the full rainbow.
+Default scales: of the 8 scales, the 1st and 2nd scales are 5-limit major and 5-limit minor. Scales 3-6 are blank but for the tonic, so that you can create your own scales on the note lights screen. (For the smaller, weirder edos, scales 1-2 are also blank.) The 7th scale is a partial rainbow, and the 8th scale is always the full rainbow.
 
 The colors use the rainbow metaphor, red-yellow-green-blue = sharp to flat = supermajor to subminor
 white = 12-edo-ish = 3-limit
@@ -164,14 +103,11 @@ pink is reserved for the exact half-octave of 600c, 12-edo-ish but not quite 3-l
 cyan / orange = a catch-all pair, e.g. 41edo 7/5 and 10/7, cyan is also for "outside" notes aka interordinals e.g. 24edo
 orange is used in 55edo for upmid and downmid notes
 
-The dot patterns tend to follow the conventional m3 P4 P5 M6 P8 guitar fret markers. Some edos add M2 and m7.
-Edos above 24 approximate 12edo, in other words there are dots about every 100 cents.
-41edo is an exception. It has kites like a Kite guitar.
+The dot patterns tend to follow the conventional m3 P4 P5 M6 P8 guitar fret markers. Some edos add M2 and m7. Edos above 24 approximate 12edo, in other words there are dots about every 100 cents. 41edo is an exception. It has kites like a Kite guitar.
 
 All of microLinn's settings are remembered by the 6 presets except the scales, rainbows and dot patterns.
 
-On the custom row offset screem, while microLinn is on, the "-GUI" option for reversed guitar tuning is no longer available.
-To get this reversed tuning, set the guitar tuning manually instead.
+On the custom row offset screem, while microLinn is on, the "-GUI" option for reversed guitar tuning is no longer available. To get this reversed tuning, set the guitar tuning manually instead.
 
 The 6th memory from the top is 41edo Kite guitar (row offset 13, column offset 2), with an alternating-3rds guitar tuning.
 
@@ -182,6 +118,7 @@ Suggestions for exploring:
 The first few edos are pretty strange. Try starting with 15, 17, 19 or 22.
 Be sure to try the Bosanquet layout for 31edo and the Kite guitar layout for 41edo.
 The full rainbow scale can be overwhelming. Try setting the played mode to BLNK.
+To avoid a touched pad turning red (or whatever) and obscuring the pad's usual color, set the played color to blank.
 Once you know an edo well, you'll probably want to switch to the fretboard dots display.
 
 To create JI or rank-2 scales with N notes, set the edo to N. (Eventually: also turn on raw midi mode.)
