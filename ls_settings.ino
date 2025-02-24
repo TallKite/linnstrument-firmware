@@ -330,9 +330,24 @@ void applySystemState() {
 void loadSettingsFromPreset(byte p) {
   Device.lastLoadedPreset = p;
 
-  memcpy(&Global, &config.preset[p].global, sizeof(GlobalSettings));
-  memcpy(&Split[LEFT], &config.preset[p].split[LEFT], sizeof(SplitSettings));
-  memcpy(&Split[RIGHT], &config.preset[p].split[RIGHT], sizeof(SplitSettings));
+  if (config.preset[p].global.microLinn.EDO > 4 || p == 4) {
+    // if the preset has microLinn turned on, or if the preset is on the bottom row, load everything as usual
+    memcpy(&Global, &config.preset[p].global, sizeof(GlobalSettings));
+    memcpy(&Split[LEFT], &config.preset[p].split[LEFT], sizeof(SplitSettings));
+    memcpy(&Split[RIGHT], &config.preset[p].split[RIGHT], sizeof(SplitSettings));
+  } else {        
+    // if the preset has microLinn turned off, don't alter any microLinn settings, but load everything else
+    memcpy(&Global, &config.preset[p].global, sizeof(GlobalSettings) - sizeof(MicroLinnGlobal));
+    memcpy(&Split[LEFT], &config.preset[p].split[LEFT], sizeof(SplitSettings) - sizeof(MicroLinnSplit));
+    memcpy(&Split[RIGHT], &config.preset[p].split[RIGHT], sizeof(SplitSettings) - sizeof(MicroLinnSplit));
+    // only load the column and per-split row offsets if they are not OFF (such offsets are often related to the edo)
+    for (byte side = 0; side < NUMSPLITS; ++side) {
+      if (config.preset[p].split[side].microLinn.colOffset > 1)
+        Split[side].microLinn.colOffset = config.preset[p].split[side].microLinn.colOffset;
+      if (config.preset[p].split[side].microLinn.rowOffset > -1)
+        Split[side].microLinn.rowOffset = config.preset[p].split[side].microLinn.rowOffset;
+    }
+  }
 
   applyPresetSettings();
   setupMicroLinn();

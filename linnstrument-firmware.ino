@@ -614,6 +614,7 @@ enum SequencerDirection {
 
 struct MicroLinnSplit {
   byte colOffset;                         // column offset, 1 to 8
+  //signed char rowOffset;                // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
   signed char transposeEDOsteps;          // accessed not via displayMicroLinnConfig but via displayOctaveTranspose
   signed char transposeEDOlights;
   boolean rawMidiOutput;                  // output in edostep format (1 midi note = 1 edostep)
@@ -781,6 +782,8 @@ struct MicroLinnGlobal {
   short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, [0] is unused, can be negative, independent of Global.guitarTuning
   boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
   boolean sweeten;                           // adjust 41edo 5/4, 5/3 by 2¢ both top and bottom to make it 4¢ closer to just?
+  //signed char locatorCC1;                  // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25
+  //signed char locatorCC2;                  // ranges from 0 to 119, -1 = OFF
 };
 
 struct GlobalSettings {
