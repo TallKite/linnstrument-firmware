@@ -1555,7 +1555,7 @@ void sendNrpnParameter(int parameter, int channel) {
       value = Device.minUSBMIDIInterval;
       break;
     case 253:
-      if (isMicroLinnOn()) {value = computeMicroLinnNrpn253();}
+      if (isMicroLinnOn()) value = computeMicroLinnNrpn253();
       else if (Global.customRowOffset == -17) {
         value = 33;
       }
@@ -1910,7 +1910,7 @@ void preSendPitchBend(byte split, int pitchValue) {
 
 // Called to send a Pitch Bend message. Depending on mode, sends different Bend data
 void preSendPitchBend(byte split, int pitchValue, byte channel) {
-  //if (isMicroLinnOn()) pitchValue += getMicroLinnTuningBend();
+  if (isMicroLinnOn()) pitchValue += getMicroLinnTuningBend();
   midiSendPitchBend(scalePitch(split, pitchValue), channel);    // Send the bend amount as a difference from bend center (8192)
 }
 

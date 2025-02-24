@@ -1281,8 +1281,9 @@ void sendNewNote() {
     }
 
     // send the note on
-    //signed char noteNum = isMicroLinnOn() ? getMicroLinnMidiNote() : sensorCell->note;
-    midiSendNoteOn(sensorSplit, sensorCell->note, sensorCell->velocity, sensorCell->channel);
+    byte noteNum = isMicroLinnOn() ? getMicroLinnMidiNote() : sensorCell->note;
+    if (noteNum == 255) return;    // 255 = microLinn code for dead pad
+    midiSendNoteOn(sensorSplit, noteNum, sensorCell->velocity, sensorCell->channel);
     sendMicroLinnLocatorCC();
   }
 }
@@ -1317,8 +1318,8 @@ void sendReleasedNote() {
     }
 
     // if there are no other touches down with the same note and channel, send the note off message
-    //signed char noteNum = isMicroLinnOn() ? getMicroLinnMidiNote() : sensorCell->note;
-    midiSendNoteOffWithVelocity(sensorSplit, sensorCell->note, sensorCell->velocity, sensorCell->channel);
+    byte noteNum = isMicroLinnOn() ? getMicroLinnMidiNote() : sensorCell->note;
+    midiSendNoteOffWithVelocity(sensorSplit, noteNum, sensorCell->velocity, sensorCell->channel);
   }
 }
 
@@ -1954,7 +1955,7 @@ inline void updateSensorCell() {
 
 // getNoteNumber:
 // computes MIDI note number from current row, column, row offset, octave button and transposition amount
-byte getNoteNumber(byte split, byte col, byte row) {
+short getNoteNumber(byte split, byte col, byte row) {
   if (isMicroLinnOn()) return getMicroLinnNoteNumber(split, col, row);
 
   byte notenum = 0;
