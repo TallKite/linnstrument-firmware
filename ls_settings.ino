@@ -344,8 +344,9 @@ void loadSettingsFromPreset(byte p) {
     for (byte side = 0; side < NUMSPLITS; ++side) {
       if (config.preset[p].split[side].microLinn.colOffset > 1)
         Split[side].microLinn.colOffset = config.preset[p].split[side].microLinn.colOffset;
-      if (config.preset[p].split[side].microLinn.rowOffset > -1)
-        Split[side].microLinn.rowOffset = config.preset[p].split[side].microLinn.rowOffset;
+      // uncomment once microLinnRowOffset becomes part of MicroLinnSplit
+      //if (config.preset[p].split[side].microLinn.rowOffset > -1)
+      //  Split[side].microLinn.rowOffset = config.preset[p].split[side].microLinn.rowOffset;
     }
   }
 
@@ -2161,7 +2162,10 @@ void ensureGuitarTuningPreviewNoteRelease() {
 }
 
 void handleGuitarTuningNewTouch() {
-  if (isMicroLinnOn()) {handleMicroLinnGuitarTuningNewTouch(); return;}
+  if (isMicroLinnOn()) {
+    handleMicroLinnGuitarTuningNewTouch(); 
+    return;
+  }
 
   if (sensorCol == 1) {
     guitarTuningRowNum = sensorRow;

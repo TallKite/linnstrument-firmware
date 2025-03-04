@@ -528,7 +528,10 @@ void paintStrumDisplayCell(byte split, byte col, byte row) {
 
 void paintNormalDisplayCell(byte split, byte col, byte row) {
   if (userFirmwareActive) return;
-  if (isMicroLinnOn()) {paintMicroLinnNormalDisplayCell(split, col, row); return;}
+  if (isMicroLinnOn()) {
+    paintMicroLinnNormalDisplayCell(split, col, row); 
+    return;
+  }
 
   // by default clear the cell color
   byte colour = COLOR_OFF;
@@ -1211,11 +1214,9 @@ void paintCustomSwitchAssignmentConfigDisplay() {
     case ASSIGNED_MICROLINN_EDO_DOWN:
       adaptfont_draw_string(0, 0, "EDO-", globalColor, true);
       break;
-    case ASSIGNED_MICROLINN_SCALE_UP:
-      adaptfont_draw_string(0, 0, "SCL+", globalColor, true);
-      break;
-    case ASSIGNED_MICROLINN_SCALE_DOWN:
-      adaptfont_draw_string(0, 0, "SCL-", globalColor, true);
+    case ASSIGNED_MICROLINN_TOGGLE_8VE:
+      adaptfont_draw_string(0, 0, "8VE", globalColor, true);
+      paintMicroLinnPlusMinus();
       break;
   }
 }
@@ -1295,7 +1296,10 @@ void paintRowOffset() {
 }
 
 void paintGuitarTuning() {
-  if (isMicroLinnOn()) {paintMicroLinnGuitarTuning (); return;}
+  if (isMicroLinnOn()) {
+    paintMicroLinnGuitarTuning (); 
+    return;
+  }
   clearDisplay();
 
   for (byte r = 0; r < NUMROWS; ++r) {
@@ -1563,8 +1567,7 @@ void paintSwitchAssignment(byte mode) {
     case ASSIGNED_SEQUENCER_MUTE:
     case ASSIGNED_MICROLINN_EDO_UP:
     case ASSIGNED_MICROLINN_EDO_DOWN:
-    case ASSIGNED_MICROLINN_SCALE_UP:
-    case ASSIGNED_MICROLINN_SCALE_DOWN:
+    case ASSIGNED_MICROLINN_TOGGLE_8VE:
       setLed(9, 3, getSwitchTapTempoColor(), cellOn);
       break;
     case ASSIGNED_AUTO_OCTAVE:

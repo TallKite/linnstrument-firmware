@@ -199,9 +199,8 @@ byte NUMROWS = 8;                    // number of touch sensor rows
 #define ASSIGNED_SEQUENCER_MUTE         17
 #define ASSIGNED_MICROLINN_EDO_UP       18
 #define ASSIGNED_MICROLINN_EDO_DOWN     19
-#define ASSIGNED_MICROLINN_SCALE_UP     20
-#define ASSIGNED_MICROLINN_SCALE_DOWN   21
-#define MAX_ASSIGNED                    ASSIGNED_MICROLINN_SCALE_DOWN
+#define ASSIGNED_MICROLINN_TOGGLE_8VE   20
+#define MAX_ASSIGNED                    ASSIGNED_MICROLINN_TOGGLE_8VE
 #define ASSIGNED_DISABLED               255
 
 #define GLOBAL_SETTINGS_ROW  0
@@ -342,6 +341,9 @@ struct __attribute__ ((packed)) TouchInfo {
   int32_t fxdPrevTimbre:32;                  // used to average out the rate of change of the timbre
   signed char note:8;                        // note from 0 to 127, -1 meaning it's unassigned
   signed char channel:8;                     // channel from 1 to 16, -1 meaning it's unassigned
+  //planned changes for microLinn
+  //short note:10;                           // microLinn edostep 0 to 511, -1 meaning it's unassigned, steal 2 bits from the channel field
+  //signed char channel:6;                   // channel from 1 to 16, -1 meaning it's unassigned
   signed char octaveOffset:8;                // the octave offset when the note started, since this can change during playing
   byte phantomCol1:5;                        // stores the col 1 of a rectangle that possibly has a phantom touch
   byte phantomRow1:3;                        // stores the row 1 of a rectangle that possibly has a phantom touch
@@ -615,9 +617,9 @@ enum SequencerDirection {
 struct MicroLinnSplit {
   byte colOffset;                         // column offset, 1 to 8
   //signed char rowOffset;                // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
-  signed char transposeEDOsteps;          // accessed not via displayMicroLinnConfig but via displayOctaveTranspose
+  signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
   signed char transposeEDOlights;
-  boolean rawMidiOutput;                  // output in edostep format (1 midi note = 1 edostep)
+  boolean tuningTable;                    // output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
   unsigned short hammerOnWindow;          // maximum width in cents of a hammer-on before it becomes two simultaneous notes, 0 = off
   boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
   byte pullOffVelocity;                   // 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
@@ -870,6 +872,7 @@ struct StepEvent {
   // signed char pitchOffset:8;  // -96 to 96 semitones
   // byte timbre:7;              // 0 to 127
   // byte row:3;                 // 1 to 7
+  // byte microLinnMidiGroup:2   // group 0 = edosteps 0-127, group 1 = 128-255, group 2 = 256-383
   byte data[6];
 };
 struct StepData {

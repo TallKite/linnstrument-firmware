@@ -323,12 +323,8 @@ void performSwitchAssignmentOn(byte whichSwitch, byte assignment, byte split) {
       changeMicroLinnEDO(-1);
       break;
 
-    case ASSIGNED_MICROLINN_SCALE_UP:
-      changeMicroLinnScale(1);
-      break;
-
-    case ASSIGNED_MICROLINN_SCALE_DOWN:
-      changeMicroLinnScale(-1);
+    case ASSIGNED_MICROLINN_TOGGLE_8VE:
+      performMicroLinnOctaveToggle(split);
       break;
   }
 }

@@ -501,7 +501,7 @@ short cellTransposedNote(byte split) {
 }
 
 short transposedNote(byte split, byte col, byte row) {
-  if (isMicroLinnOn()) return getMicroLinnNoteNumber(split, col, row);    // tuning tables are pre-transposed
+  if (isMicroLinnOn()) return getMicroLinnVirtualEdostep(split, col, row);        // virtual edosteps don't transpose
   return getNoteNumber(split, col, row) + Split[split].transposePitch + Split[split].transposeOctave;
 }
 
@@ -1281,9 +1281,12 @@ void sendNewNote() {
     }
 
     // send the note on
-    byte noteNum = isMicroLinnOn() ? getMicroLinnMidiNote() : sensorCell->note;
-    if (noteNum == 255) return;    // 255 = microLinn code for dead pad
-    midiSendNoteOn(sensorSplit, noteNum, sensorCell->velocity, sensorCell->channel);
+    byte notenum = sensorCell->note;
+    if (isMicroLinnOn()) notenum = getMicroLinnMidiNote(sensorSplit, notenum);
+    if (notenum == -1) return;            // -1 = the microLinn code for a dead pad
+    // rechannelize virtual edosteps above 127 when in tuning table mode
+    sensorCell->channel = rerouteMicroLinnMidiGroup();
+    midiSendNoteOn(sensorSplit, notenum, sensorCell->velocity, sensorCell->channel);
     sendMicroLinnLocatorCC();
   }
 }
@@ -1318,8 +1321,11 @@ void sendReleasedNote() {
     }
 
     // if there are no other touches down with the same note and channel, send the note off message
-    byte noteNum = isMicroLinnOn() ? getMicroLinnMidiNote() : sensorCell->note;
-    midiSendNoteOffWithVelocity(sensorSplit, noteNum, sensorCell->velocity, sensorCell->channel);
+    byte notenum = sensorCell->note;
+    if (isMicroLinnOn()) notenum = getMicroLinnMidiNote(sensorSplit, notenum);
+    if (notenum == -1) return;            // -1 = the microLinn code for a dead pad
+    midiSendNoteOffWithVelocity(sensorSplit, notenum, sensorCell->velocity, sensorCell->channel);
+    sendMicroLinnLocatorCC();
   }
 }
 
@@ -1956,7 +1962,7 @@ inline void updateSensorCell() {
 // getNoteNumber:
 // computes MIDI note number from current row, column, row offset, octave button and transposition amount
 short getNoteNumber(byte split, byte col, byte row) {
-  if (isMicroLinnOn()) return getMicroLinnNoteNumber(split, col, row);
+  if (isMicroLinnOn()) return getMicroLinnVirtualEdostep(split, col, row);
 
   byte notenum = 0;
 
@@ -1976,8 +1982,10 @@ short getNoteNumber(byte split, byte col, byte row) {
 }
 
 short determineRowOffsetNote(byte split, byte row) {  // determine the col 1 note of a given row (col 25 if lefty)
-  if (isMicroLinnOn()) return getMicroLinnNoteNumber(split, 1, row);      // but the microLinn note is col 1 even if lefty
-  
+  if (isMicroLinnOn()) {
+    byte lowCol = isLeftHandedSplit(split) ? 25 : 1;
+    return getMicroLinnVirtualEdostep(split, lowCol, row);
+  }
   short lowest = 30;                                  // 30 = F#2, which is 10 semitones below guitar low E (E3/52). High E = E5/76
 
   if (Global.rowOffset <= 12) {                       // if rowOffset is set to between 0 and 12..

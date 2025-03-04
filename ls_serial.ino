@@ -158,15 +158,24 @@ boolean waitForSerialAck() {
 }
 
 boolean waitForSerialCheck() {
-  if (!serialWaitForMaximumTwoSeconds()) return false;
+  if (!serialWaitForMaximumTwoSeconds()) {
+    progressBarMicroLinn(1.0f, COLOR_BLUE, 6); 
+    return false;
+  }
   char ack = Serial.read();
   lastSerialMoment = millis();
-  if (ack != CRCCheck) return false;
+  if (ack != CRCCheck) {
+    progressBarMicroLinn(1.0f, COLOR_RED, 6); 
+    return false;
+  }
   return true;
 }
 
 char waitForSerialCRC() {
-  if (!serialWaitForMaximumTwoSeconds()) return 0;
+  if (!serialWaitForMaximumTwoSeconds()) {
+    progressBarMicroLinn(1.0f, COLOR_RED, 5); 
+    return 0;
+  }
   char ack = Serial.read();
   lastSerialMoment = millis();
   return ack;
@@ -204,6 +213,10 @@ int negotiateIncomingCRC(byte* buffer, uint8_t size) {
   return 1;
 }
 
+void progressBarMicroLinn(float done, byte color, byte row) {
+  setLed(1 + (int)(done*25.0f), row, color, cellOn);
+}
+
 void serialSendSettings() {
   Serial.write(ackCode);
 
@@ -211,6 +224,7 @@ void serialSendSettings() {
   delayUsec(1000);
 
   int32_t confSize = sizeof(Configuration);
+  const int32_t confSizeOriginal = confSize;          // needed for progressBarMicroLinn(), delete later
 
   // send the size of the settings
   Serial.write((byte*)&confSize, sizeof(int32_t));
@@ -219,19 +233,31 @@ void serialSendSettings() {
   const uint8_t batchsize = 96;
   byte* src = (byte*)&config;
   lastSerialMoment = millis();
+  progressBarMicroLinn(0.0f, COLOR_GREEN, 7);
   while (confSize > 0) {
     int actual = min(confSize, batchsize);
     Serial.write(src, actual);
 
-    if (!waitForSerialCheck()) return;
+    if (!waitForSerialCheck()) {
+      progressBarMicroLinn(0.0f, COLOR_BLUE, 7);      // time-out 2 sec, quit
+      return;
+    }
 
     int crc = negotiateOutgoingCRC(src, actual);
-    if (crc == -1)      return;
-    else if (crc == 0)  continue;
+    if (crc == -1)      {
+      progressBarMicroLinn(0.0f, COLOR_RED, 7);       // time-out, quit
+      return;
+    }
+    else if (crc == 0) {
+      progressBarMicroLinn(0.0f, COLOR_LIME, 7);      // bad crc, retry
+      continue;
+    }
 
     confSize -= actual;
     src += actual;
+    progressBarMicroLinn(((float)(confSizeOriginal - confSize)) / (float)confSizeOriginal, COLOR_WHITE, 7);   // good
   }
+  progressBarMicroLinn(1.0f, COLOR_ORANGE, 7);  // done
 
   Serial.write(ackCode);
 }
