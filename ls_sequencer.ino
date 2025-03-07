@@ -122,7 +122,7 @@ struct __attribute__ ((packed)) StepEventState {
   void highlightCell(StepSequencerState& state, StepEvent& event);
   void unhighlightCell();
 
-  signed char note:8;
+  short note:16;                // short not byte for microLinn, adds 256 bytes to seqState
   byte remainingDuration:8;
   byte channel:5;
   byte highlightedRow:3;
@@ -156,7 +156,7 @@ struct StepSequencerState {
   StepData& getCurrentPatternStep(byte stepNum);
   byte getSensorSequencerPosition();
   int getRowNoteNum(byte noteRow);
-  byte getSensorNotesNoteNum();
+  short getSensorNotesNoteNum();
   int getSensorRowNoteNum();
   StepData& getSensorStep();
   StepDataState& getSensorStepState();
@@ -1248,7 +1248,7 @@ void handleSequencerFaderRelease() {
 void handleStepEditingTouchNotes(boolean newVelocity) {
   StepSequencerState& state = seqState[sensorSplit];
   
-  byte noteNum = state.getSensorNotesNoteNum();
+  short noteNum = state.getSensorNotesNoteNum();
   byte stepNum;
   if (!state.getFocusStep(stepNum)) {
     return;
@@ -1260,7 +1260,7 @@ void handleStepEditingTouchNotes(boolean newVelocity) {
 void handleStepEditingReleaseNotes() {
   StepSequencerState& state = seqState[sensorSplit];
 
-  byte noteNum = state.getSensorNotesNoteNum();
+  short noteNum = state.getSensorNotesNoteNum();
   byte stepNum;
   if (!state.getFocusStep(stepNum)) {
     return;
@@ -1664,7 +1664,7 @@ void StepEvent::operator=(const StepEvent& e) {
   memcpy(data, e.data, 6);
 }
 
-void StepEvent::setNewEvent(byte note, byte velocity, unsigned short duration, byte timbre, byte row) {
+void StepEvent::setNewEvent(short note, byte velocity, unsigned short duration, byte timbre, byte row) {
   clear();
   setNote(note);
   setVelocity(velocity);
@@ -1673,12 +1673,13 @@ void StepEvent::setNewEvent(byte note, byte velocity, unsigned short duration, b
   setRow(row);
 }
 
-byte StepEvent::getNote() {
-  return (data[0] & B11111110) >> 1;
+short StepEvent::getNote() {
+  return (data[0] & B11111110) >> 1 | (data[5] & B00110000) << 3;    // data[5] holds microLinnGroup
 }
 
-void StepEvent::setNote(byte note) {
+void StepEvent::setNote(short note) {
   data[0] = (data[0] & B00000001) | (note & B01111111) << 1;
+  data[5] = (data[5] & B11001111) | ((note >> 3) & B00110000);       // data[5] holds microLinnGroup
 }
 
 unsigned short StepEvent::getDuration() {
@@ -1786,6 +1787,7 @@ int StepEvent::getFaderMax(byte fader) {
     case 2:
       return SEQ_DURATION_EDIT_PANEL_COUNT-1;
     case 1:
+      if (isMicroLinnOn()) return getMicroLinnSequencerBendRange();
       return 50;
     case 0:
       return 127;
@@ -1904,14 +1906,23 @@ void StepEventState::sendNoteOn(StepEvent& event, byte splitNum) {
 
   if (Split[split].sendX) {
     short range = getBendRange(split);
-    midiSendPitchBend((event.getPitchOffset() * 8192) / (100 * range), channel);
+    short tuningBend = (isMicroLinnOn() ? getMicroLinnTuningBend(split, note) : 0);
+    midiSendPitchBend((event.getPitchOffset() * 8192) / (100 * range) + tuningBend, channel);
+  }
+
+  short newNote = note;
+  byte newChannel = channel;
+  if (isMicroLinnOn()) {
+    newNote = getMicroLinnMidiNote(split, note);
+    newChannel = rerouteMicroLinnGroup(split, channel);
+    if (newNote == -1) return;            // -1 = the microLinn code for a dead pad
   }
 
   if (Split[split].sendY) {
-    preSendTimbre(split, event.getTimbre(), note, channel);
+    preSendTimbre(split, event.getTimbre(), newNote, channel);
   }
 
-  midiSendNoteOn(split, note, event.getVelocity(), channel);  
+  midiSendNoteOn(split, newNote, event.getVelocity(), newChannel);  
 
   StepSequencerState& state = seqState[split];
   if (Split[split].sequencerView == sequencerNotes) {
@@ -1922,11 +1933,15 @@ void StepEventState::sendNoteOn(StepEvent& event, byte splitNum) {
 }
 
 void StepEventState::sendNoteOff() {
-  if (note < 0) {
-    return;
+  short newNote = note;
+  byte newChannel = channel;
+  if (isMicroLinnOn()) {
+    newNote = getMicroLinnMidiNote(split, note);
+    newChannel = rerouteMicroLinnGroup(split, channel);
   }
+  if (newNote < 0) return;
 
-  midiSendNoteOff(split, note, channel);
+  midiSendNoteOff(split, newNote, newChannel);        // send to new channel but release old channel
   releaseChannel(split, channel);
 
   if (Split[split].sequencerView == sequencerNotes) {
@@ -2005,7 +2020,7 @@ void StepSequencerState::clear() {
 }
 
 void StepSequencerState::handleStepEditingTouch(boolean newVelocity, int noteNum, byte stepNum) {
-  if (noteNum < 0 || noteNum > 127) return;
+  if (noteNum < 0 || noteNum > (isMicroLinnOn() ? 511 : 127)) return;
   if (stepNum < 0 || stepNum >= MAX_SEQUENCER_STEPS) return;
 
   StepData& step = getCurrentPatternStep(stepNum);
@@ -2542,7 +2557,7 @@ int StepSequencerState::getRowNoteNum(byte noteRow) {
   switch (Split[split].sequencerView) {
     case sequencerNotes:
       return -1;
-    case sequencerScales: {
+    case sequencerScales: {                                // bug: wnat if microLinn is on?
       int row = -1;
       for (byte i = 0; i < 128; ++i) {
         if (((Global.mainNotes[Global.activeNotes] >> (i % 12)) & 1) ||
@@ -2566,7 +2581,7 @@ int StepSequencerState::getRowNoteNum(byte noteRow) {
   return -1;
 }
 
-byte StepSequencerState::getSensorNotesNoteNum() {
+short StepSequencerState::getSensorNotesNoteNum() {
   return getNoteNumber(split, sensorCol, sensorRow);
 }
 

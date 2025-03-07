@@ -1812,6 +1812,7 @@ int scalePitch(byte split, int pitchValue) {
       pitchValue = FXD_TO_INT(FXD_MUL(FXD_FROM_INT(pitchValue), FXD_DIV(FXD_FROM_INT(48), FXD_FROM_INT(bendRange))));
       break;
   }
+  if (isMicroLinnOn()) pitchValue *= getMicroLinnSemitonesPerPad(split);
 
   return pitchValue;
 }
@@ -1910,8 +1911,11 @@ void preSendPitchBend(byte split, int pitchValue) {
 
 // Called to send a Pitch Bend message. Depending on mode, sends different Bend data
 void preSendPitchBend(byte split, int pitchValue, byte channel) {
-  if (isMicroLinnOn()) pitchValue += getMicroLinnTuningBend();
-  midiSendPitchBend(scalePitch(split, pitchValue), channel);    // Send the bend amount as a difference from bend center (8192)
+  pitchValue = scalePitch(split, pitchValue);
+  if (isMicroLinnOn()) {
+    pitchValue += getMicroLinnTuningBend(split, sensorCell->note, sensorCell->microLinnGroup);
+  }
+  midiSendPitchBend(pitchValue, channel);    // Send the bend amount as a difference from bend center (8192)
 }
 
 // Calculate the real value if custom limits are set

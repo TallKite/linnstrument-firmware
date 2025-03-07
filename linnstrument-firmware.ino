@@ -341,9 +341,6 @@ struct __attribute__ ((packed)) TouchInfo {
   int32_t fxdPrevTimbre:32;                  // used to average out the rate of change of the timbre
   signed char note:8;                        // note from 0 to 127, -1 meaning it's unassigned
   signed char channel:8;                     // channel from 1 to 16, -1 meaning it's unassigned
-  //planned changes for microLinn
-  //short note:10;                           // microLinn edostep 0 to 511, -1 meaning it's unassigned, steal 2 bits from the channel field
-  //signed char channel:6;                   // channel from 1 to 16, -1 meaning it's unassigned
   signed char octaveOffset:8;                // the octave offset when the note started, since this can change during playing
   byte phantomCol1:5;                        // stores the col 1 of a rectangle that possibly has a phantom touch
   byte phantomRow1:3;                        // stores the row 1 of a rectangle that possibly has a phantom touch
@@ -365,7 +362,8 @@ struct __attribute__ ((packed)) TouchInfo {
   unsigned short pressureZ:10;               // the Z value with pressure sensitivity
   unsigned short previousRawZ:12;            // the previous raw Z value
   boolean didMove:1;                         // indicates whether the touch has ever moved
-int :3;
+  byte microLinnGroup:2;                     // group 0 = edosteps 0-127, group 1 = 128-255, group 2 = 256-383, group 3 = 384-511
+int :1;
   boolean phantomSet:1;                      // indicates whether phantom touch coordinates are set
   byte velocity:7;                           // velocity from 0 to 127
   boolean shouldRefreshZ:1;                  // indicate whether it's necessary to refresh Z
@@ -387,6 +385,7 @@ struct VirtualTouchInfo {
   byte split;                                // the split this virtual touch belongs to
   byte velocity;                             // velocity from 0 to 127
   signed char note;                          // note from 0 to 127
+  byte microLinnGroup;                       // group 0 = edosteps 0-127, group 1 = 128-255, group 2 = 256-383, group 3 = 384-511
   signed char channel;                       // channel from 1 to 16
 };
 VirtualTouchInfo virtualTouchInfo[MAXROWS];  // store as much touch virtual instances as there are rows, this is used for simulating strumming open strings
@@ -777,6 +776,8 @@ enum SustainBehavior {
 struct MicroLinnGlobal {
   byte EDO;                                  // ranges 5-55, plus 4 for OFF
   signed char octaveStretch;                 // ranges -120 to 120 cents, for non-octave tunings such as bohlen-pierce
+  //byte equaveSemitones;                    // for non-octave tunings such as bohlen-pierce, 1..48, 1 semitone = 100 cents
+  //signed char equaveCents;                 // -50..+50
   byte anchorCol;                            // ranges 1-25, setting to a number > 16 on a Linnstrument 128 is allowed
   byte anchorRow;                            // top row is 7, bottom row is 0, but the user sees top row as 1, bottom row as 8
   byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
@@ -786,6 +787,9 @@ struct MicroLinnGlobal {
   boolean sweeten;                           // adjust 41edo 5/4, 5/3 by 2¢ both top and bottom to make it 4¢ closer to just?
   //signed char locatorCC1;                  // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25
   //signed char locatorCC2;                  // ranges from 0 to 119, -1 = OFF
+  //byte scales[MICROLINN_MAX_EDO];          // one row of Device.microLinn.scales[MICROLINN_MAX_ARRAY_SIZE]
+  //byte rainbow[MICROLINN_MAX_EDO];
+  //byte dots[MICROLINN_MAX_EDO];
 };
 
 struct GlobalSettings {
@@ -796,7 +800,7 @@ struct GlobalSettings {
   byte activeNotes;                          // controls which of the 12 collections of note lights presets is active
   int mainNotes[12];                         // 12 bitmasks that determine which notes receive "main" lights, mainNotes[0] is for the 1st scale, [9-11] no longer used
   int accentNotes[12];                       // 12 bitmasks that determine which notes receive accent lights (octaves, white keys, black keys, etc.)
-  byte rowOffset;                            // interval between rows. 0 = no overlap, 3-7 = interval, 12 = custom, 13 = guitar, 127 = zero offset
+  byte rowOffset;                            // interval between rows, 0 = no overlap, 3-7 = interval, 12 = custom, 13 = guitar, 127 = zero offset
   signed char customRowOffset;               // the custom row offset that can be configured at the location of the octave setting
   byte guitarTuning[MAXROWS];                // the notes used for each row for the guitar tuning, 0-127
   VelocitySensitivity velocitySensitivity;   // See VelocitySensitivity values
@@ -841,9 +845,9 @@ struct StepEvent {
   boolean hasData();
   void clear();
 
-  void setNewEvent(byte note, byte velocity, unsigned short duration, byte timbre, byte row);
-  byte getNote();
-  void setNote(byte note);
+  void setNewEvent(short note, byte velocity, unsigned short duration, byte timbre, byte row);
+  short getNote();
+  void setNote(short note);
   unsigned short getDuration();
   void setDuration(unsigned short duration);
   byte getVelocity();
@@ -869,10 +873,10 @@ struct StepEvent {
   // byte note:7;                // 0 to 127
   // byte duration:10;           // 1 to 768 in 24 PPQ ticks
   // byte velocity:7;            // 1 to 127
-  // signed char pitchOffset:8;  // -96 to 96 semitones
+  // signed char pitchOffset:8;  // -50 to 50 cents
   // byte timbre:7;              // 0 to 127
   // byte row:3;                 // 1 to 7
-  // byte microLinnMidiGroup:2   // group 0 = edosteps 0-127, group 1 = 128-255, group 2 = 256-383
+  // byte microLinnGroup:2       // group 0 = edosteps 0-127, group 1 = 128-255, group 2 = 256-383, group 3 = 384-511
   byte data[6];
 };
 struct StepData {
@@ -1443,7 +1447,7 @@ void setup() {
   SWITCH_FREERAM = true;
 #endif
 
-  setupMicroLinn ();
+  setupMicroLinn();
 
   setupDone = true;
 

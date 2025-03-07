@@ -1297,7 +1297,7 @@ void paintRowOffset() {
 
 void paintGuitarTuning() {
   if (isMicroLinnOn()) {
-    paintMicroLinnGuitarTuning (); 
+    paintMicroLinnGuitarTuning(); 
     return;
   }
   clearDisplay();

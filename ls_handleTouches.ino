@@ -121,6 +121,7 @@ void transferFromSameRowCell(byte col) {
   sensorCell->rogueSweepX = fromCell->rogueSweepX;
   sensorCell->initialY = fromCell->initialY;
   sensorCell->note = fromCell->note;
+  sensorCell->microLinnGroup = fromCell->microLinnGroup;
   sensorCell->channel = fromCell->channel;
   sensorCell->octaveOffset = fromCell->octaveOffset;
   sensorCell->fxdPrevPressure = fromCell->fxdPrevPressure;
@@ -172,6 +173,7 @@ void transferToSameRowCell(byte col) {
   toCell->rogueSweepX = sensorCell->rogueSweepX;
   toCell->initialY = sensorCell->initialY;
   toCell->note = sensorCell->note;
+  toCell->microLinnGroup = sensorCell->microLinnGroup;
   toCell->channel = sensorCell->channel;
   toCell->octaveOffset = sensorCell->octaveOffset;
   toCell->fxdPrevPressure = sensorCell->fxdPrevPressure;
@@ -887,6 +889,11 @@ boolean handleXYZupdate() {
         }
       }
 
+      if (isMicroLinnOn()) {
+        sensorCell->microLinnGroup = notenum >> 7;
+        if (notenum >= 0) notenum &= 127;
+      }
+
       // if the note number is outside of MIDI range, don't start it
       if (notenum >= 0 && notenum <= 127) {
         prepareNewNote(notenum);
@@ -1281,12 +1288,18 @@ void sendNewNote() {
     }
 
     // send the note on
-    byte notenum = sensorCell->note;
-    if (isMicroLinnOn()) notenum = getMicroLinnMidiNote(sensorSplit, notenum);
-    if (notenum == -1) return;            // -1 = the microLinn code for a dead pad
-    // rechannelize virtual edosteps above 127 when in tuning table mode
-    sensorCell->channel = rerouteMicroLinnMidiGroup();
-    midiSendNoteOn(sensorSplit, notenum, sensorCell->velocity, sensorCell->channel);
+    signed char notenum = sensorCell->note;
+    signed char channel = sensorCell->channel;
+    if (isMicroLinnDrumPadMode()) {
+      notenum = getMicroLinnDrumPadMidiNote();
+    } 
+    else if (isMicroLinnOn()) {
+      notenum = getMicroLinnMidiNote(sensorSplit, notenum, sensorCell->microLinnGroup);
+      if (notenum == -1) return;                                   // -1 = the microLinn code for a dead pad
+      channel = rerouteMicroLinnGroup(sensorSplit, channel);
+      preSendPitchBend(sensorSplit, 0, channel);                   // the tuning bend will be added on
+    }
+    midiSendNoteOn(sensorSplit, notenum, sensorCell->velocity, channel);
     sendMicroLinnLocatorCC();
   }
 }
@@ -1321,10 +1334,17 @@ void sendReleasedNote() {
     }
 
     // if there are no other touches down with the same note and channel, send the note off message
-    byte notenum = sensorCell->note;
-    if (isMicroLinnOn()) notenum = getMicroLinnMidiNote(sensorSplit, notenum);
-    if (notenum == -1) return;            // -1 = the microLinn code for a dead pad
-    midiSendNoteOffWithVelocity(sensorSplit, notenum, sensorCell->velocity, sensorCell->channel);
+    signed char notenum = sensorCell->note;
+    signed char channel = sensorCell->channel;
+    if (isMicroLinnDrumPadMode()) {
+      notenum = getMicroLinnDrumPadMidiNote();
+    } 
+    else if (isMicroLinnOn()) {
+      notenum = getMicroLinnMidiNote(sensorSplit, notenum, sensorCell->microLinnGroup);
+      channel = rerouteMicroLinnGroup(sensorSplit, channel);
+      if (notenum == -1) return;            // -1 = the microLinn code for a dead pad
+    }
+    midiSendNoteOffWithVelocity(sensorSplit, notenum, sensorCell->velocity, channel);
     sendMicroLinnLocatorCC();
   }
 }
