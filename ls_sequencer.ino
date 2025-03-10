@@ -1906,8 +1906,8 @@ void StepEventState::sendNoteOn(StepEvent& event, byte splitNum) {
 
   if (Split[split].sendX) {
     short range = getBendRange(split);
-    short tuningBend = (isMicroLinnOn() ? getMicroLinnTuningBend(split, note) : 0);
-    midiSendPitchBend((event.getPitchOffset() * 8192) / (100 * range) + tuningBend, channel);
+    short bend = getMicroLinnTuningBend(split, note);
+    midiSendPitchBend((event.getPitchOffset() * 8192) / (100 * range) + bend, channel);
   }
 
   short newNote = note;

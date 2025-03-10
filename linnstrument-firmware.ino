@@ -787,8 +787,7 @@ struct MicroLinnGlobal {
   boolean sweeten;                           // adjust 41edo 5/4, 5/3 by 2¢ both top and bottom to make it 4¢ closer to just?
   //signed char locatorCC1;                  // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25
   //signed char locatorCC2;                  // ranges from 0 to 119, -1 = OFF
-  //byte scales[MICROLINN_MAX_EDO];          // one row of Device.microLinn.scales[MICROLINN_MAX_ARRAY_SIZE]
-  //byte rainbow[MICROLINN_MAX_EDO];
+  //byte rainbow[MICROLINN_MAX_EDO];         // one row of Device.microLinn.rainbow[MICROLINN_MAX_ARRAY_SIZE]
   //byte dots[MICROLINN_MAX_EDO];
 };
 

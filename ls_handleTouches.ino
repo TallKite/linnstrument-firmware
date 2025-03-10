@@ -1044,6 +1044,7 @@ boolean handleXYZupdate() {
           }
         }
 
+        pitch += getMicroLinnTuningBend(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
         preSendPitchBend(sensorSplit, pitch, sensorCell->channel);
       }
 
@@ -1272,7 +1273,8 @@ void sendNewNote() {
     // if we've switched from pitch X enabled to pitch X disabled and the last
     // pitch bend value was not neutral, reset it first to prevent skewed pitches
     if (!Split[sensorSplit].sendX && hasPreviousPitchBendValue(sensorCell->channel)) {
-      preSendPitchBend(sensorSplit, 0, sensorCell->channel);
+      short bend = getMicroLinnTuningBend(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
+      preSendPitchBend(sensorSplit, bend, sensorCell->channel);
     }
 
     // reset pressure to 0 before sending the note, the actually pressure value will
@@ -1297,7 +1299,8 @@ void sendNewNote() {
       notenum = getMicroLinnMidiNote(sensorSplit, notenum, sensorCell->microLinnGroup);
       if (notenum == -1) return;                                   // -1 = the microLinn code for a dead pad
       channel = rerouteMicroLinnGroup(sensorSplit, channel);
-      preSendPitchBend(sensorSplit, 0, channel);                   // the tuning bend will be added on
+      short bend = getMicroLinnTuningBend(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
+      preSendPitchBend(sensorSplit, bend, channel);
     }
     midiSendNoteOn(sensorSplit, notenum, sensorCell->velocity, channel);
     sendMicroLinnLocatorCC();
@@ -1859,7 +1862,8 @@ void handleTouchRelease() {
 
     // reset the pitch bend when the note is released and that setting is active
     if (Split[sensorSplit].pitchResetOnRelease && isXExpressiveCell() && !isLowRowBendActive(sensorSplit)) {
-      preSendPitchBend(sensorSplit, 0, sensorCell->channel);
+      short bend = getMicroLinnTuningBend(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
+      preSendPitchBend(sensorSplit, bend, sensorCell->channel);
     }
 
     // If the released cell had focus, reassign focus to the latest touched cell
@@ -1991,10 +1995,7 @@ short getNoteNumber(byte split, byte col, byte row) {
   if (isLeftHandedSplit(split)) {
     noteCol = (NUMCOLS - col);
   }
-  if (Split[split].microLinn.colOffset != 1) {
-    // subtract 1 to be zero-based, scale it up, then add 1 again
-    noteCol = (noteCol - 1) * Split[split].microLinn.colOffset + 1;
-  }
+  noteCol = (noteCol - 1) * Split[split].microLinn.colOffset + 1;
   
   notenum = determineRowOffsetNote(split, row) + noteCol - 1;
 
@@ -2006,6 +2007,8 @@ short determineRowOffsetNote(byte split, byte row) {  // determine the col 1 not
     byte lowCol = isLeftHandedSplit(split) ? 25 : 1;
     return getMicroLinnVirtualEdostep(split, lowCol, row);
   }
+  if (getMicroLinnRowOffset(split) != -26) return getMicroLinnRowOffsetNote(split, row);
+
   short lowest = 30;                                  // 30 = F#2, which is 10 semitones below guitar low E (E3/52). High E = E5/76
 
   if (Global.rowOffset <= 12) {                       // if rowOffset is set to between 0 and 12..

@@ -1003,6 +1003,7 @@ void handleControlButtonRelease() {
       break;
 
     case SPLIT_ROW:                                          // SPLIT button released
+      if ((Split[LEFT].sequencer || Split[RIGHT].sequencer) && !sequencerIsRunning()) calcMicroLinnTuning();
       if (Split[otherSplit(Global.currentPerSplit)].sequencer) {
         Global.currentPerSplit = otherSplit(Global.currentPerSplit);
         setLed(0, SPLIT_ROW, globalColor, Global.splitActive ? cellOn : cellOff);
@@ -2910,7 +2911,7 @@ void handleGlobalSettingNewTouch() {
       case 2:
       case 3:
       case 4:
-        if (lightSettings == LIGHTS_ACTIVE && sensorRow <= 3) {             // microLinn allows long-press of scales 1-9 too
+        if (lightSettings == LIGHTS_ACTIVE && (sensorRow == 3 || (isMicroLinnOn() && sensorRow < 3))) {
           setLed(sensorCol, sensorRow, globalColor, cellSlowPulse);
         }
         break;

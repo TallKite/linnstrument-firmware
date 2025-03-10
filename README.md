@@ -1,7 +1,7 @@
 /**************************************** MICROLINN ****************************************/
 
 Unfinished, still a few more features to add, plus a few features don't quite work right yet. 
-
+Beta testers needed!
 
 -------- INSTALLATION -------- 
 
@@ -19,12 +19,14 @@ IMPORTANT: Later on when you update the OS to a different version, you'll be ask
 
 -------- NON-MICROTONAL FEATURES -------- 
 
-COLUMN OFFSETS: Ranges from 1 to 8. (For negative offsets, use the hidden lefthanded setting in Global Settings column 1.) The usual Linnstrument tuning is row offset +5 and column offset +1, or (+5 +1). The three most popular hexagonal-key layouts can each be translated to the Linnstrument's square keys in two ways:
+COLUMN OFFSETS: Ranges from 1 (OFF) to 8. For negative offsets, use the hidden lefthanded setting in Global Settings column 1. The usual Linnstrument tuning is row offset +5 and column offset +1, or (+5 +1). The three most popular hexagonal-key layouts can each be translated to the Linnstrument's square keys in two ways:
 * Wicki-Hayden layout translates to (+5 +2) or (+7 +2)
 * Bosanquet or Janko layout translates to (-1 +2) or (+1 +2)
 * Harmonic Table layout translates to (+4 +3) or (+7 +3)
 
 The column offset can be set for each split independently. You can have one of these six layouts on the left for easy chord playing and the usual layout on the right for easy melody playing, somewhat analogous to an accordion's layout. Accessed through the microLinn menu, see below.
+
+A 1mm slide normally bends the pitch about 6¢. But an offset of +2 makes it 12¢, +3 makes it 18¢, etc. Thus to play in tune with a large column offset you may need both Pitch/X Quantize and Pitch/X Quantize Hold to be on. But if your column offset is +2, setting Quantize on and Quantize Hold off lets you play the skipped notes fairly accurately by sliding into the gap between pads. In fact, one can play 24edo quartertones on a normal 12edo Linnstrument fairly easily this way.
 
 Details: To set both column offsets at once, press both split buttons at once. If the offsets are different, doing so equates them. Beware, if the column offset is 2 and the row offset is an even number, you lose half the notes and only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors.
 
@@ -177,6 +179,12 @@ SUGGESTIONS FOR EXPLORING EDOS:
 * The full rainbow scale can be overwhelming. Try setting the played mode to BLNK.
 * To avoid a touched pad turning red (or whatever) and obscuring the pad's usual color, set the played color to blank.
 * Once you know an edo well, you'll probably want to switch to the fretboard dots display.
+
+KNOWN ISSUES
+
+These are all minor, and the solution is "don't do that"!
+* When microLinn is on, don't set the pitch bend range small like 2 semitones, because tuning bends of up to 50¢ will reduce that even further.
+* In drum pad mode, don't slide from one pad to the next, because you'll get hanging notes.
 
 ============================= technical notes ==================================
 
