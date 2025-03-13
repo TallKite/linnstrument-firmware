@@ -1913,7 +1913,12 @@ void preSendPitchBend(byte split, int pitchValue) {
 
 // Called to send a Pitch Bend message. Depending on mode, sends different Bend data
 void preSendPitchBend(byte split, int pitchValue, byte channel) {
-  pitchValue = scalePitch(split, pitchValue);
+  midiSendPitchBend(scalePitch(split, pitchValue), channel);    // Send the bend amount as a difference from bend center (8192)
+}
+
+void preSendPitchBend(byte split, int pitchValue, byte channel, short tuningBend) {
+  if (isMicroLinnDrumPadMode()) return;
+  pitchValue = scalePitch(split, pitchValue) + tuningBend;      // tuning bend is from microLinn, it's already scaled
   midiSendPitchBend(pitchValue, channel);    // Send the bend amount as a difference from bend center (8192)
 }
 
@@ -2705,7 +2710,6 @@ boolean hasPreviousPitchBendValue(byte channel) {
 }
 
 void midiSendPitchBend(int pitchval, byte channel) {
-  if (isMicroLinnDrumPadMode()) return;
   int bend = constrain(pitchval + 0x2000, 0, 16383);
   channel = constrain(channel-1, 0, 15);
 

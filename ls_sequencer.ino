@@ -1904,22 +1904,25 @@ void StepEventState::sendNoteOn(StepEvent& event, byte splitNum) {
   }
   remainingDuration = event.getDuration();
 
-  if (Split[split].sendX) {
-    short range = getBendRange(split);
-    short bend = getMicroLinnTuningBend(split, note);
-    midiSendPitchBend((event.getPitchOffset() * 8192) / (100 * range) + bend, channel);
-  }
-
   short newNote = note;
   byte newChannel = channel;
   if (isMicroLinnOn()) {
     newNote = getMicroLinnMidiNote(split, note);
-    newChannel = rerouteMicroLinnGroup(split, channel);
     if (newNote == -1) return;            // -1 = the microLinn code for a dead pad
+    newChannel = rechannelMicroLinnGroup(split, channel, note >> 7);
+  }
+
+  if (Split[split].sendX) {
+    short range = getBendRange(split);
+    short bend = 0;
+    if (isMicroLinnOn()) {
+      bend = getMicroLinnTuningBend(split, note);
+    }
+    midiSendPitchBend((event.getPitchOffset() * 8192) / (100 * range) + bend, newChannel);
   }
 
   if (Split[split].sendY) {
-    preSendTimbre(split, event.getTimbre(), newNote, channel);
+    preSendTimbre(split, event.getTimbre(), newNote, newChannel);
   }
 
   midiSendNoteOn(split, newNote, event.getVelocity(), newChannel);  
@@ -1937,7 +1940,7 @@ void StepEventState::sendNoteOff() {
   byte newChannel = channel;
   if (isMicroLinnOn()) {
     newNote = getMicroLinnMidiNote(split, note);
-    newChannel = rerouteMicroLinnGroup(split, channel);
+    newChannel = rechannelMicroLinnGroup(split, channel, note >> 7);
   }
   if (newNote < 0) return;
 

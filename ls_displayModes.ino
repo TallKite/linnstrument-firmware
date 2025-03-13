@@ -427,8 +427,8 @@ void paintNormalDisplay() {
     setLed(0, OCTAVE_ROW, COLOR_YELLOW, cellOn);
   }
   else {
-    clearLed(0, OCTAVE_ROW);
     paintMicroLinnOctaveTransposeButton();
+    clearLed(0, OCTAVE_ROW);
   }
 }
 
@@ -528,6 +528,22 @@ void paintStrumDisplayCell(byte split, byte col, byte row) {
 
 void paintNormalDisplayCell(byte split, byte col, byte row) {
   if (userFirmwareActive) return;
+
+  boolean isLowRow = (row == 0 && Split[split].lowRowMode != lowRowNormal);
+  if (isMicroLinnDrumPadMode() && !isLowRow) {
+    byte padNum = floor((col - 2) / 3) + floor((row - 1) / 3);     // 3x3 mega-pads
+    byte colour = (padNum % 2 == 0 ? Split[RIGHT].colorMain : Split[LEFT].colorMain);
+    if (col == 1 || col > 22 || row == 0 || row == 7) colour = COLOR_BLACK;
+    setLed(col, row, colour, cellOn, LED_LAYER_MAIN);    
+    return;
+  }
+  byte lightPattern = getMicroLinnShowCustomLEDs(split);
+  if (lightPattern >= 1 && lightPattern <= 3 && !isLowRow) {
+    byte colour = Device.customLeds[lightPattern - 1][col + MAXCOLS * row] >> 3;
+    if (colour == COLOR_OFF) colour = COLOR_BLACK;
+    setLed(col, row, colour, cellOn, LED_LAYER_MAIN);
+    return;
+  }
   if (isMicroLinnOn()) {
     paintMicroLinnNormalDisplayCell(split, col, row); 
     return;
@@ -585,6 +601,11 @@ void paintNormalDisplayCell(byte split, byte col, byte row) {
     // actually set the cell's color
     if (row == 0) {
       clearLed(col, row, LED_LAYER_LOWROW);
+    }
+    // custom LEDs shows up underneath the note lights, delete?
+    if (lightPattern > 3 && cellDisplay == cellOff) {
+      colour = Device.customLeds[lightPattern - 4][col + MAXCOLS * row] >> 3;
+      cellDisplay = cellOn;
     }
     setLed(col, row, colour, cellDisplay, LED_LAYER_MAIN);
   }
