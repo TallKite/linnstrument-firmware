@@ -26,17 +26,17 @@ COLUMN OFFSETS: Ranges from 1 (OFF) to 8. For negative offsets, use the hidden l
 
 The column offset can be set for each split independently. You can have one of these six layouts on the left for easy chord playing and the usual layout on the right for easy melody playing, somewhat analogous to an accordion's layout. Accessed through the microLinn menu, see below.
 
-A 1mm slide normally bends the pitch about 6¢. But an offset of +2 makes it 12¢, +3 makes it 18¢, etc. TThus to play in tune with a large column offset you may need both Pitch/X Quantize and Pitch/X Quantize Hold to be on. But if your column offset is +2, setting Quantize on and Quantize Hold off lets you play the skipped notes fairly accurately by sliding into the gap between pads. In fact, one can play 24edo quartertones on a normal 12edo Linnstrument fairly easily this way.
+A 1mm slide normally bends the pitch about 6¢. But an offset of +2 makes it 12¢, +3 makes it 18¢, etc. TThus to play in tune with a large column offset you may need both Pitch/X Quantize and Pitch/X Quantize Hold to be on. But if your column offset is +2, setting Quantize on and Quantize Hold off lets you play the skipped notes fairly accurately by sliding into the gap between pads. In fact, you can play 24edo quartertones on a normal 12edo Linnstrument fairly easily this way.
 
-Details: To set both column offsets at once, press both split buttons at once. If the offsets are different, doing so equates them. Beware, if the column offset is 2 and the row offset is an even number, you lose half the notes and only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors.
+Details: (1) To set both column offsets at once, press both split buttons at once. If the offsets are different, doing so equates them. (2) Beware, if the column offset is 2 and the row offset is an even number, you lose half the notes and only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors.
 
 PER-SPLIT ROW OFFSETS: Setting the row offset for a split overrides the Global Settings row offset for that split only. It ranges from -25 to +25, plus No Overlap which appears as NOVR. A No Overlap split can be used to launch audio or midi clips while you play normally in the other split. Accessed through the microLinn menu, see below. Guitar tunings are not supported, but are still available globally.
 
 OCTAVE TOGGLE: A new function for switches and footswitches, 8VE± flips back and forth between Octave Up and normal. This lets you switch octaves while playing using only one footswitch, instead of two for Octave Up and Octave Down. Access it by long-pressing TAP TEMPO and swiping.
 
-DRUM PAD MODE: 14 3x3 mega-pads that play the 14 drum sounds from the sequencer. Accessed through the microLinn menu, see below.
+DRUM PAD MODE: The note lights become 14 3x3 mega-pads that play the 14 drum sounds from the sequencer. Accessed through the microLinn menu, see below.
 
-Details: set PITCH/X on, otherwise a tap that hits two pads will send two notes. The drum sounds won't be accidentally pitch-bent because drum pad mode removes all pitch bends. The sequencer has different drum sounds for each split. If you're using both splits, set the split point in between the pads. To create your own mega-pad layout, turn off Drum Pad mode, use locator CCs instead (see below) and edit one of the custom light patterns to match. 
+Details: (1) Set PITCH/X on, otherwise a tap that hits two pads will send two notes. The drum sounds won't be accidentally pitch-bent because drum pad mode removes all pitch bends. (2) The midi mode should probably be One Channel. (3) The sequencer has different drum sounds for each split. If you're using both splits, set the split point in between the pads. (4) The two pad colors are the main colors of each split, so you can adjust them if you want. Any custom light pattern you select will overlay the drum pads. So you can make the center of each pad a different color if you want. (5) If you use musical sounds instead of drum sounds, and enter the appropriate pitches into the sequencer, you can make a sort of marimba. (6) To create your own mega-pad layout, turn off Drum Pad mode, use locator CCs instead (see below) and edit one of the custom light patterns to match.
 
 DETUNING: Detune the entire Linnstrument up or down from A-440 to match a similarly detuned recording or instrument. No guarantee that detuning to A-432 will heal your chakras lol. Accessed through microLinn's anchor cents after setting the edo to 12, see below.
 
@@ -48,23 +48,25 @@ SEQUENCER PEDALS: When playing in one split and using the other split as a seque
 
 Details: outside of a chain, the NEXT and PREV footswitches take you to the next/previous sequence as before. You can double-tap or triple-tap the NEXT and PREV footswitches to skip forward/backward multiple sequences. Thus triple-tapping NEXT is the same as single-tapping PREV, which means you only need one footswitches to go anywhere.
 
-But from within a chain, NEXT and PREV operate relative to the upcoming sequence in the chain, not the current one. Thus pressing PREV repeats the current sequence and pressing NEXT goes forward two sequences, not one. One exception: from the rightmost sequence of a chain, NEXT exits the chain. (Otherwise one could never exit.)
+But from within a chain, NEXT and PREV operate relative to the upcoming sequence in the chain, not the current one. Thus pressing PREV repeats the current sequence and pressing NEXT goes forward two sequences, not one. One exception: from the rightmost sequence of a chain, NEXT exits the chain. (Otherwise you could never exit.)
 
 SEQUENCER PROJECTS LOAD/SAVE SCREEN: When exporting/importing projects to/from your computer, the updater app refers to projects by number. These project numbers now run top to bottom, with the top row being 1-4 not 13-16. This is more intuitive because it matches how people read, for example how you are reading this very paragraph right now.
 
-BLINKING MODE: Like the SAME mode, BLNK shows you other occurences of the currently played note. But instead of changing color, the other occurences blink. It's good for multi-colored displays like certain microtonal displays. The BLNK option appears right after CELL and SAME. (Don't confuse BLNK for blinking with BLIN for blinders.)
+BLINKING MODE: Like the SAME mode, BLNK shows you other occurences of the currently played note. But instead of changing color, the other occurences blink. It's good for multi-colored displays like the custom note lights #2 (the one marked as A#) or certain microtonal displays. The BLNK option appears right after CELL and SAME. (Don't confuse BLNK for blinking with BLIN for blinders.)
 
 SAME/BLINK CARRY OVER: If both splits are set to SAME or BLNK, playing in one split shows matching notes in the other split too.
 
 MULTI-COLORED NOTE LIGHTS: Each of the 12 (or more!) notes can be any color. Transposable. Access it through the microLinn menu after setting the edo to 12, see below.
 
-SHOW A CUSTOM LIGHT PATTERN IN ONE SPLIT ONLY: Choose any of the 3 patterns (the scales marked A, A# and B) and it will replace the note lights. If you use one split as a clip launcher, you can color-code your clips. See also Locator CCs below.
+SHOW A CUSTOM LIGHT PATTERN IN ONE SPLIT ONLY: Choose any of the 3 patterns (the scales marked A, A# and B) and it will replace the note lights. If you use one split as a clip launcher, you can color-code your clips. See also Locator CCs below. BTW this feature fixes a bug in which the custom light pattern would cover up a split set to CC faders or strum.
 
-LOCATOR CCs: A locator CC message can be sent immediately after every note-on and note-off, indicating the row and column. Your DAW can assign a specific function to a specific pad, e.g. upper lefthand corner = all sound off. Or use this feature plus a custom LED pattern to create large drum pads for more easily playing drum midi. Or create a third split, a column of on/off buttons.
+LOCATOR CCs: A locator CC message can be sent immediately after every note-on and note-off, indicating the row and column. Your DAW can assign a specific function to a specific pad, e.g. upper lefthand corner = all sound off. Or use this feature plus a custom light pattern to create large drum pads for more easily playing drum midi. Or create a third split, perhaps a column or two of on/off buttons.
 
-The XYZ data is not accompianied by locator CCs (to avoid midi glut), so this feature works best when repurposing a pad for percussion or for a non-musical purpose. For musical purposes, see Tuning Table mode below.
+Details: One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. For cols 1-16, the data value = (row - 1) + 8 * (col - 1). For cols 17-25, the data value = (row - 1) + 8 * (col - 17). The top row is row 1 and the leftmost column is column 1. Choose the two CC types through the microLinn menu, see below. 
 
-Details: one type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. For cols 1-16, the data value = (row - 1) + 8 * (col - 1). For cols 17-25, the data value = (row - 1) + 8 * (col - 17). The top row is row 1 and the leftmost column is column 1. Choose the two CC types through the microLinn menu, see below. If your DAW isn't programmable, download locatorCC.jsfx from the github. It defines a rectangular region on the Linnstrument, within which it can either set notes to a fixed note or transform them into a CC message. It runs natively in Reaper and can run in any windows DAW using ReaJS, a free jsfx-to-VST wrapper. Thanks to KVR forum member vorp40 for the locator CC idea!
+The XYZ data is not accompianied by locator CCs (to avoid midi glut), 
+
+If your DAW isn't programmable, download LinnstrumentLocatorCCs.jsfx from this github. It defines a rectangular region on the Linnstrument, within which it can either transpose all notes to a specific note (good for drum pads) or transform them into a CC message. It runs natively in Reaper and can run in any windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live and other platforms.) Thanks to KVR forum member vorp40 for the locator CC idea!
 
 -------- LIKELY ADDITIONAL NON-MICROTONAL FEATURES (no promises) -------- 
 
@@ -158,9 +160,9 @@ TUNING TABLE MODE
 
 Tuning table mode is mostly meant for non-edo tunings such as just intonation or rank-2 temperaments. Each note of an N-note scale is sharp or flat from N-edo, thus the pad's pitch will be different slid up to vs played directly. However this is often only a comma difference even on long slides. You can turn on Quantize Hold. Otherwise you have to bend by ear, just like on a guitar.
 
-When an edo is selected, the Linnstrument outputs standard midi notes with tuning bends. But a split that's set to Tuning Table mode outputs edosteps instead. The lower left pad (or the lower right pad if the split is set to lefthanded) is midi note 0. The midi notes for the other pads increase from there according to the split's column and row offsets. Thus each edostep is a unique midi note. Certain synths need this format to play edos. But the main reason to use Tuninng Table mode is to retune each edostep individually to something else, by loading a tuning table in the form of a scala file into your synth (or run microtonal software such as alt-tuner).
+Once an edo is selected, the Linnstrument outputs standard midi notes with tuning bends, and several edo notes will share the same midi note. But a split that's set to Tuning Table mode outputs edosteps instead. The lower left pad (or the lower right pad if the split is set to lefthanded) is midi note 0. The midi notes for the other pads increase from there according to the split's column and row offsets. Thus each edostep is a unique midi note. Certain synths need this format to play edos. But the main reason to use Tuninng Table mode is to retune each edostep individually to something else, by loading a tuning table in the form of a scala file into your synth (or running microtonal software such as alt-tuner).
 
-The midi note number each pad outputs is determined entirely by the column and row offsets. The edo you select doesn't matter. However when the edo is set correctly, transposing works better and and the note lights make more sense.
+The midi note number each pad outputs is determined entirely by the column and row offsets. The edo you select in theory doesn't matter. However when the edo is set correctly, transposing works better and and the note lights make more sense.
 
 There are only 128 midi notes. What if your tuning spans more than 128 edosteps? One solution is to use splits. Each split has up to 128 notes, so there can be a total of 256 pitches. But you can't slide across the split point. Also a large edo combined with large column and row offsets can actually exceed 256 edosteps. See the next two sections for two other solutions.
 

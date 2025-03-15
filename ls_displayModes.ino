@@ -898,7 +898,9 @@ byte getSplitHandednessColor() {
 }
 
 byte getGuitarTuningColor() {
-  if (isMicroLinnOn()) return getMicroLinnGuitarTuningColor();
+  if (isMicroLinnOn()) {
+    return isMicroLinnGuitarTuningStandard() ? globalColor : globalAltColor;
+  }
   byte color = globalColor;
   if (Global.guitarTuning[0] != 30 ||
       Global.guitarTuning[1] != 35 ||

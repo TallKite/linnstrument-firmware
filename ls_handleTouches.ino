@@ -1279,8 +1279,10 @@ void prepareNewNote(signed char notenum) {
     }
     else if (Split[sensorSplit].playedTouchMode == playedSame ||
              Split[sensorSplit].playedTouchMode == playedBlink) {
-      highlightPossibleNoteCells(sensorSplit, sensorCell->note);
-      applySameAndMicroLinnBlinkToOtherSplit(true, sensorCell->note);
+      if (!isMicroLinnDrumPadMode()) {                                // drum pad mode changes the midi notes output by each pad
+        highlightPossibleNoteCells(sensorSplit, sensorCell->note);
+        applySameAndMicroLinnBlinkToOtherSplit(true, sensorCell->note);
+      }
     }
     else {
       startTouchAnimation(sensorCol, sensorRow, calcTouchAnimationSpeed(Split[sensorSplit].playedTouchMode, sensorCell->velocity));
@@ -1294,17 +1296,17 @@ void prepareNewNote(signed char notenum) {
 void sendNewNote() {
   if (!isArpeggiatorEnabled(sensorSplit)) {
 
-    signed char note = sensorCell->note;                // used *only* for sending actual midi
-    signed char channel = sensorCell->channel;          // ditto
+    signed char note = sensorCell->note;
+    signed char channel = sensorCell->channel;
     short tuningBend = 0;
     if (isMicroLinnDrumPadMode()) {
-      note = getMicroLinnDrumPadMidiNote();
-      if (note == -1) return;                           // user hit outer columns or rows
+      note = sensorCell->note = getMicroLinnDrumPadMidiNote();    // overwrite sensorCell->note so that note-offs work right
+      if (note == -1) return;                                     // happens when user hits outer columns or rows
     } 
     else if (isMicroLinnOn()) {
-      note = getMicroLinnMidiNote(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
+      note = getMicroLinnMidiNote(sensorSplit, note, sensorCell->microLinnGroup);
       if (note == -1) return;
-      channel = rechannelMicroLinnGroup(sensorSplit, sensorCell->channel, sensorCell->microLinnGroup);
+      channel = rechannelMicroLinnGroup(sensorSplit, channel, sensorCell->microLinnGroup);
       tuningBend = getMicroLinnTuningBend(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
       preSendPitchBend(sensorSplit, 0, channel, tuningBend);
     }
@@ -1312,7 +1314,7 @@ void sendNewNote() {
     // if we've switched from pitch X enabled to pitch X disabled and the last
     // pitch bend value was not neutral, reset it first to prevent skewed pitches
     if (!Split[sensorSplit].sendX && hasPreviousPitchBendValue(sensorCell->channel)) {
-      preSendPitchBend(sensorSplit, 0, channel, tuningBend);
+      preSendPitchBend(sensorSplit, 0, channel, tuningBend);                     // read from old channel, send to new channel
     }
 
     // reset pressure to 0 before sending the note, the actually pressure value will
@@ -1324,12 +1326,12 @@ void sendNewNote() {
     // if the same channel and note is already active, send a note off first
     // so that the new touch properly triggers a new note
     if (hasActiveMidiNote(sensorSplit, sensorCell->note, sensorCell->channel)) {
-      midiSendNoteOff(sensorSplit, note, channel);
+      midiSendNoteOff(sensorSplit, note, channel);                 // read from old note & channel, send to new note & channel
     }
 
     // send the note on
     midiSendNoteOn(sensorSplit, note, sensorCell->velocity, channel);
-    sendMicroLinnLocatorCC();
+    sendMicroLinnLocatorCC(channel);
   }
 }
 
@@ -1366,7 +1368,7 @@ void sendReleasedNote() {
     signed char note = sensorCell->note;
     signed char channel = sensorCell->channel;
     if (isMicroLinnDrumPadMode()) {
-      note = getMicroLinnDrumPadMidiNote();
+      //note = getMicroLinnDrumPadMidiNote();
       if (note == -1) return;
     } 
     else if (isMicroLinnOn()) {
@@ -1375,7 +1377,7 @@ void sendReleasedNote() {
       channel = rechannelMicroLinnGroup(sensorSplit, channel, sensorCell->microLinnGroup);
     }
     midiSendNoteOffWithVelocity(sensorSplit, note, sensorCell->velocity, channel);
-    sendMicroLinnLocatorCC();
+    sendMicroLinnLocatorCC(channel);
   }
 }
 
