@@ -614,12 +614,14 @@ enum SequencerDirection {
 };
 
 struct MicroLinnSplit {
-  byte colOffset;                         // column offset, 1 to 8
+  byte colOffset;                         // column offset, 1 to 8, 1 = OFF
   //signed char rowOffset;                // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
   signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
   signed char transposeEDOlights;
-  byte tuningTable;                       // output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
-  unsigned short hammerOnWindow;          // maximum width in cents of a hammer-on before it becomes two simultaneous notes, 0 = off
+  byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
+  //byte collapseBendPerPad;              // width of a single-pad pitch bend in edosteps, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
+  //byte showCustomLEDs;                  // 0 = OFF, 1-3 = the three patterns, 4-6 = patterns plus note lights on top
+  unsigned short hammerOnWindow;          // maximum width in cents of a hammer-on before it becomes two simultaneous notes, 0 = OFF
   boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
   byte pullOffVelocity;                   // 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
 };
@@ -704,7 +706,7 @@ struct MicroLinnDevice {
 };
 
 struct DeviceSettings {
-  byte version;                                   // the version of the configuration format, currently 16, but the microLinn version is 16 + 128 = 144
+  byte version;                                   // the version of the configuration format, currently 16, but the microLinn version is 16 + 56 = 72
   boolean serialMode;                             // 0 = normal MIDI I/O, 1 = Arduino serial mode for OS update and serial monitor
   CalibrationX calRows[MAXCOLS+1][4];             // store four rows of calibration data
   CalibrationY calCols[9][MAXROWS];               // store nine columns of calibration data
@@ -775,20 +777,22 @@ enum SustainBehavior {
 
 struct MicroLinnGlobal {
   byte EDO;                                  // ranges 5-55, plus 4 for OFF
-  signed char octaveStretch;                 // ranges -120 to 120 cents, for non-octave tunings such as bohlen-pierce
   //byte equaveSemitones;                    // for non-octave tunings such as bohlen-pierce, 1..48, 1 semitone = 100 cents
-  //signed char equaveCents;                 // -50..+50
+  signed char octaveStretch;                 // rename to equaveCents, -50..+50
   byte anchorCol;                            // ranges 1-25, setting to a number > 16 on a Linnstrument 128 is allowed
   byte anchorRow;                            // top row is 7, bottom row is 0, but the user sees top row as 1, bottom row as 8
   byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
   signed char anchorCents;                   // ranges -100 to +100 cents, even though 50 would do, for convenience
   short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, [0] is unused, can be negative, independent of Global.guitarTuning
   boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
-  boolean sweeten;                           // adjust 41edo 5/4, 5/3 by 2¢ both top and bottom to make it 4¢ closer to just?
+  //boolean drumPadMode;
   //signed char locatorCC1;                  // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25
   //signed char locatorCC2;                  // ranges from 0 to 119, -1 = OFF
   //byte rainbow[MICROLINN_MAX_EDO];         // one row of Device.microLinn.rainbow[MICROLINN_MAX_ARRAY_SIZE]
-  //byte dots[MICROLINN_MAX_EDO];
+  //byte dots[MICROLINN_MAX_EDO];            // ditto for dots
+  //short largeEDO;                          // ranges 56..311, 55 = OFF, user can have a 55-note subset of this edo 
+  //byte largeEdoScale[39];                  // a packed array of booleans up to 311edo  (311 = 39 x 8 - 1)
+  boolean sweeten;                           // adjust 41edo 5/4, 5/3 by 2¢ both top and bottom to make it 4¢ closer to just?
 };
 
 struct GlobalSettings {

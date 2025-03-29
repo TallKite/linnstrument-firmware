@@ -145,9 +145,12 @@ for all midiSend functions that have notes as inputs, change from edosteps to mi
 
 a sequencer project needs the correct edo and equave, so the user should put that in the project name
 for the release notes: https://www.kvraudio.com/forum/viewtopic.php?t=528045
+also https://www.kvraudio.com/forum/viewtopic.php?t=607214
 
 
 FIX/TEST/DEBUG
+
+fix bug with anchor row = 0 and guitar tuning, strings preview note are off by one
 
 prevent user from making a scale completely empty, will screw up collapse to scale
 
@@ -176,6 +179,9 @@ test octave up/down footswitches while playing, does the calcTuning call make it
 
 debug same/blink applying to the other side for note-offs, search for resetPossibleNoteCells
 
+implement namespace: search for [^a-z]microLinn[a-z], change to [^a-z]ML[a-z]
+   fix sizeOf(ML) by hand
+
 
 POSSIBLE NEW FEATURES
 
@@ -184,7 +190,7 @@ warning: RAM is limited, can cause Arduino IDE triple compile error
 Collapse to scale:
   if microLinn is off, select one of the first 9 scales
   OR select an edo and select one of the first 7 scales
-  (if display is custom LEDs or microlinn full rainbow or microlinn dots, the scale mode is stuck in OFF)
+  (if display is custom LEDs or microlinn full rainbow or microlinn dots, and no microLinnPrevScale, the scale mode is stuck in OFF)
   change scale mode from OFF to set the width of a single-pad pitch bend in edosteps 1..L, L = largest scale step
   the last option is AVG = the average scale step = 1\N, smaller than L, e.g. if heptatonic AVG = 1\7 = 171¢
   all the unlit notes in each column go away, the left/anchor column stays much the same and the horizontal range increases
@@ -202,7 +208,7 @@ Collapse to scale:
   if you change to one of the custom LED patterns or to microlinn full rainbow or dots, the last scale selected is used
   
   Large EDO subset of up to 55 notes:
-    for an N-note scale, select N-edo then select large EDO = L-edo, runs 56..440 (or N+1..440?)
+    for an N-note scale, select N-edo then select large EDO = L-edo, runs 56..311 (or N+1..311?)
     it's a good idea to pad a very uneven scale with a few extra notes, makes bends work better
     short Global.microLinn.largeEDO = 56..maxLargeEDO plus 55 = OFF
     byte Global.microLinn.scales[55] = repurposed from 7 scales to be for 1 scale, 55 x 8 = 440 max edo
@@ -266,6 +272,8 @@ cleanup: search for "delete", "uncomment" and "bug"
 
 TO DECIDE
 
+drop maxEDOsteps down to 384? max numGroups becomes 3. decide after inplementing collapse to scale
+
 pack the rainbows array? 2 colors per byte = 765 bytes savings, but makes it much harder to edit
 maybe don't pack the constant array?
 
@@ -287,15 +295,15 @@ void microLinnSetRainbowColor(byte edo, byte edostep, byte color) {
 }
 
 organize config into Gnon = global non-xen, Snon = per-split non-xen, Gxen = global xen, Sxen = per-split xen
-  __ Col Row __ Gnon __ Snon __ __ edo scales __ Gxen __ Sxen __
+  __ Col Row __ Snon __ Gnon __ __ edo __ scales __ Gxen __ Sxen
    2 colOffset
    3 rowOffset
-   5 (6) Gnon: drumPad, locatorCC1, locatorCC2
-   7 (8) Snon: (collapseToScale), (hammerOn), customLED
+   5 (6) Snon: (collapseToScale), (hammerOn), customLED
+   7 (8) Gnon: drumPad, locatorCC1, locatorCC2
   10 edo
-  11 scales aka note lights
-  13 (14) Gxen: anchor x 3, (sweeten), equaveSemitones, equaveCents, (largeEDO)
-  15 (16) Sxen: tuningTable
+  12 scales aka note lights
+  14 (15) Gxen: anchor x 3, (sweeten), equaveSemitones, equaveCents, (largeEDO)
+  16      Sxen: tuningTable, 
   room for future features, can add a 2nd Gnon, Snon, Gxen or Sxen button
   when on the scales display, make col 12 row 0 button light up to match the tonic (*)
   on the 200, move everything but the far left column over 2 cells?
@@ -315,7 +323,7 @@ sweeten 41edo? widen 5/4 by shifting the top note up 2¢ and the bottom note dow
   pitch shifts of 2¢ are unnoticeable, worst case is Cv followed by C^m making C and G shift by 4¢, which is OK
   v(vv#5) chord's 3rd is pulled both ways, so no change, even in an add8 voicing that pulls up harder than down
     Struct Pull {boolean sharp, flat;};
-    Pull pull[MAXCOLS*MAXROWS];
+    Pull pull[MICROLINN_MAX_EDOSTEPS];
     if (pull[cell].sharp && !pull[cell].flat) sharpen(cell);
     if (pull[cell].flat && !pull[cell].sharp) flatten(cell);
   issues: in dim2 chord or v(b5) chord, 7/5 is 2¢ sharper = 5¢ sharp (add 7/5 to the narrowing list?)
@@ -345,8 +353,11 @@ POSSIBLE PULL REQUESTS (every non-microtonal feature that doesn't require a new 
 
 *********************************************************/
 
-const byte MICROLINN_BASE_VERSION = 128;                   // for the updater app, Device.version = 128 + the current version
-//virtual edosteps needed = 7 * maxRowOffset + 24 * maxColOffset + 1 = 368 max, but up it to 512 to give the guitar tuning more leeway
+const byte MICROLINN_BASE_VERSION = 56;                    // for the updater app, Device.version = 56 + the current version = 72
+// there's a ceiling of 127 on version numbers. current official version is 16, and we plan on updating microLinn to keep up
+// current microLinn version is 72, so that the official versions hit their ceiling of 71 just as we hit our ceiling of 127
+
+// virtual edosteps needed = 7 * maxRowOffset + 24 * maxColOffset + 1 = 368 max, but up it to 512 to give the guitar tuning more leeway
 const short MICROLINN_MAX_EDOSTEPS = 512;                  // virtual edosteps run 0..511
 const short MICROLINN_MAX_GUITAR_RANGE = 320;              // 512 - 192, 192 = max row length = numCols * maxColOffset = 24 * 8
 
@@ -655,12 +666,12 @@ short microLinnCustomRowOffsetCents;
 short microLinnGlobalRowOffsetCents = 0;                        // 0 means user chose a custom offset, see microLinnAdjustColAndRowOffsets()
 short microLinnGuitarTuningCents[MAXROWS];                      // cents between open strings, can be negative, [0] is unused
 short microLinnGuitarTuning[MAXROWS];                           // cumulative row offsets, unlike Global.microLinn.guitarTuning, for a faster calcTuning()
-byte microLinnHighestGuitarString;                              // used to find lowestEdostep and also to limit the guitar range
-byte microLinnLowestGuitarString;                               // ditto
+short microLinnHighestGuitarNote;                               // the highest/lowest note in the anchor column, as edosteps from the anchor cell...
+short microLinnLowestGuitarNote;                                // ...used to find lowestEdostep and numGroups, and to limit guitar range when changing edos
 short microLinnLowestEdostep[NUMSPLITS];                        // what not where, lowest edostep when the anchor cell is 0, usually negative
 byte microLinnChannelCount[NUMSPLITS];                          // used for rechannelling
 byte microLinnNumGroups[NUMSPLITS];                             // 1 if highestEdostep - lowestEdostep < 128, 2 if < 256, 3 if < 384, 4 if < 512
-
+short microLinnSweetenBend[NUMSPLITS];                          // 2¢ as a zero-centered midi pitch bend value
 byte microLinnConfigColNum = 0;                                 // active col number in microLinnConfig display, 0 means nothing active
 char microLinnAnchorString[6] = "R C  ";                        // row and column of the anchor cell, e.g. "R3C12", top row is row #1
 boolean microLinnDoublePerSplitColOffset;                       // true if column offset screen adjusts both splits at once
@@ -684,6 +695,8 @@ boolean microLinnDrumPadMode = false;
 signed char microLinnLocatorCC1 = -1;                           // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25
 signed char microLinnLocatorCC2 = -1;                           // ranges from 0 to 119, -1 = OFF
 
+struct Pull {boolean sharp, flat;};                             // used to sweeten 41edo
+Pull pull[MICROLINN_MAX_EDOSTEPS];
 
 /************** math functions ************************/
 
@@ -809,6 +822,17 @@ short getMicroLinnTuningBend(byte side, byte note, byte group) {
   if (note < 0) return 0;
   return microLinnTuningBend[side][note + (group << 7)];
 }
+short getMicroLinnTuningBend2(byte side, byte note, byte group) {
+  // first draft of implementing sweetening
+  if (note < 0) return 0;
+  short edostep = note + (group << 7);
+  short bend = microLinnTuningBend[side][edostep];
+  if (edo == 41) {
+    if (pull[edostep].sharp && !pull[edostep].flat) bend += microLinnSweetenBend[side];
+    if (pull[edostep].flat && !pull[edostep].sharp) bend -= microLinnSweetenBend[side];
+  }
+  return bend;
+}
 
 // called from StepEventState::sendNoteOn() in ls_sequencer.ino
 short getMicroLinnTuningBend(byte side, short edostep) {
@@ -828,7 +852,7 @@ short getMicroLinnRowOffset(byte side) {   // delete later, replace call with Sp
 // called from determineRowOffsetNote() in ls_handleTouches.ino, duplicates the original determineRowOffsetNote function 
 short getMicroLinnRowOffsetNote(byte side, byte row) {
   signed char offset = microLinnRowOffset[side];
-  if (offset <= -12) return 18 + (row - 7) * offset;      // ensure upper left cell is 18 = F#-1
+  if (offset <= -12) return 18 + (row - 7) * offset;      // ensure upper left cell is 18 = F#-1 (middle-C is C3)
   if (offset < 0)    return 65 + row * offset;            // 65 = F3 = 1st string of an all-4ths guitar
   if (offset < 12)   return 30 + row * offset;            // 30 = F#0 = 8th string of a guitar
   if (offset <= 25)  return 18 + row * offset;            // 18 = F#-1 = 8th string of a guitar, down an octave
@@ -1210,14 +1234,11 @@ void microLinnAdjustColAndRowOffsets() {
 
   // adjust the 7 row offsets in the guitar tuning
   if (wasStandardTuning) {
-    // if using cents 12edo 55545 -> 22edo 99979, but should be 99989 to get a double 8ve between outer strings
-    Global.microLinn.guitarTuning[1] = MICROLINN_PERF_4TH[edo];
-    Global.microLinn.guitarTuning[2] = MICROLINN_PERF_4TH[edo];
-    Global.microLinn.guitarTuning[3] = MICROLINN_PERF_4TH[edo];
-    Global.microLinn.guitarTuning[4] = MICROLINN_PERF_4TH[edo];
-    Global.microLinn.guitarTuning[5] = MICROLINN_PERF_4TH[edo];
+    // if using cents, 12edo 55545 -> 22edo 99979, but should be 99989 to get a double 8ve between outer strings
+    for (byte row = 1; row < NUMROWS; ++row) {
+      Global.microLinn.guitarTuning[row] = MICROLINN_PERF_4TH[edo];
+    }
     Global.microLinn.guitarTuning[6] = MICROLINN_MAJ_3RD[edo];
-    Global.microLinn.guitarTuning[7] = MICROLINN_PERF_4TH[edo];
     microLinnCalcGuitarTuning();
   }
   else {
@@ -1231,16 +1252,16 @@ void microLinnAdjustColAndRowOffsets() {
       Global.microLinn.guitarTuning[row] = newOffset;
     }
     microLinnCalcGuitarTuning();
-    short overflow = microLinnGuitarTuning[microLinnHighestGuitarString]
-                   - microLinnGuitarTuning[microLinnLowestGuitarString]
+    short overflow = microLinnHighestGuitarNote
+                   - microLinnLowestGuitarNote
                    - MICROLINN_MAX_GUITAR_RANGE;
     while (overflow > 0) {                                // while not if, to handle weird edge cases
       for (byte row = 1; row < NUMROWS; ++row) {          // shrink all 7 offsets by 1
         Global.microLinn.guitarTuning[row] -= microLinnSign(Global.microLinn.guitarTuning[row]);
       }
       microLinnCalcGuitarTuning();
-      overflow = microLinnGuitarTuning[microLinnHighestGuitarString]
-               - microLinnGuitarTuning[microLinnLowestGuitarString]
+      overflow = microLinnHighestGuitarNote
+               - microLinnLowestGuitarNote
                - MICROLINN_MAX_GUITAR_RANGE;
     }
   }
@@ -1279,10 +1300,44 @@ void microLinnAdjustColAndRowOffsets() {
   }
 }
 
+/************** sweetening functions ************************/
+// ratios to widen: 5/4 5/3 5/2 10/3 5/1 20/3 10/1     (maybe 15/8 15/4 15/2?)  (maybe 10/7?)
+// ratios to narrow: 6/5 8/5 12/5 16/5 24/5 32/5 48/5  (maybe 9/5 18/5 36/5?)   (maybe 7/5?)
+void sweetenMicroLinn41(short newNote) {
+  if (edo != 41) return;
+  pull[newNote].sharp = false;
+  pull[newNote].flat = false;
+  for (byte side = 0; side < NUMSPLITS; ++side) {
+    for (byte ch = 0; ch < 16; ++ch) {
+      if (noteTouchMapping[side].musicalTouchCount[ch] != 1) continue;
+      byte col = focusCell[side][ch].col;
+      byte row = focusCell[side][ch].row;
+      short edostep = getMicroLinnVirtualEdostep(side, col, row);
+      switch (microLinnMod(edostep - newNote, 41)) {
+        case 13:    // 13\41 = vM3 = 5/4
+        case 30:    // 30\41 = vM6 = 5/3
+        {
+          pull[edostep].sharp = true;
+          pull[newNote].flat = true;
+          break;
+        }
+        case 11:     // 11\41 = ^m3 = 6/5
+        case 28:     // 28\41 = ^m6 = 8/5
+        {
+          pull[edostep].flat = true;
+          pull[newNote].sharp = true;
+          break;
+        }
+      }
+    }
+  }
+}
+
 /************** tuning table functions ************************/
 
 // calc the cumulative row offsets by summing the individual row offsets, to speed up calcTuning()
-// if Global.microLinn.guitarTuning = [0 5 5 5 5, 5 4 5] then microLinnGuitarTuning = [-20 -15 -10 -5 0 5 9 14]
+// if Global.microLinn.guitarTuning = [0 7 5 5 5' 5 4 5] then microLinnGuitarTuning = [-22 -15 -10 -5 0 5 9 14]
+// [0 7 5 5 5 5 4 5] -> [0 7 12 17 22 27 31 36]
 // called not by calcTuning() but by handleMicroLinnGuitarTuningNewTouch(), so it's done ahead of time while not waiting to play
 void microLinnCalcGuitarTuning() {
   byte anchor = Global.microLinn.anchorRow;
@@ -1296,28 +1351,20 @@ void microLinnCalcGuitarTuning() {
     }
     microLinnGuitarTuning[row] = sum;                 // microLinnGuitarTuning[anchor] always equals 0
   }
-
-  short highestOffset = microLinnGuitarTuning[0];
-  short lowestOffset  = microLinnGuitarTuning[0];
-  microLinnHighestGuitarString = microLinnLowestGuitarString = 0;
+  // find the highest and lowest notes
+  microLinnHighestGuitarNote = microLinnGuitarTuning[0];
+  microLinnLowestGuitarNote  = microLinnGuitarTuning[0];
   for (byte row = 1; row < MAXROWS; ++row) {
-    if (microLinnGuitarTuning[row] >= highestOffset) {
-      highestOffset = microLinnGuitarTuning[row];
-      microLinnHighestGuitarString = row;                  // the highest pitched string, not necessarily the highest string
+    if (microLinnGuitarTuning[row] > microLinnHighestGuitarNote) {
+      microLinnHighestGuitarNote = microLinnGuitarTuning[row];
     }
-    if (microLinnGuitarTuning[row] < lowestOffset) {
-      lowestOffset = microLinnGuitarTuning[row];
-      microLinnLowestGuitarString = row;
+    if (microLinnGuitarTuning[row] < microLinnLowestGuitarNote) {
+      microLinnLowestGuitarNote = microLinnGuitarTuning[row];
     }
   }
 }
 
-void microLinnCalcLowestEdostepEtc() {
-  microLinnCalcLowestEdostepEtc(LEFT);
-  microLinnCalcLowestEdostepEtc(RIGHT);
-}
-
-// calcs what, not where. also calcs numGroups and channelCount for rechanneling
+// calcs what, not where, also calcs numGroups and channelCount for rechanneling
 void microLinnCalcLowestEdostepEtc(byte side) {
   byte lowestRow, lowestCol, highestRow, highestEdostep;
   if (microLinnRowOffset[side] >= 0) {                        // use this split's row offset if positive or NOVR
@@ -1326,19 +1373,23 @@ void microLinnCalcLowestEdostepEtc(byte side) {
     lowestRow = 7;
   } else if (Global.rowOffset == ROWOFFSET_OCTAVECUSTOM) {
     lowestRow = Global.customRowOffset >= 0 ? 0 : 7;
-  } else if (Global.rowOffset == ROWOFFSET_GUITAR) {
-    lowestRow = microLinnLowestGuitarString;
   } else lowestRow = 0;
 
-  microLinnLowestEdostep[side] = microLinnSumOfRowOffsets(side, Global.microLinn.anchorRow, lowestRow);
+  if (Global.rowOffset == ROWOFFSET_GUITAR && microLinnRowOffset[side] == -26) {
+    microLinnLowestEdostep[side] = microLinnLowestGuitarNote;
+  } else {
+    microLinnLowestEdostep[side] = microLinnSumOfRowOffsets(side, Global.microLinn.anchorRow, lowestRow);
+  }
   lowestCol = isLeftHandedSplit(side) ? NUMCOLS - 1 : 1;
   microLinnLowestEdostep[side] -= Split[side].microLinn.colOffset * abs(Global.microLinn.anchorCol - lowestCol);
   microLinnLowestEdostep[side] += microLinnTransposition(side);
 
   if (Global.rowOffset == ROWOFFSET_GUITAR && microLinnRowOffset[side] == -26) {
-    highestRow = microLinnHighestGuitarString;
-  } else highestRow = 7 - lowestRow;
-  highestEdostep = microLinnSumOfRowOffsets(side, Global.microLinn.anchorRow, highestRow);
+    highestEdostep = microLinnHighestGuitarNote;
+  } else {
+    highestRow = 7 - lowestRow;
+    highestEdostep = microLinnSumOfRowOffsets(side, Global.microLinn.anchorRow, highestRow);
+  }
   highestEdostep += Split[side].microLinn.colOffset * abs((NUMCOLS - lowestCol) - Global.microLinn.anchorCol);
   highestEdostep += microLinnTransposition(side);
   microLinnNumGroups[side] = ((highestEdostep - microLinnLowestEdostep[side]) >> 7) + 1;
@@ -1398,9 +1449,11 @@ void calcMicroLinnTuning() {
   float edostepSize = (1200 + Global.microLinn.octaveStretch) / (100.0 * edo);
   short distance, virtualEdostep, roundNote, fineTune; float note;
 
-  microLinnCalcLowestEdostepEtc();
+  microLinnCalcLowestEdostepEtc(LEFT);
+  microLinnCalcLowestEdostepEtc(RIGHT);
   memset (&microLinnMidiNote, -1, sizeof(microLinnMidiNote));                       // -1 = this edostep is not used
   memset (&microLinnTuningBend, 0, sizeof(microLinnTuningBend));    
+  memset (&microLinnSweetenBend, 0, sizeof(microLinnSweetenBend));    
 
   for (byte side = 0; side < NUMSPLITS; ++side) {
     short colOffset = Split[side].microLinn.colOffset;
@@ -1409,6 +1462,7 @@ void calcMicroLinnTuning() {
     float semitonesPerPad = colOffset * edostepSize;                                // microLinnSemitonesPerPad is used later, semitonesPerPad is used here
     short transpose = microLinnTransposition(side);
     byte bendRange = getBendRange(side);
+    microLinnSweetenBend[side] = round(163.84 / bendRange);                         // 2¢ = 0.02 semitones, 0.02 * 8192 = 163.84
     for (byte row = 0; row < NUMROWS; ++row) {
       distance = microLinnSumOfRowOffsets(side, anchorRow, row);                    // distance in edosteps between any 2 rows
       distance += transpose - anchorCol * colOffset;                                // distance from the anchor cell, initialized to col 0
@@ -1435,7 +1489,8 @@ void microLinnSendPreviewNote (short edostep) {                                 
   float anchorPitch = Global.microLinn.anchorNote + Global.microLinn.anchorCents / 100.0;      // midi note with 2 decimal places for cents
   float edostepSize = (1200 + Global.microLinn.octaveStretch) / (100.0 * edo);                 // edo's step size in 12edo semitones
   float note = anchorPitch + edostep * edostepSize;
-  if (note <= -0.5 || note >= 127.5) return;
+  note += microLinnTransposition(Global.currentPerSplit);
+  if (note < 0 || note > 127) return;
   ensureGuitarTuningPreviewNoteRelease();                                // re-use the standard guitar tuning functions & vars
   guitarTuningPreviewNote = round(note);
   note -= guitarTuningPreviewNote;
@@ -1625,8 +1680,8 @@ void paintMicroLinnDebugDump() {     // delete later from here and from ls_displ
   if (sensorCol == 3) paintNumericDataDisplay(Split[sp].colorMain, microLinnEdostep[sp][1][7], 0, false);
   if (sensorCol == 4) paintNumericDataDisplay(Split[sp].colorMain, microLinnEdostep[sp][25][7], 0, false);
   if (sensorCol == 5) paintNumericDataDisplay(Split[sp].colorMain, 100 * microLinnSemitonesPerPad[sp], 0, false);
-  if (sensorCol == 6) paintNumericDataDisplay(Split[sp].colorMain, microLinnHighestGuitarString, 0, false);
-  if (sensorCol == 7) paintNumericDataDisplay(Split[sp].colorMain, microLinnLowestGuitarString, 0, false);
+  if (sensorCol == 6) paintNumericDataDisplay(Split[sp].colorMain, microLinnHighestGuitarNote, 0, false);
+  if (sensorCol == 7) paintNumericDataDisplay(Split[sp].colorMain, microLinnLowestGuitarNote, 0, false);
 }
 
 /************** misc handling functions ************************/
@@ -2218,12 +2273,12 @@ void microLinnPaintTuningTableOption(byte side) {
     case 0: smallfont_draw_string(3, 1, "OFF", Split[side].colorMain, false); break;
     case 1: smallfont_draw_string(3, 1, "ON",  Split[side].colorMain, false); break;
     case 2:
-      byte col = 16;
+      byte col = 19;
       if (LINNMODEL == 200) {
         smallfont_draw_string(3, 1, "RCH", Split[side].colorMain, false);
-        col = 19;
       } else {
         condfont_draw_string(3, 1, "RCH", Split[side].colorMain, false);
+        col = 16;
       }
       for (byte group = 0; group < microLinnNumGroups[side]; ++group) {
         setLed(col, group + 2, Split[side].colorMain, cellOn);
@@ -2335,27 +2390,34 @@ void handleMicroLinnGuitarTuningNewTouch() {
     updateDisplay();
   }
   else if (microLinnGuitarTuningRowNum != Global.microLinn.anchorRow) {
-    /******************** old way, limits each row offset to ±MAXROWS, delete later
-    short stringAbove = microLinnGuitarTuningRowNum + 1;
-    short stringBelow = microLinnGuitarTuningRowNum - 1;
-    if (stringAbove == MAXROWS) stringAbove = stringBelow;
-    if (stringBelow < 0) stringBelow = stringAbove;
-    stringAbove = Global.microLinn.guitarTuning[stringAbove];         // convert into edosteps from the anchor string
-    stringBelow = Global.microLinn.guitarTuning[stringBelow];
-    short ceiling, floor;
-    ceiling = min (stringAbove, stringBelow) + MAXROWS;
-    floor   = max (stringAbove, stringBelow) - MAXROWS;
-    ******************************/
-    byte r = microLinnGuitarTuningRowNum;
-    if (r < Global.microLinn.anchorRow) r += 1;
-    short currTotalRange = microLinnGuitarTuning[microLinnHighestGuitarString]
-                         - microLinnGuitarTuning[microLinnLowestGuitarString];
-    short wiggleRoom = MICROLINN_MAX_GUITAR_RANGE - currTotalRange;
-    short ceiling = Global.microLinn.guitarTuning[r] + wiggleRoom;                 // bug: what about negative offsets?
-    short floor   = Global.microLinn.guitarTuning[r] - wiggleRoom;
-ceiling = 3 * edo; floor = -ceiling;  // delete later
-    handleNumericDataNewTouchCol(Global.microLinn.guitarTuning[r], floor, ceiling, true);
-    microLinnStoreGuitarRowOffsetCents(r);
+    byte row = microLinnGuitarTuningRowNum;
+    if (row < Global.microLinn.anchorRow) row += 1;
+    short loMax, loMin, hiMax, hiMin;
+    // find max and min open string notes in lower part of the guitar, below the current string
+    loMax = loMin = microLinnGuitarTuning[0];
+    for (byte r = 1; r < row; ++r) {
+      if (microLinnGuitarTuning[r] >= loMax) {
+        loMax = microLinnGuitarTuning[r];
+      }
+      if (microLinnGuitarTuning[r] < loMin) {
+        loMin = microLinnGuitarTuning[r];
+      }
+    }
+    // find max and min open string notes in higher part of the guitar, above the current string
+    hiMax = hiMin = microLinnGuitarTuning[row];
+    for (byte r = row + 1; r < NUMROWS; ++r) {
+      if (microLinnGuitarTuning[r] >= hiMax) {
+        hiMax = microLinnGuitarTuning[r];
+      }
+      if (microLinnGuitarTuning[r] < hiMin) {
+        hiMin = microLinnGuitarTuning[r];
+      }
+    }
+    // wiggleRoom = MAX_RANGE - (max - min), ceiling = currVal + wiggleRoom, floor = currVal - wiggleRoom
+    short ceiling = Global.microLinn.guitarTuning[row] + MICROLINN_MAX_GUITAR_RANGE - (hiMax - loMin);
+    short floor   = Global.microLinn.guitarTuning[row] - MICROLINN_MAX_GUITAR_RANGE + (loMax - hiMin);
+    handleNumericDataNewTouchCol(Global.microLinn.guitarTuning[row], floor, ceiling, true);
+    microLinnStoreGuitarRowOffsetCents(row);
     microLinnCalcGuitarTuning();
   }
 
@@ -3066,125 +3128,6 @@ void paintPatternChainDebug() {
   }
 }
 
-
-
-
-const byte MICROLINN_DOTS2[MICROLINN_ARRAY_SIZE] = { 
-// goes to 28 columns so that the full octave can be deduced by symmetry for edos up to 55
-// 0 = unmarked, 16 = single dot, 40 = double (4th/5th if > 5 dots per octave), 84 = triple (octave)
-  84, 0,16,16, 0, // 5edo ---- edos 5-9 mark P4 and P5
-  84, 0,16, 0,16, 0, // 6edo
-  84, 0, 0,16,16, 0, 0, // 7edo
-  84, 0, 0,16, 0,16, 0, 0, // 8edo
-  84, 0, 0,16, 0, 0,16, 0, 0, // 9edo (9b)
-  84, 0,16, 0,16, 0,16, 0,16, 0, // 10edo --- edos 10-31 mark (M2) m3 P4 P5 M6 (m7)
-  84, 0,16, 0,16, 0, 0,16, 0,16, 0, // 11edo (11b)
-  84, 0, 0,16, 0,16, 0,16, 0,16, 0, 0, // 12edo
-  84, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0, // 13edo
-  84, 0,16, 0,16, 0,40, 0,40, 0,16, 0,16, 0, // 14edo
-  84, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0, // 15edo
-  84, 0,16, 0, 0,16, 0,40, 0,40, 0,16, 0, 0,16, 0, // 16edo
-  84, 0, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0, 0, // 17edo
-  84, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, // 18edo
-  84, 0, 0,16, 0,16, 0, 0,40, 0, 0,40, 0, 0,16, 0,16, 0, 0, // 19edo
-  84, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, // 20edo
-  84, 0, 0,16, 0, 0,16, 0, 0,40, 0, 0,40, 0, 0,16, 0, 0,16, 0, 0, // 21edo
-  84, 0, 0, 0,16,16, 0, 0, 0,40, 0, 0, 0,40, 0, 0, 0,16,16, 0, 0, 0, // 22edo
-  84, 0, 0,16, 0, 0, 0,16, 0, 0,40, 0, 0,40, 0, 0,16, 0, 0, 0,16, 0, 0, // 23edo
-  84, 0, 0, 0,16, 0,16, 0, 0, 0,40, 0, 0, 0,40, 0, 0, 0,16, 0,16, 0, 0, 0, // 24edo
-  84, 0, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0, 0, // 25edo
-  84, 0, 0, 0,16, 0, 0,16, 0, 0, 0,40, 0, 0, 0,40, 0, 0, 0,16, 0, 0,16, 0, 0, 0, // 26edo
-  84, 0, 0, 0, 0,16,16, 0, 0, 0, 0,40, 0, 0, 0, 0,40, 0, 0, 0, 0,16,16, 0, 0, 0, 0, // 27edo
-  84, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,  // 28edo
-  84, 0, 0, 0, 0,16, 0,16, 0, 0, 0, 0,40, 0, 0, 0, 0,40, 0, 0, 0, 0,16, 0,16, 0, 0, 0, 0,  // 29edo
-  84, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,  // 30edo (exception -- 15edo dots doubled)
-  84, 0, 0, 0, 0,16, 0, 0,16, 0, 0, 0, 0,40, 0, 0, 0, 0,40, 0, 0, 0, 0,16, 0, 0,16, 0, 0, 0, 0,  // 31edo
-  84, 0, 0,16, 0,16, 0, 0,16, 0,16, 0, 0,40, 0, 0,16, 0, 0,40, 0, 0,16, 0,16, 0, 0,16, 0,16, 0, 0,  // 32edo --- edos 32-55 approximate 12edo
-  84, 0, 0,16, 0, 0,16, 0,16, 0, 0,16, 0, 0,40, 0, 0, 0, 0,40, 0, 0,16, 0, 0,16, 0,16, 0, 0,16, 0, 0,  // 33edo
-  84, 0, 0,16, 0, 0,16, 0,16, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,16, 0,16, 0, 0,16, 0, 0,  // 34edo
-  84, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,40, 0, 0, 0, 0,40, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,  // 35edo
-  84, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,  // 36edo
-  84, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,40, 0, 0,16,16, 0, 0,40, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,  // 37edo
-  84, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0,  // 38edo
-  84, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0,40, 0, 0,16,16, 0, 0,40, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0,  // 39edo
-  84, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,  // 40edo
-  16, 0, 0, 0,40, 0, 0, 0,84, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,84, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,84, 0, 0, 0,16, 0, 0, 0,40, // 41edo (exception -- kite guitar dots)
-  84, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,40, 0, 0, 0,16, 0, 0, 0,40, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,  // 42edo
-  84, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,40, 0, 0,16,16, 0, 0,40, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,  // 43edo
-  84, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,  // 44edo
-  84, 0, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0,16,16, 0, 0,40, 0, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0, 0,  // 45edo
-  84, 0, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0, 0,  // 46edo
-  84, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0,16,16, 0, 0,40, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,  // 47edo
-  84, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,  // 48edo
-  84, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,  // 49edo
-  84, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,  // 50edo
-  84, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,  // 51edo
-  84, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,  // 52edo
-  84, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,  // 53edo
-  84, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,  // 54edo
-  84, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,40, 0, 0, 0,16,16,0, 0, 0,40, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0    // 55edo
-};
-
-const byte MICROLINN_DOTS[MICROLINN_MAX_EDO+1][MAXCOLS+3] = { 
-// goes to 28 columns so that the full octave can be deduced by symmetry for edos up to 55
-// 0 = unmarked, 16 = single dot, 40 = double (4th/5th if > 5 dots per octave), 84 = triple (octave)
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  0,84, 0,16,16, 0,84, 0,16,16, 0,84, 0,16,16, 0,84, 0,16,16, 0,84, 0,16,16, 0,84, 0,16,  //  5edo ---- edos 5-9 mark P4 and P5
-  0,84, 0,16, 0,16, 0,84, 0,16, 0,16, 0,84, 0,16, 0,16, 0,84, 0,16, 0,16, 0,84, 0,16, 0,  //  6edo
-  0,84, 0, 0,16,16, 0, 0,84, 0, 0,16,16, 0, 0,84, 0, 0,16,16, 0, 0,84, 0, 0,16,16, 0, 0,  //  7edo
-  0,84, 0, 0,16, 0,16, 0, 0,84, 0, 0,16, 0,16, 0, 0,84, 0, 0,16, 0,16, 0, 0,84, 0, 0,16,  //  8edo
-  0,84, 0, 0,16, 0, 0,16, 0, 0,84, 0, 0,16, 0, 0,16, 0, 0,84, 0, 0,16, 0, 0,16, 0, 0,84,  //  9edo (9b)
-  0,84, 0,16, 0,16, 0,16, 0,16, 0,84, 0,16, 0,16, 0,16, 0,16, 0,84, 0,16, 0,16, 0,16, 0,  // 10edo --- edos 10-31 mark (M2) m3 P4 P5 M6 (m7)
-  0,84, 0,16, 0,16, 0, 0,16, 0,16, 0,84, 0,16, 0,16, 0, 0,16, 0,16, 0,84, 0,16, 0,16, 0,  // 11edo (11b)
-  0,84, 0, 0,16, 0,16, 0,16, 0,16, 0, 0,84, 0, 0,16, 0,16, 0,16, 0,16, 0, 0,84, 0, 0,16,  // 12edo
-  0,84, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0,84, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0,84, 0,  // 13edo
-  0,84, 0,16, 0,16, 0,40, 0,40, 0,16, 0,16, 0,84, 0,16, 0,16, 0,40, 0,40, 0,16, 0,16, 0,  // 14edo
-  0,84, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,84, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,16,  // 15edo
-  0,84, 0,16, 0, 0,16, 0,40, 0,40, 0,16, 0, 0,16, 0,84, 0,16, 0, 0,16, 0,40, 0,40, 0,16,  // 16edo
-  0,84, 0, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0, 0,84, 0, 0, 0,16, 0, 0,16, 0, 0,16,  // 17edo
-  0,84, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0,84, 0, 0,16, 0, 0, 0,16, 0, 0,  // 18edo
-  0,84, 0, 0,16, 0,16, 0, 0,40, 0, 0,40, 0, 0,16, 0,16, 0, 0,84, 0, 0,16, 0,16, 0, 0,40,  // 19edo
-  0,84, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,84, 0, 0, 0,16, 0, 0, 0,  // 20edo
-  0,84, 0, 0,16, 0, 0,16, 0, 0,40, 0, 0,40, 0, 0,16, 0, 0,16, 0, 0,84, 0, 0,16, 0, 0,16,  // 21edo
-  0,84, 0, 0, 0,16,16, 0, 0, 0,40, 0, 0, 0,40, 0, 0, 0,16,16, 0, 0, 0,84, 0, 0, 0,16,16,  // 22edo
-  0,84, 0, 0,16, 0, 0, 0,16, 0, 0,40, 0, 0,40, 0, 0,16, 0, 0, 0,16, 0, 0,84, 0, 0,16, 0,  // 23edo
-  0,84, 0, 0, 0,16, 0,16, 0, 0, 0,40, 0, 0, 0,40, 0, 0, 0,16, 0,16, 0, 0, 0,84, 0, 0, 0,  // 24edo
-  0,84, 0, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0, 0,84, 0, 0,  // 25edo
-  0,84, 0, 0, 0,16, 0, 0,16, 0, 0, 0,40, 0, 0, 0,40, 0, 0, 0,16, 0, 0,16, 0, 0, 0,84, 0,  // 26edo
-  0,84, 0, 0, 0, 0,16,16, 0, 0, 0, 0,40, 0, 0, 0, 0,40, 0, 0, 0, 0,16,16, 0, 0, 0, 0,84,  // 27edo
-  0,84, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,  // 28edo
-  0,84, 0, 0, 0, 0,16, 0,16, 0, 0, 0, 0,40, 0, 0, 0, 0,40, 0, 0, 0, 0,16, 0,16, 0, 0, 0,  // 29edo
-  0,84, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,16, 0, 0,16,  // 30edo (exception -- 15edo dots doubled)
-  0,84, 0, 0, 0, 0,16, 0, 0,16, 0, 0, 0, 0,40, 0, 0, 0, 0,40, 0, 0, 0, 0,16, 0, 0,16, 0,  // 31edo
-  0,84, 0, 0,16, 0,16, 0, 0,16, 0,16, 0, 0,40, 0, 0,16, 0, 0,40, 0, 0,16, 0,16, 0, 0,16,  // 32edo --- edos 32-55 approximate 12edo
-  0,84, 0, 0,16, 0, 0,16, 0,16, 0, 0,16, 0, 0,40, 0, 0, 0, 0,40, 0, 0,16, 0, 0,16, 0,16,  // 33edo
-  0,84, 0, 0,16, 0, 0,16, 0,16, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,16, 0,  // 34edo
-  0,84, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,40, 0, 0, 0, 0,40, 0, 0,16, 0, 0,16, 0,  // 35edo
-  0,84, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,16,  // 36edo
-  0,84, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,16, 0, 0,40, 0, 0,16,16, 0, 0,40, 0, 0,16, 0, 0,  // 37edo
-  0,84, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,  // 38edo
-  0,84, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0,40, 0, 0,16,16, 0, 0,40, 0, 0,16, 0,  // 39edo
-  0,84, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,40, 0, 0,16, 0, 0,40, 0, 0,16, 0,  // 40edo
-  0,16, 0, 0, 0,40, 0, 0, 0,84, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,84, 0, 0, 0,16, 0, 0, 0,  // 41edo (exception -- kite guitar dots)
-  0,84, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,40, 0, 0, 0,16, 0, 0, 0,40, 0, 0,  // 42edo
-  0,84, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,40, 0, 0,16,16, 0, 0,40, 0, 0,  // 43edo
-  0,84, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,40, 0,  // 44edo
-  0,84, 0, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0,16,16, 0, 0,40, 0,  // 45edo
-  0,84, 0, 0, 0,16, 0, 0, 0,16, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,40,  // 46edo
-  0,84, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0,16,16, 0, 0,40,  // 47edo
-  0,84, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0, 0,  // 48edo
-  0,84, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16,16, 0, 0,  // 49edo (...0,40)
-  0,84, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16, 0, 0,  // 50edo (...0,40)
-  0,84, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16,16, 0,  // 51edo (...0, 0,40)
-  0,84, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16, 0,  // 52edo (...0, 0,40)
-  0,84, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,40, 0, 0, 0,16,16,  // 53edo (...0, 0, 0,40)
-  0,84, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,40, 0, 0, 0,16,  // 54edo (...0, 0, 0,40)
-  0,84, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,16, 0, 0, 0,16, 0, 0, 0, 0,40, 0, 0, 0,16   // 55edo (...16,0, 0, 0,40)
-};
 
 // old way with scales #2 = zo, #3 = ru and #4 = ila/tha
 const byte MICROLINN_SCALES[MICROLINN_ARRAY_SIZE] = {

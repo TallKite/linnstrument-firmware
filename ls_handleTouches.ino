@@ -1307,6 +1307,9 @@ void sendNewNote() {
       note = getMicroLinnMidiNote(sensorSplit, note, sensorCell->microLinnGroup);
       if (note == -1) return;
       channel = rechannelMicroLinnGroup(sensorSplit, channel, sensorCell->microLinnGroup);
+    }
+    sendMicroLinnLocatorCC(channel);
+    if (isMicroLinnOn()) {
       tuningBend = getMicroLinnTuningBend(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
       preSendPitchBend(sensorSplit, 0, channel, tuningBend);
     }
@@ -1331,7 +1334,6 @@ void sendNewNote() {
 
     // send the note on
     midiSendNoteOn(sensorSplit, note, sensorCell->velocity, channel);
-    sendMicroLinnLocatorCC(channel);
   }
 }
 
@@ -1373,11 +1375,10 @@ void sendReleasedNote() {
     } 
     else if (isMicroLinnOn()) {
       note = getMicroLinnMidiNote(sensorSplit, note, sensorCell->microLinnGroup);
-      if (note == -1) return;                       // -1 = the microLinn code for a dead pad
+      if (note == -1) return;
       channel = rechannelMicroLinnGroup(sensorSplit, channel, sensorCell->microLinnGroup);
     }
     midiSendNoteOffWithVelocity(sensorSplit, note, sensorCell->velocity, channel);
-    sendMicroLinnLocatorCC(channel);
   }
 }
 
