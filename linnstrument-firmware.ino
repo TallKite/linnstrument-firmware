@@ -250,6 +250,12 @@ const unsigned long LED_ARRAY_SIZE = (MAX_LED_LAYERS+1) * LED_LAYER_SIZE;
 #define DEFAULT_MAX_VELOCITY   127  // default maximum velocity value
 #define DEFAULT_FIXED_VELOCITY 96   // default fixed velocity value
 
+/*************************************** MICROLINN VERSION ***************************************/
+
+// Microlinn version is the mainline version it's based on plus this offset
+// (we would rather have used 128, but the updater interprets version as a signed charater type,
+// and is "confused" by negative version numbers).
+#define MICROLINN_VERSION_OFFSET 56
 
 /*************************************** CONVENIENCE MACROS **************************************/
 
@@ -698,7 +704,7 @@ const byte MICROLINN_MAX_OFFSET = MAXCOLS - 1;    // both row offset and column 
 const short MICROLINN_ARRAY_SIZE = (MICROLINN_MAX_EDO * (MICROLINN_MAX_EDO + 1)) / 2 - 10;     // a triangular array missing rows 1-4 = 1530
 
 struct MicroLinnDevice {
-  byte MLversion;                                 // version = official version we forked from plus 128, MLversion = microLinn version
+  byte MLversion;                                 // version = official version we forked from plus 56, MLversion = microLinn version
   byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
   byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
   byte dots[MICROLINN_ARRAY_SIZE];                // one bit per row, ignores column offsets except for lefty/righty

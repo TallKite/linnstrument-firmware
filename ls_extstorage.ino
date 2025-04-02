@@ -2274,7 +2274,7 @@ void copyConfigurationVLatest(void* target, void* source) {
   ConfigurationVLatest* s = (ConfigurationVLatest*) source;
 
   memcpy(&t->device, &s->device, sizeof(s->device));
-  t->device.version = 16 + 128;
+  t->device.version = 16 + MICROLINN_VERSION_OFFSET;
 
   memcpy(&t->settings.global, &s->settings.global, sizeof(s->settings.global));
   for (int split = 0; split < NUMSPLITS; split++) {

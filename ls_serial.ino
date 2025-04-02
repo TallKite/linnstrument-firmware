@@ -215,17 +215,19 @@ void serialSendSettings() {
   // send the actual settings
   const uint8_t batchsize = 96;
 
-  byte* src;
-  ConfigurationVLatest configurationNonMicroLinn;
+  byte* src = (byte*)&config;
+  ConfigurationVLatest *configurationNonMicroLinn = nullptr;
 
   // if the user is reverting to the mainline firmware, we need to send the updater a version
   // of the configuration that's compatible with mainline
   if (microLinnUninstall == 1) {
-    restoreNonMicroLinnConfiguration(&configurationNonMicroLinn, &config);
-    src = (byte*)&configurationNonMicroLinn;
-    confSize = sizeof(configurationNonMicroLinn);
+    // this does an in-place overwrite of the current configuration with one that has all the
+    // MicroLinn data stripped out, which we can get away with here because nothing tries to
+    // access the configuration fields at their old locations between now and the next reboot
+    // (sequencer project data is read directly from flash)
+    restoreNonMicroLinnConfiguration(&config, &config);
+    confSize = sizeof(struct ConfigurationVLatest);
   } else {
-    src = (byte*)&config;
     confSize = sizeof(Configuration);
   }
 
@@ -237,11 +239,14 @@ void serialSendSettings() {
     int actual = min(confSize, batchsize);
     Serial.write(src, actual);
 
-    if (!waitForSerialCheck()) return;
+    if (!waitForSerialCheck())
+      return;
 
     int crc = negotiateOutgoingCRC(src, actual);
-    if (crc == -1)      return;
-    else if (crc == 0)  continue;
+    if (crc == -1) {
+      return;
+    } else if (crc == 0)
+      continue;
 
     confSize -= actual;
     src += actual;

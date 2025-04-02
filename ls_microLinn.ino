@@ -124,8 +124,6 @@ run the arpeggiator and the sequencer both at once, so that the arpeggiator uses
 
 *********************************************************/
 
-
-
 const byte MICROLINN_MAJ2ND[MICROLINN_MAX_EDO+1] = {     // used for transposePitch and transposeLights
   0,  0,  0,  0,  0,   1,  1,  1,  1,  1,    // 0-9      // is actually just a single edostep for edos 6, 8, 10 & 12
   1,  1,  1,  1,  2,   3,  2,  3,  2,  3,    // 10-19 (13b and 18b)
