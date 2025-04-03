@@ -60,12 +60,10 @@ displaySequencerDrum0107      : sequencer first 7 drum notes
 displaySequencerDrum0814      : sequencer second 7 drum notes
 displaySequencerColors        : sequencer low row colors
 displayCustomLedsEditor       : editor for custom LEDs
-displayForkMenu               : menu to access config screens of various forks
 displayMicroLinnConfig        : select EDO, anchor data and column offsets
 displayMicroLinnAnchorChooser : choose the anchor cell from the performance display
 displayMicroLinnDotsEditor    : edit the fret markers for the current edo
 displayMicroLinnUninstall     : ask user if they want to uninstall microLinn, deleting microtonal data
-displayBrightness             : brightness knob
 
 These routines handle the painting of these display modes on LinnStument's 208 LEDs.
 **************************************************************************************************/
@@ -236,17 +234,15 @@ void updateDisplay() {
     case displayCustomLedsEditor:
       paintCustomLedsEditor();
       break;
-    case displayForkMenu:
-      paintForkMenu();
-      break;
     case displayMicroLinnConfig:
       paintMicroLinnConfig();
       break;
     case displayMicroLinnAnchorChooser:
-      if (!customLedPatternActive) {
+      if (customLedPatternActive) {
+        loadCustomLedLayer(getActiveCustomLedPattern());          // bug: doesn't load anything
         paintNormalDisplay();
       } else {
-        loadCustomLedLayer(getActiveCustomLedPattern());          // bug: doesn't load anything
+        paintNormalDisplay();
       }
       break; 
     case displayMicroLinnDotsEditor:
@@ -254,9 +250,6 @@ void updateDisplay() {
       break;
     case displayMicroLinnUninstall:
       paintMicroLinnUninstall();
-      break;
-    case displayBrightness:
-      paintBrightnessScreen();
       break;
   }
 
@@ -434,8 +427,8 @@ void paintNormalDisplay() {
     setLed(0, OCTAVE_ROW, COLOR_YELLOW, cellOn);
   }
   else {
+    paintMicroLinnOctaveTransposeButton();
     clearLed(0, OCTAVE_ROW);
-    microLinnLightOctaveSwitch();
   }
 }
 
@@ -535,7 +528,26 @@ void paintStrumDisplayCell(byte split, byte col, byte row) {
 
 void paintNormalDisplayCell(byte split, byte col, byte row) {
   if (userFirmwareActive) return;
-  if (isMicroLinnOn()) {microLinnPaintNormalDisplayCell(split, col, row); return;}
+
+  boolean isLowRow = (row == 0 && Split[split].lowRowMode != lowRowNormal);
+  if (isMicroLinnDrumPadMode() && !isLowRow) {
+    byte padNum = floor((col - 2) / 3) + floor((row - 1) / 3);     // 3x3 mega-pads
+    byte colour = (padNum % 2 == 0 ? Split[RIGHT].colorMain : Split[LEFT].colorMain);
+    if (col == 1 || col > 22 || row == 0 || row == 7) colour = COLOR_BLACK;
+    setLed(col, row, colour, cellOn, LED_LAYER_MAIN);    
+    return;
+  }
+  byte lightPattern = getMicroLinnShowCustomLEDs(split);
+  if (lightPattern >= 1 && lightPattern <= 3 && !isLowRow) {
+    byte colour = Device.customLeds[lightPattern - 1][col + MAXCOLS * row] >> 3;
+    if (colour == COLOR_OFF) colour = COLOR_BLACK;
+    setLed(col, row, colour, cellOn, LED_LAYER_MAIN);
+    return;
+  }
+  if (isMicroLinnOn()) {
+    paintMicroLinnNormalDisplayCell(split, col, row); 
+    return;
+  }
 
   // by default clear the cell color
   byte colour = COLOR_OFF;
@@ -589,6 +601,11 @@ void paintNormalDisplayCell(byte split, byte col, byte row) {
     // actually set the cell's color
     if (row == 0) {
       clearLed(col, row, LED_LAYER_LOWROW);
+    }
+    // custom LEDs shows up underneath the note lights, delete?
+    if (lightPattern > 3 && cellDisplay == cellOff) {
+      colour = Device.customLeds[lightPattern - 4][col + MAXCOLS * row] >> 3;
+      cellDisplay = cellOn;
     }
     setLed(col, row, colour, cellDisplay, LED_LAYER_MAIN);
   }
@@ -881,7 +898,9 @@ byte getSplitHandednessColor() {
 }
 
 byte getGuitarTuningColor() {
-  if (isMicroLinnOn()) return microLinnGetGuitarTuningColor();
+  if (isMicroLinnOn()) {
+    return isMicroLinnGuitarTuningStandard() ? globalColor : globalAltColor;
+  }
   byte color = globalColor;
   if (Global.guitarTuning[0] != 30 ||
       Global.guitarTuning[1] != 35 ||
@@ -918,7 +937,9 @@ void paintOSVersionBuildDisplay() {
   clearDisplay();
 
   byte color = Split[LEFT].colorAccent;
-  smallfont_draw_string(0, 0, OSVersionBuild, color);
+  if (LINNMODEL == 200) smallfont_draw_string(0, 0, OSVersionBuild, color);
+  // to fit in the microLinn version letter, use a condensed font and omit the period
+  else condfont_draw_string(-2, 0, OSVersionBuild, color);
 }
 
 // paint the current preset number for a particular side, in large block characters
@@ -1216,11 +1237,9 @@ void paintCustomSwitchAssignmentConfigDisplay() {
     case ASSIGNED_MICROLINN_EDO_DOWN:
       adaptfont_draw_string(0, 0, "EDO-", globalColor, true);
       break;
-    case ASSIGNED_MICROLINN_SCALE_UP:
-      adaptfont_draw_string(0, 0, "SCL+", globalColor, true);
-      break;
-    case ASSIGNED_MICROLINN_SCALE_DOWN:
-      adaptfont_draw_string(0, 0, "SCL-", globalColor, true);
+    case ASSIGNED_MICROLINN_TOGGLE_8VE:
+      adaptfont_draw_string(0, 0, "8VE", globalColor, true);
+      paintMicroLinnPlusMinus();
       break;
   }
 }
@@ -1290,9 +1309,8 @@ void paintSplitHandedness() {
 }
 
 void paintRowOffset() {
-  if (isMicroLinnOn()) {microLinnPaintRowOffset(); return;}
   clearDisplay();
-  if (Global.customRowOffset == -17) {
+  if (Global.customRowOffset == -17 && !isMicroLinnOn()) {
     condfont_draw_string(0, 0, "-GUI", globalColor, false);
   }
   else {
@@ -1301,14 +1319,17 @@ void paintRowOffset() {
 }
 
 void paintGuitarTuning() {
-  if (isMicroLinnOn()) {microLinnPaintGuitarTuning (); return;}
+  if (isMicroLinnOn()) {
+    paintMicroLinnGuitarTuning(); 
+    return;
+  }
   clearDisplay();
 
   for (byte r = 0; r < NUMROWS; ++r) {
     setLed(1, r, guitarTuningRowNum == r ? Split[Global.currentPerSplit].colorAccent : Split[Global.currentPerSplit].colorMain, cellOn);
   }
 
-  paintNoteDataDisplay(globalColor, Global.guitarTuning[guitarTuningRowNum], LINNMODEL == 200 ? 2 : 1, 0);
+  paintNoteDataDisplay(globalColor, Global.guitarTuning[guitarTuningRowNum], LINNMODEL == 200 ? 2 : 1);
 }
 
 void paintMIDIThrough() {
@@ -1357,6 +1378,7 @@ void paintNumericDataDisplay(byte color, short value, short offset, boolean cond
   char str[10];
   const char* format;
   byte pos;
+  byte microLinnRow = (displayMode == displayMicroLinnConfig ? 1 : 0);  // avoid the low row buttons
 
   if (value < 100) {
     format = "%2d";
@@ -1365,10 +1387,10 @@ void paintNumericDataDisplay(byte color, short value, short offset, boolean cond
   else if (value >= 100 && value < 200) {
     // Handle the "1" character specially, to get the spacing right
     if (condensed) {
-      condfont_draw_string(offset, 0, "1", color, false);
+      condfont_draw_string(offset, microLinnRow, "1", color, false);
     }
     else {
-      smallfont_draw_string(offset + 2, 0, "1", color, false);
+      smallfont_draw_string(offset + 2, microLinnRow, "1", color, false);
     }
     value -= 100;
     format = "%02d";     // to make sure a leading zero is included
@@ -1381,49 +1403,14 @@ void paintNumericDataDisplay(byte color, short value, short offset, boolean cond
 
   snprintf(str, sizeof(str), format, value);
   if (condensed) {
-    condfont_draw_string(pos+offset, 0, str, color, false);
+    condfont_draw_string(pos+offset, microLinnRow, str, color, false);
   }
   else {
-    smallfont_draw_string(pos+offset, 0, str, color, false);
+    smallfont_draw_string(pos+offset, microLinnRow, str, color, false);
   }
 }
 
-void paintNumericDataDisplayRow(byte color, short value, short offset, byte row, boolean condensed) {
-  char str[10];
-  const char* format;
-  byte pos;
-
-  if (value < 100) {
-    format = "%2d";
-    pos = condensed ? 3 : 5;
-  }
-  else if (value >= 100 && value < 200) {
-    // Handle the "1" character specially, to get the spacing right
-    if (condensed) {
-      condfont_draw_string(offset, row, "1", color, false);
-    }
-    else {
-      smallfont_draw_string(offset + 2, row, "1", color, false);
-    }
-    value -= 100;
-    format = "%02d";     // to make sure a leading zero is included
-    pos = condensed ? 3 : 5;
-  }
-  else {
-    format = "%-d";
-    pos = 0;
-  }
-
-  snprintf(str, sizeof(str), format, value);
-  if (condensed) {
-    condfont_draw_string(pos+offset, row, str, color, false);
-  }
-  else {
-    smallfont_draw_string(pos+offset, row, str, color, false);
-  }
-}
-
-void paintNoteDataDisplay(byte color, short noteNumber, short offset, byte row) {
+void paintNoteDataDisplay(byte color, short noteNumber, short offset) {
   char str[10];
   const char* format;
 
@@ -1444,6 +1431,7 @@ void paintNoteDataDisplay(byte color, short noteNumber, short offset, byte row) 
   }
 
   snprintf(str, sizeof(str), format, int(noteNumber/12) - 2);
+  byte row = (displayMode == displayMicroLinnConfig ? 1 : 0);    // avoid the low row buttons
   condfont_draw_string(offset, row, str, color, false);
 }
 
@@ -1507,7 +1495,7 @@ void paintOctaveTransposeDisplay(byte side) {
     }
   }
 
-  microLinnPaintEdostepTranspose (doublePerSplit, side);
+  paintMicroLinnEdostepTranspose(side);
 
   paintShowSplitSelection(side);
 }
@@ -1602,8 +1590,7 @@ void paintSwitchAssignment(byte mode) {
     case ASSIGNED_SEQUENCER_MUTE:
     case ASSIGNED_MICROLINN_EDO_UP:
     case ASSIGNED_MICROLINN_EDO_DOWN:
-    case ASSIGNED_MICROLINN_SCALE_UP:
-    case ASSIGNED_MICROLINN_SCALE_DOWN:
+    case ASSIGNED_MICROLINN_TOGGLE_8VE:
       setLed(9, 3, getSwitchTapTempoColor(), cellOn);
       break;
     case ASSIGNED_AUTO_OCTAVE:
@@ -1862,7 +1849,8 @@ void paintGlobalSettingsDisplay() {
     char str[4];
     const char* format = "%3d";
     snprintf(str, sizeof(str), format, FXD4_TO_INT(fxd4CurrentTempo));
-    tinyfont_draw_string(0, 4, str, color);
+    paintMicroLinnDebugDump();   // temporary, delete later and uncomment following line later
+    //tinyfont_draw_string(0, 4, str, color);
   }
 
 #ifdef DEBUG_ENABLED
@@ -1884,6 +1872,7 @@ void paintCustomLedsEditor() {
 }
 
 byte getRowOffsetColor() {
+  if (isMicroLinnOn()) return getMicroLinnRowOffsetColor();
   if (Global.customRowOffset != 12) {
     return globalAltColor;
   }

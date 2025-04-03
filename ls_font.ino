@@ -2403,27 +2403,25 @@ void font_scroll_text_flipped(struct Font* font, const char* str, byte color) {
 }
 
 void small_scroll_text(const char* str, byte color) {
-  font_scroll_text(&smallFont, str, color, 0);
-}
-
-void small_scroll_text_row1(const char* str, byte color) {
-  font_scroll_text(&smallFont, str, color, 1);
+  font_scroll_text(&smallFont, str, color);
 }
 
 void big_scroll_text(const char* str, byte color) {
-  font_scroll_text(&bigFont, str, color, 0);
+  font_scroll_text(&bigFont, str, color);
 }
 
-void font_scroll_text(struct Font* font, const char* str, byte color, byte row) {
+void font_scroll_text(struct Font* font, const char* str, byte color) {
   unsigned long origInterval = ledRefreshInterval;
   ledRefreshInterval = 200;
 
   animationActive = true;
   stopAnimation = false;
 
+  byte microLinnRow = 0;
+  if (displayMode == displayMicroLinnConfig || displayMode == displayMicroLinnUninstall) microLinnRow = 1;  // avoid the low row buttons
   int totalwidth = font_width_string(str, font);
   for (int i = 0; i < totalwidth && !stopAnimation; ++i) {
-    font_draw_string( -i, row, str, color, font, true, false, COLOR_OFF);
+    font_draw_string( -i, microLinnRow, str, color, font, true, false, COLOR_OFF);
     delayUsecWithScanning(40000);
   }
 

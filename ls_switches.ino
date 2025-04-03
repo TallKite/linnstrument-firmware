@@ -236,7 +236,7 @@ void changeSwitchState(byte whichSwitch, byte assignment, byte split, boolean en
 
 void switchTransposeOctave(byte split, int interval) {
   Split[split].transposeOctave = constrain(Split[split].transposeOctave + interval, -60, 60);
-  microLinnCalcTuning();
+  calcMicroLinnTuning();
   displayModeStart = millis();
   blinkMiddleRootNote = true;
   updateDisplay();
@@ -316,19 +316,15 @@ void performSwitchAssignmentOn(byte whichSwitch, byte assignment, byte split) {
       break;
 
     case ASSIGNED_MICROLINN_EDO_UP:
-      microLinnChangeEDO(1);
+      changeMicroLinnEDO(1);
       break;
 
     case ASSIGNED_MICROLINN_EDO_DOWN:
-      microLinnChangeEDO(-1);
+      changeMicroLinnEDO(-1);
       break;
 
-    case ASSIGNED_MICROLINN_SCALE_UP:
-      microLinnChangeScale(1);
-      break;
-
-    case ASSIGNED_MICROLINN_SCALE_DOWN:
-      microLinnChangeScale(-1);
+    case ASSIGNED_MICROLINN_TOGGLE_8VE:
+      performMicroLinnOctaveToggle(split);
       break;
   }
 }

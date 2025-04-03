@@ -30,8 +30,8 @@ jobs:
       uses: "marvinpinto/action-automatic-releases@latest"
       with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "latest"
+          automatic_release_tag: "latest-${{ github.ref_name }}"
           prerelease: true
-          title: "Development Build"
+          title: "${{ github.ref_name }} (build ${{ github.run_number }})"
           files: |
             *.bin

@@ -121,6 +121,7 @@ void transferFromSameRowCell(byte col) {
   sensorCell->rogueSweepX = fromCell->rogueSweepX;
   sensorCell->initialY = fromCell->initialY;
   sensorCell->note = fromCell->note;
+  sensorCell->microLinnGroup = fromCell->microLinnGroup;
   sensorCell->channel = fromCell->channel;
   sensorCell->octaveOffset = fromCell->octaveOffset;
   sensorCell->fxdPrevPressure = fromCell->fxdPrevPressure;
@@ -172,6 +173,7 @@ void transferToSameRowCell(byte col) {
   toCell->rogueSweepX = sensorCell->rogueSweepX;
   toCell->initialY = sensorCell->initialY;
   toCell->note = sensorCell->note;
+  toCell->microLinnGroup = sensorCell->microLinnGroup;
   toCell->channel = sensorCell->channel;
   toCell->octaveOffset = sensorCell->octaveOffset;
   toCell->fxdPrevPressure = sensorCell->fxdPrevPressure;
@@ -501,6 +503,7 @@ short cellTransposedNote(byte split) {
 }
 
 short transposedNote(byte split, byte col, byte row) {
+  if (isMicroLinnOn()) return getMicroLinnVirtualEdostep(split, col, row);        // virtual edosteps don't transpose
   return getNoteNumber(split, col, row) + Split[split].transposePitch + Split[split].transposeOctave;
 }
 
@@ -706,9 +709,6 @@ void handleNonPlayingTouch() {
     case displayCustomLedsEditor:
       handleCustomLedsEditorNewTouch();
       break;
-    case displayForkMenu:
-      handleForkMenuNewTouch();
-      break;
     case displayMicroLinnConfig:
       handleMicroLinnConfigNewTouch();
       break;
@@ -720,9 +720,6 @@ void handleNonPlayingTouch() {
       break;
     case displayMicroLinnUninstall: 
       handleMicroLinnUninstallNewTouch();
-      break;
-    case displayBrightness:
-      handleBrightnessNewTouch();
       break;
   }
 }
@@ -767,13 +764,9 @@ boolean handleXYZupdate() {
         handleCustomLedsEditorHold();
         return false;
 
-      case displayForkMenu:
-        handleForkMenuHold();
-        break;                              // should this line be "return false;"?
-
       case displayMicroLinnConfig:
         handleMicroLinnConfigHold();
-        break;                              // should this line be "return false;"?
+        return false;                              // should this line be "break;"?
 
       default:
         // other displays don't need hold features
@@ -894,6 +887,11 @@ boolean handleXYZupdate() {
           // switching octaves might turn off some note cells since they fall outside of the MIDI note range
           updateDisplay();
         }
+      }
+
+      if (isMicroLinnOn() && notenum >= 0) {
+        sensorCell->microLinnGroup = notenum >> 7;
+        notenum &= 127;
       }
 
       // if the note number is outside of MIDI range, don't start it
@@ -1046,14 +1044,29 @@ boolean handleXYZupdate() {
           }
         }
 
-        preSendPitchBend(sensorSplit, pitch, sensorCell->channel);
+        short tuningBend = 0;
+        signed char channel = sensorCell->channel;
+        if (isMicroLinnOn()) {
+          tuningBend = getMicroLinnTuningBend(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
+          channel = rechannelMicroLinnGroup(sensorSplit, sensorCell->channel, sensorCell->microLinnGroup);
+        }
+        preSendPitchBend(sensorSplit, pitch, channel, tuningBend);
       }
 
       // if Y-axis movements are enabled and it's a candidate for
       // X/Y expression based on the MIDI mode and the currently held down cells
       if (valueY != INVALID_DATA &&
           Split[sensorSplit].sendY && isYExpressiveCell()) {
-        preSendTimbre(sensorSplit, valueY, sensorCell->note, sensorCell->channel);
+        signed char note = sensorCell->note;
+        signed char channel = sensorCell->channel;
+        if (isMicroLinnDrumPadMode()) {
+          note = getMicroLinnDrumPadMidiNote();
+        } 
+        else if (isMicroLinnOn()) {
+          note = getMicroLinnMidiNote(sensorSplit, note, sensorCell->microLinnGroup);
+          channel = rechannelMicroLinnGroup(sensorSplit, channel, sensorCell->microLinnGroup);
+        }
+        preSendTimbre(sensorSplit, valueY, note, channel);
       }
 
       // send the note on if this in a newly calculated velocity
@@ -1075,7 +1088,16 @@ boolean handleXYZupdate() {
       // if sensing Z is enabled...
       // send different pressure update depending on midiMode
       if (Split[sensorSplit].sendZ && isZExpressiveCell()) {
-        preSendLoudness(sensorSplit, valueZ, valueZHi, sensorCell->note, sensorCell->channel);
+        signed char note = sensorCell->note;
+        signed char channel = sensorCell->channel;
+        if (isMicroLinnDrumPadMode()) {
+          note = getMicroLinnDrumPadMidiNote();
+        } 
+        else if (isMicroLinnOn()) {
+          note = getMicroLinnMidiNote(sensorSplit, note, sensorCell->microLinnGroup);
+          channel = rechannelMicroLinnGroup(sensorSplit, channel, sensorCell->microLinnGroup);
+        }
+        preSendLoudness(sensorSplit, valueZ, valueZHi, note, channel);
       }
 
       // after the initial velocity, new velocity values are continuously being calculated simply based
@@ -1257,7 +1279,10 @@ void prepareNewNote(signed char notenum) {
     }
     else if (Split[sensorSplit].playedTouchMode == playedSame ||
              Split[sensorSplit].playedTouchMode == playedBlink) {
-      highlightPossibleNoteCells(sensorSplit, sensorCell->note);
+      if (!isMicroLinnDrumPadMode()) {                                // drum pad mode changes the midi notes output by each pad
+        highlightPossibleNoteCells(sensorSplit, sensorCell->note);
+        applySameAndMicroLinnBlinkToOtherSplit(true, sensorCell->note);
+      }
     }
     else {
       startTouchAnimation(sensorCol, sensorRow, calcTouchAnimationSpeed(Split[sensorSplit].playedTouchMode, sensorCell->velocity));
@@ -1270,28 +1295,45 @@ void prepareNewNote(signed char notenum) {
 
 void sendNewNote() {
   if (!isArpeggiatorEnabled(sensorSplit)) {
+
+    signed char note = sensorCell->note;
+    signed char channel = sensorCell->channel;
+    short tuningBend = 0;
+    if (isMicroLinnDrumPadMode()) {
+      note = sensorCell->note = getMicroLinnDrumPadMidiNote();    // overwrite sensorCell->note so that note-offs work right
+      if (note == -1) return;                                     // happens when user hits outer columns or rows
+    } 
+    else if (isMicroLinnOn()) {
+      note = getMicroLinnMidiNote(sensorSplit, note, sensorCell->microLinnGroup);
+      if (note == -1) return;
+      channel = rechannelMicroLinnGroup(sensorSplit, channel, sensorCell->microLinnGroup);
+    }
+    sendMicroLinnLocatorCC(channel);
+    if (isMicroLinnOn()) {
+      tuningBend = getMicroLinnTuningBend(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
+      preSendPitchBend(sensorSplit, 0, channel, tuningBend);
+    }
+
     // if we've switched from pitch X enabled to pitch X disabled and the last
     // pitch bend value was not neutral, reset it first to prevent skewed pitches
     if (!Split[sensorSplit].sendX && hasPreviousPitchBendValue(sensorCell->channel)) {
-      //int microLinnTuningBend = (isMicroLinnOn() ? microLinnFineTuning[sensorSplit][sensorCol][sensorRow] : 0);
-      preSendPitchBend(sensorSplit, 0, sensorCell->channel);
-      //preSendPitchBend(sensorSplit, microLinnTuningBend, sensorCell->channel);
+      preSendPitchBend(sensorSplit, 0, channel, tuningBend);                     // read from old channel, send to new channel
     }
 
     // reset pressure to 0 before sending the note, the actually pressure value will
     // be sent right after the note on
     if (Split[sensorSplit].sendZ && isZExpressiveCell()) {
-      preSendLoudness(sensorSplit, 0, 0, sensorCell->note, sensorCell->channel);
+      preSendLoudness(sensorSplit, 0, 0, note, channel);
     }
 
     // if the same channel and note is already active, send a note off first
     // so that the new touch properly triggers a new note
     if (hasActiveMidiNote(sensorSplit, sensorCell->note, sensorCell->channel)) {
-      midiSendNoteOff(sensorSplit, sensorCell->note, sensorCell->channel);
+      midiSendNoteOff(sensorSplit, note, channel);                 // read from old note & channel, send to new note & channel
     }
 
     // send the note on
-    midiSendNoteOn(sensorSplit, sensorCell->note, sensorCell->velocity, sensorCell->channel);
+    midiSendNoteOn(sensorSplit, note, sensorCell->velocity, channel);
   }
 }
 
@@ -1325,7 +1367,18 @@ void sendReleasedNote() {
     }
 
     // if there are no other touches down with the same note and channel, send the note off message
-    midiSendNoteOffWithVelocity(sensorSplit, sensorCell->note, sensorCell->velocity, sensorCell->channel);
+    signed char note = sensorCell->note;
+    signed char channel = sensorCell->channel;
+    if (isMicroLinnDrumPadMode()) {
+      //note = getMicroLinnDrumPadMidiNote();
+      if (note == -1) return;
+    } 
+    else if (isMicroLinnOn()) {
+      note = getMicroLinnMidiNote(sensorSplit, note, sensorCell->microLinnGroup);
+      if (note == -1) return;
+      channel = rechannelMicroLinnGroup(sensorSplit, channel, sensorCell->microLinnGroup);
+    }
+    midiSendNoteOffWithVelocity(sensorSplit, note, sensorCell->velocity, channel);
   }
 }
 
@@ -1662,9 +1715,6 @@ boolean handleNonPlayingRelease() {
       case displayCustomLedsEditor:
         handleCustomLedsEditorRelease();
         break;
-      case displayForkMenu:
-        handleForkMenuRelease();
-        break;
       case displayMicroLinnConfig:
         handleMicroLinnConfigRelease();
         break;
@@ -1773,7 +1823,16 @@ void handleTouchRelease() {
 
     // reset the pressure when the note is released and that setting is active
     if (Split[sensorSplit].sendZ && isZExpressiveCell()) {
-      preSendLoudness(sensorSplit, 0, 0, sensorCell->note, sensorCell->channel);
+      signed char note = sensorCell->note;                // used *only* for sending actual midi
+      signed char channel = sensorCell->channel;          // ditto
+      if (isMicroLinnDrumPadMode()) {
+        note = getMicroLinnDrumPadMidiNote();
+      } 
+      else if (isMicroLinnOn()) {
+        note = getMicroLinnMidiNote(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
+        channel = rechannelMicroLinnGroup(sensorSplit, sensorCell->channel, sensorCell->microLinnGroup);
+      }
+      preSendLoudness(sensorSplit, 0, 0, note, channel);
     }
 
     // unregister the note <> cell mapping
@@ -1835,13 +1894,20 @@ void handleTouchRelease() {
 
         if (allNotesOff) {
           resetPossibleNoteCells(sensorSplit, realSensorNote);
+          applySameAndMicroLinnBlinkToOtherSplit(false, realSensorNote);
         }
       }
     }
 
     // reset the pitch bend when the note is released and that setting is active
     if (Split[sensorSplit].pitchResetOnRelease && isXExpressiveCell() && !isLowRowBendActive(sensorSplit)) {
-      preSendPitchBend(sensorSplit, 0, sensorCell->channel);
+      signed char channel = sensorCell->channel;
+      short tuningBend = 0;
+      if (isMicroLinnOn()) {
+        channel = rechannelMicroLinnGroup(sensorSplit, sensorCell->channel, sensorCell->microLinnGroup);
+        tuningBend = getMicroLinnTuningBend(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
+      }
+      preSendPitchBend(sensorSplit, 0, channel, tuningBend);
     }
 
     // If the released cell had focus, reassign focus to the latest touched cell
@@ -1963,10 +2029,9 @@ inline void updateSensorCell() {
 
 // getNoteNumber:
 // computes MIDI note number from current row, column, row offset, octave button and transposition amount
-byte getNoteNumber(byte split, byte col, byte row) {
-  if (isMicroLinnOn()) {
-    //return microLinnGetNoteNumber(split, col, row);              // uncomment once midi code is done
-  }
+short getNoteNumber(byte split, byte col, byte row) {
+  if (isMicroLinnOn()) return getMicroLinnVirtualEdostep(split, col, row);
+
   byte notenum = 0;
 
   // return the computed note based on the selected rowOffset
@@ -1974,26 +2039,23 @@ byte getNoteNumber(byte split, byte col, byte row) {
   if (isLeftHandedSplit(split)) {
     noteCol = (NUMCOLS - col);
   }
-
-  signed char transposeLights = Split[split].transposeLights;
-
-  if (Split[split].microLinn.colOffset != 1) {
-    // subtract 1 to be zero-based, scale it up, then add 1 again - this lets us start at note 0 instead of 1
-    noteCol = (noteCol - 1) * Split[split].microLinn.colOffset + 1;
-    transposeLights = transposeLights * Split[split].microLinn.colOffset;
-  }
-
+  noteCol = (noteCol - 1) * Split[split].microLinn.colOffset + 1;
+  
   notenum = determineRowOffsetNote(split, row) + noteCol - 1;
 
-  return notenum - transposeLights;
+  return notenum - Split[split].transposeLights * Split[split].microLinn.colOffset;
 }
 
-// determine the start note of a given row.
-short determineRowOffsetNote(byte split, byte row) {
-  short lowest = 30;                                  // 30 = F#2, which is 10 semitones below guitar low E (E3/52). High E = E5/76
-  if (isMicroLinnOn()) lowest = 0;                    // start at note 0 so that we show as many as possible and all disabled pads are in one place
+short determineRowOffsetNote(byte split, byte row) {  // determine the col 1 note of a given row (col 25 if lefty)
+  if (isMicroLinnOn()) {
+    byte lowCol = isLeftHandedSplit(split) ? 25 : 1;
+    return getMicroLinnVirtualEdostep(split, lowCol, row);
+  }
+  if (getMicroLinnRowOffset(split) != -26) return getMicroLinnRowOffsetNote(split, row);
 
-  if (Global.rowOffset <= 12) {                       // if rowOffset is 12 or lower
+  short lowest = 30;                                  // 30 = F#2, which is 10 semitones below guitar low E (E3/52). High E = E5/76
+
+  if (Global.rowOffset <= 12) {                       // if rowOffset is set to between 0 and 12..
     short offset = Global.rowOffset;
 
     if (Global.rowOffset == ROWOFFSET_OCTAVECUSTOM) {
@@ -2002,7 +2064,6 @@ short determineRowOffsetNote(byte split, byte row) {
 
     if (offset < 0) {
       lowest = 65;
-      if (isMicroLinnOn()) lowest = 127;
     }
 
     if (Global.rowOffset == ROWOFFSET_NOOVERLAP) {    // no overlap mode
@@ -2010,7 +2071,7 @@ short determineRowOffsetNote(byte split, byte row) {
       getSplitBoundaries(split, lowCol, highCol);
 
       offset = highCol - lowCol;                      // calculate the row offset based on the width of the split the column belongs to
-      if (Global.splitActive && split == RIGHT) {     // if the right split is displayed, change the column so that the lower left starting
+      if (Global.splitActive && split == RIGHT) {     // if the right split is displayed, change the column so that it the lower left starting
         getSplitBoundaries(LEFT, lowCol, highCol);    // point starts at the same point as the left split, behaving as if there were two independent
         lowest = lowest - (highCol - lowCol);         // LinnStruments next to each-other
       }
@@ -2022,11 +2083,10 @@ short determineRowOffsetNote(byte split, byte row) {
         lowest -= 1;
       }
     }
-
-    else if (offset >= 12 && !isMicroLinnOn()) {
-      lowest = 18;                                  // start the octave offset one octave lower to prevent having disabled notes at the top in the default configuration
+    else if (offset >= 12) {                          // start the octave offset one octave lower to prevent having disabled notes at the top in the default configuration
+      lowest = 18;
     }
-    else if (offset <= -12 && !isMicroLinnOn()) {
+    else if (offset <= -12) {
       lowest = 18 - 7 * offset;
     }
 

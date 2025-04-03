@@ -46,7 +46,7 @@ For any questions about this, contact Roger Linn Design at support@rogerlinndesi
 /******************************************** CONSTANTS ******************************************/
 
 const char* OSVersion = "234.";
-const char* OSVersionBuild = ".08A";
+const char* OSVersionBuild = ".072A";   // the "A" means Device.microLinn.MLversion = 0, "B" means 1, etc.
 
 // SPI addresses
 #define SPI_LEDS    10               // Arduino pin for LED control over SPI
@@ -197,11 +197,10 @@ byte NUMROWS = 8;                    // number of touch sensor rows
 #define ASSIGNED_SEQUENCER_NEXT         15
 #define ASSIGNED_STANDALONE_MIDI_CLOCK  16
 #define ASSIGNED_SEQUENCER_MUTE         17
-#define ASSIGNED_MICROLINN_SCALE_UP     18
-#define ASSIGNED_MICROLINN_SCALE_DOWN   19
-#define ASSIGNED_MICROLINN_EDO_UP       20
-#define ASSIGNED_MICROLINN_EDO_DOWN     21
-#define MAX_ASSIGNED                    ASSIGNED_MICROLINN_EDO_DOWN
+#define ASSIGNED_MICROLINN_EDO_UP       18
+#define ASSIGNED_MICROLINN_EDO_DOWN     19
+#define ASSIGNED_MICROLINN_TOGGLE_8VE   20
+#define MAX_ASSIGNED                    ASSIGNED_MICROLINN_TOGGLE_8VE
 #define ASSIGNED_DISABLED               255
 
 #define GLOBAL_SETTINGS_ROW  0
@@ -369,7 +368,8 @@ struct __attribute__ ((packed)) TouchInfo {
   unsigned short pressureZ:10;               // the Z value with pressure sensitivity
   unsigned short previousRawZ:12;            // the previous raw Z value
   boolean didMove:1;                         // indicates whether the touch has ever moved
-int :3;
+  byte microLinnGroup:2;                     // group 0 = edosteps 0-127, group 1 = 128-255, group 2 = 256-383, group 3 = 384-511
+int :1;
   boolean phantomSet:1;                      // indicates whether phantom touch coordinates are set
   byte velocity:7;                           // velocity from 0 to 127
   boolean shouldRefreshZ:1;                  // indicate whether it's necessary to refresh Z
@@ -391,6 +391,7 @@ struct VirtualTouchInfo {
   byte split;                                // the split this virtual touch belongs to
   byte velocity;                             // velocity from 0 to 127
   signed char note;                          // note from 0 to 127
+  byte microLinnGroup;                       // group 0 = edosteps 0-127, group 1 = 128-255, group 2 = 256-383, group 3 = 384-511
   signed char channel;                       // channel from 1 to 16
 };
 VirtualTouchInfo virtualTouchInfo[MAXROWS];  // store as much touch virtual instances as there are rows, this is used for simulating strumming open strings
@@ -497,12 +498,10 @@ enum DisplayMode {
   displaySequencerDrum0814,
   displaySequencerColors,
   displayCustomLedsEditor,
-  displayForkMenu,
   displayMicroLinnConfig,
   displayMicroLinnAnchorChooser,
   displayMicroLinnDotsEditor,
-  displayMicroLinnUninstall,
-  displayBrightness
+  displayMicroLinnUninstall
 };
 DisplayMode displayMode = displayNormal;
 
@@ -621,11 +620,14 @@ enum SequencerDirection {
 };
 
 struct MicroLinnSplit {
-  byte colOffset;                         // column offsets, 1 to 25
-  signed char transposeEDOsteps;          // accessed not via displayMicroLinnConfig but via displayOctaveTranspose
+  byte colOffset;                         // column offset, 1 to 8, 1 = OFF
+  //signed char rowOffset;                // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
+  signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
   signed char transposeEDOlights;
-  boolean rawMidiOutput;                  // output in edostep format (1 midi note = 1 edostep)
-  unsigned short hammerOnWindow;          // maximum width in cents of a hammer-on before it becomes two simultaneous notes, 0 = off
+  byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
+  //byte collapseBendPerPad;              // width of a single-pad pitch bend in edosteps, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
+  //byte showCustomLEDs;                  // 0 = OFF, 1-3 = the three patterns, 4-6 = patterns plus note lights on top
+  unsigned short hammerOnWindow;          // maximum width in cents of a hammer-on before it becomes two simultaneous notes, 0 = OFF
   boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
   byte pullOffVelocity;                   // 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
 };
@@ -680,7 +682,7 @@ struct SplitSettings {
   boolean arpeggiator;                    // true when the arpeggiator is on, false if notes should be played directly
   boolean strum;                          // true when this split strums the touches of the other split
   boolean mpe;                            // true when MPE is active for this split
-  boolean sequencer;                      // true when the sequencer of this split is displayed
+  boolean sequencer;                      // true when the sequencer of this split is enabled
   SequencerView sequencerView;            // see SequencerView
   MicroLinnSplit microLinn;               // microtonal data
 };
@@ -699,19 +701,18 @@ enum SplitHandednessType {
   reversedRight
 };
 
-const byte MICROLINN_MAX_EDO = 55;                // minimum edo is 5
-const byte MICROLINN_MAX_OFFSET = MAXCOLS - 1;    // both row offset and column offset, increased from 16
+const byte MICROLINN_MAX_EDO = 55;                // the minimum edo is 5
 const short MICROLINN_ARRAY_SIZE = (MICROLINN_MAX_EDO * (MICROLINN_MAX_EDO + 1)) / 2 - 10;     // a triangular array missing rows 1-4 = 1530
 
 struct MicroLinnDevice {
-  byte MLversion;                                 // version = official version we forked from plus 56, MLversion = microLinn version
+  byte MLversion;                                 // current version of the microLinn data structures, 0 displays as A, 1 displays as B, etc.
   byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
   byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
-  byte dots[MICROLINN_ARRAY_SIZE];                // one bit per row, ignores column offsets except for lefty/righty
+  byte dots[MICROLINN_ARRAY_SIZE];                // one byte per fret, one bit per row, transposable, lefthandedness reverses it, ignores column offsets
 };
 
 struct DeviceSettings {
-  byte version;                                   // the version of the configuration format
+  byte version;                                   // the version of the configuration format, currently 16, but the microLinn version is 16 + 56 = 72
   boolean serialMode;                             // 0 = normal MIDI I/O, 1 = Arduino serial mode for OS update and serial monitor
   CalibrationX calRows[MAXCOLS+1][4];             // store four rows of calibration data
   CalibrationY calCols[9][MAXROWS];               // store nine columns of calibration data
@@ -782,13 +783,21 @@ enum SustainBehavior {
 
 struct MicroLinnGlobal {
   byte EDO;                                  // ranges 5-55, plus 4 for OFF
-  signed char octaveStretch;                 // ranges -120 to 120 cents, for non-octave tunings such as bohlen-pierce
+  //byte equaveSemitones;                    // for non-octave tunings such as bohlen-pierce, 1..48, 1 semitone = 100 cents
+  signed char octaveStretch;                 // rename to equaveCents, -50..+50
   byte anchorCol;                            // ranges 1-25, setting to a number > 16 on a Linnstrument 128 is allowed
   byte anchorRow;                            // top row is 7, bottom row is 0, but the user sees top row as 1, bottom row as 8
   byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
   signed char anchorCents;                   // ranges -100 to +100 cents, even though 50 would do, for convenience
-  short guitarTuning[MAXROWS];               // interval in edosteps from the bottom string, can be negative, independent of Global.guitarTuning
+  short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, [0] is unused, can be negative, independent of Global.guitarTuning
   boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
+  //boolean drumPadMode;
+  //signed char locatorCC1;                  // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25
+  //signed char locatorCC2;                  // ranges from 0 to 119, -1 = OFF
+  //byte rainbow[MICROLINN_MAX_EDO];         // one row of Device.microLinn.rainbow[MICROLINN_MAX_ARRAY_SIZE]
+  //byte dots[MICROLINN_MAX_EDO];            // ditto for dots
+  //short largeEDO;                          // ranges 56..311, 55 = OFF, user can have a 55-note subset of this edo 
+  //byte largeEdoScale[39];                  // a packed array of booleans up to 311edo  (311 = 39 x 8 - 1)
   boolean sweeten;                           // adjust 41edo 5/4, 5/3 by 2¢ both top and bottom to make it 4¢ closer to just?
 };
 
@@ -798,9 +807,9 @@ struct GlobalSettings {
   byte splitPoint;                           // leftmost column number of right split (0 = leftmost column of playable area)
   byte currentPerSplit;                      // controls which split's settings are being displayed
   byte activeNotes;                          // controls which of the 12 collections of note lights presets is active
-  int mainNotes[12];                         // 12 bitmasks that determine which notes receive "main" lights, mainNotes[0] is for the 1st scale
+  int mainNotes[12];                         // 12 bitmasks that determine which notes receive "main" lights, mainNotes[0] is for the 1st scale, [9-11] no longer used
   int accentNotes[12];                       // 12 bitmasks that determine which notes receive accent lights (octaves, white keys, black keys, etc.)
-  byte rowOffset;                            // interval between rows. 0 = no overlap, 3-7 = interval, 12 = custom, 13 = guitar, 127 = zero offset
+  byte rowOffset;                            // interval between rows, 0 = no overlap, 3-7 = interval, 12 = custom, 13 = guitar, 127 = zero offset
   signed char customRowOffset;               // the custom row offset that can be configured at the location of the octave setting
   byte guitarTuning[MAXROWS];                // the notes used for each row for the guitar tuning, 0-127
   VelocitySensitivity velocitySensitivity;   // See VelocitySensitivity values
@@ -845,9 +854,9 @@ struct StepEvent {
   boolean hasData();
   void clear();
 
-  void setNewEvent(byte note, byte velocity, unsigned short duration, byte timbre, byte row);
-  byte getNote();
-  void setNote(byte note);
+  void setNewEvent(short note, byte velocity, unsigned short duration, byte timbre, byte row);
+  short getNote();
+  void setNote(short note);
   unsigned short getDuration();
   void setDuration(unsigned short duration);
   byte getVelocity();
@@ -873,9 +882,10 @@ struct StepEvent {
   // byte note:7;                // 0 to 127
   // byte duration:10;           // 1 to 768 in 24 PPQ ticks
   // byte velocity:7;            // 1 to 127
-  // signed char pitchOffset:8;  // -96 to 96 semitones
+  // signed char pitchOffset:8;  // -50 to 50 cents
   // byte timbre:7;              // 0 to 127
   // byte row:3;                 // 1 to 7
+  // byte microLinnGroup:2       // group 0 = edosteps 0-127, group 1 = 128-255, group 2 = 256-383, group 3 = 384-511
   byte data[6];
 };
 struct StepData {
@@ -1446,7 +1456,7 @@ void setup() {
   SWITCH_FREERAM = true;
 #endif
 
-  setupMicroLinn ();  
+  setupMicroLinn();
 
   setupDone = true;
 

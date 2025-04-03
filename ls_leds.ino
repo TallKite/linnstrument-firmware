@@ -329,30 +329,18 @@ void refreshLedColumn(unsigned long now) {
         break;
     }
 
-    /******** original code ***************/
     if (Device.operatingLowPower) {
       if (displayInterval[actualCol][rowCount] % 2 != 0) {
         cellDisplay = cellOff;
       }
-    } 
-    /*********** new code ******************
-    byte bright = brightness - 1;           // brightness ranges from 1 to 12
-    if (Device.operatingLowPower) {
-      bright >> 1;
     }
-    if (displayInterval[actualCol][rowCount] > bright) {
-      cellDisplay = cellOff;
-    }
-    /********** end new code **************/
 
     // if this LED is not off, process it
     // set the color bytes to the correct color
     if (cellDisplay) {
       // construct composite colors
-
-      if ((!Device.operatingLowPower && displayInterval[actualCol][rowCount] % 2 != 0) ||      // original code
-           (Device.operatingLowPower && displayInterval[actualCol][rowCount] % 4 != 0)) {      // original code
-      //if (displayInterval[actualCol][rowCount] > bright) {                                   // new code
+      if ((!Device.operatingLowPower && displayInterval[actualCol][rowCount] % 2 != 0) ||
+          (Device.operatingLowPower && displayInterval[actualCol][rowCount] % 4 != 0)) {
         switch (color)
         {
           case COLOR_WHITE:

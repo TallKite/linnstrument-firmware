@@ -330,9 +330,25 @@ void applySystemState() {
 void loadSettingsFromPreset(byte p) {
   Device.lastLoadedPreset = p;
 
-  memcpy(&Global, &config.preset[p].global, sizeof(GlobalSettings));
-  memcpy(&Split[LEFT], &config.preset[p].split[LEFT], sizeof(SplitSettings));
-  memcpy(&Split[RIGHT], &config.preset[p].split[RIGHT], sizeof(SplitSettings));
+  if (config.preset[p].global.microLinn.EDO > 4 || p == 4) {
+    // if the preset has microLinn turned on, or if the preset is on the bottom row, load everything as usual
+    memcpy(&Global, &config.preset[p].global, sizeof(GlobalSettings));
+    memcpy(&Split[LEFT], &config.preset[p].split[LEFT], sizeof(SplitSettings));
+    memcpy(&Split[RIGHT], &config.preset[p].split[RIGHT], sizeof(SplitSettings));
+  } else {        
+    // if the preset has microLinn turned off, don't alter any microLinn settings, but load everything else
+    memcpy(&Global, &config.preset[p].global, sizeof(GlobalSettings) - sizeof(MicroLinnGlobal));
+    memcpy(&Split[LEFT], &config.preset[p].split[LEFT], sizeof(SplitSettings) - sizeof(MicroLinnSplit));
+    memcpy(&Split[RIGHT], &config.preset[p].split[RIGHT], sizeof(SplitSettings) - sizeof(MicroLinnSplit));
+    // only load the column and per-split row offsets if they are not OFF (such offsets are often related to the edo)
+    for (byte side = 0; side < NUMSPLITS; ++side) {
+      if (config.preset[p].split[side].microLinn.colOffset > 1)
+        Split[side].microLinn.colOffset = config.preset[p].split[side].microLinn.colOffset;
+      // uncomment once microLinnRowOffset becomes part of MicroLinnSplit
+      //if (config.preset[p].split[side].microLinn.rowOffset > -1)
+      //  Split[side].microLinn.rowOffset = config.preset[p].split[side].microLinn.rowOffset;
+    }
+  }
 
   applyPresetSettings();
   setupMicroLinn();
@@ -347,7 +363,7 @@ void storeSettingsToPreset(byte p) {
 // The first time after new code is loaded into the Linnstrument, this sets the initial defaults of all settings.
 // On subsequent startups, these values are overwritten by loading the settings stored in flash.
 void initializeDeviceSettings() {
-  Device.version = 16 + MICROLINN_VERSION_OFFSET;  // 16 is non-MicroLinn latest, microLinn version is latest+offset
+  Device.version = 16 + MICROLINN_VERSION_OFFSET;  // 16 is the latest non-MicroLinn version (created in 2023)
   Device.serialMode = false;
   Device.sleepAnimationActive = false;
   Device.sleepActive = false;
@@ -980,13 +996,14 @@ void handleControlButtonRelease() {
     case PRESET_ROW:                                         // preset button released
 
       clearLed(0, sensorRow);
-      microLinnCalcTuning();
+      calcMicroLinnTuning();
       setDisplayMode(displayNormal);
       storeSettings();
       updateDisplay();
       break;
 
     case SPLIT_ROW:                                          // SPLIT button released
+      if ((Split[LEFT].sequencer || Split[RIGHT].sequencer) && !sequencerIsRunning()) calcMicroLinnTuning();
       if (Split[otherSplit(Global.currentPerSplit)].sequencer) {
         Global.currentPerSplit = otherSplit(Global.currentPerSplit);
         setLed(0, SPLIT_ROW, globalColor, Global.splitActive ? cellOn : cellOff);
@@ -1794,7 +1811,8 @@ boolean handleShowSplit() {
         if (displayMode != displayPreset &&
             displayMode != displayVolume &&
             displayMode != displayOctaveTranspose &&
-            displayMode != displayGuitarTuning &&      // these screens should never be exited on split change
+            displayMode != displayGuitarTuning &&
+            displayMode != displayMicroLinnConfig &&      // these screens should never be exited on split change
             !isSequencerSettingsDisplayMode()) {
           setDisplayMode(displayPerSplit);
         }
@@ -2125,13 +2143,13 @@ void handleSplitHandednessRelease() {
 }
 
 void handleRowOffsetNewTouch() {
-  if (isMicroLinnOn()) {microLinnHandleRowOffsetNewTouch(); return;}
-  handleNumericDataNewTouchCol(Global.customRowOffset, -17, 16, true);
+  if (isMicroLinnOn()) handleMicroLinnRowOffsetNewTouch();
+  else handleNumericDataNewTouchCol(Global.customRowOffset, -17, 16, true);
+  storeMicroLinnCustomRowOffsetCents();
 }
 
 void handleRowOffsetRelease() {
   handleNumericDataReleaseCol(false);
-  microLinnStoreRowOffsetCents();
 }
 
 void ensureGuitarTuningPreviewNoteRelease() {
@@ -2145,7 +2163,10 @@ void ensureGuitarTuningPreviewNoteRelease() {
 }
 
 void handleGuitarTuningNewTouch() {
-  if (isMicroLinnOn()) {microLinnHandleGuitarTuningNewTouch(); return;}
+  if (isMicroLinnOn()) {
+    handleMicroLinnGuitarTuningNewTouch(); 
+    return;
+  }
 
   if (sensorCol == 1) {
     guitarTuningRowNum = sensorRow;
@@ -2348,7 +2369,7 @@ void handleOctaveTransposeNewTouchSplit(byte side) {
     }
   }
 
-  microLinnHandleOctaveTransposeNewTouchSplit (side); 
+  handleMicroLinnOctaveTransposeNewTouchSplit(side); 
 }
 
 void handleOctaveTransposeRelease() {
@@ -2359,6 +2380,7 @@ void handleSplitPointNewTouch() {
   if (sensorCol < 2) return;
   changedSplitPoint = true;
   Global.splitPoint = sensorCol;
+  if (isMicroLinnNoOverlap()) calcMicroLinnTuning();
   updateDisplay();
 }
 
@@ -2551,7 +2573,7 @@ void handleGlobalSettingNewTouch() {
       }
       else {
         if (sensorRow == 1) {
-          //setDisplayMode(displayOsVersion);      // now handled on release instead, see ls_forkMenu.ino
+          setDisplayMode(displayOsVersion);
         }
         // reset feature
         else if ((sensorRow == 2 && cell(sensorCol, 0).touched != untouchedCell) ||
@@ -2654,7 +2676,7 @@ void handleGlobalSettingNewTouch() {
             }
             break;
         }
-        microLinnStoreRowOffsetCents();
+        storeMicroLinnGlobalRowOffsetCents();
         break;
 
       // select more row offsets
@@ -2667,7 +2689,7 @@ void handleGlobalSettingNewTouch() {
             else {
               Global.rowOffset = 4;
             }
-            microLinnStoreRowOffsetCents();
+            storeMicroLinnGlobalRowOffsetCents();
             break;
           case 1:
             if (Global.rowOffset == 6) {
@@ -2676,7 +2698,7 @@ void handleGlobalSettingNewTouch() {
             else {
               Global.rowOffset = 6;
             }
-            microLinnStoreRowOffsetCents();
+            storeMicroLinnGlobalRowOffsetCents();
             break;
           case 2:
           case 3:
@@ -2868,8 +2890,7 @@ void handleGlobalSettingNewTouch() {
         break;
 #ifndef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
       case 17: 
-        if (sensorRow == 1) enterForkMenu();
-        if (sensorRow == 2) enterMicroLinnUninstallMenu();
+        if (sensorRow == 2) enterMicroLinnUninstall();   // move this button to col 16 once it's fully tested
         break;
 #endif
     }
@@ -2890,7 +2911,7 @@ void handleGlobalSettingNewTouch() {
       case 2:
       case 3:
       case 4:
-        if (lightSettings == LIGHTS_ACTIVE && sensorRow <= 3) {             // microLinn allows long-press of scales 1-9 too
+        if (lightSettings == LIGHTS_ACTIVE && (sensorRow == 3 || (isMicroLinnOn() && sensorRow < 3))) {
           setLed(sensorCol, sensorRow, globalColor, cellSlowPulse);
         }
         break;
@@ -2954,9 +2975,6 @@ void handleGlobalSettingNewTouch() {
 
     case 16:
       switch (sensorRow) {
-        case 1:                                                        // OS version is now handled on release
-          setLed(sensorCol, sensorRow, globalColor, cellSlowPulse);    // to allow longpress to the fork menu
-          break;
         case 2:
           if (displayMode != displayReset) {
             setLed(sensorCol, sensorRow, globalColor, cellSlowPulse);
@@ -3012,13 +3030,14 @@ void handleGlobalSettingHold() {
             setDisplayMode(displayCustomLedsEditor);
             updateDisplay();
         }
-        else {microLinnHandleGlobalScaleHold();}
+        else handleMicroLinnScaleHold();
         break;
 
       case 6:
         switch (sensorRow) {
           case 2:
             Global.rowOffset = ROWOFFSET_OCTAVECUSTOM;
+            clearMicroLinnGlobalRowOffsetCents();
             resetNumericDataChange();
             setDisplayMode(displayRowOffset);
             updateDisplay();
@@ -3096,9 +3115,6 @@ void handleGlobalSettingHold() {
 
       case 16:
         switch (sensorRow) {
-          case 1:
-            enterForkMenu();
-            break;
           // handle switch to/from User Firmware Mode
           case 2:
             // ensure that this is not a reset operation instead
@@ -3151,6 +3167,7 @@ void handleGlobalSettingRelease() {
       }
       else {
         Global.rowOffset = ROWOFFSET_OCTAVECUSTOM;
+        clearMicroLinnGlobalRowOffsetCents();
       }
   }
   else if (sensorCol == 6 && sensorRow == 3 &&
@@ -3205,11 +3222,8 @@ void handleGlobalSettingRelease() {
     }
   }
   else if (sensorCol == 16) {
-      if (sensorRow == 1) {                       // OS version is now handled here on release not on touch
-        setDisplayMode(displayOsVersion);         // to allow a long-press to display the fork menu
-      }
       // Toggle UPDATE OS value
-      else if (sensorRow == 2) {
+      if (sensorRow == 2) {
         byte resetColor = COLOR_BLACK;
         CellDisplay resetDisplay = cellOff;
         if (Device.serialMode) {

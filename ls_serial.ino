@@ -158,15 +158,24 @@ boolean waitForSerialAck() {
 }
 
 boolean waitForSerialCheck() {
-  if (!serialWaitForMaximumTwoSeconds()) return false;
+  if (!serialWaitForMaximumTwoSeconds()) {
+    progressBarMicroLinn(1.0f, COLOR_BLUE, 6); 
+    return false;
+  }
   char ack = Serial.read();
   lastSerialMoment = millis();
-  if (ack != CRCCheck) return false;
+  if (ack != CRCCheck) {
+    progressBarMicroLinn(1.0f, COLOR_RED, 6); 
+    return false;
+  }
   return true;
 }
 
 char waitForSerialCRC() {
-  if (!serialWaitForMaximumTwoSeconds()) return 0;
+  if (!serialWaitForMaximumTwoSeconds()) {
+    progressBarMicroLinn(1.0f, COLOR_RED, 5); 
+    return 0;
+  }
   char ack = Serial.read();
   lastSerialMoment = millis();
   return ack;
@@ -204,6 +213,10 @@ int negotiateIncomingCRC(byte* buffer, uint8_t size) {
   return 1;
 }
 
+void progressBarMicroLinn(float done, byte color, byte row) {
+  setLed(1 + (int)(done*25.0f), row, color, cellOn);
+}
+
 void serialSendSettings() {
   Serial.write(ackCode);
 
@@ -235,6 +248,7 @@ void serialSendSettings() {
   Serial.write((byte*)&confSize, sizeof(int32_t));
 
   lastSerialMoment = millis();
+  progressBarMicroLinn(0.0f, COLOR_GREEN, 7);
   while (confSize > 0) {
     int actual = min(confSize, batchsize);
     Serial.write(src, actual);
@@ -250,7 +264,9 @@ void serialSendSettings() {
 
     confSize -= actual;
     src += actual;
+    progressBarMicroLinn(((float)(confSizeOriginal - confSize)) / (float)confSizeOriginal, COLOR_WHITE, 7);   // good
   }
+  progressBarMicroLinn(1.0f, COLOR_ORANGE, 7);  // done
 
   Serial.write(ackCode);
 }

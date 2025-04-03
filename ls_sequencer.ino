@@ -122,7 +122,7 @@ struct __attribute__ ((packed)) StepEventState {
   void highlightCell(StepSequencerState& state, StepEvent& event);
   void unhighlightCell();
 
-  signed char note:8;
+  short note:16;                // short not byte for microLinn, adds 256 bytes to seqState
   byte remainingDuration:8;
   byte channel:5;
   byte highlightedRow:3;
@@ -156,7 +156,7 @@ struct StepSequencerState {
   StepData& getCurrentPatternStep(byte stepNum);
   byte getSensorSequencerPosition();
   int getRowNoteNum(byte noteRow);
-  byte getSensorNotesNoteNum();
+  short getSensorNotesNoteNum();
   int getSensorRowNoteNum();
   StepData& getSensorStep();
   StepDataState& getSensorStepState();
@@ -369,6 +369,7 @@ void sequencerTurnOff(byte split, boolean save) {
 }
 
 void sequencerTogglePlay(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   if (Split[split].sequencer) {
     if (!seqState[split].running) {
       seqState[split].turnOn();
@@ -380,6 +381,7 @@ void sequencerTogglePlay(byte split) {
 }
 
 void sequencerToggleMute(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   seqState[split].muted = !seqState[split].muted;
   if (seqState[split].muted && seqState[split].running) {
     seqState[split].turnOffEvents();
@@ -394,12 +396,14 @@ void sequencerToggleMute(byte split) {
 }
 
 void sequencerPreviousPattern(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   if (Split[split].sequencer) {
     seqState[split].selectPreviousPattern();
   }
 }
 
 void sequencerNextPattern(byte split) {
+  if (!Split[split].sequencer) split = otherSplit(split);        // control the sequencer while playing in the other split
   if (Split[split].sequencer) {
     seqState[split].selectNextPattern();
   }
@@ -1244,7 +1248,7 @@ void handleSequencerFaderRelease() {
 void handleStepEditingTouchNotes(boolean newVelocity) {
   StepSequencerState& state = seqState[sensorSplit];
   
-  byte noteNum = state.getSensorNotesNoteNum();
+  short noteNum = state.getSensorNotesNoteNum();
   byte stepNum;
   if (!state.getFocusStep(stepNum)) {
     return;
@@ -1256,7 +1260,7 @@ void handleStepEditingTouchNotes(boolean newVelocity) {
 void handleStepEditingReleaseNotes() {
   StepSequencerState& state = seqState[sensorSplit];
 
-  byte noteNum = state.getSensorNotesNoteNum();
+  short noteNum = state.getSensorNotesNoteNum();
   byte stepNum;
   if (!state.getFocusStep(stepNum)) {
     return;
@@ -1420,7 +1424,7 @@ void paintSequencerProjects() {
     if (p == Device.lastLoadedProject) {
       color = COLOR_CYAN;
     }
-    setLed(6 + p%4, 2 + p/4, color, cellOn);
+    setLed(6 + p%4, 5 - p/4, color, cellOn);    // projects now run top to bottom, part of the patternChaining fork
   }
 
   paintSequencerSettingsLowRow();
@@ -1459,7 +1463,7 @@ void startProjectLEDBlink(byte p, byte color) {
   }
   projectBlinkStart[p] = now;
 
-  setLed(6 + p%4, 2 + p/4, color, cellFastPulse);
+  setLed(6 + p%4, 5 - p/4, color, cellFastPulse);       // projects now run top to bottom, part of the patternChaining fork
 }
 
 void handleSequencerProjectsHold() {
@@ -1469,7 +1473,7 @@ void handleSequencerProjectsHold() {
     // store to the selected project
     sequencersTurnOff(true);
 
-    byte project = sensorCol-6 + (sensorRow-2) * 4;
+    byte project = sensorCol-6 + (5-sensorRow) * 4;    // projects now run top to bottom, part of the patternChaining fork
 
     writeProjectToFlash(project);
     sensorCell->lastTouch = 0;
@@ -1486,7 +1490,7 @@ void handleSequencerProjectsRelease() {
     // load the selected project
     sequencersTurnOff(true);
 
-    byte project = sensorCol-6 + (sensorRow-2) * 4;
+    byte project = sensorCol-6 + (5-sensorRow) * 4;    // projects now run top to bottom, part of the patternChaining fork
     Device.lastLoadedProject = project;
     loadProject(project);
     sensorCell->lastTouch = 0;
@@ -1660,7 +1664,7 @@ void StepEvent::operator=(const StepEvent& e) {
   memcpy(data, e.data, 6);
 }
 
-void StepEvent::setNewEvent(byte note, byte velocity, unsigned short duration, byte timbre, byte row) {
+void StepEvent::setNewEvent(short note, byte velocity, unsigned short duration, byte timbre, byte row) {
   clear();
   setNote(note);
   setVelocity(velocity);
@@ -1669,12 +1673,13 @@ void StepEvent::setNewEvent(byte note, byte velocity, unsigned short duration, b
   setRow(row);
 }
 
-byte StepEvent::getNote() {
-  return (data[0] & B11111110) >> 1;
+short StepEvent::getNote() {
+  return (data[0] & B11111110) >> 1 | (data[5] & B00110000) << 3;    // data[5] holds microLinnGroup
 }
 
-void StepEvent::setNote(byte note) {
+void StepEvent::setNote(short note) {
   data[0] = (data[0] & B00000001) | (note & B01111111) << 1;
+  data[5] = (data[5] & B11001111) | ((note >> 3) & B00110000);       // data[5] holds microLinnGroup
 }
 
 unsigned short StepEvent::getDuration() {
@@ -1782,6 +1787,7 @@ int StepEvent::getFaderMax(byte fader) {
     case 2:
       return SEQ_DURATION_EDIT_PANEL_COUNT-1;
     case 1:
+      if (isMicroLinnOn()) return getMicroLinnSequencerBendRange();
       return 50;
     case 0:
       return 127;
@@ -1898,16 +1904,28 @@ void StepEventState::sendNoteOn(StepEvent& event, byte splitNum) {
   }
   remainingDuration = event.getDuration();
 
+  short newNote = note;
+  byte newChannel = channel;
+  if (isMicroLinnOn()) {
+    newNote = getMicroLinnMidiNote(split, note);
+    if (newNote == -1) return;            // -1 = the microLinn code for a dead pad
+    newChannel = rechannelMicroLinnGroup(split, channel, note >> 7);
+  }
+
   if (Split[split].sendX) {
     short range = getBendRange(split);
-    midiSendPitchBend((event.getPitchOffset() * 8192) / (100 * range), channel);
+    short bend = 0;
+    if (isMicroLinnOn()) {
+      bend = getMicroLinnTuningBend(split, note);
+    }
+    midiSendPitchBend((event.getPitchOffset() * 8192) / (100 * range) + bend, newChannel);
   }
 
   if (Split[split].sendY) {
-    preSendTimbre(split, event.getTimbre(), note, channel);
+    preSendTimbre(split, event.getTimbre(), newNote, newChannel);
   }
 
-  midiSendNoteOn(split, note, event.getVelocity(), channel);  
+  midiSendNoteOn(split, newNote, event.getVelocity(), newChannel);  
 
   StepSequencerState& state = seqState[split];
   if (Split[split].sequencerView == sequencerNotes) {
@@ -1918,11 +1936,15 @@ void StepEventState::sendNoteOn(StepEvent& event, byte splitNum) {
 }
 
 void StepEventState::sendNoteOff() {
-  if (note < 0) {
-    return;
+  short newNote = note;
+  byte newChannel = channel;
+  if (isMicroLinnOn()) {
+    newNote = getMicroLinnMidiNote(split, note);
+    newChannel = rechannelMicroLinnGroup(split, channel, note >> 7);
   }
+  if (newNote < 0) return;
 
-  midiSendNoteOff(split, note, channel);
+  midiSendNoteOff(split, newNote, newChannel);        // send to new channel but release old channel
   releaseChannel(split, channel);
 
   if (Split[split].sequencerView == sequencerNotes) {
@@ -2001,7 +2023,7 @@ void StepSequencerState::clear() {
 }
 
 void StepSequencerState::handleStepEditingTouch(boolean newVelocity, int noteNum, byte stepNum) {
-  if (noteNum < 0 || noteNum > 127) return;
+  if (noteNum < 0 || noteNum > (isMicroLinnOn() ? 511 : 127)) return;
   if (stepNum < 0 || stepNum >= MAX_SEQUENCER_STEPS) return;
 
   StepData& step = getCurrentPatternStep(stepNum);
@@ -2347,7 +2369,8 @@ void StepSequencerState::advanceSequencer() {
       // check if the sequencer should switch to the next pattern
       if (nextPattern != -1 && (position == 0 || switchPatternOnBeat)) {
         position = 0;
-        if (!firstSeqCycle[split]) currentPattern = nextPattern;      // avoid skipping the current pattern when first running, due to patternchaining
+        // avoid skipping the current pattern when first running a patternchain
+        if (!(patternChain[split][currentPattern] >= 0 && firstSeqCycle[split])) currentPattern = nextPattern;
         firstSeqCycle[split] = false;
         nextPattern = patternChain[split][currentPattern];
         switchPatternOnBeat = false;
@@ -2537,7 +2560,7 @@ int StepSequencerState::getRowNoteNum(byte noteRow) {
   switch (Split[split].sequencerView) {
     case sequencerNotes:
       return -1;
-    case sequencerScales: {
+    case sequencerScales: {                                // bug: wnat if microLinn is on?
       int row = -1;
       for (byte i = 0; i < 128; ++i) {
         if (((Global.mainNotes[Global.activeNotes] >> (i % 12)) & 1) ||
@@ -2561,7 +2584,7 @@ int StepSequencerState::getRowNoteNum(byte noteRow) {
   return -1;
 }
 
-byte StepSequencerState::getSensorNotesNoteNum() {
+short StepSequencerState::getSensorNotesNoteNum() {
   return getNoteNumber(split, sensorCol, sensorRow);
 }
 
@@ -3175,15 +3198,14 @@ void StepSequencerState::selectPreviousPattern() {
   if (p < 0) {
     p += MAX_SEQUENCER_PATTERNS;
   }
-  if (patternChain[split][p] != -1) {                                      // jump to the start of the chain
-    p = patternChain[split][p];
-  }
   selectPattern(p);
 }
 
 void StepSequencerState::selectNextPattern() {
   int p = currentPattern;
-  if (nextPattern != -1 && patternChain[split][p] == -1) {                 // ignore nextPattern it it's part of a chain
+  // ignore nextPattern if it goes backwards to the first pattern in the chain, this lets NEXT pedal exit the chain
+  // but don't ignore it if all four patterns are in one long chain, which means patternChain[split][3] must be zero
+  if (nextPattern != -1 && !(nextPattern == patternChain[split][p] && nextPattern < p && patternChain[split][3] != 0)) { 
     p = nextPattern;
   }
   p = (p+1) % MAX_SEQUENCER_PATTERNS;
@@ -3194,7 +3216,8 @@ void StepSequencerState::selectPattern(byte pattern) {
   // clear the next pattern if the current pattern is selected again
   if (currentPattern == pattern) {
       if (nextPattern != -1) {
-        nextPattern = patternChain[split][currentPattern];
+        // if within a chain, selecting the current pattern means repeating it, instead of advancing
+        nextPattern = (patternChain[split][currentPattern] == -1 ? -1 : currentPattern);
         switchPatternOnBeat = false;
       }
   }
@@ -3212,7 +3235,7 @@ void StepSequencerState::selectPattern(byte pattern) {
     else {
       // a double tap on an already scheduled next pattern, schedules it at the beginning of the next beat
       if (nextPattern == pattern) {
-        switchPatternOnBeat = patternChainTouches(split) < 2;      // don't schedule immediately if it's part of a chaining touch
+        switchPatternOnBeat = patternChainTouches(split) < 2;   // don't switch early if the double-tap is part of a chaining touch
       }
       // schedule the pattern as the next one
       else {
@@ -3227,7 +3250,7 @@ void StepSequencerState::selectPattern(byte pattern) {
 }
 
 /**************************************** PATTERN CHAINING, PART OF THE MICROLINN FORK ****************************************/
-// search this file for "patternChain" to see the other changes to the code
+// search this file for "patternChain" or "control the sequencer" to see the other changes to the code
 
 void setPatternChain(byte split) {
   short firstPattern = -1;
@@ -3253,7 +3276,7 @@ void setPatternChain(byte split) {
 }
 
 void resetPatternChain() {
-  memset(patternChain, -1, sizeof(patternChain));            // both splits
+  memset(&patternChain, -1, sizeof(patternChain));            // both splits
 }
 
 boolean isWithinSequencerPatternChainClearArea() {           // 2 hidden switches immediately to the left of the pattern selectors
