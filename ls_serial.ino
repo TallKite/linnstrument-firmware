@@ -223,35 +223,46 @@ void serialSendSettings() {
   clearDisplayImmediately();
   delayUsec(1000);
 
-  int32_t confSize = sizeof(Configuration);
-  const int32_t confSizeOriginal = confSize;          // needed for progressBarMicroLinn(), delete later
+  int32_t confSize, confSizeOriginal;
+
+  // send the actual settings
+  const uint8_t batchsize = 96;
+
+  byte* src = (byte*)&config;
+  ConfigurationVLatest *configurationNonMicroLinn = nullptr;
+
+  // if the user is reverting to the mainline firmware, we need to send the updater a version
+  // of the configuration that's compatible with mainline
+  if (microLinnUninstall == 1) {
+    // this does an in-place overwrite of the current configuration with one that has all the
+    // MicroLinn data stripped out, which we can get away with here because nothing tries to
+    // access the configuration fields at their old locations between now and the next reboot
+    // (sequencer project data is read directly from flash)
+    restoreNonMicroLinnConfiguration(&config, &config);
+    confSize = sizeof(struct ConfigurationVLatest);
+  } else {
+    confSize = sizeof(Configuration);
+  }
+
+  confSizeOriginal = confSize;
 
   // send the size of the settings
   Serial.write((byte*)&confSize, sizeof(int32_t));
 
-  // send the actual settings
-  const uint8_t batchsize = 96;
-  byte* src = (byte*)&config;
   lastSerialMoment = millis();
   progressBarMicroLinn(0.0f, COLOR_GREEN, 7);
   while (confSize > 0) {
     int actual = min(confSize, batchsize);
     Serial.write(src, actual);
 
-    if (!waitForSerialCheck()) {
-      progressBarMicroLinn(0.0f, COLOR_BLUE, 7);      // time-out 2 sec, quit
+    if (!waitForSerialCheck())
       return;
-    }
 
     int crc = negotiateOutgoingCRC(src, actual);
-    if (crc == -1)      {
-      progressBarMicroLinn(0.0f, COLOR_RED, 7);       // time-out, quit
+    if (crc == -1) {
       return;
-    }
-    else if (crc == 0) {
-      progressBarMicroLinn(0.0f, COLOR_LIME, 7);      // bad crc, retry
+    } else if (crc == 0)
       continue;
-    }
 
     confSize -= actual;
     src += actual;

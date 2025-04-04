@@ -249,6 +249,12 @@ const unsigned long LED_ARRAY_SIZE = (MAX_LED_LAYERS+1) * LED_LAYER_SIZE;
 #define DEFAULT_MAX_VELOCITY   127  // default maximum velocity value
 #define DEFAULT_FIXED_VELOCITY 96   // default fixed velocity value
 
+/*************************************** MICROLINN VERSION ***************************************/
+
+// Microlinn version is the mainline version it's based on plus this offset
+// (we would rather have used 128, but the updater interprets version as a signed charater type,
+// and is "confused" by negative version numbers).
+#define MICROLINN_VERSION_OFFSET 56
 
 /*************************************** CONVENIENCE MACROS **************************************/
 
