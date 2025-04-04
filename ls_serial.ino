@@ -223,7 +223,7 @@ void serialSendSettings() {
   clearDisplayImmediately();
   delayUsec(1000);
 
-  int32_t confSize;
+  int32_t confSize, confSizeOriginal;
 
   // send the actual settings
   const uint8_t batchsize = 96;
@@ -243,6 +243,8 @@ void serialSendSettings() {
   } else {
     confSize = sizeof(Configuration);
   }
+
+  confSizeOriginal = confSize;
 
   // send the size of the settings
   Serial.write((byte*)&confSize, sizeof(int32_t));

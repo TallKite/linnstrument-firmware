@@ -20,6 +20,8 @@ The new firmware is then responsible of applying the received settings and possi
 some transformation logic if the settings structure changed for the new firmware.
 **************************************************************************************************/
 
+#include "ls_extstorageMicroLinn.h"
+
 /**************************************** Configuration V1 ****************************************
 This is used by firmware v1.0.9 and earlier
 **************************************************************************************************/
@@ -1077,9 +1079,21 @@ boolean upgradeConfigurationSettings(int32_t confSize, byte* buff2) {
         break;
       // this is the MicroLinn variant of v16, apply it if the size is right
       case (16+128):
-        if (confSize == sizeof(Configuration)) {
-          memcpy(&config, buff2, confSize);
-          result = true;
+        {
+          byte microLinnVersion = ((struct Configuration *) (buff2))->device.microLinn.MLversion;
+
+          if (microLinnVersion == 0) {
+            if (confSize == sizeof(MicroLinnV72A::Configuration)) {
+              copyConfigurationFunction = &copyConfigurationMicroLinnV72A;
+            }
+          } else if (microLinnVersion == 1) {
+            if (confSize == sizeof(Configuration)) {
+              memcpy(&config, buff2, confSize);
+              result = true;
+            } else {
+              result = false;
+            }
+          }
         }
         break;
       default:
@@ -2288,6 +2302,31 @@ void copyConfigurationVLatest(void* target, void* source) {
     }
   }
   memcpy(&t->project, &s->project, sizeof(s->project));
+}
+
+void copyConfigurationMicroLinnV72A(void* target, void* source) {
+  Configuration* t = (Configuration*)target;
+  MicroLinnV72A::Configuration* s = (typeof(s)) source;
+
+  memcpy(&t->device, &s->device, sizeof(s->device));
+  t->device.version = 16 + MICROLINN_VERSION_OFFSET;
+
+  memcpy(&t->settings.global, &s->settings.global, sizeof(s->settings.global));
+  for (int split = 0; split < NUMSPLITS; split++) {
+    memcpy(&t->settings.split[split], &s->settings.split[split], sizeof(s->settings.split[split]));
+  }
+
+  for (byte p = 0; p < NUMPRESETS; p++) {
+    memcpy(&t->preset[p].global, &s->preset[p].global, sizeof(s->preset[p].global));
+    for (int split = 0; split < NUMSPLITS; split++) {
+      memcpy(&t->preset[p].split[split], &s->preset[p].split[split], sizeof(s->preset[p].split[split]));
+    }
+  }
+  memcpy(&t->project, &s->project, sizeof(s->project));
+
+  /*
+   * Insert microlinn-specific cleanup code here.
+   */
 }
 
 /* Roll back settings to latest non-MicroLinn format */
