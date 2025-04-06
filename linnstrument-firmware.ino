@@ -783,16 +783,16 @@ struct MicroLinnGlobal {
   byte anchorRow;                            // top row is 7, bottom row is 0, but the user sees top row as 1, bottom row as 8
   byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
   signed char anchorCents;                   // ranges -100 to +100 cents, even though 50 would do, for convenience
-  short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, [0] is unused, can be negative, independent of Global.guitarTuning
+  short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, can be negative, [0] is unused, independent of Global.guitarTuning
   boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
   //boolean drumPadMode;
-  //signed char locatorCC1;                  // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25
-  //signed char locatorCC2;                  // ranges from 0 to 119, -1 = OFF
+  //signed char locatorCC1;                  // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25...
+  //signed char locatorCC2;                  // ...ranges from 0 to 119, -1 = OFF
   //byte rainbow[MICROLINN_MAX_EDO];         // one row of Device.microLinn.rainbow[MICROLINN_MAX_ARRAY_SIZE]
   //byte dots[MICROLINN_MAX_EDO];            // ditto for dots
   //short largeEDO;                          // ranges 56..311, 55 = OFF, user can have a 55-note subset of this edo 
   //byte largeEdoScale[39];                  // a packed array of booleans up to 311edo  (311 = 39 x 8 - 1)
-  boolean sweeten;                           // adjust 41edo 5/4, 5/3 by 2¢ both top and bottom to make it 4¢ closer to just?
+  boolean sweeten;   // change to a byte     // in tenths of  cent, adjust 41edo 5/4, 5/3 by 2¢ both top and bottom to make it 4¢ closer to just
 };
 
 struct GlobalSettings {

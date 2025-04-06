@@ -36,7 +36,7 @@ OCTAVE TOGGLE: A new function for switches and footswitches, 8VE± flips back an
 
 DRUM PAD MODE: The note lights become 14 3x3 mega-pads that play the 14 drum sounds from the sequencer. Accessed through the microLinn menu, see below.
 
-*Details: (1) Set PITCH/X on, otherwise a tap that hits two pads will send two notes. The drum sounds won't be accidentally pitch-bent because drum pad mode removes all pitch bends. (2) The midi mode should probably be One Channel. (3) The sequencer has different drum sounds for each split. If you're using both splits, set the split point in between the pads. (4) The two pad colors are the main colors of each split, so you can adjust them if you want. Any custom light pattern you select will overlay the drum pads. So you can make the center of each pad a different color if you want. (5) If you use musical sounds instead of drum sounds, and enter the appropriate pitches into the sequencer, you can make a sort of marimba. (6) To create your own mega-pad layout, turn off Drum Pad mode, use locator CCs instead (see below) and edit one of the custom light patterns to match.*
+*Details: (1) Set PITCH/X on, otherwise a tap that hits two pads will send two notes. The drum sounds won't be accidentally pitch-bent because drum pad mode removes all pitch bends. (2) The midi mode should probably be One Channel. (3) The sequencer has different drum sounds for each split. If you're using both splits, set the split point in between the pads. (4) The two pad colors are the main/accent colors of the split, so you can adjust them if you want. Any custom light pattern you select will overlay the drum pads. So you can make the center of each pad a different color if you want. (5) If you use musical sounds instead of drum sounds, and enter the appropriate pitches into the sequencer, you can make a sort of marimba. (6) To create your own mega-pad layout, turn off Drum Pad mode, use locator CCs instead (see below) and edit one of the custom light patterns to match.*
 
 DETUNING: Detune the entire Linnstrument up or down from A-440 to match a similarly detuned recording or instrument. No guarantee that detuning to A-432 will heal your chakras lol. Accessed through microLinn's anchor cents after setting the edo to 12, see below.
 
@@ -219,15 +219,6 @@ filling each other's gaps.
 
 This is handy, as 41 notes per octave would not otherwise fit on a single row. But with half that, you get at least an octave per row on a 200-pad 
 instrument. Luckily, you typically only want the odds or evens at the same time on the same string/row anyway, as explained on the kite guitar website.
-
-# Install
-Follow the [standard directions](https://www.rogerlinndesign.com/support/support-linnstrument-update-software), but replace the `.bin` file in the
-updater bundle with the one found in the Releases section of this project.
-
-WARNING: this method deletes your Linnstrument's settings and calibration (for now).
-
-If you're not on mac or windows but gnu/linux, you can still do it using `arduino-cli`, or by cloning this project, opening it in Arduino IDE 
-(following the Dev section below), and hitting "Upload" - no coding or command line required. 
 
 # Kite Guitar Mode
 - Enables skip fretting (column offset of 2)
