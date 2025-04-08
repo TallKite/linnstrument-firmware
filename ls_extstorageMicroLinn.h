@@ -1,3 +1,17 @@
+// This file preserves the older versions of the microLinn data structures, for version migration by ls_extstorage.ino
+// When microLinn 72B comes out, change the structures in Linnstrument-firmware.ino, not these
+// When microLinn 72C comes out, add MicroLinnV72B to this file in its own namespace
+// When a new official version comes out, say V17, 
+//    Merge the official changes into the microLinn version (this will include V16 code)
+//    Change all the Vlatest structs from the V16 version to the V17 version
+//    Update the ls_extstorage.ino file
+
+// settingsVersion = the old version, read from the 1st byte of the data structures
+// Device.Version = new version, explicitly set in ls_settings.ino, e.g. official fork has "Device.version = 16;"
+// the microLinn fork has "Device.version = MICROLINN_VERSION_OFFSET + 16;" which is 72
+// copyConfigurationVLatest takes us from 16 to 72.0 
+// restoreNonMicroLinn takes us from 72.0 to 16
+
 namespace MicroLinnV72A {
 
   struct MicroLinnDevice {
@@ -23,8 +37,8 @@ namespace MicroLinnV72A {
     byte colOffset;                         // column offsets, 1 to 25
     signed char transposeEDOsteps;          // accessed not via displayMicroLinnConfig but via displayOctaveTranspose
     signed char transposeEDOlights;
-    boolean rawMidiOutput;                  // output in edostep format (1 midi note = 1 edostep)
-    unsigned short hammerOnWindow;          // maximum width in cents of a hammer-on before it becomes two simultaneous notes, 0 = off
+    boolean tuningTable;                    // output in edostep format (1 midi note = 1 edostep)
+    short hammerOnWindow;                   // maximum width in cents of a hammer-on before it becomes two simultaneous notes, 0 = off
     boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
     byte pullOffVelocity;                   // 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
   };
@@ -58,9 +72,35 @@ namespace MicroLinnV72A {
     MicroLinnDevice microLinn;                      // microtonal data
   };
 
-  struct PresetSettings {
-    GlobalSettings global;
-    SplitSettings split[NUMSPLITS];
+  struct GlobalSettings {
+    void setSwitchAssignment(byte, byte, boolean);
+  
+    byte splitPoint;                           // leftmost column number of right split (0 = leftmost column of playable area)
+    byte currentPerSplit;                      // controls which split's settings are being displayed
+    byte activeNotes;                          // controls which of the 12 collections of note lights presets is active
+    int mainNotes[12];                         // 12 bitmasks that determine which notes receive "main" lights, mainNotes[0] is for the 1st scale, [9-11] no longer used
+    int accentNotes[12];                       // 12 bitmasks that determine which notes receive accent lights (octaves, white keys, black keys, etc.)
+    byte rowOffset;                            // interval between rows, 0 = no overlap, 3-7 = interval, 12 = custom, 13 = guitar, 127 = zero offset
+    signed char customRowOffset;               // the custom row offset that can be configured at the location of the octave setting
+    byte guitarTuning[MAXROWS];                // the notes used for each row for the guitar tuning, 0-127
+    VelocitySensitivity velocitySensitivity;   // See VelocitySensitivity values
+    unsigned short minForVelocity;             // 1-127
+    unsigned short maxForVelocity;             // 1-127
+    unsigned short valueForFixedVelocity;      // 1-127
+    PressureSensitivity pressureSensitivity;   // See PressureSensitivity values
+    boolean pressureAftertouch;                // Indicates whether pressure should behave like traditional piano keyboard aftertouch or be continuous from the start
+    byte switchAssignment[5];                  // The element values are ASSIGNED_*.  The index values are SWITCH_*.
+    boolean switchBothSplits[5];               // Indicate whether the switches should operate on both splits or only on the focused one
+    unsigned short ccForSwitchCC65[5];         // 0-127
+    unsigned short ccForSwitchSustain[5];      // 0-127
+    unsigned short customSwitchAssignment[5];  // ASSIGNED_TAP_TEMPO, ASSIGNED_LEGATO, ASSIGNED_LATCH, ASSIGNED_PRESET_UP, ASSIGNED_PRESET_DOWN, ASSIGNED_REVERSE_PITCH_X, ASSIGNED_SEQUENCER_PLAY, ASSIGNED_SEQUENCER_PREV, ASSIGNED_SEQUENCER_NEXT, ASSIGNED_STANDALONE_MIDI_CLOCK and ASSIGNED_SEQUENCER_MUTE
+    byte midiIO;                               // 0 = MIDI jacks, 1 = USB
+    ArpeggiatorDirection arpDirection;         // the arpeggiator direction that has to be used for the note sequence
+    ArpeggiatorStepTempo arpTempo;             // the multiplier that needs to be applied to the current tempo to achieve the arpeggiator's step duration
+    signed char arpOctave;                     // the number of octaves that the arpeggiator has to operate over: 0, +1, or +2
+    SustainBehavior sustainBehavior;           // the way the sustain pedal influences the notes
+    boolean splitActive;                       // false = split off, true = split on
+    MicroLinnGlobal microLinn;                 // microtonal data
   };
 
   // per-split settings
@@ -118,11 +158,15 @@ namespace MicroLinnV72A {
     MicroLinnSplit microLinn;               // microtonal data
   };
 
+  struct PresetSettings {
+    GlobalSettings global;
+    SplitSettings split[NUMSPLITS];
+  };
 
   struct Configuration {
     DeviceSettings device;
     PresetSettings settings;
     PresetSettings preset[NUMPRESETS];
-    ::SequencerProject project;
+    ::SequencerProject project;             // double colon = use the globally defined version, since microLinn didn't change it
   };
 }

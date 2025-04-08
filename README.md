@@ -3,9 +3,11 @@
 Unfinished, still a few more features to add, plus a few features don't quite work right yet. 
 Beta testers needed!
 
--------- INSTALLATION -------- 
+The  Linnstrument is an amazing instrument, very feature-rich. If it's new to you, we strongly reccommend waiting to install microLinn until after you've explored all the standard features.
 
-WARNING: installing this fork deletes your Linnstrument's settings and calibration (for now, fix coming soon).
+For experienced linnstrumentalists, microLinn makes exploring microtonality incredibly easy. Load up your usual MPE synths, set the notes per octave, and play! It's that simple!
+
+-------- INSTALLATION -------- 
 
 1) Go to https://www.rogerlinndesign.com/support/support-linnstrument-update-software and follow the "How to Check Your Software Version" instructions. If it's not 2.3.3, follow the "How to Update Your LinnStrument Software‍" instructions to update to 2.3.3.
 2) Download the latest version of linnstrument-firmware.ino.bin from this github. Important: if on a mac, put the .bin file on your **desktop**. 
@@ -15,7 +17,7 @@ WARNING: installing this fork deletes your Linnstrument's settings and calibrati
 
 -------- UPGRADING/UNINSTALLING -------- 
 
-IMPORTANT: Later on when you update the OS to a different version, you'll be asked if you want to uninstall microLinn. Say no (the red button) if you're updating to a newer version of microLinn. This avoids needlessly deleting your microtonal user settings. Say yes (the green button) otherwise, e.g. if you're going back to an official (non-microtonal) version of the firmware. This does delete your microtonal user settings, which is necessary in order to avoid deleting all your other user settings plus your calibration data.
+IMPORTANT: Later on when you update the OS to a different version, you'll be asked if you want to uninstall microLinn. Say no (the red button in the middle) if you're updating to a newer version of microLinn. This avoids needlessly deleting your microtonal user settings. Say yes (the blue button on the left) otherwise, e.g. if you're going back to an official (non-microtonal) version of the firmware. This does delete your microtonal user settings, which is necessary in order to avoid deleting all your other user settings plus your calibration data. If you're not sure, tap the green button on the right to exit the uninstall screen.
 
 -------- NON-MICROTONAL FEATURES -------- 
 
@@ -26,11 +28,13 @@ COLUMN OFFSETS: Ranges from 1 (OFF) to 8. For negative offsets, use the hidden l
 
 The column offset can be set for each split independently. You can have one of these six layouts on the left for easy chord playing (probably with pitch bending off) and the usual layout on the right for easy melody playing, somewhat analogous to an accordion's layout. Accessed through the microLinn menu, see below.
 
+A column offset of +2 can be used microtonally to emulate the "skip-fretting" of the [kite guitar](https://kiteguitar.com/) with 41 notes to the octave. See "MEMORIES" below.
+
 Playing melodies with both pitch bending and column offsets can be tricky. *Details: A 1mm slide normally bends the pitch about 6¢. But an offset of +2 makes it 12¢, +3 makes it 18¢, etc. Thus to play in tune with a large column offset you may need both Pitch/X Quantize and Pitch/X Quantize Hold to be on. But if your column offset is +2, setting Quantize on and Quantize Hold off lets you play the skipped notes fairly accurately by sliding into the gap between pads. In fact, you can play 24edo quartertones on a normal 12edo Linnstrument fairly easily this way.*
 
 *More details: (1) To set both column offsets at once, press both split buttons at once. If the offsets are different, doing so equates them. (2) Beware, if the column offset is 2 and the row offset is an even number, you lose half the notes and only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors.*
 
-PER-SPLIT ROW OFFSETS: Setting the row offset for a split overrides the Global Settings row offset for that split only. It ranges from -25 to +25, plus No Overlap which appears as NOVR. A No Overlap split can be used to launch audio or midi clips while you play normally in the other split. Accessed through the microLinn menu, see below. Guitar tunings are not supported, but are still available globally.
+PER-SPLIT ROW OFFSETS: Setting the row offset for a split overrides the Global Settings row offset for that split only. Unless OFF, it ranges from -25 to +25, plus No Overlap which appears as NOVR. A No Overlap split can be used to launch audio or midi clips while you play normally in the other split. Accessed through the microLinn menu, see below. Guitar tunings are not supported, but are still available globally.
 
 OCTAVE TOGGLE: A new function for switches and footswitches, 8VE± flips back and forth between Octave Up and normal. This lets you switch octaves while playing using only one footswitch, instead of two for Octave Up and Octave Down. Access it by long-pressing TAP TEMPO and swiping.
 
@@ -50,8 +54,6 @@ SEQUENCER PEDALS: When playing in one split and using the other split as a seque
 
 *But from within a chain, NEXT and PREV operate relative to the upcoming sequence in the chain, not the current one. Thus pressing PREV repeats the current sequence and pressing NEXT goes forward two sequences, not one. One exception: from the rightmost sequence of a chain, NEXT exits the chain. (Otherwise you could never exit.)*
 
-SEQUENCER PROJECTS LOAD/SAVE SCREEN: When exporting/importing projects to/from your computer, the updater app refers to projects by number. These project numbers now run top to bottom, with the top row being 1-4 not 13-16. This is more intuitive because it matches how people read, for example how you are reading this very paragraph right now.
-
 BLINKING MODE: Like the SAME mode, BLNK shows you other occurences of the currently played note. But instead of changing color, the other occurences blink. It's good for multi-colored displays like the custom note lights #2 (the one marked as A#) or certain microtonal displays. The BLNK option appears right after CELL and SAME. (Don't confuse BLNK for blinking with BLIN for blinders.)
 
 SAME/BLINK CARRY OVER: If both splits are set to SAME or BLNK, playing in one split shows matching notes in the other split too.
@@ -69,8 +71,6 @@ LOCATOR CCs: A locator CC message can be sent immediately before every note-on, 
 *If your DAW isn't programmable, download LinnstrumentLocatorCCs.jsfx from this github. It defines a rectangular region on the Linnstrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. It runs natively in Reaper and can run in any windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live and other platforms.) Thanks to KVR forum member vorp40 for the locator CC idea!*
 
 -------- LIKELY ADDITIONAL NON-MICROTONAL FEATURES (no promises) -------- 
-
-HAMMER-ONS AND PULL-OFFS: Set the hammer-on window to say 150¢. When you play a note within 150¢ of another note on the same row, it will hammer-on and mute the other note, as if you were in channel-per-row mode. When you release it, the old note will be unmuted (pull-off). Access it through the microLinn menu, see below.
 
 DIM MODE: The Low Power pad (col 15 in Global Settings) dims the display but also increases the latency. Long-press the Low Power pad to dim the display with no latency increase, good for tired eyes.
 
@@ -117,13 +117,25 @@ It's possible to stretch the octave or even create non-octave scales like Bohlen
 
 MicroLinn can be set to 12edo. What advantages does microLinn's 12edo have over the standard, non-microLinn 12edo? It can be stretched and/or detuned, plus you can have multi-colored note lights.
 
+SUGGESTIONS FOR EXPLORING EDOS:
+
+* The first few edos are pretty strange. You may want to start with 15, 17, 19 or 22.
+* Be sure to try the Bosanquet layout for 31edo and the Kite guitar layout for 41edo.
+* The full rainbow scale can be overwhelming. Try setting the played mode to BLNK.
+* To avoid a touched pad turning red (or whatever) and obscuring the pad's usual color, set the played color to blank.
+* Once you know an edo well, you'll probably want to switch to the fretboard dots display.
+
 GUITAR TUNING
 
-Once an edo is chosen, the Linnstrument uses a completely independent guitar tuning than the usual one. Changing one tuning doesn't affect the other. MicroLinn's guitar tuning screen doesn't adjust the pitch of each "string". Instead it sets 7 independent row offsets. The "anchor string" is the row that the anchor pad is on. Its pitch is determined solely by the anchor pad, note and cents. On the far left, the anchor string is red, or orange if lit up. The others are green, or cyan if lit up. Tap any button on the far left to select a string. The button lights up and sounds that open string. Assuming it's not the anchor string, one of the neighboring strings, whichever one is closest to the anchor, also lights up. You won't see a note name with an octave number. Instead you'll see a row offset as a number, which can be negative. This is the row offset between the two lit-up strings. Swipe right or left on it as before to increase or decrease it. (Selecting the anchor string doesn't show a row offset.) 
+MicroLinn uses a completely independent guitar tuning than the usual one. MicroLinn's guitar tuning screen doesn't adjust the pitch of each "string". Instead it sets 7 independent row offsets. 
 
-Changing one row offset doesn't affect the other six row offsets. Thus increasing any row offset above the anchor string sharpens the current string and all strings above it. And increasing any row offset below the anchor string *flattens* the current string and all strings below it. (Of the two lit-up buttons, the current string is always the one furthest from the anchor string.) To summarize, you're *seeing* the offset between the two lit-up strings, but *hearing* the pitch of the outermost lit-up string.
+*Details: The "anchor string" is the row that the anchor pad is on. Its pitch is determined solely by the anchor pad, note and cents. On the far left, the anchor string is red, or orange if lit up. The others are green, or cyan if lit up. Tap any button on the far left to select a string. The button lights up and sounds that open string. Assuming it's not the anchor string, one of the neighboring strings, whichever one is closest to the anchor, also lights up. You won't see a note name with an octave number. Instead you'll see a row offset as a number, which can be negative. This is the row offset between the two lit-up strings. Swipe right or left on it as before to increase or decrease it. (Selecting the anchor string doesn't show a row offset.)*
 
-A guitar tuning is a standard tuning if the intervals between open strings are all 4ths, except for that one major 3rd between the 2nd and 3rd rows. The exact notes don't matter, just the intervals. If you switch edos while in a standard tuning, you'll stay in a standard tuning. *Details: When in a standard tuning, on the Global Settings screen the GUITAR pad is dark blue, otherwise it's bright blue. The edo's 4th is defined as its closest approximation to 4/3. The edo's major 3rd is defined as two octaves minus four 4ths. Thus 22edo's major 3rd is 8\22 = 436¢ not 7\22 = 382¢. There's two possible 4ths for 13edo (5\13 and 6\13) and 18edo (7\18 and 8\18). Either 4th keeps the GUITAR pad dark blue.*
+*Changing one row offset doesn't affect the other six row offsets. Thus increasing any row offset above the anchor string sharpens the current string and all strings above it. And increasing any row offset below the anchor string _flattens_ the current string and all strings below it. (Of the two lit-up buttons, the current string is always the one furthest from the anchor string.) To summarize, you're _seeing_ the offset between the two lit-up strings, but _hearing_ the pitch of the outermost lit-up string.*
+
+A guitar tuning is a standard tuning if the intervals between open strings are all 4ths, except for that one major 3rd between the 2nd and 3rd rows. The exact notes don't matter, just the intervals. If you switch edos while in a standard tuning, you'll stay in a standard tuning. 
+
+*Details: When in a standard tuning, on the Global Settings screen the GUITAR pad is dark blue, otherwise it's bright blue. The edo's 4th is defined as its closest approximation to 4/3. The edo's major 3rd is defined as two octaves minus four 4ths. Thus 22edo's major 3rd is 8\22 = 436¢ not 7\22 = 382¢. There's two possible 4ths for 13edo (5\13 and 6\13) and 18edo (7\18 and 8\18). Either 4th keeps the GUITAR pad dark blue.*
 
 In Global Settings, when you long-press the OCTAVE pad, the "-GUI" option for reversed guitar tuning is not available when microLinn is on. To get this reversed tuning, set the guitar tuning manually.
 
@@ -137,7 +149,7 @@ The 3 custom light patterns are totally separate from all this and are still ava
 
 Default scales: of the 8 scales, the 1st and 2nd scales are 5-limit major and 5-limit minor. Scales 3-6 are blank but for the tonic, so that you can create your own scales on the note lights screen. (For the smaller, weirder edos, scales 1-2 are also blank.) The 7th scale is a partial rainbow, and the 8th scale is always the full rainbow.
 
-The colors use the rainbow metaphor, red-yellow-green-blue = sharp to flat = supermajor to subminor
+The colors use the rainbow metaphor, red-yellow-green-blue = sharp-to-flat = supermajor-to-subminor. There's a rainbow of 2nds, a rainbow of 3rds, etc.
 * white = 12-edo-ish = 3-limit
 * yellow / green = downmajor / upminor =  5-over / 5-under (examples: 5/4 and 5/3 are 5-over, 6/5 and 16/15 are 5-under)
 * blue / red = downminor / upmajor = 7-over / 7-under
@@ -152,13 +164,13 @@ MEMORIES
 
 All of microLinn's settings are remembered by the 6 memories. If you load a memory that has microLinn turned OFF, the microtonal data will not be altered. And if the column offsets and per-split row offsets are also OFF, they will not be altered either (because the edo often implies certain offsets). This lets you use certain memories to configure your synth-related settings only. Load such memories *after* loading a microtonal memory.
 
-The memory on the bottom row is an exception to this. It *will* alter microtonal data even if it has microLinn turned OFF. You can use this memory to quickly reset everything to 12edo, or perhaps to your favorite edo. 
+The memory on the bottom row is an exception to this. It *will* alter microtonal data even if it has microLinn turned OFF. You can load this memory to quickly return to 12edo. 
 
-The 2nd memory from the bottom is 41edo Kite guitar (row/col offset +13 +2), with an alternating-3rds guitar tuning.
+The 2nd memory from the bottom emulates the [Kite guitar](https://KiteGuitar.com/). It's 41edo with a row/col offset of (+13 +2), with an alternating-3rds guitar tuning and with MPE midi settings. This layout is both very playable and very well-tuned.
 
-TUNING TABLE MODE 
+BEYOND EDOS: TUNING TABLE MODE 
 
-Tuning table mode is mostly meant for non-edo tunings such as just intonation or rank-2 temperaments. Each note of an N-note scale is sharp or flat from N-edo, thus the pad's pitch will be different slid up to vs played directly. However this is often only a comma difference even on long slides. You can turn on Quantize Hold. Otherwise you have to bend by ear, just like on a guitar.
+Tuning table mode is meant for non-edo tunings such as just intonation or rank-2 temperaments. Each note of an N-note scale is sharp or flat from N-edo, thus the pad's pitch will be different slid up to vs played directly. However this is often only a comma difference even on long slides. You can hide the comma by turning on Quantize Hold. Otherwise you have to bend by ear, just like on a guitar.
 
 Once an edo is selected, the Linnstrument outputs standard midi notes with tuning bends, and several edo notes will share the same midi note. But a split that's set to Tuning Table mode outputs edosteps instead. The lower left pad (or the lower right pad if the split is set to lefthanded) is midi note 0. The midi notes for the other pads increase from there according to the split's column and row offsets. Thus each edostep is a unique midi note. Certain synths need this format to play edos. But the main reason to use Tuninng Table mode is to retune each edostep individually to something else, by loading a tuning table in the form of a scala file into your synth (or running microtonal software such as alt-tuner).
 
@@ -195,30 +207,15 @@ For the right split,
 
 *If the left split only uses two groups, you can use the right split with channel 16. Also, you can set the split to use fewer channels and the blocks will change to match. The channels should go up from 2 or down from 15. Or if there's no Main channel, up from 1 or down from 16. If you have N channels, the 2nd block is N channels higher (or lower for the right split) than the 1st block, the 3rd block is 2xN channels higher/lower, etc. For example, with 2 groups, setting the left split to channels 2-7 (6 channels) makes the 2nd block be 8-13, leaving 3 channels available for the right split.*
 
-SUGGESTIONS FOR EXPLORING EDOS:
-
-* The first few edos are pretty strange. You may want to start with 15, 17, 19 or 22.
-* Be sure to try the Bosanquet layout for 31edo and the Kite guitar layout for 41edo (see KiteGuitar.com).
-* The full rainbow scale can be overwhelming. Try setting the played mode to BLNK.
-* To avoid a touched pad turning red (or whatever) and obscuring the pad's usual color, set the played color to blank.
-* Once you know an edo well, you'll probably want to switch to the fretboard dots display.
-
 ============================= technical notes ==================================
 
 To find all changes to the code, search for "microlinn" or "patternChain" or "playedBlink" or "control the sequencer"
 
-"Skip-fretting" is a column offset of 2 - each subsequent pad represents every other MIDI note, so note 0 2 4 6 8 ... instead of 0 1 2 3 4. 
-The name is in reference to the microtonal [kite guitar](https://kiteguitar.com/), which obviously uses frets and not keys, but the
-Linnstrument's rows and columns work just like strings and frets.
+"Skip-fretting" is a column offset of 2 - each subsequent pad represents every other MIDI note, so note 0 2 4 6 8 ... instead of 0 1 2 3 4. The name is in reference to the microtonal [kite guitar](https://kiteguitar.com/), which obviously uses frets and not keys, but the Linnstrument's rows and columns work just like strings and frets.
 
-Why would you want to skip half the notes? On the kite guitar, strings are 13 steps apart, which you can achieve on the Linnstrument by setting 
-the Row Offset to a custom value of 13 (Global Settings -> Row Offset -> hold down "Octave" to get the hidden menu -> swipe right). 
-Thirteen is an odd number, so that means that if the first row represented the _even_ scale degrees (0 2 4 6 8...), the next row will represent 
-the _odd_ scale degrees (..13 15 17 19 21..)! Thus you actually have access to **all** the midi notes after all, with two neighboring rows
-filling each other's gaps. 
+Why would you want to skip half the notes? On the kite guitar, strings are 13 steps apart, which you can achieve on the Linnstrument by setting the Row Offset to a custom value of 13 (Global Settings -> Row Offset -> hold down "Octave" to get the hidden menu -> swipe right). Thirteen is an odd number, so that means that if the first row represented the _even_ scale degrees (0 2 4 6 8...), the next row will represent the _odd_ scale degrees (..13 15 17 19 21..)! Thus you actually have access to **all** the midi notes after all, with two neighboring rows filling each other's gaps. 
 
-This is handy, as 41 notes per octave would not otherwise fit on a single row. But with half that, you get at least an octave per row on a 200-pad 
-instrument. Luckily, you typically only want the odds or evens at the same time on the same string/row anyway, as explained on the kite guitar website.
+This is handy, as 41 notes per octave would not otherwise fit on a single row. But with half that, you get at least an octave per row on a 200-pad instrument. Luckily, you typically only want the odds or evens at the same time on the same string/row anyway, as explained on the kite guitar website.
 
 # Kite Guitar Mode
 - Enables skip fretting (column offset of 2)
@@ -226,28 +223,6 @@ instrument. Luckily, you typically only want the odds or evens at the same time 
 - Sets the Custom Row Offset to 13 steps (kite tuning)
 - Sets `PLAYED` note lighting to `SAME` mode, so you can see which other pads represent the same note as you learn the kite layout (optional)
 
-# Development
-
-These sources assume that you're using Arduino IDE v1.8.1 with SAM boards v1.6.11.
-Different versions of this package might create unknown build and execution problems.
-I use the flatpak version of Arduino IDE, which means the build environment is nicely sandboxed. This means you can just pick the versions 
-as per the instructions and all other software will work the same.
-
-Instructions from [Linnstrument support page](https://www.rogerlinndesign.com/support/support-linnstrument-source-code):
--    Visit the Ardunino downloads page and follow the instructions for downloading the latest Arduino IDE.
--    Launch the "Arduino IDE" app.
--    Connect your LinnStrument via USB, then turn on UPDATE OS mode (Global Settings > Actions column).
--    In the Arduino IDE, Click Tools menu > Board > "Boards Manager...", then Install "Arduino SAM Boards". Then click Tools menu > Board > "Arduino SAM boards (32 bit ARM Cortex M3)" > "Arduino Due (Programming Port)".
--    Go to Sketch > Include Library > "Manage Libraries...". Search for "DueFlashStorage" and install it.
--    Go to File menu > "Open..." and select the file "linnstrument-firmware.ino" in the "linnStrument-firmware" directory that you downloaded above.
--    Go to Tools menu > Port and select your LinnStrument port from there. (It starts with /dev/cu.usbmodem followed by a number.)
--    In the "linnstrument-firmware" window, click the top-left check mark icon (Verify) to compile the code. If you receive compilation errors or warnings, check the above steps.
-    Note: You can simply click the Upload button (right-facing arrow) in the IDE to upload your code to LinnStrument, but this will reset LinnStrument's sequencer data, stored panel settings, and sensor calibration data to defaults, requiring you to perform a subsequent 'Global Settings > Calibration' after the upload. To avoid losing this data, do the following additional steps:
--    Compile your LinnStrument firmware as above by clicking the Arduino IDE's "Verify" button (the checkmark button in upper left corner).
--    In the IDE's Output pane, select and copy the file path that will appear similar to the picture at the bottom of this page, starting with "/var" and ending with ".bin":
--    On mac, open a finder window, press Shift + Command G, paste the line you just copied and press Enter. This will take you to the location of the newly-compiled OS file. On Windows, go to the directory indicated by the file path.
--    From the LinnStrument Support page, click the "Update OS" page and download the latest Updater app. Place your newly compiled OS file in the same directory as the Updater app. Now the Updater app will load your newly compiled OS file instead of the OS file inside the Updater app. By using this method to load your edited source code, your LinnStrument's settings and calibration data will be preserved.
-
 # Support
 For support with the official firmware, email Roger at support@rogerlinndesign.com.
-For requests for this fork, open an new issue.
+For support for this fork, open a new github issue, or inquire at the unofficial Linnstrument discord.

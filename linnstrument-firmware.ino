@@ -627,7 +627,7 @@ struct MicroLinnSplit {
   byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
   //byte collapseBendPerPad;              // width of a single-pad pitch bend in edosteps, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
   //byte showCustomLEDs;                  // 0 = OFF, 1-3 = the three patterns, 4-6 = patterns plus note lights on top
-  unsigned short hammerOnWindow;          // maximum width in cents of a hammer-on before it becomes two simultaneous notes, 0 = OFF
+  short hammerOnWindow;                   // maximum width in cents of a hammer-on before it becomes two simultaneous notes, 0 = OFF
   boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
   byte pullOffVelocity;                   // 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
 };
@@ -791,11 +791,11 @@ struct MicroLinnGlobal {
   signed char anchorCents;                   // ranges -100 to +100 cents, even though 50 would do, for convenience
   short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, can be negative, [0] is unused, independent of Global.guitarTuning
   boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
-  //boolean drumPadMode;
+  //boolean drumPadMode;                     // creates a 2x5 (on the 128) or 2x7 (on the 200) array of 3x3 drum pads
   //signed char locatorCC1;                  // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25...
   //signed char locatorCC2;                  // ...ranges from 0 to 119, -1 = OFF
-  //byte rainbow[MICROLINN_MAX_EDO];         // one row of Device.microLinn.rainbow[MICROLINN_MAX_ARRAY_SIZE]
-  //byte dots[MICROLINN_MAX_EDO];            // ditto for dots
+  //byte rainbow[MICROLINN_MAX_EDO];         // one row of Device.microLinn.rainbows, unused when EDO == 4
+  //byte dots[MICROLINN_MAX_EDO];            // ditto for Device.microLinn.dots
   //short largeEDO;                          // ranges 56..311, 55 = OFF, user can have a 55-note subset of this edo 
   //byte largeEdoScale[39];                  // a packed array of booleans up to 311edo  (311 = 39 x 8 - 1)
   boolean sweeten;   // change to a byte     // in tenths of  cent, adjust 41edo 5/4, 5/3 by 2¢ both top and bottom to make it 4¢ closer to just
