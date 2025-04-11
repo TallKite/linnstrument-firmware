@@ -227,7 +227,6 @@ void serialSendSettings() {
 
   // send the actual settings
   const uint8_t batchsize = 96;
-
   byte* src = (byte*)&config;
 
   // if the user is reverting to the mainline firmware, we need to send the updater a version
@@ -254,14 +253,11 @@ void serialSendSettings() {
     int actual = min(confSize, batchsize);
     Serial.write(src, actual);
 
-    if (!waitForSerialCheck())
-      return;
+    if (!waitForSerialCheck()) return;
 
     int crc = negotiateOutgoingCRC(src, actual);
-    if (crc == -1) {
-      return;
-    } else if (crc == 0)
-      continue;
+    if (crc == -1)      return;
+    else if (crc == 0)  continue;
 
     confSize -= actual;
     src += actual;

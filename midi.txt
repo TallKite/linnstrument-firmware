@@ -270,6 +270,90 @@ NRPN   Value   Description
 270    0-127   Global Note Number For Guitar Tuning Row 8
 299    <any>   Send the current value of a particular NRPN configuration parameter, when possible
 
+
+Additional NRPN messages for microLinn
+
+NRPN   Value   Description
+-------------------------------------------------------------------------------------------------------------
+1000   1-8     Split Left Column Offset 
+1001   0-52    Split Left Row Offset, ranges -26..26, so add/subtract 26 to convert it
+1002   0-56    Split Left collapseBendPerPad, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
+1003   0-240   Split Left hammerOnWindow, maximum width in tens of cents of a hammer-on, 0 = OFF, 240 = 2 8ves
+1004   0-1     Split Left hammerOnNewNoteOn, 0 = hammer-ons send a new midi note, 1 = hammer-ons bend the old one
+1005   0-3     Split Left pullOffVelocity, 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
+1006   0-6     Split Left showCustomLEDs,  0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
+1050   0-14    Split Left transposeEDOsteps,  ranges -7..7, so add/subtract 7 to convert it
+1051   0-14    Split Left transposeEDOlights, ranges -7..7, so add/subtract 7 to convert it
+1052   0-2     Split Left tuningTable, 0..2 = OFF/ON/RCH
+1100   1-8     Split Right Column Offset 
+1101   0-52    Split Right Row Offset, ranges -26..26, so add/subtract 26 to convert it
+1102   0-56    Split Right collapseBendPerPad, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
+1103   0-240   Split Right hammerOnWindow, maximum width in tens of cents of a hammer-on, 0 = OFF, 240 = 2 8ves
+1104   0-1     Split Right hammerOnNewNoteOn, 0 = hammer-ons send a new midi note, 1 = hammer-ons bend the old one
+1105   0-3     Split Right pullOffVelocity, 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
+1106   0-6     Split Right showCustomLEDs,  0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
+1150   0-14    Split Right transposeEDOsteps,  ranges -7..7, so add/subtract 7 to convert it
+1151   0-14    Split Right transposeEDOlights, ranges -7..7, so add/subtract 7 to convert it
+1152   0-2     Split Right tuningTable, 0..2 = OFF/ON/RCH
+1200   0-1     Global drumPadMode, 0 = OFF, 1 = ON
+1201   0-120   Global locatorCC1, 0 = OFF, 1..120 = CC 0-119, so add/subtract 1 to convert it
+1202   0-120   Global locatorCC2   
+1203   4-55    Global EDO, ranges 5-55, plus 4 for OFF
+1204   0-1     Global useRainbow, 1 = yes, 0 = no
+1211   0-320   Global guitarTuning[1] ([0] is unused)
+1212   0-320   Global guitarTuning[2]
+1213   0-320   Global guitarTuning[3]
+1214   0-320   Global guitarTuning[4]
+1215   0-320   Global guitarTuning[5]
+1216   0-320   Global guitarTuning[6]
+1217   0-320   Global guitarTuning[7]
+1218   1-25    Global anchorCol
+1219   0-8     Global anchorRow
+1220   0-127   Global anchorNote (any midi note)
+1221   0-121   Global anchorCents ranges -60..60, so add/subtract 60 to convert it
+1222   1-48    Global equaveSemitones
+1223   0-121   Global equaveCents ranges -60..60, so add/subtract 60 to convert it
+1224   0-60    Global sweeten in tenths of a cent
+1225   55-311  Global largeEDO ranges 56..311, 55 = OFF 
+ 
+
+MicroLinn importing and exporting uses NRPNs plus polypressure messages: 1010cccc 0nnnnnnn 0vvvvvvv, 18 bits
+A polypressure message is much faster than a NRPN or multiple CCs, thanks to KVR forum member dr_loop for the idea!
+Linnstrument responds to a NRPN 299 export request with a NRPN 300 header, multiple polypressures and a NRPN 300 footer
+Linnstrument responds to a NRPN 300 header by importing data from polypressure messages until the footer is received
+
+NRPN 299 value: export type + 2000 = 2000-2070
+NRPN 300 header value: LSB = export type = 0-70, MSB = min (export length, 127)
+NRPN 300 footer value: LSB = export type = 0-70, MSB = 0
+
+The midi channel for all NRPNs is always 1, and for the polypressure messages it's usually 1
+But if the format is "byte:7+1, byte:7+1", the channel is used to store the 8th bit of each byte,
+the polypressure messages are on channels 1-4, and the 8th bit of each byte is read from the channel
+
+A color is sent as 8 bits not 4, 4 extra bits for possible future colors
+
+The All User Settings export is meant for migrating from an old Linnstrument to a new one
+It lacks the version, the calibration data and the 16 sequencer projects
+
+Type    Length (bytes)    Settings exported/imported       Polypressure format       Notes
+-----------------------------------------------------------------------------------------------------------------------
+ 1      200               Custom light pattern A           byte:7+1, byte:7+1        imports into current light pattern
+ 2       "                Custom light pattern A#            "                         "
+ 3       "                Custom light pattern B             "                         "
+ 4      1530              Device.microLinn.scales            "
+ 5       "                Device.microLinn.rainbows          "
+ 6       "                Device.microLinn.dots              "
+ 7      2 * edo           Global.microLinn.scales          edostep:7, bitmask:7      
+ 8       "                Global.microLinn.rainbow         edostep:7, color:7        
+ 9       "                Global.microLinn.dots            edostep:7, bitmask:8      
+10-25   31                Audience message 1-16            char:7, char:7            imports into last-edited message
+26      512               Audience messages (all)            "
+30-35   22 + 3 * edo      Preset 1-6 (edo-specific only)   byte:7+1, byte:7+1        if edo is odd, length = 22 + 3 * (edo + 1)
+50-55   ???               Preset 1-6 (all data)              "
+70      ???               All User Settings                  "                       no calibration or sequencer projects
+71      1804              Calibration data                   "                       for backup only, convenient for coders
+
+
 Color Values
 ============
 0   as set in Note Lights settings

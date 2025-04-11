@@ -70,6 +70,16 @@ LOCATOR CCs: A locator CC message can be sent immediately before every note-on, 
 
 *If your DAW isn't programmable, download LinnstrumentLocatorCCs.jsfx from this github. It defines a rectangular region on the Linnstrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. It runs natively in Reaper and can run in any windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live and other platforms.) Thanks to KVR forum member vorp40 for the locator CC idea!*
 
+IMPORTING/EXPORTING: You can back up various settings and/or share them with others via midi files. The 3 custom light patterns, the 16 audience messages, the 6 memories, microtonal data, and more! Check the Linnstrument community wiki for export-request files and importable settings files.
+
+*Details: Importing: Download a settings file from the wiki. In your DAW, set the output of midi track A to your Linnstrument. Load the settings file into track A and press play. (To import a custom light pattern, before you press play, you must first display the one you want to overwrite. To import an audience message, before you press play, you must first briefly edit the one you want to overwrite.)*
+
+*Exporting: Download an export-request file from the wiki. In your DAW, set the input of midi track A and the output of midi track B to your Linnstrument. Put the export-request midi file at the start of track B. Then press record on track A. When your Linnstrument stops sending midi, stop recording. Save the midi on track A to a midi file (i.e. export it from your DAW). Name it something informative such as "lightPatternB.mid" or "22edoScales.mid". Later on you can import this file to restore your settings. Or share it on the wiki.*
+
+*Exporting multiple requests: Send the first request and see in your DAW where the Linnstrument stops sending midi. Position the next request file in track B about 1/10 of a second after that. Add additional request files similarly. Press record on track A and press play on track B as before to record all requests at once, and save the midi to a file as before.*
+
+*Troubleshooting: While importing or exporting, put your Linnstrument in performance mode, but don't play it. For importing, slowing down your DAW's playback speed sometimes helps. Your DAW must be able to handle a midi file that uses multiple midi channels.*
+
 -------- LIKELY ADDITIONAL NON-MICROTONAL FEATURES (no promises) -------- 
 
 DIM MODE: The Low Power pad (col 15 in Global Settings) dims the display but also increases the latency. Long-press the Low Power pad to dim the display with no latency increase, good for tired eyes.
@@ -162,11 +172,11 @@ The dot patterns tend to follow the conventional m3 P4 P5 M6 P8 guitar fret mark
 
 MEMORIES
 
-All of microLinn's settings are remembered by the 6 memories. If you load a memory that has microLinn turned OFF, the microtonal data will not be altered. And if the column offsets and per-split row offsets are also OFF, they will not be altered either (because the edo often implies certain offsets). This lets you use certain memories to configure your synth-related settings only. Load such memories *after* loading a microtonal memory.
+All of microLinn's settings are stored in the 6 memories. If you load a memory that has microLinn turned OFF, the microtonal data will not be altered. And if the column offsets and per-split row offsets are also OFF, they will not be altered either (because the edo often implies certain offsets). This lets you use certain memories to configure your synth-related settings only. Load such memories *after* loading a microtonal memory.
 
 The memory on the bottom row is an exception to this. It *will* alter microtonal data even if it has microLinn turned OFF. You can load this memory to quickly return to 12edo. 
 
-The 2nd memory from the bottom emulates the [Kite guitar](https://KiteGuitar.com/). It's 41edo with a row/col offset of (+13 +2), with an alternating-3rds guitar tuning and with MPE midi settings. This layout is both very playable and very well-tuned.
+The 2nd memory from the bottom emulates the [Kite guitar](https://KiteGuitar.com/). It's 41edo with a row/col offset of (+13 +2), with an alternating-3rds guitar tuning. This layout is both very playable and very well-tuned.
 
 BEYOND EDOS: TUNING TABLE MODE 
 
@@ -205,7 +215,7 @@ For the right split,
 * For 3 groups, the split will use channels 11-15. Group 2 uses 6-10 and group 3 uses 1-5.
 * For 4 groups, the split will use channels 13-16 (no Main channel). Group 2 uses 9-12, group 3 uses 5-8, and group 4 uses 1-4.
 
-*If the left split only uses two groups, you can use the right split with channel 16. Also, you can set the split to use fewer channels and the blocks will change to match. The channels should go up from 2 or down from 15. Or if there's no Main channel, up from 1 or down from 16. If you have N channels, the 2nd block is N channels higher (or lower for the right split) than the 1st block, the 3rd block is 2xN channels higher/lower, etc. For example, with 2 groups, setting the left split to channels 2-7 (6 channels) makes the 2nd block be 8-13, leaving 3 channels available for the right split.*
+*If the left split only uses two groups, you can use the right split with channel 16. Furthermore, you can set the split to use fewer channels and the blocks will change to match. The channels should go up from 2 or down from 15. Or if there's no Main channel, up from 1 or down from 16. If you have N channels, the 2nd block is N channels higher (or lower for the right split) than the 1st block, the 3rd block is 2xN channels higher/lower, etc. For example, with 2 groups, setting the left split to channels 2-7 (6 channels) makes the 2nd block be 8-13, leaving 3 channels available for the right split.*
 
 ============================= technical notes ==================================
 

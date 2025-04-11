@@ -1370,7 +1370,7 @@ void sendReleasedNote() {
     signed char note = sensorCell->note;
     signed char channel = sensorCell->channel;
     if (isMicroLinnDrumPadMode()) {
-      //note = getMicroLinnDrumPadMidiNote();
+      //note = getMicroLinnDrumPadMidiNote();          // delete later
       if (note == -1) return;
     } 
     else if (isMicroLinnOn()) {
@@ -2040,7 +2040,7 @@ short getNoteNumber(byte split, byte col, byte row) {
     noteCol = (NUMCOLS - col);
   }
   noteCol = (noteCol - 1) * Split[split].microLinn.colOffset + 1;
-  
+
   notenum = determineRowOffsetNote(split, row) + noteCol - 1;
 
   return notenum - Split[split].transposeLights * Split[split].microLinn.colOffset;

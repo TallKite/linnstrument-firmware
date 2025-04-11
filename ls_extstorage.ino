@@ -2319,40 +2319,41 @@ void copyConfigurationVLatest(void* target, void* source) {            // copies
 void migrateFromMicroLinnGlobalV72A (MicroLinnGlobal* target, void* s) {
   // copy what's in 72A, initialize what isn't
   MicroLinnV72A::MicroLinnGlobal* source = (typeof(source)) s;
+  //target->drumPadMode = false;              // uncomment once 72B is done
+  //target->locatorCC1 = -1;
+  //target->locatorCC2 = -1;
   target->EDO = source->EDO;
-  //target->equaveSemitones = 12;       // uncomment once 72B is done
-  target->octaveStretch = source->octaveStretch;
+  //short i = microLinnTriIndex(source->EDO, 0);
+  //memcpy (target->scales,  &Device.microLinn.scales[i], source->EDO);
+  //memcpy (target->rainbow, &Device.microLinn.rainbows[i], source->EDO);
+  //memcpy (target->dots,    &Device.microLinn.dots[i], source->EDO);
+  target->useRainbow = source->useRainbow;
+  for (byte row = 0; row < MAXROWS; row++) {
+    target->guitarTuning[row] = source->guitarTuning[row];
+  }
   target->anchorCol = source->anchorCol;
   target->anchorRow = source->anchorRow;
   target->anchorNote = source->anchorNote;
   target->anchorCents = source->anchorCents;
-  for (byte row = 0; row < MAXROWS; row++) {
-    target->guitarTuning[row] = source->guitarTuning[row];
-  }
-  target->useRainbow = source->useRainbow;
-  //target->drumPadMode = false;
-  //target->locatorCC1 = -1;
-  //target->locatorCC2 = -1;
-  //short ptr = microLinnTriIndex(source->EDO, 0);
-  //memcpy (target->rainbow, &Device.microLinn.rainbows[ptr], source->EDO);
-  //memcpy (target->dots, &Device.microLinn.dots[ptr], source->EDO);
+  //target->equaveSemitones = 12;
+  target->octaveStretch = source->octaveStretch;
+  target->sweeten = source->sweeten;
   //target->largeEDO = 55;
   //memset(largeEdoScale, 0, sizeof(largeEdoScale));
-  target->sweeten = source->sweeten;
 }
 
 void migrateFromMicroLinnSplitV72A (MicroLinnSplit* target, void* s) {
   MicroLinnV72A::MicroLinnSplit* source = (typeof(source)) s;
   target->colOffset = source->colOffset;
   //target->rowOffset = -26;
-  target->transposeEDOsteps = source->transposeEDOsteps;
-  target->transposeEDOlights = source->transposeEDOlights;
-  target->tuningTable = source->tuningTable;
   //target->collapseBendPerPad = 0;
-  //target->showCustomLEDs = 0;
   target->hammerOnWindow = source->hammerOnWindow;
   target->hammerOnNewNoteOn = source->hammerOnNewNoteOn;
   target->pullOffVelocity = source->pullOffVelocity;
+  //target->showCustomLEDs = 0;
+  target->transposeEDOsteps = source->transposeEDOsteps;
+  target->transposeEDOlights = source->transposeEDOlights;
+  target->tuningTable = source->tuningTable;
 }
 
 void copyConfigurationMicroLinnV72A(void* target, void* source) {    // copies from 72A to the current config, B or C or whatever
@@ -2360,7 +2361,7 @@ void copyConfigurationMicroLinnV72A(void* target, void* source) {    // copies f
   MicroLinnV72A::Configuration* s = (typeof(s)) source;
 
   memcpy(&t->device, &s->device, sizeof(s->device));                 // Device.microLinn gets copied automatically
-  t->device.version = 16 + MICROLINN_VERSION_OFFSET;
+  t->device.version = 16 + MICROLINN_VERSION_OFFSET;                 // redundant, delete?
 
   memcpy(&t->settings.global, &s->settings.global, sizeof(GlobalSettings) - sizeof(MicroLinnGlobal));
   migrateFromMicroLinnGlobalV72A(&t->settings.global.microLinn, &s->settings.global.microLinn);

@@ -467,6 +467,10 @@ void handleMidiInput(unsigned long nowMicros) {
             break;
         }
       }
+      case MIDIPolyphonicPressure:
+        // all received polypressure messages are part of a microLinn import
+        receiveMicroLinnPolyPressure(midiData1, midiData2, midiChannel);
+        break;
       default:
         // don't handle other MIDI messages
         break;
@@ -543,6 +547,11 @@ void receivedRpn(byte midiChannel, int parameter, int value) {
 }
 
 void receivedNrpn(int parameter, int value, int channel) {
+  if (parameter >= 1000) {
+    receivedMicroLinnNrpn(parameter, value);
+    return;
+  }
+
   byte split = LEFT;
   if (parameter >= 100 && parameter < 200) {
     parameter -= 100;
@@ -1271,12 +1280,26 @@ void receivedNrpn(int parameter, int value, int channel) {
     case 299:
       sendNrpnParameter(value, channel);
       break;
+    // begin bulk importing microtonal and/or non-microtonal data
+    case 300:
+      importMicroLinnData(value);
+      break;
   }
 
   updateDisplay();
 }
 
 void sendNrpnParameter(int parameter, int channel) {
+  if (parameter >= 2000) {
+    // bulk export microtonal and/or non-microtonal data
+    exportMicroLinnData(parameter - 2000);
+    return;
+  }  
+  if (parameter >= 1000) {
+    // export 1 item of microtonal data
+    sendMicroLinnNrpnParameter(parameter, channel);
+    return;
+  }
   byte split = LEFT;
   int value = INT_MIN;
   int param = parameter;
@@ -1555,8 +1578,9 @@ void sendNrpnParameter(int parameter, int channel) {
       value = Device.minUSBMIDIInterval;
       break;
     case 253:
-      if (isMicroLinnOn()) value = computeMicroLinnNrpn253();
-      else if (Global.customRowOffset == -17) {
+      if (isMicroLinnOn()) {
+        value = computeMicroLinnNrpn253();
+      } else if (Global.customRowOffset == -17) {
         value = 33;
       }
       else {

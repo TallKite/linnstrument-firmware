@@ -15,36 +15,36 @@
 namespace MicroLinnV72A {
 
   struct MicroLinnDevice {
-    byte MLversion;                                 // version = official version we forked from plus 56, MLversion = microLinn version
+    byte MLversion;                                 // current version of the microLinn data structures, 0 displays as A, 1 displays as B, etc.
     byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
     byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
-    byte dots[MICROLINN_ARRAY_SIZE];                // one bit per row, ignores column offsets except for lefty/righty
+    byte dots[MICROLINN_ARRAY_SIZE];                // one byte per fret, one bit per row, transposable, lefthandedness reverses it, ignores column offsets
   };
 
   struct MicroLinnGlobal {
     byte EDO;                                  // ranges 5-55, plus 4 for OFF
-    signed char octaveStretch;                 // ranges -120 to 120 cents, for non-octave tunings such as bohlen-pierce
+    boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
+    short guitarTuning[MAXROWS];               // interval in edosteps from the bottom string, can be negative, [0] is unused, independent of Global.guitarTuning
     byte anchorCol;                            // ranges 1-25, setting to a number > 16 on a Linnstrument 128 is allowed
     byte anchorRow;                            // top row is 7, bottom row is 0, but the user sees top row as 1, bottom row as 8
     byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
-    signed char anchorCents;                   // ranges -100 to +100 cents, even though 50 would do, for convenience
-    short guitarTuning[MAXROWS];               // interval in edosteps from the bottom string, can be negative, independent of Global.guitarTuning
-    boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
-    boolean sweeten;                           // adjust 41edo 5/4, 5/3 by 2¢ both top and bottom to make it 4¢ closer to just?
+    signed char anchorCents;                   // ranges -60 to +60 cents, even though 50 would do, for convenience
+    signed char octaveStretch;                 // ranges -120 to 120 cents, for non-octave tunings such as bohlen-pierce
+    byte sweeten;                              // in tenths of a cent, adjust 41edo 5/4, 5/3 by this amt both top and bottom to make it closer to just
   };
 
   struct MicroLinnSplit {
-    byte colOffset;                         // column offsets, 1 to 25
-    signed char transposeEDOsteps;          // accessed not via displayMicroLinnConfig but via displayOctaveTranspose
-    signed char transposeEDOlights;
-    boolean tuningTable;                    // output in edostep format (1 midi note = 1 edostep)
-    short hammerOnWindow;                   // maximum width in cents of a hammer-on before it becomes two simultaneous notes, 0 = off
+    byte colOffset;                         // column offset, 1 to 8, 1 = OFF
+    byte hammerOnWindow;                    // maximum width in tens of cents of a hammer-on before it becomes two simultaneous notes, 0..240, 0 = off
     boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
     byte pullOffVelocity;                   // 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
+    signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
+    signed char transposeEDOlights;
+    byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
   };
 
   struct DeviceSettings {
-    byte version;                                   // the version of the configuration format
+    byte version;                                   // the version of the configuration format, currently 16, but the microLinn version is 16 + 56 = 72
     boolean serialMode;                             // 0 = normal MIDI I/O, 1 = Arduino serial mode for OS update and serial monitor
     CalibrationX calRows[MAXCOLS+1][4];             // store four rows of calibration data
     CalibrationY calCols[9][MAXROWS];               // store nine columns of calibration data

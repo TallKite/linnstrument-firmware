@@ -345,7 +345,7 @@ void loadSettingsFromPreset(byte p) {
       if (config.preset[p].split[side].microLinn.colOffset > 1)
         Split[side].microLinn.colOffset = config.preset[p].split[side].microLinn.colOffset;
       // uncomment once microLinnRowOffset becomes part of MicroLinnSplit
-      //if (config.preset[p].split[side].microLinn.rowOffset > -1)
+      //if (config.preset[p].split[side].microLinn.rowOffset > -26)
       //  Split[side].microLinn.rowOffset = config.preset[p].split[side].microLinn.rowOffset;
     }
   }

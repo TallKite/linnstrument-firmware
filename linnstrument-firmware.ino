@@ -251,8 +251,8 @@ const unsigned long LED_ARRAY_SIZE = (MAX_LED_LAYERS+1) * LED_LAYER_SIZE;
 
 /*************************************** MICROLINN VERSION ***************************************/
 
-// Microlinn version is the mainline version it's based on plus this offset
-// (we would rather have used 128, but the updater interprets version as a signed charater type,
+// the Microlinn version is the official mainline version it's based on, plus this offset
+// (we would rather have used 128, but the updater interprets version as a signed character type,
 // and is "confused" by negative version numbers).
 #define MICROLINN_VERSION_OFFSET 56
 
@@ -622,14 +622,14 @@ enum SequencerDirection {
 struct MicroLinnSplit {
   byte colOffset;                         // column offset, 1 to 8, 1 = OFF
   //signed char rowOffset;                // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
+  //byte collapseBendPerPad;              // width of a single-pad pitch bend in edosteps, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
+  byte hammerOnWindow;                    // maximum width in tens of cents of a hammer-on before it becomes two simultaneous notes, 0..240, 0 = OFF
+  boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
+  byte pullOffVelocity;                   // 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
+  //byte showCustomLEDs;                  // 0 = OFF, 1-3 = the three patterns, 4-6 = patterns plus note lights on top
   signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
   signed char transposeEDOlights;
   byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
-  //byte collapseBendPerPad;              // width of a single-pad pitch bend in edosteps, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
-  //byte showCustomLEDs;                  // 0 = OFF, 1-3 = the three patterns, 4-6 = patterns plus note lights on top
-  short hammerOnWindow;                   // maximum width in cents of a hammer-on before it becomes two simultaneous notes, 0 = OFF
-  boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
-  byte pullOffVelocity;                   // 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
 };
 
 // per-split settings
@@ -782,23 +782,25 @@ enum SustainBehavior {
 };
 
 struct MicroLinnGlobal {
-  byte EDO;                                  // ranges 5-55, plus 4 for OFF
-  //byte equaveSemitones;                    // for non-octave tunings such as bohlen-pierce, 1..48, 1 semitone = 100 cents
-  signed char octaveStretch;                 // rename to equaveCents, -50..+50
-  byte anchorCol;                            // ranges 1-25, setting to a number > 16 on a Linnstrument 128 is allowed
-  byte anchorRow;                            // top row is 7, bottom row is 0, but the user sees top row as 1, bottom row as 8
-  byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
-  signed char anchorCents;                   // ranges -100 to +100 cents, even though 50 would do, for convenience
-  short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, can be negative, [0] is unused, independent of Global.guitarTuning
-  boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
   //boolean drumPadMode;                     // creates a 2x5 (on the 128) or 2x7 (on the 200) array of 3x3 drum pads
   //signed char locatorCC1;                  // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25...
   //signed char locatorCC2;                  // ...ranges from 0 to 119, -1 = OFF
-  //byte rainbow[MICROLINN_MAX_EDO];         // one row of Device.microLinn.rainbows, unused when EDO == 4
+  byte EDO;                                  // ranges 5-55, plus 4 for OFF
+  //byte scales[MICROLINN_MAX_EDO];          // one row of Device.microLinn.scales, unused when rawEDO == 4
+  //byte rainbow[MICROLINN_MAX_EDO];         // ditto for Device.microLinn.rainbows
   //byte dots[MICROLINN_MAX_EDO];            // ditto for Device.microLinn.dots
+  boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
+  short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, can be negative, [0] is unused, independent of Global.guitarTuning
+  byte anchorCol;                            // ranges 1-25, setting to a number > 16 on a Linnstrument 128 is allowed
+  byte anchorRow;                            // top row is 7, bottom row is 0, but the user sees top row as 1, bottom row as 8
+  byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
+  signed char anchorCents;                   // ranges -60 to +60 cents, even though 50 would do, for convenience
+  //byte equaveSemitones;                    // for non-octave tunings such as bohlen-pierce, 1..48, 1 semitone = 100 cents
+  signed char octaveStretch;                 // rename to equaveCents, -60..+60
+  byte sweeten;                              // in tenths of a cent, adjust 41edo 5/4, 5/3 by this amt both top and bottom to make it closer to just
   //short largeEDO;                          // ranges 56..311, 55 = OFF, user can have a 55-note subset of this edo 
   //byte largeEdoScale[39];                  // a packed array of booleans up to 311edo  (311 = 39 x 8 - 1)
-  boolean sweeten;   // change to a byte     // in tenths of  cent, adjust 41edo 5/4, 5/3 by 2¢ both top and bottom to make it 4¢ closer to just
+  // possible idea: signed char largeEDOoffsets[55];        // ranges -128..127, edosteps from 
 };
 
 struct GlobalSettings {
@@ -1102,7 +1104,7 @@ int32_t fxdPitchHoldSamples[NUMSPLITS];                      // for each split t
 int32_t fxdRateXThreshold[NUMSPLITS];                        // the threshold below which the average rate of change of X is considered 'stationary' and pitch hold quantization will start to occur
 int latestNoteNumberForAutoOctave = -1;                      // keep track of the latest note number that was generated to use for auto octave switching
 
-byte audienceMessageToEdit = 0;                     // the audience message to edit with that mode is active
+signed char audienceMessageToEdit = -1;             // the audience message to edit when that mode is active
 short audienceMessageOffset = 0;                    // the offset in columns for printing the edited audience message
 short audienceMessageLength = 0;                    // the length in pixels of the audience message to edit
 
