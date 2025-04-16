@@ -445,6 +445,7 @@ void handleMidiInput(unsigned long nowMicros) {
             }
             if (lastNrpnMsb != 127 || lastNrpnLsb != 127) {
               lastDataLsb = midiData2;
+              ML_IMPORT_DEBUG = 1;
               receivedNrpn((lastNrpnMsb<<7)+lastNrpnLsb, (lastDataMsb<<7)+lastDataLsb, midiChannel);
               break;
             }
@@ -468,7 +469,7 @@ void handleMidiInput(unsigned long nowMicros) {
         }
       }
       case MIDIPolyphonicPressure:
-        // all received polypressure messages are part of a microLinn import
+        // all received polypressure messages are assumed to be part of a microLinn import
         receiveMicroLinnPolyPressure(midiData1, midiData2, midiChannel);
         break;
       default:
@@ -1164,7 +1165,11 @@ void receivedNrpn(int parameter, int value, int channel) {
       break;
     // Global Custom Row Offset Instead Of Octave
     case 253:
-      if (isMicroLinnOn()) {receiveMicroLinnNrpn253(value);}
+      if (isMicroLinnOn()) {
+        if (inRange(value, 0, 50)) {
+          Global.customRowOffset = value - 25;
+        }
+      }
       else if (inRange(value, 0, 33)) {
         if (value == 33) {
           Global.customRowOffset = -17;
@@ -1282,6 +1287,7 @@ void receivedNrpn(int parameter, int value, int channel) {
       break;
     // begin bulk importing microtonal and/or non-microtonal data
     case 300:
+      ML_IMPORT_DEBUG = 2;
       importMicroLinnData(value);
       break;
   }
@@ -1290,13 +1296,13 @@ void receivedNrpn(int parameter, int value, int channel) {
 }
 
 void sendNrpnParameter(int parameter, int channel) {
-  if (parameter >= 2000) {
-    // bulk export microtonal and/or non-microtonal data
-    exportMicroLinnData(parameter - 2000);
+  if (parameter >= 2048) {
+    // bulk export user settings
+    exportMicroLinnData(parameter - 2048);
     return;
   }  
   if (parameter >= 1000) {
-    // export 1 item of microtonal data
+    // export 1 item of microLinn data
     sendMicroLinnNrpnParameter(parameter, channel);
     return;
   }
@@ -1579,8 +1585,9 @@ void sendNrpnParameter(int parameter, int channel) {
       break;
     case 253:
       if (isMicroLinnOn()) {
-        value = computeMicroLinnNrpn253();
-      } else if (Global.customRowOffset == -17) {
+        value = Global.customRowOffset + 25;
+      } 
+      else if (Global.customRowOffset == -17) {
         value = 33;
       }
       else {

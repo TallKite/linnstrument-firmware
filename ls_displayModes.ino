@@ -60,10 +60,10 @@ displaySequencerDrum0107      : sequencer first 7 drum notes
 displaySequencerDrum0814      : sequencer second 7 drum notes
 displaySequencerColors        : sequencer low row colors
 displayCustomLedsEditor       : editor for custom LEDs
-displayMicroLinnConfig        : select EDO, anchor data and column offsets
-displayMicroLinnAnchorChooser : choose the anchor cell from the performance display
-displayMicroLinnDotsEditor    : edit the fret markers for the current edo
-displayMicroLinnUninstall     : ask user if they want to uninstall microLinn, deleting microtonal data
+displayMicroLinnConfig          : select EDO, anchor data and column offsets
+displayMicroLinnAnchorChooser   : choose the anchor cell from the performance display
+displayMicroLinnFretboardEditor : edit the fret markers for the current edo
+displayMicroLinnUninstall       : ask user if they want to uninstall microLinn, deleting microtonal data
 
 These routines handle the painting of these display modes on LinnStument's 208 LEDs.
 **************************************************************************************************/
@@ -245,8 +245,8 @@ void updateDisplay() {
         paintNormalDisplay();
       }
       break; 
-    case displayMicroLinnDotsEditor:
-      paintMicroLinnDotsEditor(true);
+    case displayMicroLinnFretboardEditor:
+      paintMicroLinnFretboardEditor(true);
       break;
     case displayMicroLinnUninstall:
       paintMicroLinnUninstall();

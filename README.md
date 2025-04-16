@@ -5,7 +5,7 @@ Beta testers needed!
 
 The  Linnstrument is an amazing instrument, very feature-rich. If it's new to you, we strongly reccommend waiting to install microLinn until after you've explored all the standard features.
 
-For experienced linnstrumentalists, microLinn makes exploring microtonality incredibly easy. Load up your usual MPE synths, set the notes per octave, and play! It's that simple!
+For experienced linnstrumentalists, microLinn makes exploring microtonality very easy. Load up your usual MPE synths, set the notes per octave, and play! It's that simple!
 
 -------- INSTALLATION -------- 
 
@@ -17,7 +17,7 @@ For experienced linnstrumentalists, microLinn makes exploring microtonality incr
 
 -------- UPGRADING/UNINSTALLING -------- 
 
-IMPORTANT: Later on when you update the OS to a different version, you'll be asked if you want to uninstall microLinn. Say no (the red button in the middle) if you're updating to a newer version of microLinn. This avoids needlessly deleting your microtonal user settings. Say yes (the blue button on the left) otherwise, e.g. if you're going back to an official (non-microtonal) version of the firmware. This does delete your microtonal user settings, which is necessary in order to avoid deleting all your other user settings plus your calibration data. If you're not sure, tap the green button on the right to exit the uninstall screen.
+IMPORTANT: Later on when you update the OS to a different version, you'll be asked if you want to uninstall microLinn. Say no (the red button in the middle, turns orange) if you're updating to a newer version of microLinn. This avoids needlessly deleting your microtonal user settings. Say yes (the blue button on the left, turns light blue) otherwise, e.g. if you're going back to an official (non-microtonal) version of the firmware. This does delete your microtonal user settings, which is necessary in order to avoid deleting all your other user settings plus your calibration data. If you're not sure, tap the green button on the right to exit the uninstall screen.
 
 -------- NON-MICROTONAL FEATURES -------- 
 
@@ -27,8 +27,6 @@ COLUMN OFFSETS: Ranges from 1 (OFF) to 8. For negative offsets, use the hidden l
 * Harmonic Table layout translates to (+4 +3) or (+7 +3)
 
 The column offset can be set for each split independently. You can have one of these six layouts on the left for easy chord playing (probably with pitch bending off) and the usual layout on the right for easy melody playing, somewhat analogous to an accordion's layout. Accessed through the microLinn menu, see below.
-
-A column offset of +2 can be used microtonally to emulate the "skip-fretting" of the [kite guitar](https://kiteguitar.com/) with 41 notes to the octave. See "MEMORIES" below.
 
 Playing melodies with both pitch bending and column offsets can be tricky. *Details: A 1mm slide normally bends the pitch about 6¢. But an offset of +2 makes it 12¢, +3 makes it 18¢, etc. Thus to play in tune with a large column offset you may need both Pitch/X Quantize and Pitch/X Quantize Hold to be on. But if your column offset is +2, setting Quantize on and Quantize Hold off lets you play the skipped notes fairly accurately by sliding into the gap between pads. In fact, you can play 24edo quartertones on a normal 12edo Linnstrument fairly easily this way.*
 
@@ -72,13 +70,57 @@ LOCATOR CCs: A locator CC message can be sent immediately before every note-on, 
 
 IMPORTING/EXPORTING: You can back up various settings and/or share them with others via midi files. The 3 custom light patterns, the 16 audience messages, the 6 memories, microtonal data, and more! Check the Linnstrument community wiki for export-request files and importable settings files.
 
-*Details: Importing: Download a settings file from the wiki. In your DAW, set the output of midi track A to your Linnstrument. Load the settings file into track A and press play. (To import a custom light pattern, before you press play, you must first display the one you want to overwrite. To import an audience message, before you press play, you must first briefly edit the one you want to overwrite.)*
+*Details: Importing: Download a settings file from the wiki. In your DAW, set the output of midi track A to your Linnstrument. Load the settings file into track A and press play. Your Linnstrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, disconnect the Linnstrument's power and reconnect it, to avoid accidental importing.*
 
-*Exporting: Download an export-request file from the wiki. In your DAW, set the input of midi track A and the output of midi track B to your Linnstrument. Put the export-request midi file at the start of track B. Then press record on track A. When your Linnstrument stops sending midi, stop recording. Save the midi on track A to a midi file (i.e. export it from your DAW). Name it something informative such as "lightPatternB.mid" or "22edoScales.mid". Later on you can import this file to restore your settings. Or share it on the wiki.*
+*To import a custom light pattern, before you press play, you must first display the one you want to overwrite. To import an audience message, before you press play, you must first briefly edit the one you want to overwrite.*
 
-*Exporting multiple requests: Send the first request and see in your DAW where the Linnstrument stops sending midi. Position the next request file in track B about 1/10 of a second after that. Add additional request files similarly. Press record on track A and press play on track B as before to record all requests at once, and save the midi to a file as before.*
+*Exporting: Download an export-request file from the wiki. In your DAW, set the input of midi track A and the output of midi track B to your Linnstrument. Put the export-request midi file at the start of track B. Then start recording on track A. When your Linnstrument stops sending midi, stop recording. Save the midi on track A to a midi file (i.e. export it from your DAW), preferably as format 0. Name it something informative such as "lightPatternB.mid" or "22edoScales.mid". Later on you can import this file to restore your settings. Or share it on the wiki.*
+
+*Exporting multiple requests: 1st method: Send the first request and see in your DAW where the Linnstrument stops sending midi. Position the next request file in track B about 1/10 of a second after that. Add additional request files similarly. Record all requests at once, and save the midi to a file as before. 2nd method: Record each export individually. Then position those midi clips next to each other, and save them all as one file.*
 
 *Troubleshooting: While importing or exporting, put your Linnstrument in performance mode, but don't play it. For importing, slowing down your DAW's playback speed sometimes helps. Your DAW must be able to handle a midi file that uses multiple midi channels.*
+
+The 16 sequencer projects can be imported and exported as usual via the updater app. BTW the filename of microtonal projects should contain the edo.
+
+requestLightPatternA.mid
+requestLightPatternA#.mid
+requestLightPatternB.mid
+
+requestAudienceMsg1.mid
+requestAudienceMsg2.mid
+requestAudienceMsg3.mid
+requestAudienceMsg4.mid
+requestAudienceMsg5.mid
+requestAudienceMsg6.mid
+requestAudienceMsg7.mid
+requestAudienceMsg8.mid
+requestAudienceMsg9.mid
+requestAudienceMsg10.mid
+requestAudienceMsg11.mid
+requestAudienceMsg12.mid
+requestAudienceMsg13.mid
+requestAudienceMsg14.mid
+requestAudienceMsg15.mid
+requestAudienceMsg16.mid
+requestAllAudienceMsgs.mid
+
+requestScalesCurrentEDO.mid
+requestRainbowCurrentEDO.mid
+requestFretboardCurrentEDO.mid
+requestAllSettingsCurrentEDO.mid
+requestScalesAllEDOs.mid
+requestRainbowsAllEDOs.mid
+requestFretboardsAllEDOs.mid
+
+requestPreset1.mid
+requestPreset2.mid
+requestPreset3.mid
+requestPreset4.mid
+requestPreset5.mid
+requestPreset6.mid
+
+requestAllUserSettings.mid
+
 
 -------- LIKELY ADDITIONAL NON-MICROTONAL FEATURES (no promises) -------- 
 
@@ -123,9 +165,9 @@ Changing the anchor note transposes by 12edo semitones. Changing the anchor cent
 
 Besides transposing via the anchor note, each split can be transposed by edosteps via the Octave/Transpose screen. *Details: When the notes per octave is greater than 12, the screen shows two extra rows for transposing by edosteps. The 2nd and 3rd rows now transpose not by semitones but by major 2nds (since most edos have several different semitones). A major 2nd is defined as the interval between the 4th and the 5th, e.g. 3 edosteps for 15edo but only 2 edosteps for 16edo.*
 
-It's possible to stretch the octave or even create non-octave scales like Bohlen-Pierce. *Details: The octave is really the equave, the interval of equivalence. It's defined as twelve 12edo semitones plus zero cents. Redefine it by swiping on Equave Semitones (1 to 48) and/or Equave Cents (-50 to 50).*
+It's possible to stretch the octave or even create non-octave scales like Bohlen-Pierce. *Details: The octave is really the equave, the interval of equivalence. It's defined as twelve 12edo semitones plus zero cents. Redefine it by swiping on Equave Semitones (1 to 48) and/or Equave Cents (-60 to 60).*
 
-MicroLinn can be set to 12edo. What advantages does microLinn's 12edo have over the standard, non-microLinn 12edo? It can be stretched and/or detuned, plus you can have multi-colored note lights.
+MicroLinn can be set to 12edo. MicroLinn's 12edo has two advantages over the standard, non-microLinn 12edo. It can be stretched and/or detuned, plus you can have multi-colored note lights.
 
 SUGGESTIONS FOR EXPLORING EDOS:
 
@@ -153,9 +195,9 @@ NOTE LIGHTS
 
 The 9 scales in Global Settings columns 2-4 are now microtonal and change for each edo. You can still select a scale using columns 2-4, but you can no longer edit a scale there, because for larger edos there are too many notes to fit into the 3x4 box. As a result, when microLinn is on, the VIEW MAIN and VIEW ACCENT buttons do not work, and the SCALE SELECT button is always on. To edit a scale and its colors, instead go to the main microLinn menu and go to the note lights screen. Shortcut: you can long-press the scale's pad in cols 2-4 in the Global Settings screen to go directly to that scale.
 
-*Details: The note lights screen has 7 scale buttons plus the rainbow editor, the dots selector and the yellow rainbow-enabler button. Excluding the rainbow enabler, there are 9 buttons, corresponding to the 9 scales in cols 2-4 in the Global Settings screen. Tap any of these 9 buttons to select it. Tap any already-selected button to backtrack to the previous button. There are 7 rows of colored lights on the screen, which top to bottom are for unisons, 2nds, 3rds, 4ths, 5ths, 6ths and 7ths. Tap a note in a scale to toggle it on or off. Like the guitar tuning screen, a midi note is sent when you tap. The 8th scale is the rainbow editor, in which all notes are always on. Tap a note to cycle it thru the rainbow. The 9th scale (guitar-like fretboard dots) isn't really a scale. It's a full-screen display like the custom light patterns. Tapping the dots selector makes the dots appear in blue mid-screen. Tapping the dots lets you toggle them on or off. To change the color of the dots, after editing go to Per-Split Settings and in column 11 change the main color. Long-press the scale buttons or the rainbow editor button or the dots selector button to reset the note lights to the default. Tap the yellow rainbow enabler button to turn off the rainbow and limit the note lights to the usual two colors.*
+*Details: The note lights screen has 7 scale buttons plus the rainbow editor, the fretboard selector and the yellow rainbow-enabler button. Excluding the rainbow enabler, there are 9 buttons, corresponding to the 9 scales in cols 2-4 in the Global Settings screen. Tap any of these 9 buttons to select it. Tap any already-selected button to backtrack to the previous button. There are 7 rows of colored lights on the screen, which top to bottom are for unisons, 2nds, 3rds, 4ths, 5ths, 6ths and 7ths. Tap a note in a scale to toggle it on or off. Like the guitar tuning screen, a midi note is sent when you tap. The 8th scale is the rainbow editor, in which all notes are always on. Tap a note to cycle it thru the rainbow. The 9th scale (guitar-like fretboard dots) isn't really a scale. It's a full-screen display like the custom light patterns. Tapping the fretboard selector makes the dots appear in blue mid-screen. Tapping the dots lets you toggle them on or off. To change the color of the dots, after editing go to Per-Split Settings and in column 11 change the main color. Long-press the scale buttons or the rainbow editor button or the fretboard selector button to reset the note lights to the default. Tap the yellow rainbow enabler button to turn off the rainbow and limit the note lights to the usual two colors.*
 
-The 3 custom light patterns are totally separate from all this and are still available for use! This web browser lets you easily edit them: https://forrcaho.github.io/linnstrument_colorizer/
+The 3 custom light patterns are totally separate from all this and are still available for use!
 
 Default scales: of the 8 scales, the 1st and 2nd scales are 5-limit major and 5-limit minor. Scales 3-6 are blank but for the tonic, so that you can create your own scales on the note lights screen. (For the smaller, weirder edos, scales 1-2 are also blank.) The 7th scale is a partial rainbow, and the 8th scale is always the full rainbow.
 

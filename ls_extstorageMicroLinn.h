@@ -18,7 +18,7 @@ namespace MicroLinnV72A {
     byte MLversion;                                 // current version of the microLinn data structures, 0 displays as A, 1 displays as B, etc.
     byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
     byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
-    byte dots[MICROLINN_ARRAY_SIZE];                // one byte per fret, one bit per row, transposable, lefthandedness reverses it, ignores column offsets
+    byte fretboards[MICROLINN_ARRAY_SIZE];          // one byte per fret, one bit per row, transposable, lefthandedness reverses it, ignores column offsets
   };
 
   struct MicroLinnGlobal {

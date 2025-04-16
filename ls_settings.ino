@@ -352,11 +352,11 @@ void loadSettingsFromPreset(byte p) {
 
   applyPresetSettings();
   setupMicroLinn();
-  loadMicroLinnDotsAndRainbow();
+  loadMicroLinnRainbowAndFretboard();
 }
 
 void storeSettingsToPreset(byte p) {
-  storeMicroLinnDotsAndRainbow();
+  storeMicroLinnRainbowAndFretboard();
   memcpy(&config.preset[p].global, &Global, sizeof(GlobalSettings));
   memcpy(&config.preset[p].split[LEFT], &Split[LEFT], sizeof(SplitSettings));
   memcpy(&config.preset[p].split[RIGHT], &Split[RIGHT], sizeof(SplitSettings));

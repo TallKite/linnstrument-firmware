@@ -46,7 +46,8 @@ For any questions about this, contact Roger Linn Design at support@rogerlinndesi
 /******************************************** CONSTANTS ******************************************/
 
 const char* OSVersion = "234.";
-const char* OSVersionBuild = ".072A";   // the "A" means Device.microLinn.MLversion = 0, "B" means 1, etc.
+const char* OSVersionBuild = ".072A";
+const char* microLinnOSVersionBuild = "1.00";
 
 // SPI addresses
 #define SPI_LEDS    10               // Arduino pin for LED control over SPI
@@ -500,7 +501,7 @@ enum DisplayMode {
   displayCustomLedsEditor,
   displayMicroLinnConfig,
   displayMicroLinnAnchorChooser,
-  displayMicroLinnDotsEditor,
+  displayMicroLinnFretboardEditor,
   displayMicroLinnUninstall
 };
 DisplayMode displayMode = displayNormal;
@@ -632,6 +633,8 @@ struct MicroLinnSplit {
   byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
 };
 
+byte ML_IMPORT_DEBUG = 0;
+
 // per-split settings
 struct SplitSettings {
   byte midiMode;                          // 0 = one channel, 1 = note per channel, 2 = row per channel
@@ -708,7 +711,7 @@ struct MicroLinnDevice {
   byte MLversion;                                 // current version of the microLinn data structures, 0 displays as A, 1 displays as B, etc.
   byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
   byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
-  byte dots[MICROLINN_ARRAY_SIZE];                // one byte per fret, one bit per row, transposable, lefthandedness reverses it, ignores column offsets
+  byte fretboards[MICROLINN_ARRAY_SIZE];          // one byte per fret, one bit per row, transposable, lefthandedness reverses it, ignores column offsets
 };
 
 struct DeviceSettings {
@@ -786,9 +789,8 @@ struct MicroLinnGlobal {
   //signed char locatorCC1;                  // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25...
   //signed char locatorCC2;                  // ...ranges from 0 to 119, -1 = OFF
   byte EDO;                                  // ranges 5-55, plus 4 for OFF
-  //byte scales[MICROLINN_MAX_EDO];          // one row of Device.microLinn.scales, unused when rawEDO == 4
-  //byte rainbow[MICROLINN_MAX_EDO];         // ditto for Device.microLinn.rainbows
-  //byte dots[MICROLINN_MAX_EDO];            // ditto for Device.microLinn.dots
+  //byte rainbow[MICROLINN_MAX_EDO];         // one row of Device.microLinn.rainbows, unused when rawEDO == 4
+  //byte fretboard[MICROLINN_MAX_EDO];       // ditto for Device.microLinn.fretboards
   boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
   short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, can be negative, [0] is unused, independent of Global.guitarTuning
   byte anchorCol;                            // ranges 1-25, setting to a number > 16 on a Linnstrument 128 is allowed
@@ -798,9 +800,9 @@ struct MicroLinnGlobal {
   //byte equaveSemitones;                    // for non-octave tunings such as bohlen-pierce, 1..48, 1 semitone = 100 cents
   signed char octaveStretch;                 // rename to equaveCents, -60..+60
   byte sweeten;                              // in tenths of a cent, adjust 41edo 5/4, 5/3 by this amt both top and bottom to make it closer to just
-  //short largeEDO;                          // ranges 56..311, 55 = OFF, user can have a 55-note subset of this edo 
-  //byte largeEdoScale[39];                  // a packed array of booleans up to 311edo  (311 = 39 x 8 - 1)
-  // possible idea: signed char largeEDOoffsets[55];        // ranges -128..127, edosteps from 
+  //short largeEDO;                          // ranges 56..312, 55 = OFF, 312 = JI, user can have a 55-note subset of this edo 
+  //signed char largeEDOoffsets[55];         // ranges -128..127, edosteps/cent from nearest edo approx
+  // possibly: byte largeEdoScale[39];                  // a packed array of booleans up to 311edo  (311 = 39 x 8 - 1)
 };
 
 struct GlobalSettings {

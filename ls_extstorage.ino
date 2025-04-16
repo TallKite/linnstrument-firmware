@@ -2324,9 +2324,8 @@ void migrateFromMicroLinnGlobalV72A (MicroLinnGlobal* target, void* s) {
   //target->locatorCC2 = -1;
   target->EDO = source->EDO;
   //short i = microLinnTriIndex(source->EDO, 0);
-  //memcpy (target->scales,  &Device.microLinn.scales[i], source->EDO);
-  //memcpy (target->rainbow, &Device.microLinn.rainbows[i], source->EDO);
-  //memcpy (target->dots,    &Device.microLinn.dots[i], source->EDO);
+  //memcpy (target->rainbow,   &Device.microLinn.rainbows[i], source->EDO);
+  //memcpy (target->fretboard, &Device.microLinn.fretboards[i], source->EDO);
   target->useRainbow = source->useRainbow;
   for (byte row = 0; row < MAXROWS; row++) {
     target->guitarTuning[row] = source->guitarTuning[row];

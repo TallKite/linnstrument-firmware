@@ -82,7 +82,7 @@ NRPN   Value   Description
 16     0-1     Split Left MIDI Per Note Channel 15 (0: Off, 1: On)
 17     0-1     Split Left MIDI Per Note Channel 16 (0: Off, 1: On)
 18     1-16    Split Left MIDI Per Row Lowest Channel
-19     1-96    Split Left MIDI Bend Range
+19 *   1-96    Split Left MIDI Bend Range
 20     0-1     Split Left Send X (0: Off, 1: On)
 21     0-1     Split Left Pitch Quantize (0: Off, 1: On)
 22     0-3     Split Left Pitch Quantize Hold (0: Off, 1: Medium, 2: Fast, 3: Slow)
@@ -99,9 +99,9 @@ NRPN   Value   Description
 33     1-6     Split Left Color LowRow (see color value table below)
 34     0-7     Split Left LowRow Mode (0: Off, 1: Sust, 2: Restr, 3: Strum, 4: Arp, 5: Bend, 6: CC1, 7: CC16-18)
 35     0-4     Split Left Special (0: Off, 1: Arpeg, 2: CC Faders, 3: Strum, 4: Sequencer)
-36     0-10    Split Left Octave (0: —5, 1: -4, 2: -3, 3: -2, 4: -1, 5: 0, 6: +1, 7: +2, 8: +3, 9: +4. 10: +5)
-37     0-14    Split Left Transpose Pitch (0-6: -7 to -1, 7: 0, 8-14: +1 to +7)
-38     0-14    Split Left Transpose Lights (0-6: -7 to -1, 7: 0, 8-14: +1 to +7)
+36  *  0-10    Split Left Octave (0: —5, 1: -4, 2: -3, 3: -2, 4: -1, 5: 0, 6: +1, 7: +2, 8: +3, 9: +4. 10: +5)
+37  *  0-14    Split Left Transpose Pitch (0-6: -7 to -1, 7: 0, 8-14: +1 to +7)
+38  *  0-14    Split Left Transpose Lights (0-6: -7 to -1, 7: 0, 8-14: +1 to +7)
 39     0-2     Split Left MIDI Expression For Y (0: Poly Aftertouch, 1: Channel Aftertouch, 2: CC defined in #25) 
 40     0-128   Split Left MIDI CC For Fader 1 (0-127: CC, 128: Channel Aftertouch) 
 41     0-128   Split Left MIDI CC For Fader 2 (0-127: CC, 128: Channel Aftertouch) 
@@ -149,7 +149,7 @@ NRPN   Value   Description
 116    0-1     Split Right MIDI Per Note Channel 15 (0: Off, 1: On)
 117    0-1     Split Right MIDI Per Note Channel 16 (0: Off, 1: On)
 118    1-16    Split Right MIDI Per Row Lowest Channel
-119    1-96    Split Right MIDI Bend Range
+119 *  1-96    Split Right MIDI Bend Range
 120    0-1     Split Right Send X (0: Off, 1: On)
 121    0-1     Split Right Pitch Quantize (0: Off, 1: On)
 122    0-3     Split Right Pitch Quantize Hold (0: Off, 1: Medium, 2: Fast, 3: Slow)
@@ -166,9 +166,9 @@ NRPN   Value   Description
 133    1-6     Split Right Color LowRow (see color value table below)
 134    0-7     Split Right LowRow Mode (0: Off, 1: Sust, 2: Restr, 3: Strum, 4: Arp, 5: Bend, 6: CC1, 7: CC16-18)
 135    0-4     Split Right Special (0: Off, 1: Arpeg, 2: CC Faders, 3: Strum, 4: Sequencer)
-136    0-10    Split Right Octave (0: —5, 1: -4, 2: -3, 3: -2, 4: -1, 5: 0, 6: +1, 7: +2, 8: +3, 9: +4. 10: +5)
-137    0-14    Split Right Transpose Pitch (0-6: -7 to -1, 7: 0, 8-14: +1 to +7)
-138    0-14    Split Right Transpose Lights (0-6: -7 to -1, 7: 0, 8-14: +1 to +7)
+136 *  0-10    Split Right Octave (0: —5, 1: -4, 2: -3, 3: -2, 4: -1, 5: 0, 6: +1, 7: +2, 8: +3, 9: +4. 10: +5)
+137 *  0-14    Split Right Transpose Pitch (0-6: -7 to -1, 7: 0, 8-14: +1 to +7)
+138 *  0-14    Split Right Transpose Lights (0-6: -7 to -1, 7: 0, 8-14: +1 to +7)
 139    0-2     Split Right MIDI Expression For Y (0: Poly Aftertouch, 1: Channel Aftertouch, 2: CC defined in #125) 
 140    0-128   Split Right MIDI CC For Fader 1 (0-127: CC, 128: Channel Aftertouch) 
 141    0-128   Split Right MIDI CC For Fader 2 (0-127: CC, 128: Channel Aftertouch) 
@@ -224,7 +224,7 @@ NRPN   Value   Description
 224    0-1     Global Accent Note Light A (0: Off, 1: On)
 225    0-1     Global Accent Note Light A# (0: Off, 1: On)
 226    0-1     Global Accent Note Light B (0: Off, 1: On)
-227    0-13    Global Row Offset (only supports, 0: No overlap, 3 4 5 6 7 12: Intervals, 13: Guitar, 127: 0 offset)
+227 *  0-13    Global Row Offset (only supports, 0: No overlap, 3 4 5 6 7 12: Intervals, 13: Guitar, 127: 0 offset)
 228    0-17    Global Switch 1 Assignment (0: Oct Down, 1: Oct Up, 2: Sustain, 3: CC65, 4: Arp, 5: Alt Split, 6: Auto Octave, 7: Tap Tempo, 8: Legato, 9: Latch, 10: Preset Up, 11: Preset Down, 12: Reverse Pitch X, 13: Sequencer Play, 14: Sequencer Previous, 15: Sequencer Next, 16: Send MIDI Clock, 17: Sequencer Mute)
 229    0-17    Global Switch 2 Assignment (0: Oct Down, 1: Oct Up, 2: Sustain, 3: CC65, 4: Arp, 5: Alt Split, 6: Auto Octave, 7: Tap Tempo, 8: Legato, 9: Latch, 10: Preset Up, 11: Preset Down, 12: Reverse Pitch X, 13: Sequencer Play, 14: Sequencer Previous, 15: Sequencer Next, 16: Send MIDI Clock, 17: Sequencer Mute)
 230    0-17    Global Foot Left Assignment (0: Oct Down, 1: Oct Up, 2: Sustain, 3: CC65, 4: Arp, 5: Alt Split, 6: Auto Octave, 7: Tap Tempo, 8: Legato, 9: Latch, 10: Preset Up, 11: Preset Down, 12: Reverse Pitch X, 13: Sequencer Play, 14: Sequencer Previous, 15: Sequencer Next, 16: Send MIDI Clock, 17: Sequencer Mute)
@@ -240,10 +240,10 @@ NRPN   Value   Description
 240    0-1     Global Switch 2 Both Splits (0: Off, 1: On)
 241    0-1     Global Foot Left Both Splits (0: Off, 1: On)
 242    0-1     Global Foot Right Both Splits (0: Off, 1: On)
-243    0-5     Global Settings Preset Load
+243 *  0-5     Global Settings Preset Load
 244    0-1     Global Pressure Aftertouch (0: Off, 1: On)
 245    0-1     Device User Firmware Mode (0: Off, 1: On)
-246    0-1     Device Left Handed Operation (0: Off, 1: On)
+246 *  0-1     Device Left Handed Operation (0: Off, 1: On)
 247    0-11    Global Active Note Lights Preset
 248    0-127   Global MIDI CC For Switch CC65 (Changes the CC for all switches - Legacy option, see NRPN 255-258)
 249    1-127   Global Minimum Value For Velocity
@@ -270,8 +270,12 @@ NRPN   Value   Description
 270    0-127   Global Note Number For Guitar Tuning Row 8
 299    <any>   Send the current value of a particular NRPN configuration parameter, when possible
 
+* be sure to follow up these NRPNs with a NRPN 1300!
 
-Additional NRPN messages for microLinn
+Additional NRPN messages for microLinn 
+Important: send a NRPN 1300 after changing certain settings that affect the tuning:
+  NRPNs 19, 36-38, 119, 136-138, 200-202?, 227, 243, 246 above
+  All NRPNs below except 1003-1006, 1103-1105, 1201-1202, 1204, 1224
 
 NRPN   Value   Description
 -------------------------------------------------------------------------------------------------------------
@@ -313,45 +317,55 @@ NRPN   Value   Description
 1221   0-121   Global anchorCents ranges -60..60, so add/subtract 60 to convert it
 1222   1-48    Global equaveSemitones
 1223   0-121   Global equaveCents ranges -60..60, so add/subtract 60 to convert it
-1224   0-60    Global sweeten in tenths of a cent
-1225   55-311  Global largeEDO ranges 56..311, 55 = OFF 
+1224   0-60    Global sweeten (in tenths of a cent)
+1225   55-312  Global largeEDO ranges 56..312, 55 = OFF, 312 = JI
+1300   N/A     setup microLinn, do this after changing certain user settings, see above
  
 
-MicroLinn importing and exporting uses NRPNs plus polypressure messages: 1010cccc 0nnnnnnn 0vvvvvvv, 18 bits
+ MICROLINN BULK IMPORT/EXPORT
+ ============================
+
+MicroLinn importing and exporting uses a NRPN plus polypressure messages: 1010cccc 0nnnnnnn 0vvvvvvv, 18 bits
 A polypressure message is much faster than a NRPN or multiple CCs, thanks to KVR forum member dr_loop for the idea!
-Linnstrument responds to a NRPN 299 export request with a NRPN 300 header, multiple polypressures and a NRPN 300 footer
+Linnstrument responds to a NRPN 299 export request with a NRPN 300 header and multiple polypressure messages
 Linnstrument responds to a NRPN 300 header by importing data from polypressure messages until the footer is received
 
-NRPN 299 value: export type + 2000 = 2000-2070
-NRPN 300 header value: LSB = export type = 0-70, MSB = min (export length, 127)
-NRPN 300 footer value: LSB = export type = 0-70, MSB = 0
+export request format:
+NRPN 299 = (MSB 2, LSB 43), channel 0, value = 2048 + export type = (MSB 16, LSB 1-35)
 
-The midi channel for all NRPNs is always 1, and for the polypressure messages it's usually 1
-But if the format is "byte:7+1, byte:7+1", the channel is used to store the 8th bit of each byte,
-the polypressure messages are on channels 1-4, and the 8th bit of each byte is read from the channel
+export format:
+NRPN 300 = (MSB 2, LSB 44), channel 0, value: MSB = export type = 1-35, LSB = 0 or Global.microlinn.EDO
+Polypressure header, channel 8, value: data1 = Device.version, data2 = Device.microLinn.MLversion
+(multiple polypressure data messages on channels 0-3)
+Polypressure footer, channel 12, value: data1 = export type = 1-35, data2 = 0
 
-A color is sent as 8 bits not 4, 4 extra bits for possible future colors
+The edo is stored in NRPN 300 MSB to aid in deducing the length of certain imports
 
-The All User Settings export is meant for migrating from an old Linnstrument to a new one
-It lacks the version, the calibration data and the 16 sequencer projects
+For the polypressure messages, channels 1-3 are used to store the 8th bit of each byte:
+channel 1 or 3 = add 128 to data1 when importing 
+channel 2 or 3 = add 128 to data2 when importing
 
-Type    Length (bytes)    Settings exported/imported       Polypressure format       Notes
------------------------------------------------------------------------------------------------------------------------
- 1      200               Custom light pattern A           byte:7+1, byte:7+1        imports into current light pattern
- 2       "                Custom light pattern A#            "                         "
- 3       "                Custom light pattern B             "                         "
- 4      1530              Device.microLinn.scales            "
- 5       "                Device.microLinn.rainbows          "
- 6       "                Device.microLinn.dots              "
- 7      2 * edo           Global.microLinn.scales          edostep:7, bitmask:7      
- 8       "                Global.microLinn.rainbow         edostep:7, color:7        
- 9       "                Global.microLinn.dots            edostep:7, bitmask:8      
-10-25   31                Audience message 1-16            char:7, char:7            imports into last-edited message
-26      512               Audience messages (all)            "
-30-35   22 + 3 * edo      Preset 1-6 (edo-specific only)   byte:7+1, byte:7+1        if edo is odd, length = 22 + 3 * (edo + 1)
-50-55   ???               Preset 1-6 (all data)              "
-70      ???               All User Settings                  "                       no calibration or sequencer projects
-71      1804              Calibration data                   "                       for backup only, convenient for coders
+Type        # of data bytes     Settings exported                          Notes
+-------------------------------------------------------------------------------------------------------------
+ 1          200                 Custom light pattern A                     imports into current light pattern
+ 2           "                  Custom light pattern A#                      "
+ 3           "                  Custom light pattern B                       "
+ 4          1530                Device.microLinn.scales                    
+ 5           "                  Device.microLinn.rainbows                  
+ 6           "                  Device.microLinn.fretboards                      
+ 7          edo                 Device.microLinn.scales (1 edo only)       if current edo is odd, size = edo + 1
+ 8           "                  Device.microLinn.rainbows (1 edo only)        "
+ 9           "                  Device.microLinn.fretboards (1 edo only)      "
+10-25       32                  Audience message 1-16                      imports into last-edited message
+26          496                 Audience messages (all)                    
+27          22 + 3 * edo        All data for the current edo               if edo is odd, size = 22 + 3 * (edo + 1)
+28          14727               All User Settings                          no calibration or 16 sequencer projects
+29          1804                Calibration Data                           for backup only, convenient for coders
+30-35       396                 Preset 1-6 (all data)                      top preset is preset #1, will be larger for MLversion B
+
+The All User Settings export is meant for migrating user settings from an old Linnstrument to a new one
+The settings won't import if Device.version or Device.microLinn.MLversion don't match the current versions
+The Calibration Data export is meant for coders who regularly overwrite their user settings
 
 
 Color Values

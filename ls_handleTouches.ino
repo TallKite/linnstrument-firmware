@@ -715,8 +715,8 @@ void handleNonPlayingTouch() {
     case displayMicroLinnAnchorChooser:
       handleMicroLinnAnchorChooserNewTouch();
       break;
-    case displayMicroLinnDotsEditor:
-      handleMicroLinnDotsEditorNewTouch();
+    case displayMicroLinnFretboardEditor:
+      handleMicroLinnFretboardEditorNewTouch();
       break;
     case displayMicroLinnUninstall: 
       handleMicroLinnUninstallNewTouch();
