@@ -12,12 +12,12 @@ For experienced linnstrumentalists, microLinn makes exploring microtonality very
 1) Go to https://www.rogerlinndesign.com/support/support-linnstrument-update-software and follow the "How to Check Your Software Version" instructions. If it's not 2.3.3, follow the "How to Update Your LinnStrument Software‍" instructions to update to 2.3.3.
 2) Download the latest version of linnstrument-firmware.ino.bin from this github. Important: if on a mac, put the .bin file on your **desktop**. 
 3) Follow the "How to Update Your LinnStrument Software‍" instructions, with one difference: after you download (and possibly unzip) the updater and before running it, put it in the same folder as the .bin file from step 2. Mac users: when you run the updater, if it asks for permission to read files from the desktop, say yes.
-4) Check your OS version to confirm the update. It should be 234.072A. If not, reboot your computer and try again.
+4) Check your OS version to confirm the update. Tap twice to see the full number. It should be 234.072.001 or higher. If not, reboot your computer and try again.
 5) Important, read the next section about uninstalling!
 
 -------- UPGRADING/UNINSTALLING -------- 
 
-IMPORTANT: Later on when you update the OS to a different version, you'll be asked if you want to uninstall microLinn. Say no (the red button in the middle, turns orange) if you're updating to a newer version of microLinn. This avoids needlessly deleting your microtonal user settings. Say yes (the blue button on the left, turns light blue) otherwise, e.g. if you're going back to an official (non-microtonal) version of the firmware. This does delete your microtonal user settings, which is necessary in order to avoid deleting all your other user settings plus your calibration data. If you're not sure, tap the green button on the right to exit the uninstall screen.
+IMPORTANT: Later on when you update the OS to a different version, you'll be asked if you want to uninstall microLinn. Say no (tap the red button in the middle, turns orange) if you're updating to a newer version of microLinn. This avoids needlessly deleting your microtonal user settings. Say yes (tap the blue button on the left, turns light blue) otherwise, e.g. if you're going back to an official (non-microtonal) version of the firmware. This does delete your microtonal user settings, which is necessary in order to avoid deleting all your other user settings plus your calibration data. Once you've decided, tap the green button on the right to continue.
 
 -------- NON-MICROTONAL FEATURES -------- 
 
@@ -70,17 +70,17 @@ LOCATOR CCs: A locator CC message can be sent immediately before every note-on, 
 
 IMPORTING/EXPORTING: You can back up various settings and/or share them with others via midi files. The 3 custom light patterns, the 16 audience messages, the 6 memories, microtonal data, and more! Check the Linnstrument community wiki for export-request files and importable settings files.
 
-*Details: Importing: Download a settings file from the wiki. In your DAW, set the output of midi track A to your Linnstrument. Load the settings file into track A and press play. Your Linnstrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, disconnect the Linnstrument's power and reconnect it, to avoid accidental importing.*
+*Details: Importing: Download a settings file from the wiki. In your DAW, set the output of midi track A to your Linnstrument. Load the settings file into track A and press play. Your Linnstrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #5 below.*
 
 *To import a custom light pattern, before you press play, you must first display the one you want to overwrite. To import an audience message, before you press play, you must first briefly edit the one you want to overwrite.*
 
-*Exporting: Download an export-request file from the wiki. In your DAW, set the input of midi track A and the output of midi track B to your Linnstrument. Put the export-request midi file at the start of track B. Then start recording on track A. When your Linnstrument stops sending midi, stop recording. Save the midi on track A to a midi file (i.e. export it from your DAW), preferably as format 0. Name it something informative such as "lightPatternB.mid" or "22edoScales.mid". Later on you can import this file to restore your settings. Or share it on the wiki.*
+*Exporting: Download an export-request file from the wiki. In your DAW, set the input of midi track A and the output of midi track B to your Linnstrument. Put the export-request midi file at the start of track B. Then start recording on track A. When your Linnstrument stops sending midi, stop recording. Save the midi on track A to a midi file (i.e. export it from your DAW), preferably as format 0. Name it something informative such as "lightPattern31edoFretboard.mid" or "22edoScales.mid". Later on you can import this file to restore your settings. Or share it on the wiki.*
 
 *Exporting multiple requests: 1st method: Send the first request and see in your DAW where the Linnstrument stops sending midi. Position the next request file in track B about 1/10 of a second after that. Add additional request files similarly. Record all requests at once, and save the midi to a file as before. 2nd method: Record each export individually. Then position those midi clips next to each other, and save them all as one file.*
 
-*Troubleshooting: While importing or exporting, put your Linnstrument in performance mode, but don't play it. For importing, slowing down your DAW's playback speed sometimes helps. Your DAW must be able to handle a midi file that uses multiple midi channels.*
+*Troubleshooting: (1) While importing or exporting, don't play your Linnstrument. (2) When importing, slowing down your DAW's playback speed sometimes helps. (3) Your DAW must be able to handle a midi file that uses multiple midi channels. (4) The All User Settings export is meant for migrating from an old Linnstrument to a new one. It will only work if the OS version on the old one matches the OS version on the new one (or more precisely, if the data structure versions match). (5) MicroLinn imports data via polyphonic pressure messages. If you have connected something else to your Linnstrument that also sends polypressure messages, there is a small possibility of confusion. If after an import there is no sucess or failure scrolling message, to avoid confusion disconnect the Linnstrument's power and reconnect it.*
 
-The 16 sequencer projects can be imported and exported as usual via the updater app. BTW the filename of microtonal projects should contain the edo.
+The 16 sequencer projects can be imported and exported as usual via the updater app. When you export, the filename of microtonal projects should probably contain the edo, since it won't sound right in the wrong edo.
 
 requestLightPatternA.mid
 requestLightPatternA#.mid
@@ -88,19 +88,7 @@ requestLightPatternB.mid
 
 requestAudienceMsg1.mid
 requestAudienceMsg2.mid
-requestAudienceMsg3.mid
-requestAudienceMsg4.mid
-requestAudienceMsg5.mid
-requestAudienceMsg6.mid
-requestAudienceMsg7.mid
-requestAudienceMsg8.mid
-requestAudienceMsg9.mid
-requestAudienceMsg10.mid
-requestAudienceMsg11.mid
-requestAudienceMsg12.mid
-requestAudienceMsg13.mid
-requestAudienceMsg14.mid
-requestAudienceMsg15.mid
+...
 requestAudienceMsg16.mid
 requestAllAudienceMsgs.mid
 

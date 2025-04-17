@@ -119,6 +119,9 @@ void updateDisplay() {
     case displayOsVersionBuild:
       paintOSVersionBuildDisplay();
       break;
+    case displayMicroLinnOsVersionBuild:
+      paintMicroLinnOSVersionBuildDisplay();
+      break;
     case displayVolume:
       paintVolumeDisplay(Global.currentPerSplit);
       break;
@@ -937,9 +940,13 @@ void paintOSVersionBuildDisplay() {
   clearDisplay();
 
   byte color = Split[LEFT].colorAccent;
-  if (LINNMODEL == 200) smallfont_draw_string(0, 0, OSVersionBuild, color);
-  // to fit in the microLinn version letter, use a condensed font and omit the period
-  else condfont_draw_string(-2, 0, OSVersionBuild, color);
+  smallfont_draw_string(0, 0, OSVersionBuild, color);
+}
+
+void paintMicroLinnOSVersionBuildDisplay() {
+  clearDisplay();
+  byte color = Split[LEFT].colorAccent;
+  smallfont_draw_string(0, 0, microLinnOSVersionBuild, color);
 }
 
 // paint the current preset number for a particular side, in large block characters

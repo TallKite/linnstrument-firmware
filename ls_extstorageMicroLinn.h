@@ -34,7 +34,7 @@ namespace MicroLinnV72A {
   };
 
   struct MicroLinnSplit {
-    byte colOffset;                         // column offset, 1 to 8, 1 = OFF
+    byte colOffset;                         // column offset, 0 to 8, 1 = OFF
     byte hammerOnWindow;                    // maximum width in tens of cents of a hammer-on before it becomes two simultaneous notes, 0..240, 0 = off
     boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
     byte pullOffVelocity;                   // 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity

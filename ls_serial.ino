@@ -158,24 +158,15 @@ boolean waitForSerialAck() {
 }
 
 boolean waitForSerialCheck() {
-  if (!serialWaitForMaximumTwoSeconds()) {
-    progressBarMicroLinn(1.0f, COLOR_BLUE, 6); 
-    return false;
-  }
+  if (!serialWaitForMaximumTwoSeconds()) return false;
   char ack = Serial.read();
   lastSerialMoment = millis();
-  if (ack != CRCCheck) {
-    progressBarMicroLinn(1.0f, COLOR_RED, 6); 
-    return false;
-  }
+  if (ack != CRCCheck) return false;
   return true;
 }
 
 char waitForSerialCRC() {
-  if (!serialWaitForMaximumTwoSeconds()) {
-    progressBarMicroLinn(1.0f, COLOR_RED, 5); 
-    return 0;
-  }
+  if (!serialWaitForMaximumTwoSeconds()) return 0;
   char ack = Serial.read();
   lastSerialMoment = millis();
   return ack;
@@ -213,17 +204,13 @@ int negotiateIncomingCRC(byte* buffer, uint8_t size) {
   return 1;
 }
 
-void progressBarMicroLinn(float done, byte color, byte row) {
-  setLed(1 + (int)(done*25.0f), row, color, cellOn);
-}
-
 void serialSendSettings() {
   Serial.write(ackCode);
 
   clearDisplayImmediately();
   delayUsec(1000);
 
-  int32_t confSize, confSizeOriginal;
+  int32_t confSize;
 
   // send the actual settings
   const uint8_t batchsize = 96;
@@ -231,7 +218,7 @@ void serialSendSettings() {
 
   // if the user is reverting to the mainline firmware, we need to send the updater a version
   // of the configuration that's compatible with mainline
-  if (microLinnUninstall == 1) {
+  if (isMicroLinnUninstallTrue()) {
     // this does an in-place overwrite of the current configuration with a smaller one that has all the
     // MicroLinn data stripped out, so it's important that nothing ever tries to access
     // the configuration fields at their old locations between now and the next reboot
@@ -242,13 +229,10 @@ void serialSendSettings() {
     confSize = sizeof(Configuration);
   }
 
-  confSizeOriginal = confSize;
-
   // send the size of the settings
   Serial.write((byte*)&confSize, sizeof(int32_t));
 
   lastSerialMoment = millis();
-  progressBarMicroLinn(0.0f, COLOR_GREEN, 7);
   while (confSize > 0) {
     int actual = min(confSize, batchsize);
     Serial.write(src, actual);
@@ -261,9 +245,7 @@ void serialSendSettings() {
 
     confSize -= actual;
     src += actual;
-    progressBarMicroLinn(((float)(confSizeOriginal - confSize)) / (float)confSizeOriginal, COLOR_WHITE, 7);   // good
   }
-  progressBarMicroLinn(1.0f, COLOR_ORANGE, 7);  // done
 
   Serial.write(ackCode);
 }

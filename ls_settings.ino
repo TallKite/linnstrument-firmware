@@ -342,7 +342,7 @@ void loadSettingsFromPreset(byte p) {
     memcpy(&Split[RIGHT], &config.preset[p].split[RIGHT], sizeof(SplitSettings) - sizeof(MicroLinnSplit));
     // only load the column and per-split row offsets if they are not OFF (such offsets are often related to the edo)
     for (byte side = 0; side < NUMSPLITS; ++side) {
-      if (config.preset[p].split[side].microLinn.colOffset > 1)
+      if (config.preset[p].split[side].microLinn.colOffset != 1)
         Split[side].microLinn.colOffset = config.preset[p].split[side].microLinn.colOffset;
       // uncomment once microLinnRowOffset becomes part of MicroLinnSplit
       //if (config.preset[p].split[side].microLinn.rowOffset > -26)

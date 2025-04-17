@@ -46,8 +46,8 @@ For any questions about this, contact Roger Linn Design at support@rogerlinndesi
 /******************************************** CONSTANTS ******************************************/
 
 const char* OSVersion = "234.";
-const char* OSVersionBuild = ".072A";
-const char* microLinnOSVersionBuild = "1.00";
+const char* OSVersionBuild = ".072";
+const char* microLinnOSVersionBuild = ".001";
 
 // SPI addresses
 #define SPI_LEDS    10               // Arduino pin for LED control over SPI
@@ -250,11 +250,11 @@ const unsigned long LED_ARRAY_SIZE = (MAX_LED_LAYERS+1) * LED_LAYER_SIZE;
 #define DEFAULT_MAX_VELOCITY   127  // default maximum velocity value
 #define DEFAULT_FIXED_VELOCITY 96   // default fixed velocity value
 
-/*************************************** MICROLINN VERSION ***************************************/
+/******************************* MICROLINN DATA STRUCTURE VERSION *******************************/
 
-// the Microlinn version is the official mainline version it's based on, plus this offset
+// the Microlinn version is the official mainline version it's based on (16 as of Dec 2024), plus this offset
 // (we would rather have used 128, but the updater interprets version as a signed character type,
-// and is "confused" by negative version numbers).
+// and is "confused" by negative version numbers.)
 #define MICROLINN_VERSION_OFFSET 56
 
 /*************************************** CONVENIENCE MACROS **************************************/
@@ -464,6 +464,7 @@ enum DisplayMode {
   displayGlobalWithTempo,
   displayOsVersion,
   displayOsVersionBuild,
+  displayMicroLinnOsVersionBuild,
   displayCalibration,
   displayReset,
   displayBendRange,
@@ -621,7 +622,7 @@ enum SequencerDirection {
 };
 
 struct MicroLinnSplit {
-  byte colOffset;                         // column offset, 1 to 8, 1 = OFF
+  byte colOffset;                         // column offset, 0 to 8, 1 = OFF
   //signed char rowOffset;                // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
   //byte collapseBendPerPad;              // width of a single-pad pitch bend in edosteps, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
   byte hammerOnWindow;                    // maximum width in tens of cents of a hammer-on before it becomes two simultaneous notes, 0..240, 0 = OFF
@@ -632,8 +633,6 @@ struct MicroLinnSplit {
   signed char transposeEDOlights;
   byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
 };
-
-byte ML_IMPORT_DEBUG = 0;
 
 // per-split settings
 struct SplitSettings {
@@ -708,7 +707,7 @@ const byte MICROLINN_MAX_EDO = 55;                // the minimum edo is 5
 const short MICROLINN_ARRAY_SIZE = (MICROLINN_MAX_EDO * (MICROLINN_MAX_EDO + 1)) / 2 - 10;     // a triangular array missing rows 1-4 = 1530
 
 struct MicroLinnDevice {
-  byte MLversion;                                 // current version of the microLinn data structures, 0 displays as A, 1 displays as B, etc.
+  byte MLversion;                                 // current version of the microLinn data structures, currently 0, will become 1
   byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
   byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
   byte fretboards[MICROLINN_ARRAY_SIZE];          // one byte per fret, one bit per row, transposable, lefthandedness reverses it, ignores column offsets

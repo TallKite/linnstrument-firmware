@@ -332,6 +332,13 @@ void handleMidiInput(unsigned long nowMicros) {
         break;
       }
 
+      case MIDIPolyphonicPressure:
+      {
+        // all received polypressure messages are assumed to be part of a microLinn bulk import
+        receiveMicroLinnPolyPressure(midiData1, midiData2, midiChannel);
+        break;      
+      }
+
       case MIDIProgramChange:
       {
         if (split != -1) {
@@ -445,7 +452,6 @@ void handleMidiInput(unsigned long nowMicros) {
             }
             if (lastNrpnMsb != 127 || lastNrpnLsb != 127) {
               lastDataLsb = midiData2;
-              ML_IMPORT_DEBUG = 1;
               receivedNrpn((lastNrpnMsb<<7)+lastNrpnLsb, (lastDataMsb<<7)+lastDataLsb, midiChannel);
               break;
             }
@@ -467,11 +473,9 @@ void handleMidiInput(unsigned long nowMicros) {
             lastRpnMsb = midiData2;
             break;
         }
-      }
-      case MIDIPolyphonicPressure:
-        // all received polypressure messages are assumed to be part of a microLinn import
-        receiveMicroLinnPolyPressure(midiData1, midiData2, midiChannel);
         break;
+      }
+
       default:
         // don't handle other MIDI messages
         break;
@@ -1285,9 +1289,8 @@ void receivedNrpn(int parameter, int value, int channel) {
     case 299:
       sendNrpnParameter(value, channel);
       break;
-    // begin bulk importing microtonal and/or non-microtonal data
+    // begin bulk importing microtonal and/or non-microtonal user settings
     case 300:
-      ML_IMPORT_DEBUG = 2;
       importMicroLinnData(value);
       break;
   }
@@ -1297,12 +1300,12 @@ void receivedNrpn(int parameter, int value, int channel) {
 
 void sendNrpnParameter(int parameter, int channel) {
   if (parameter >= 2048) {
-    // bulk export user settings
+    // bulk export microtonal and/or non-microtonal user settings
     exportMicroLinnData(parameter - 2048);
     return;
   }  
   if (parameter >= 1000) {
-    // export 1 item of microLinn data
+    // export 1 microLinn user setting
     sendMicroLinnNrpnParameter(parameter, channel);
     return;
   }
@@ -1765,6 +1768,7 @@ void resetPossibleNoteCells(byte split, byte notenum) {
 short getNoteNumColumn(byte split, byte notenum, byte row) {
   short row_offset_note = determineRowOffsetNote(split, row);
   signed char colOffset = Split[split].microLinn.colOffset;
+  if (colOffset == 0) return -1;
   if (!isMicroLinnOn())                                              // microLinn's tuning tables take transposition into account already
     row_offset_note += Split[split].transposeOctave + Split[split].transposePitch - Split[split].transposeLights;
   if ((notenum - row_offset_note) % colOffset != 0) return -1;       // check if the column offset makes us skip over the note
