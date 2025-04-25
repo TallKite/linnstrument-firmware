@@ -685,10 +685,10 @@ void handleNonPlayingTouch() {
       updateDisplay();
       break;
     case displayOsVersionBuild:
-      setDisplayMode(displayMicroLinnOsVersionBuild);
+      setDisplayMode(displayMicroLinnOsVersion);
       updateDisplay();
       break;
-    case displayMicroLinnOsVersionBuild:
+    case displayMicroLinnOsVersion:
       setDisplayMode(displayOsVersion);
       updateDisplay();
       break;

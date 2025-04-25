@@ -337,16 +337,24 @@ void loadSettingsFromPreset(byte p) {
     memcpy(&Split[RIGHT], &config.preset[p].split[RIGHT], sizeof(SplitSettings));
   } else {        
     // if the preset has microLinn turned off, don't alter any microLinn settings, but load everything else
-    memcpy(&Global, &config.preset[p].global, sizeof(GlobalSettings) - sizeof(MicroLinnGlobal));
-    memcpy(&Split[LEFT], &config.preset[p].split[LEFT], sizeof(SplitSettings) - sizeof(MicroLinnSplit));
-    memcpy(&Split[RIGHT], &config.preset[p].split[RIGHT], sizeof(SplitSettings) - sizeof(MicroLinnSplit));
+    memcpy(&Global, &config.preset[p].global, sizeof(GlobalSettings) - sizeof(MicroLinnGlobal) + 0); 
+    if (microLinnRowOffset[0] == 3) {} //fake line to flag this code, compiler will throw an error
+    // change +0 to +3 for 72.0, include drumPadMode etc.
     // only load the column and per-split row offsets if they are not OFF (such offsets are often related to the edo)
     for (byte side = 0; side < NUMSPLITS; ++side) {
+      memcpy(&Split[side], &config.preset[p].split[side], sizeof(SplitSettings) - sizeof(MicroLinnSplit));
       if (config.preset[p].split[side].microLinn.colOffset != 1)
         Split[side].microLinn.colOffset = config.preset[p].split[side].microLinn.colOffset;
-      // uncomment once microLinnRowOffset becomes part of MicroLinnSplit
       //if (config.preset[p].split[side].microLinn.rowOffset > -26)
       //  Split[side].microLinn.rowOffset = config.preset[p].split[side].microLinn.rowOffset;
+    //Split[side].microLinn.collapseBendPerPad = config.preset[p].split[side].microLinn.collapseBendPerPad;
+      Split[side].microLinn.hammerOnWindow     = config.preset[p].split[side].microLinn.hammerOnWindow;
+      Split[side].microLinn.hammerOnNewNoteOn  = config.preset[p].split[side].microLinn.hammerOnNewNoteOn;
+      Split[side].microLinn.pullOffVelocity    = config.preset[p].split[side].microLinn.pullOffVelocity;
+    //Split[side].microLinn.showCustomLEDs     = config.preset[p].split[side].microLinn.showCustomLEDs;
+      Split[side].microLinn.transposeEDOsteps  = config.preset[p].split[side].microLinn.transposeEDOsteps;
+      Split[side].microLinn.transposeEDOlights = config.preset[p].split[side].microLinn.transposeEDOlights;
+      Split[side].microLinn.tuningTable        = config.preset[p].split[side].microLinn.tuningTable; 
     }
   }
 

@@ -1083,18 +1083,20 @@ boolean upgradeConfigurationSettings(int32_t confSize, byte* buff2) {
         {
           byte microLinnVersion = ((struct Configuration *) (buff2))->device.microLinn.MLversion;
 
-          if (microLinnVersion == 0) {           // 0 = version A
-            if (confSize == sizeof(MicroLinnV72A::Configuration)) {
+          if (microLinnVersion == 0) {
+            if (confSize == sizeof(MicroLinnV72_0::Configuration)) {
               memcpy(&config, buff2, confSize);
-              // once version B is released, replace the previous memcpy with the following line
-              // copyConfigurationFunction = &copyConfigurationMicroLinnV72A;
+              // once version 72.1 is released, replace the previous memcpy with the following line
+              // copyConfigurationFunction = &copyConfigurationMicroLinnV72_0;
               result = true;
             } else {
               result = false;
             }
-          } else if (microLinnVersion == 1) {    // 1 = version B
+          } else if (microLinnVersion == 1) {
             if (confSize == sizeof(Configuration)) {
               memcpy(&config, buff2, confSize);
+              // when version 72.2 is released, replace the previous memcpy with the following line
+              // copyConfigurationFunction = &copyConfigurationMicroLinnV72_1;
               result = true;
             } else {
               result = false;
@@ -2289,7 +2291,7 @@ void copyConfigurationV15(void* target, void* source) {
 
 /*************************************************************************************************/
 
-void copyConfigurationVLatest(void* target, void* source) {            // copies from V16 to microLinn 72A
+void copyConfigurationVLatest(void* target, void* source) {            // copies from V16 to microLinn 72.n
   Configuration* t = (Configuration*)target;
   ConfigurationVLatest* s = (ConfigurationVLatest*) source;
 
@@ -2316,65 +2318,65 @@ void copyConfigurationVLatest(void* target, void* source) {            // copies
   memcpy(&t->project, &s->project, sizeof(s->project));
 }
 
-void migrateFromMicroLinnGlobalV72A (MicroLinnGlobal* target, void* s) {
-  // copy what's in 72A, initialize what isn't
-  MicroLinnV72A::MicroLinnGlobal* source = (typeof(source)) s;
-  //target->drumPadMode = false;              // uncomment once 72B is done
-  //target->locatorCC1 = -1;
-  //target->locatorCC2 = -1;
-  target->EDO = source->EDO;
-  //short i = microLinnTriIndex(source->EDO, 0);
-  //memcpy (target->rainbow,   &Device.microLinn.rainbows[i], source->EDO);
-  //memcpy (target->fretboard, &Device.microLinn.fretboards[i], source->EDO);
-  target->useRainbow = source->useRainbow;
+void migrateFromMicroLinnGlobalV72_0 (MicroLinnGlobal* t, void* source) {
+  // copy what's in 72.0, initialize what isn't
+  MicroLinnV72_0::MicroLinnGlobal* s = (typeof(s)) source;
+  //t->drumPadMode = false;              // uncomment once 72B is done
+  //t->locatorCC1 = -1;
+  //t->locatorCC2 = -1;
+  t->EDO = s->EDO;
+  //short i = microLinnTriIndex(s->EDO, 0);
+  //memcpy (t->rainbow,   &Device.microLinn.rainbows[i], s->EDO);
+  //memcpy (t->fretboard, &Device.microLinn.fretboards[i], s->EDO);
+  t->useRainbow = s->useRainbow;
   for (byte row = 0; row < MAXROWS; row++) {
-    target->guitarTuning[row] = source->guitarTuning[row];
+    t->guitarTuning[row] = s->guitarTuning[row];
   }
-  target->anchorCol = source->anchorCol;
-  target->anchorRow = source->anchorRow;
-  target->anchorNote = source->anchorNote;
-  target->anchorCents = source->anchorCents;
-  //target->equaveSemitones = 12;
-  target->octaveStretch = source->octaveStretch;
-  target->sweeten = source->sweeten;
-  //target->largeEDO = 55;
+  t->anchorCol = s->anchorCol;
+  t->anchorRow = s->anchorRow;
+  t->anchorNote = s->anchorNote;
+  t->anchorCents = s->anchorCents;
+  //t->equaveSemitones = 12;
+  t->octaveStretch = s->octaveStretch;
+  t->sweeten = s->sweeten;
+  //t->largeEDO = 55;
   //memset(largeEdoScale, 0, sizeof(largeEdoScale));
 }
 
-void migrateFromMicroLinnSplitV72A (MicroLinnSplit* target, void* s) {
-  MicroLinnV72A::MicroLinnSplit* source = (typeof(source)) s;
-  target->colOffset = source->colOffset;
-  //target->rowOffset = -26;
-  //target->collapseBendPerPad = 0;
-  target->hammerOnWindow = source->hammerOnWindow;
-  target->hammerOnNewNoteOn = source->hammerOnNewNoteOn;
-  target->pullOffVelocity = source->pullOffVelocity;
-  //target->showCustomLEDs = 0;
-  target->transposeEDOsteps = source->transposeEDOsteps;
-  target->transposeEDOlights = source->transposeEDOlights;
-  target->tuningTable = source->tuningTable;
+void migrateFromMicroLinnSplitV72_0 (MicroLinnSplit* t, void* source) {
+  MicroLinnV72_0::MicroLinnSplit* s = (typeof(s)) source;
+  t->colOffset = s->colOffset;
+  //t->rowOffset = -26;
+  //t->collapseBendPerPad = 0;
+  t->hammerOnWindow = s->hammerOnWindow;
+  t->hammerOnNewNoteOn = s->hammerOnNewNoteOn;
+  t->pullOffVelocity = s->pullOffVelocity;
+  //t->showCustomLEDs = 0;
+  t->transposeEDOsteps = s->transposeEDOsteps;
+  t->transposeEDOlights = s->transposeEDOlights;
+  t->tuningTable = s->tuningTable;
 }
 
-void copyConfigurationMicroLinnV72A(void* target, void* source) {    // copies from 72A to the current config, B or C or whatever
+void copyConfigurationMicroLinnV72_0(void* target, void* source) {    // copies from 72.0 to the current config, 72.1 or 72.2 or whatever
   Configuration* t = (Configuration*)target;
-  MicroLinnV72A::Configuration* s = (typeof(s)) source;
+  MicroLinnV72_0::Configuration* s = (typeof(s)) source;
 
   memcpy(&t->device, &s->device, sizeof(s->device));                 // Device.microLinn gets copied automatically
   t->device.version = 16 + MICROLINN_VERSION_OFFSET;                 // redundant, delete?
 
   memcpy(&t->settings.global, &s->settings.global, sizeof(GlobalSettings) - sizeof(MicroLinnGlobal));
-  migrateFromMicroLinnGlobalV72A(&t->settings.global.microLinn, &s->settings.global.microLinn);
+  migrateFromMicroLinnGlobalV72_0(&t->settings.global.microLinn, &s->settings.global.microLinn);
   for (byte split = 0; split < NUMSPLITS; split++) {
     memcpy(&t->settings.split[split], &s->settings.split[split], sizeof(SplitSettings) - sizeof(MicroLinnSplit));
-    migrateFromMicroLinnSplitV72A (&t->settings.split[split].microLinn, &s->settings.split[split].microLinn);
+    migrateFromMicroLinnSplitV72_0 (&t->settings.split[split].microLinn, &s->settings.split[split].microLinn);
   }
 
   for (byte p = 0; p < NUMPRESETS; p++) {
     memcpy(&t->preset[p].global, &s->preset[p].global, sizeof(GlobalSettings) - sizeof(MicroLinnGlobal));
-    migrateFromMicroLinnGlobalV72A(&t->preset[p].global.microLinn, &s->preset[p].global.microLinn);
+    migrateFromMicroLinnGlobalV72_0(&t->preset[p].global.microLinn, &s->preset[p].global.microLinn);
     for (byte split = 0; split < NUMSPLITS; split++) {
       memcpy(&t->preset[p].split[split], &s->preset[p].split[split], sizeof(SplitSettings) - sizeof(MicroLinnSplit));
-      migrateFromMicroLinnSplitV72A (&t->preset[p].split[split].microLinn, &s->preset[p].split[split].microLinn);
+      migrateFromMicroLinnSplitV72_0 (&t->preset[p].split[split].microLinn, &s->preset[p].split[split].microLinn);
     }
   }
   memcpy(&t->project, &s->project, sizeof(s->project));
@@ -2389,7 +2391,7 @@ void restoreNonMicroLinnConfiguration(void* target, void* source) {
 
   memcpy(&t->settings.global, &s->settings.global, sizeof(t->settings.global));      // sizeof(target) excludes microLinnGlobal
   for (byte i = 0; i < 5; i++) {
-    if (t->settings.global.customSwitchAssignment[i] > MAX_ASSIGNED - 3) {           // no EDO_UP, EDO_DOWN or TOGGLE_8VE
+    if (t->settings.global.customSwitchAssignment[i] > MAX_ASSIGNED - 4) {           // no EDO_UP, EDO_DOWN, TOGGLE_QUANTIZE or TOGGLE_8VE
         t->settings.global.customSwitchAssignment[i] = ASSIGNED_TAP_TEMPO;
         if (i == 4) t->settings.global.switchAssignment[i] = ASSIGNED_DISABLED;      // disable virtual 3rd footswitch
     }
@@ -2405,7 +2407,7 @@ void restoreNonMicroLinnConfiguration(void* target, void* source) {
   for (byte p = 0; p < NUMPRESETS; p++) {
     memcpy(&t->preset[p].global, &s->preset[p].global, sizeof(t->preset[p].global));
     for (byte i = 0; i < 5; i++) {
-      if (t->preset[p].global.customSwitchAssignment[i] > MAX_ASSIGNED - 3) {
+      if (t->preset[p].global.customSwitchAssignment[i] > MAX_ASSIGNED - 4) {
           t->preset[p].global.customSwitchAssignment[i] = ASSIGNED_TAP_TEMPO;
           if (i == 4) t->preset[p].global.switchAssignment[i] = ASSIGNED_DISABLED;
       }

@@ -1,6 +1,6 @@
 // This file preserves the older versions of the microLinn data structures, for version migration by ls_extstorage.ino
-// When microLinn 72B comes out, change the structures in Linnstrument-firmware.ino, not these
-// When microLinn 72C comes out, add MicroLinnV72B to this file in its own namespace
+// When microLinn 72.1 comes out, change the structures in Linnstrument-firmware.ino, not these
+// When microLinn 72.2 comes out, add MicroLinnV72_1 to this file in its own namespace
 // When a new official version comes out, say V17, 
 //    Merge the official changes into the microLinn version (this will include V16 code)
 //    Change all the Vlatest structs from the V16 version to the V17 version
@@ -9,16 +9,16 @@
 // settingsVersion = the old version, read from the 1st byte of the data structures
 // Device.Version = new version, explicitly set in ls_settings.ino, e.g. official fork has "Device.version = 16;"
 // the microLinn fork has "Device.version = MICROLINN_VERSION_OFFSET + 16;" which is 72
-// copyConfigurationVLatest takes us from 16 to 72.0 
-// restoreNonMicroLinn takes us from 72.0 to 16
+// restoreNonMicroLinn takes us from 72.n to 16
 
-namespace MicroLinnV72A {
+namespace MicroLinnV72_0 {
 
   struct MicroLinnDevice {
-    byte MLversion;                                 // current version of the microLinn data structures, 0 displays as A, 1 displays as B, etc.
-    byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
-    byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
-    byte fretboards[MICROLINN_ARRAY_SIZE];          // one byte per fret, one bit per row, transposable, lefthandedness reverses it, ignores column offsets
+    byte MLversion;                            // current version of the microLinn data structures, 0 in namespace MicroLinnV72_0
+    byte padding;                              // makes the importing code easier
+    byte scales[MICROLINN_ARRAY_SIZE];         // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
+    byte rainbows[MICROLINN_ARRAY_SIZE];       // choose among the 10 colors
+    byte fretboards[MICROLINN_ARRAY_SIZE];     // one byte per fret, one bit per row, transposable, lefthandedness reverses it, ignores column offsets
   };
 
   struct MicroLinnGlobal {
@@ -37,7 +37,7 @@ namespace MicroLinnV72A {
     byte colOffset;                         // column offset, 0 to 8, 1 = OFF
     byte hammerOnWindow;                    // maximum width in tens of cents of a hammer-on before it becomes two simultaneous notes, 0..240, 0 = off
     boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
-    byte pullOffVelocity;                   // 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
+    byte pullOffVelocity;                   // 0 = 2nd note's noteOff velocity, 1 = 1st noteOn veloc, 2 = 2nd noteOn veloc, 3 = average them
     signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
     signed char transposeEDOlights;
     byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0

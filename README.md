@@ -34,7 +34,7 @@ Playing melodies with both pitch bending and column offsets can be tricky. *Deta
 
 PER-SPLIT ROW OFFSETS: Setting the row offset for a split overrides the Global Settings row offset for that split only. Unless OFF, it ranges from -25 to +25, plus No Overlap which appears as NOVR. A No Overlap split can be used to launch audio or midi clips while you play normally in the other split. Accessed through the microLinn menu, see below. Guitar tunings are not supported, but are still available globally.
 
-OCTAVE TOGGLE: A new function for switches and footswitches, 8VE± flips back and forth between Octave Up and normal. This lets you switch octaves while playing using only one footswitch, instead of two for Octave Up and Octave Down. Access it by long-pressing TAP TEMPO and swiping.
+OCTAVE TOGGLE, QUANTIZE TOGGLE: Two new functions for switches and footswitches. 8VE± flips back and forth between Octave Up and normal. This lets you switch octaves while playing using only one footswitch, instead of two for Octave Up and Octave Down. QNT± toggles the Quantize option for the active split. Access them both by long-pressing TAP TEMPO and swiping.
 
 DRUM PAD MODE: The note lights become 14 3x3 mega-pads that play the 14 drum sounds from the sequencer. Accessed through the microLinn menu, see below.
 
@@ -68,19 +68,21 @@ LOCATOR CCs: A locator CC message can be sent immediately before every note-on, 
 
 *If your DAW isn't programmable, download LinnstrumentLocatorCCs.jsfx from this github. It defines a rectangular region on the Linnstrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. It runs natively in Reaper and can run in any windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live and other platforms.) Thanks to KVR forum member vorp40 for the locator CC idea!*
 
-IMPORTING/EXPORTING: You can back up various settings and/or share them with others via midi files. The 3 custom light patterns, the 16 audience messages, the 6 memories, microtonal data, and more! Check the Linnstrument community wiki for export-request files and importable settings files.
+IMPORTING/EXPORTING: You can back up various settings and/or share them with others via midi files. The 3 custom light patterns, the 16 audience messages, the 6 memories, microtonal data, and more! Check the Linnstrument community wiki for export-request files and importable settings files. See below for details.
 
-*Details: Importing: Download a settings file from the wiki. In your DAW, set the output of midi track A to your Linnstrument. Load the settings file into track A and press play. Your Linnstrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #5 below.*
+*Details: Importing: Download a settings file from the wiki. On your Linnstrument, set Accept Imports to YES. In your DAW, set the output of midi track A to your Linnstrument. Load the settings file into track A and press play. Your Linnstrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #5 below.*
 
 *To import a custom light pattern, before you press play, you must first display the one you want to overwrite. To import an audience message, before you press play, you must first briefly edit the one you want to overwrite.*
 
 *Exporting: Download an export-request file from the wiki. In your DAW, set the input of midi track A and the output of midi track B to your Linnstrument. Put the export-request midi file at the start of track B. Then start recording on track A. When your Linnstrument stops sending midi, stop recording. Save the midi on track A to a midi file (i.e. export it from your DAW), preferably as format 0. Name it something informative such as "lightPattern31edoFretboard.mid" or "22edoScales.mid". Later on you can import this file to restore your settings. Or share it on the wiki.*
 
-*Exporting multiple requests: 1st method: Send the first request and see in your DAW where the Linnstrument stops sending midi. Position the next request file in track B about 1/10 of a second after that. Add additional request files similarly. Record all requests at once, and save the midi to a file as before. 2nd method: Record each export individually. Then position those midi clips next to each other, and save them all as one file.*
+*Exporting multiple requests: 1st method: Send the first request and see in your DAW where the Linnstrument stops sending midi. Position the next request file in track B about 1/10 of a second after that. Add additional request files similarly. Record all requests at once, and save the midi to a file as before. 2nd method: Record each export individually. Then position those midi clips next to each other in your DAW, and save them all as one file.*
 
-*Troubleshooting: (1) While importing or exporting, don't play your Linnstrument. (2) When importing, slowing down your DAW's playback speed sometimes helps. (3) Your DAW must be able to handle a midi file that uses multiple midi channels. (4) The All User Settings export is meant for migrating from an old Linnstrument to a new one. It will only work if the OS version on the old one matches the OS version on the new one (or more precisely, if the data structure versions match). (5) MicroLinn imports data via polyphonic pressure messages. If you have connected something else to your Linnstrument that also sends polypressure messages, there is a small possibility of confusion. If after an import there is no sucess or failure scrolling message, to avoid confusion disconnect the Linnstrument's power and reconnect it.*
+*Troubleshooting: (1) While importing or exporting, don't play your Linnstrument. (2) Your DAW must be able to handle a midi file that uses multiple midi channels. (3) When importing, slowing down your DAW's playback speed sometimes helps. (4) The All User Settings export is meant for migrating from an old Linnstrument to a new one. It will only work if the OS version on the old one matches the OS version on the new one (or more precisely, if the data structure versions match). (5) If you get "IMPORT FAILURE" followed by a number, that number says which midi message in the import file caused the failure. For example 7 means the 7th midi message. (6) MicroLinn imports data via polyphonic pressure messages. If you have connected something else to your Linnstrument that also sends polypressure messages, there is a small possibility of confusion. If after an import there is no sucess or failure scrolling message, to avoid confusion either set Accept Imports to OFF, or disconnect the Linnstrument's power and reconnect it.*
 
-The 16 sequencer projects can be imported and exported as usual via the updater app. When you export, the filename of microtonal projects should probably contain the edo, since it won't sound right in the wrong edo.
+*The 16 sequencer projects can be imported and exported as usual via the updater app as *.lpr files. When you export, the filename of microtonal projects should probably contain the edo, since it won't sound right in the wrong edo. The AllUserSettings does not export the current sequencer project, so to export it save it as one of the 16 projects.*
+
+IMPORT REQUEST FILES:
 
 requestLightPatternA.mid
 requestLightPatternA#.mid
@@ -88,7 +90,19 @@ requestLightPatternB.mid
 
 requestAudienceMsg1.mid
 requestAudienceMsg2.mid
-...
+requestAudienceMsg3.mid
+requestAudienceMsg4.mid
+requestAudienceMsg5.mid
+requestAudienceMsg6.mid
+requestAudienceMsg7.mid
+requestAudienceMsg8.mid
+requestAudienceMsg9.mid
+requestAudienceMsg10.mid
+requestAudienceMsg11.mid
+requestAudienceMsg12.mid
+requestAudienceMsg13.mid
+requestAudienceMsg14.mid
+requestAudienceMsg15.mid
 requestAudienceMsg16.mid
 requestAllAudienceMsgs.mid
 
@@ -100,13 +114,12 @@ requestScalesAllEDOs.mid
 requestRainbowsAllEDOs.mid
 requestFretboardsAllEDOs.mid
 
-requestPreset1.mid
-requestPreset2.mid
-requestPreset3.mid
-requestPreset4.mid
-requestPreset5.mid
-requestPreset6.mid
-
+requestMemory1.mid
+requestMemory2.mid
+requestMemory3.mid
+requestMemory4.mid
+requestMemory5.mid
+requestMemory6.mid
 requestAllUserSettings.mid
 
 
@@ -115,8 +128,6 @@ requestAllUserSettings.mid
 DIM MODE: The Low Power pad (col 15 in Global Settings) dims the display but also increases the latency. Long-press the Low Power pad to dim the display with no latency increase, good for tired eyes.
 
 DOUBLE VOLUME FADERS: On the Volume screen, press both split pads at once. There will be two horizontal faders, one for each split. You can use a splitter on your computer's stereo headphones output and send one side to your amp and the other to an earbud that you wear as you play as an in-ear monitor. You can control the volume of both from the Volume screen. Good for noisy gigs, good for chaotic jam sessions where you need to discretely find the key or the chords. *Details: In your DAW, send the synth's output to two tracks, each hard-panned to opposite sides. Each track receives the Linnstrument's midi from one of the 2 main channels (usually 1 and 16). Each track has a gain effect which you midi-learn to the volume CC. Now one volume fader will control your amp and the other will control your earbud.*
-
-"YIP" FIX: see https://www.kvraudio.com/forum/viewtopic.php?p=8885419#p8885419
 
 CHANNEL PRESSURE FIX: see https://www.kvraudio.com/forum/viewtopic.php?t=591770
 
@@ -202,9 +213,9 @@ The dot patterns tend to follow the conventional m3 P4 P5 M6 P8 guitar fret mark
 
 MEMORIES
 
-All of microLinn's settings are stored in the 6 memories. If you load a memory that has microLinn turned OFF, the microtonal data will not be altered. And if the column offsets and per-split row offsets are also OFF, they will not be altered either (because the edo often implies certain offsets). This lets you use certain memories to configure your synth-related settings only. Load such memories *after* loading a microtonal memory.
+All of microLinn's settings are stored in the 6 memories. If you load (or import via midi) a memory that has microLinn turned OFF, the microtonal data will not be altered. And if the column offsets and per-split row offsets are also OFF, they will not be altered either (because the edo often implies certain offsets). This lets you use certain memories to configure your synth-related settings only. Load such memories *after* loading a microtonal memory.
 
-The memory on the bottom row is an exception to this. It *will* alter microtonal data even if it has microLinn turned OFF. You can load this memory to quickly return to 12edo. 
+The memory on the bottom row is an exception to this. It *will* alter microtonal data even if it has microLinn turned OFF. You can load this memory to quickly return to 12edo.
 
 The 2nd memory from the bottom emulates the [Kite guitar](https://KiteGuitar.com/). It's 41edo with a row/col offset of (+13 +2), with an alternating-3rds guitar tuning. This layout is both very playable and very well-tuned.
 

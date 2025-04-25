@@ -47,7 +47,7 @@ For any questions about this, contact Roger Linn Design at support@rogerlinndesi
 
 const char* OSVersion = "234.";
 const char* OSVersionBuild = ".072";
-const char* microLinnOSVersionBuild = ".001";
+const char* microLinnOSVersion = ".001";
 
 // SPI addresses
 #define SPI_LEDS    10               // Arduino pin for LED control over SPI
@@ -200,7 +200,8 @@ byte NUMROWS = 8;                    // number of touch sensor rows
 #define ASSIGNED_SEQUENCER_MUTE         17
 #define ASSIGNED_MICROLINN_EDO_UP       18
 #define ASSIGNED_MICROLINN_EDO_DOWN     19
-#define ASSIGNED_MICROLINN_TOGGLE_8VE   20
+#define ASSIGNED_MICROLINN_TOGGLE_QUANTIZE  20
+#define ASSIGNED_MICROLINN_TOGGLE_8VE   21
 #define MAX_ASSIGNED                    ASSIGNED_MICROLINN_TOGGLE_8VE
 #define ASSIGNED_DISABLED               255
 
@@ -254,7 +255,7 @@ const unsigned long LED_ARRAY_SIZE = (MAX_LED_LAYERS+1) * LED_LAYER_SIZE;
 
 // the Microlinn version is the official mainline version it's based on (16 as of Dec 2024), plus this offset
 // (we would rather have used 128, but the updater interprets version as a signed character type,
-// and is "confused" by negative version numbers.)
+// and rejects negative version numbers.)
 #define MICROLINN_VERSION_OFFSET 56
 
 /*************************************** CONVENIENCE MACROS **************************************/
@@ -464,7 +465,7 @@ enum DisplayMode {
   displayGlobalWithTempo,
   displayOsVersion,
   displayOsVersionBuild,
-  displayMicroLinnOsVersionBuild,
+  displayMicroLinnOsVersion,
   displayCalibration,
   displayReset,
   displayBendRange,
@@ -627,7 +628,7 @@ struct MicroLinnSplit {
   //byte collapseBendPerPad;              // width of a single-pad pitch bend in edosteps, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
   byte hammerOnWindow;                    // maximum width in tens of cents of a hammer-on before it becomes two simultaneous notes, 0..240, 0 = OFF
   boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
-  byte pullOffVelocity;                   // 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
+  byte pullOffVelocity;                   // 0 = 2nd note's noteOff velocity, 1 = 1st noteOn veloc, 2 = 2nd noteOn veloc, 3 = average them
   //byte showCustomLEDs;                  // 0 = OFF, 1-3 = the three patterns, 4-6 = patterns plus note lights on top
   signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
   signed char transposeEDOlights;
@@ -708,6 +709,7 @@ const short MICROLINN_ARRAY_SIZE = (MICROLINN_MAX_EDO * (MICROLINN_MAX_EDO + 1))
 
 struct MicroLinnDevice {
   byte MLversion;                                 // current version of the microLinn data structures, currently 0, will become 1
+  byte padding;                                   // makes the importing code easier
   byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
   byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
   byte fretboards[MICROLINN_ARRAY_SIZE];          // one byte per fret, one bit per row, transposable, lefthandedness reverses it, ignores column offsets
@@ -788,7 +790,7 @@ struct MicroLinnGlobal {
   //signed char locatorCC1;                  // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25...
   //signed char locatorCC2;                  // ...ranges from 0 to 119, -1 = OFF
   byte EDO;                                  // ranges 5-55, plus 4 for OFF
-  //byte rainbow[MICROLINN_MAX_EDO];         // one row of Device.microLinn.rainbows, unused when rawEDO == 4
+  //byte rainbow[MICROLINN_MAX_EDO];         // one row of Device.microLinn.rainbows, used only when loading/saving presets and rawEDO isn't 4
   //byte fretboard[MICROLINN_MAX_EDO];       // ditto for Device.microLinn.fretboards
   boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
   short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, can be negative, [0] is unused, independent of Global.guitarTuning

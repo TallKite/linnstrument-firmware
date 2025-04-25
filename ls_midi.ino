@@ -911,7 +911,7 @@ void receivedNrpn(int parameter, int value, int channel) {
       break;
     // Split Touch Animation
     case 61:
-      if (inRange(value, 0, 14)) {
+      if (inRange(value, 0, 16)) {                      // increase the range to include playedBlink
         Split[split].playedTouchMode = value;
       }
       break;
@@ -1289,7 +1289,7 @@ void receivedNrpn(int parameter, int value, int channel) {
     case 299:
       sendNrpnParameter(value, channel);
       break;
-    // begin bulk importing microtonal and/or non-microtonal user settings
+    // begin bulk importing microLinn and/or non-microLinn user settings
     case 300:
       importMicroLinnData(value);
       break;
@@ -1300,8 +1300,8 @@ void receivedNrpn(int parameter, int value, int channel) {
 
 void sendNrpnParameter(int parameter, int channel) {
   if (parameter >= 2048) {
-    // bulk export microtonal and/or non-microtonal user settings
-    exportMicroLinnData(parameter - 2048);
+    // bulk export microLinn and/or non-microLinn user settings
+    exportMicroLinnData(parameter);
     return;
   }  
   if (parameter >= 1000) {

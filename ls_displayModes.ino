@@ -119,8 +119,8 @@ void updateDisplay() {
     case displayOsVersionBuild:
       paintOSVersionBuildDisplay();
       break;
-    case displayMicroLinnOsVersionBuild:
-      paintMicroLinnOSVersionBuildDisplay();
+    case displayMicroLinnOsVersion:
+      paintMicroLinnOSVersionDisplay();
       break;
     case displayVolume:
       paintVolumeDisplay(Global.currentPerSplit);
@@ -943,10 +943,10 @@ void paintOSVersionBuildDisplay() {
   smallfont_draw_string(0, 0, OSVersionBuild, color);
 }
 
-void paintMicroLinnOSVersionBuildDisplay() {
+void paintMicroLinnOSVersionDisplay() {
   clearDisplay();
   byte color = Split[LEFT].colorAccent;
-  smallfont_draw_string(0, 0, microLinnOSVersionBuild, color);
+  smallfont_draw_string(0, 0, microLinnOSVersion, color);
 }
 
 // paint the current preset number for a particular side, in large block characters
@@ -1243,6 +1243,10 @@ void paintCustomSwitchAssignmentConfigDisplay() {
       break;
     case ASSIGNED_MICROLINN_EDO_DOWN:
       adaptfont_draw_string(0, 0, "EDO-", globalColor, true);
+      break;
+    case ASSIGNED_MICROLINN_TOGGLE_QUANTIZE:
+      adaptfont_draw_string(0, 0, "QNT", globalColor, true);
+      paintMicroLinnPlusMinus();
       break;
     case ASSIGNED_MICROLINN_TOGGLE_8VE:
       adaptfont_draw_string(0, 0, "8VE", globalColor, true);
@@ -1597,6 +1601,7 @@ void paintSwitchAssignment(byte mode) {
     case ASSIGNED_SEQUENCER_MUTE:
     case ASSIGNED_MICROLINN_EDO_UP:
     case ASSIGNED_MICROLINN_EDO_DOWN:
+    case ASSIGNED_MICROLINN_TOGGLE_QUANTIZE:
     case ASSIGNED_MICROLINN_TOGGLE_8VE:
       setLed(9, 3, getSwitchTapTempoColor(), cellOn);
       break;
