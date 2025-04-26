@@ -329,7 +329,7 @@ void refreshLedColumn(unsigned long now) {
         break;
     }
 
-    if (Device.operatingLowPower) {
+    if (Device.operatingLowPower > 0) {
       if (displayInterval[actualCol][rowCount] % 2 != 0) {
         cellDisplay = cellOff;
       }
@@ -339,8 +339,8 @@ void refreshLedColumn(unsigned long now) {
     // set the color bytes to the correct color
     if (cellDisplay) {
       // construct composite colors
-      if ((!Device.operatingLowPower && displayInterval[actualCol][rowCount] % 2 != 0) ||
-          (Device.operatingLowPower && displayInterval[actualCol][rowCount] % 4 != 0)) {
+      if ((Device.operatingLowPower == 0 && displayInterval[actualCol][rowCount] % 2 != 0) ||
+          (Device.operatingLowPower >= 1 && displayInterval[actualCol][rowCount] % 4 != 0)) {
         switch (color)
         {
           case COLOR_WHITE:
