@@ -154,9 +154,51 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function.
 
 10) set drum pad mode, locator CCs, and Tuning Table mode
 
+new layout:
+
+2) Set left/right column offset (0, OFF, 2 to 8)
+3) Set left/right row offset (OFF, -25 to 25, NOVR = no overlap)
+
+5) Set left/right non-microtonal
+  6) Collapse to scale (OFF, 1 to N, AVG = average)
+  5) Show custom light pattern (OFF, A, A#, B)
+  4) Hammer-on window (OFF, 10 to 2400)
+  3) Pull-off mode (various)
+
+7) Global non-microtonal
+  a) Drum pad mode (OFF, ON)
+  b) Locator CC #1 (OFF, 0 to 119)
+  c) Locator CC #2 (OFF, 0 to 119)
+  d) Bulk importing (OFF, ON)
+
+10) Select an edo (notes per octave) (OFF, 5-55)
+
+12) Set the scale aka note lights
+
+14) Set the left/right tuning table mode (OFF, ON, RCH = rechannel)
+
+16) Global microtonal
+  a) Choose the anchor pad
+  b) Set the anchor note (C-1 to G9)
+  c) Set the anchor cents (-60 to 60)
+  d) Set the equave semitones (1 to 48)
+  e) Set the equave cents (-60 to 60)
+
+organize config into Snon = per-split non-xen, Gnon = global non-xen, Sxen = per-split xen, Gxen = global xen
+  __ Col Row __ Snon __ Gnon __ __ edo __ scales __ Sxen __ Gxen
+   2      colOffsets
+   3      rowOffsets
+   5 (6)  Snon: (collapseToScale), (hammerOnWindow), (hammerOnMode), (pullOffMode), showCustomLEDs,
+   7 (8)  Gnon: drumPad, locatorCC1, locatorCC2, Bulk Importing ON/OFF
+  10      edo
+  12      scales aka note lights
+  14      Sxen: tuningTable
+  16 (15) Gxen: anchor x 3, equaveSemitones, equaveCents, (sweeten), (largeEDO)
+
+
 EDOS
 
-The edo (the notes per octave) ranges from 5edo to 55edo, plus "OFF" which makes the Linnstrument run normally. Change the edo by swiping. Once microLinn is on (i.e. once an edo is chosen), you can cycle thru the edos by setting a switch or footswitch to EDO+ or EDO- (long-press TAP TEMPO and swipe). Changing the edo automatically adjusts all column offsets and row offsets so that their size in cents stays roughly the same. So your bosanquet keyboard layout remains bosanquet, and your standard guitar tuning (F#BEADGBE) remains standard.
+The edo (stands for Equal Division of an Octave, the notes per octave) ranges from 5edo to 55edo, plus "OFF" which makes the Linnstrument run normally. Change the edo by swiping sideways. Once microLinn is on (i.e. once an edo is chosen), you can cycle thru the edos by setting a switch or footswitch to EDO+ or EDO- (long-press TAP TEMPO and swipe). Changing the edo automatically adjusts all column offsets and row offsets so that their size in cents stays roughly the same. So your bosanquet keyboard layout remains bosanquet, and your standard guitar tuning (F#BEADGBE) remains standard.
 
 The anchor pad is a specific pad that doesn't change pitch when you change the edo. *Details: The anchor pad chooser displays the row and column of the current anchor pad. For example, "R4C11" (or "4 11" on the Linnstrument 128) means row 4 (from the top) and column 11. Tap the blue "R4C11" anywhere and you'll see the normal display with the anchor pad blinking. Tap any pad to set it as the new anchor pad. This pad beomes the new tonic, and all the note lights will shift accordingly.*
 

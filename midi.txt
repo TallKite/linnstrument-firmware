@@ -348,8 +348,8 @@ channel 2 or 3 = add 128 to data2 when importing
 Type        # of data bytes     Settings exported                          Notes
 -------------------------------------------------------------------------------------------------------------
  1          208                 Custom light pattern A                     imports into current light pattern
- 2           "                  Custom light pattern A#                      "
- 3           "                  Custom light pattern B                       "
+ 2           "                  Custom light pattern A#                       "
+ 3           "                  Custom light pattern B                        "
  4          edo                 Device.microLinn.scales (1 edo only)       if current edo is odd, size = edo + 1
  5           "                  Device.microLinn.rainbows (1 edo only)        "
  6           "                  Device.microLinn.fretboards (1 edo only)      "
@@ -359,12 +359,10 @@ Type        # of data bytes     Settings exported                          Notes
 10-25       32                  Audience message 1-16                      imports into last-edited message
 26          496                 Audience messages (all)                    
 27          22 + 3 * edo        All data for the current edo               if edo is odd, size = 22 + 3 * (edo + 1)
-28 **       14727 *             All User Settings                          no calibration or 16 sequencer projects
-29 **       1804                Calibration Data                           for backup only, convenient for coders
-30-35 **    396 *               Preset 1-6 (all data)                      top preset is preset #1, bottom one is #6
+28          14727 *             All User Settings                          no calibration data or sequencer projects
+30-35       396 *               Preset 1-6 (all data)                      top preset is preset #1, bottom one is #6
 
 * will be larger for version 72.1
-** for personl backup only, do not import from strangers!
 
 calibration data is only received if you are actually in the calibration screen
 user setting to enable imports, a runtime var that gets reset to off upon unplugging
