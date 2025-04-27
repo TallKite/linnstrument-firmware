@@ -117,12 +117,7 @@ POSSIBLE NEW FEATURES
 
 warning: RAM is limited, can cause Arduino IDE triple compile error
 
-Z-axis floor: set to 0-127, output ramps up from the floor to 127, makes attack less sluggish
-see also https://github.com/teknico/linnstrument-firmware/releases/tag/t01.001
-
-
-long-press the low power button to get a dimmer display but not a lower scan rate (in effect a crude brightness knob)
-  change operatingLowPower from a boolean to a byte (both are the same size), 0 = normal, 1 = dim & slow, 2 = dim
+see https://github.com/teknico/linnstrument-firmware/releases/tag/t01.001
 
 hammerons/pulloffs screen, select for each split,
   window of so many cents, 0 = off
@@ -1044,7 +1039,7 @@ void microLinnSetupKitesPersonalPrefs() {       // speed up debugging cycle, del
     Global.activeNotes = 8; customLedPatternActive = true;}                            // 41edo fretboard
   Global.setSwitchAssignment(3, ASSIGNED_MICROLINN_EDO_UP,   false);  // for debugging, delete later
   Global.setSwitchAssignment(2, ASSIGNED_MICROLINN_EDO_DOWN, false);  // for debugging
-  //Device.operatingLowPower = 2;                    // uncomment once dim-but-fast mode is enabled
+  Device.operatingLowPower = 2;
 }
 
 void setupMicroLinn() {                              // runs when the Linnstrument powers up or a preset is loaded
@@ -2200,7 +2195,7 @@ void microLinnImportDevice(byte data1, byte data2, unsigned short i) {          
       storeSettings();
     }
   } else if (i == 510) {
-    if (microLinnInRange(data1, 0, 1)) Device.operatingLowPower = (data1 == 1);
+    if (microLinnInRange(data1, 0, 1)) Device.operatingLowPower = data1;
     if (microLinnInRange(data2, 0, 1)) Device.otherHanded = (data2 == 1);
   } else if (i == 512) {
     if (microLinnInRange(data1, 0, 2)) Device.splitHandedness = data1;

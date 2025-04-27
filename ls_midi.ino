@@ -400,7 +400,7 @@ void handleMidiInput(unsigned long nowMicros) {
           case 13:
             if (userFirmwareActive) {
               unsigned long rate = midiData2 * 1000;
-              if (!Device.operatingLowPower || rate > LOWPOWER_MIDI_DECIMATION) {
+              if (Device.operatingLowPower == 1 || rate > LOWPOWER_MIDI_DECIMATION) {
                 midiDecimateRate = rate;
               }
             }

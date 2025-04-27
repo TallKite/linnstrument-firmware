@@ -1702,8 +1702,8 @@ void paintGlobalSettingsDisplay() {
   }
 
   // Show the low power mode
-  if (Device.operatingLowPower) {
-    lightLed(15, 3);
+  if (Device.operatingLowPower > 0) {
+    setLed(15, 3, getLowPowerColor(), cellOn);
   }
 
   // set light for serial mode
@@ -1946,6 +1946,13 @@ byte getMIDIThroughColor() {
 }
 
 byte getSleepColor() {
+  return globalColor;
+}
+
+byte getLowPowerColor() {
+  if (Device.operatingLowPower == 2) {
+    return globalAltColor;
+  }
   return globalColor;
 }
 

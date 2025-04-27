@@ -58,7 +58,9 @@ SAME/BLINK CARRY OVER: If both splits are set to SAME or BLNK, playing in one sp
 
 MULTI-COLORED NOTE LIGHTS: Each of the 12 (or more!) notes can be any color. Transposable. Access it through the microLinn menu after setting the edo to 12, see below.
 
-SHOW A CUSTOM LIGHT PATTERN IN ONE SPLIT ONLY: Choose any of the 3 patterns (the scales marked A, A# and B) and it will replace the note lights. If you use one split as a clip launcher, you can color-code your clips. See also Locator CCs below. BTW this feature fixes a bug in which the custom light pattern would cover up a split set to CC faders or strum.
+SHOW A CUSTOM LIGHT PATTERN IN ONE SPLIT ONLY: Choose any of the 3 patterns (the scales marked A, A# and B) and it will replace the note lights. If you use one split as a clip launcher, you can color-code your clips. See also Locator CCs below. BTW this feature fixes a bug in which a custom light pattern would cover up a split set to CC faders or strum.
+
+DIM MODE: Normally, tapping the Low Power button (Global Settings column 15) dims the display but also increases the latency. MicroLinn adds the option to long-press the Low Power button to dim the display without adding latency (in effect a crude brightness knob).
 
 LOCATOR CCs: A locator CC message can be sent immediately before every note-on, indicating the row and column. Your DAW can assign a specific function to a specific pad, e.g. upper lefthand corner = all sound off. Or use this feature plus a custom light pattern to create large drum pads for more easily playing drum midi. Or create a third split, perhaps a column of on/off buttons, or a vertical fader or two.
 
@@ -124,8 +126,6 @@ requestAllUserSettings.mid
 
 
 -------- LIKELY ADDITIONAL NON-MICROTONAL FEATURES (no promises) -------- 
-
-DIM MODE: The Low Power pad (col 15 in Global Settings) dims the display but also increases the latency. Long-press the Low Power pad to dim the display with no latency increase, good for tired eyes.
 
 DOUBLE VOLUME FADERS: On the Volume screen, press both split pads at once. There will be two horizontal faders, one for each split. You can use a splitter on your computer's stereo headphones output and send one side to your amp and the other to an earbud that you wear as you play as an in-ear monitor. You can control the volume of both from the Volume screen. Good for noisy gigs, good for chaotic jam sessions where you need to discretely find the key or the chords. *Details: In your DAW, send the synth's output to two tracks, each hard-panned to opposite sides. Each track receives the Linnstrument's midi from one of the 2 main channels (usually 1 and 16). Each track has a gain effect which you midi-learn to the volume CC. Now one volume fader will control your amp and the other will control your earbud.*
 

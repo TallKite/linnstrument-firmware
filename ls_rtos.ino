@@ -231,7 +231,7 @@ inline void checkStopBlinkingLeds(unsigned long now) {
   // should the blinking middle root note be stopped blinking
   if ((displayMode == displayNormal || displayMode == displaySplitPoint) && 
       blinkMiddleRootNote &&
-      calcTimeDelta(now, displayModeStart) > (Device.operatingLowPower ? 1200 : 600)) {
+      calcTimeDelta(now, displayModeStart) > (Device.operatingLowPower > 0 ? 1200 : 600)) {
     blinkMiddleRootNote = false;
     updateDisplay();
   }

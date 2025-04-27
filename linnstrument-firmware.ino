@@ -734,7 +734,7 @@ struct DeviceSettings {
   byte sleepDelay;                                // the number of minutes it takes for sleep to kick in
   byte sleepAnimationType;                        // the animation type to use during sleep, see SleepAnimationType
   char audienceMessages[16][31];                  // the 16 audience messages that will scroll across the surface
-  boolean operatingLowPower;                      // whether low power mode is active or not
+  byte operatingLowPower;                         // 0 = normal, 1 = low power mode = dimmed lights and reduced speed, 2 = dimmed lights but full speed
   boolean otherHanded;                            // whether change the handedness of the splits
   byte splitHandedness;                           // see SplitHandednessType
   boolean midiThrough;                            // false if incoming MIDI should be isolated, true if it should be passed through to the outgoing MIDI port
@@ -1224,7 +1224,7 @@ void activateSleepMode() {
 
 void applyLedInterval() {
   // change the behavior for low power mode
-  if (Device.operatingLowPower) {
+  if (Device.operatingLowPower > 0) {
     mainLoopDivider = LOWPOWER_MAINLOOP_DIVIDER;
     ledRefreshInterval = LOWPOWER_LED_REFRESH;
   }
@@ -1243,7 +1243,7 @@ void applyMidiInterval() {
     midiMinimumInterval = Device.minUSBMIDIInterval;
   }
 
-  if (Device.operatingLowPower && midiMinimumInterval < LOWPOWER_MIDI_INTERVAL) {
+  if (Device.operatingLowPower == 1 && midiMinimumInterval < LOWPOWER_MIDI_INTERVAL) {
     midiMinimumInterval = LOWPOWER_MIDI_INTERVAL;
   }
 
@@ -1255,7 +1255,7 @@ void applyMidiDecimationRate() {
   // too many MIDI messages backing up in the outgoing queue
   midiDecimateRate = midiMinimumInterval * 34;
 
-  if (Device.operatingLowPower && midiDecimateRate < LOWPOWER_MIDI_DECIMATION) {
+  if (Device.operatingLowPower == 1 && midiDecimateRate < LOWPOWER_MIDI_DECIMATION) {
     midiDecimateRate = LOWPOWER_MIDI_DECIMATION;
   }
 }
@@ -1416,7 +1416,7 @@ void setup() {
 
     // detect if low power mode is toggled by holding down the octave/transpose button at startup
     if (switchPressAtStartup(4)) {
-      Device.operatingLowPower = true;
+      Device.operatingLowPower = 1;
       Device.serialMode = false;
       storeSettings();
       cellTouched(0, 4, touchedCell);
@@ -1528,7 +1528,7 @@ inline void modeLoopPerformance() {
 
   // When operating in low power mode, slow down the sensor scan rate in order to consume less power
   // This introduces an overall additional average latency of 2.5ms
-  if (Device.operatingLowPower) {
+  if (Device.operatingLowPower == 1) {
     delayUsec(25);
   }
 

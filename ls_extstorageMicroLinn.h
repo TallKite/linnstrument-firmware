@@ -62,7 +62,7 @@ namespace MicroLinnV72_0 {
     byte sleepDelay;                                // the number of minutes it takes for sleep to kick in
     byte sleepAnimationType;                        // the animation type to use during sleep, see SleepAnimationType
     char audienceMessages[16][31];                  // the 16 audience messages that will scroll across the surface
-    boolean operatingLowPower;                      // whether low power mode is active or not
+    byte operatingLowPower;                         // 0 = normal, 1 = low power mode = dimmed lights and reduced speed, 2 = dimmed lights but full speed
     boolean otherHanded;                            // whether change the handedness of the splits
     byte splitHandedness;                           // see SplitHandednessType
     boolean midiThrough;                            // false if incoming MIDI should be isolated, true if it should be passed through to the outgoing MIDI port

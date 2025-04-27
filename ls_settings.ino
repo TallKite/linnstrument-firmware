@@ -81,8 +81,8 @@ void switchSerialMode(boolean flag) {
     updateDisplay();
   }
 
-  if (Device.operatingLowPower) {
-    Device.operatingLowPower = false;
+  if (Device.operatingLowPower == 1) {
+    Device.operatingLowPower = 0;
     applyLedInterval();
     applyMidiInterval();
   }
@@ -167,7 +167,7 @@ void storeSettings() {
 
 void writeAdaptivelyToFlash(uint32_t offset, byte* source, int length) {
   // batch and slow down the flash storage in low power mode
-  if (Device.operatingLowPower) {
+  if (Device.operatingLowPower == 1) {
     unsigned long now = millis();
 
     // ensure that there's at least 50 milliseconds between refreshing the display lights and writing to flash
@@ -379,7 +379,7 @@ void initializeDeviceSettings() {
   Device.sleepActive = false;
   Device.sleepDelay = 0;
   Device.sleepAnimationType = animationNone;
-  Device.operatingLowPower = false;
+  Device.operatingLowPower = 0;
   Device.otherHanded = false;
   Device.splitHandedness = reversedBoth;
   Device.minUSBMIDIInterval = DEFAULT_MIN_USB_MIDI_INTERVAL;
@@ -2555,11 +2555,7 @@ void handleGlobalSettingNewTouch() {
           // handled at release
           break;
         case 3:
-          if (!Device.serialMode) {
-            Device.operatingLowPower = !Device.operatingLowPower;
-            applyLedInterval();
-            applyMidiInterval();
-          }
+         // operatingLowPower is now handled at release
           break;
       }
       break;
@@ -2980,6 +2976,9 @@ void handleGlobalSettingNewTouch() {
         case 2:
           setLed(sensorCol, sensorRow, getSleepColor(), cellSlowPulse);
           break;
+        case 3:
+          setLed(sensorCol, sensorRow, getLowPowerColor(), cellSlowPulse);
+          break;
       }
       break;
 
@@ -3120,6 +3119,12 @@ void handleGlobalSettingHold() {
             setDisplayMode(displaySleepConfig);
             updateDisplay();
             break;
+          case 3:
+            Device.operatingLowPower = 2;
+            setLed(15, 3, globalAltColor, cellOn);
+            applyLedInterval();
+            applyMidiInterval();
+            break;
         }
         break;
 
@@ -3229,6 +3234,12 @@ void handleGlobalSettingRelease() {
         Device.sleepActive = false;
         playSleepAnimation();
       }
+    }
+    else if (sensorRow == 3 && ensureCellBeforeHoldWait(globalColor, Device.operatingLowPower > 0 ? cellOn : cellOff)) {
+      if (Device.operatingLowPower > 0) {Device.operatingLowPower = 0;}
+      else if (!Device.serialMode)      {Device.operatingLowPower = 1;}
+      applyLedInterval();
+      applyMidiInterval();
     }
   }
   else if (sensorCol == 16) {
