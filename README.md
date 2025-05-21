@@ -10,35 +10,43 @@ For experienced linnstrumentalists, microLinn makes exploring microtonality very
 -------- INSTALLATION -------- 
 
 1) Go to https://www.rogerlinndesign.com/support/support-linnstrument-update-software and follow the "How to Check Your Software Version" instructions. If it's not 2.3.3, follow the "How to Update Your LinnStrument Software‍" instructions to update to 2.3.3.
-2) Download the latest version of linnstrument-firmware.ino.bin from this github. Important: if on a mac, put the .bin file on your **desktop**. 
+2) Download linnstrument-firmware-microLinn.ino.bin.zip from the Linnstrument Community wiki and unzip it. Important: if on a mac, put the .bin file on your **desktop**. 
 3) Follow the "How to Update Your LinnStrument Software‍" instructions, with one difference: after you download (and possibly unzip) the updater and before running it, put it in the same folder as the .bin file from step 2. Mac users: when you run the updater, if it asks for permission to read files from the desktop, say yes.
-4) Check your OS version to confirm the update. Tap twice to see the full number. It should be 234.072.001 or higher. If not, reboot your computer and try again.
+4) Check your OS version to confirm the update. Tap twice to see all three numbers. It should be 234.072.001 or higher. If not, reboot your computer and try again.
 5) Important, read the next section about uninstalling!
 
 -------- UPGRADING/UNINSTALLING -------- 
 
-IMPORTANT: Later on when you update the OS to a different version, you'll be asked if you want to uninstall microLinn. Say no (tap the red button in the middle, turns orange) if you're updating to a newer version of microLinn. This avoids needlessly deleting your microtonal user settings. Say yes (tap the blue button on the left, turns light blue) otherwise, e.g. if you're going back to an official (non-microtonal) version of the firmware. This does delete your microtonal user settings, which is necessary in order to avoid deleting all your other user settings plus your calibration data. Once you've decided, tap the green button on the right to continue.
+IMPORTANT: Updating to a newer version of microLinn is done normally. But if you want to uninstall microLinn and go back to an official (non-microtonal) version of the firmware, there's an extra step. Just before you run the updater, on the Global Settings screen, tap the pad to the right of the "Update OS" pad (col 17, 3rd row from the bottom) so that it turns dark blue. On a 128, tap the pad just above the calibration pad, col 16 row 5.
+
+If you see "Couldn't retrieve Linnstrument's settings, interrupting firmware upgrade. Go ahead with default settings?", quit the updater app and update with the opposite setting.
 
 -------- NON-MICROTONAL FEATURES -------- 
 
-COLUMN OFFSETS: Ranges from 1 (OFF) to 8. For negative offsets, use the hidden lefthanded setting in Global Settings column 1. The usual Linnstrument tuning is row offset +5 and column offset +1, or (+5 +1). The three most popular hexagonal-key layouts can each be translated to the Linnstrument's square keys in two ways:
-* Wicki-Hayden layout translates to (+5 +2) or (+7 +2)
+COLUMN OFFSETS: Ranges from 1 (OFF) to 8. For negative offsets, use the hidden lefthanded setting in Global Settings column 1. The usual Linnstrument tuning is row offset +5 and column offset +1, or (+5 +1). Each of the three most popular hexagonal-key layouts can be translated to the Linnstrument's square keys in two ways:
 * Bosanquet or Janko layout translates to (-1 +2) or (+1 +2)
+* Wicki-Hayden layout translates to (+5 +2) or (+7 +2)
 * Harmonic Table layout translates to (+4 +3) or (+7 +3)
 
 The column offset can be set for each split independently. You can have one of these six layouts on the left for easy chord playing (probably with pitch bending off) and the usual layout on the right for easy melody playing, somewhat analogous to an accordion's layout. Accessed through the microLinn menu, see below.
 
-Playing melodies with both pitch bending and column offsets can be tricky. *Details: A 1mm slide normally bends the pitch about 6¢. But an offset of +2 makes it 12¢, +3 makes it 18¢, etc. Thus to play in tune with a large column offset you may need both Pitch/X Quantize and Pitch/X Quantize Hold to be on. But if your column offset is +2, setting Quantize on and Quantize Hold off lets you play the skipped notes fairly accurately by sliding into the gap between pads. In fact, you can play 24edo quartertones on a normal 12edo Linnstrument fairly easily this way.*
+Beware, if the column offset is 2 and the row offset is an even number, you lose half the notes and only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors. If they do, the offsets will be displayed in red.
 
-*More details: (1) To set both column offsets at once, press both split buttons at once. If the offsets are different, doing so equates them. (2) Beware, if the column offset is 2 and the row offset is an even number, you lose half the notes and only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors.*
+*Details: To set both column offsets at once, press both split buttons at once. If the offsets are different, doing so equates them. Playing melodies with pitch bending can be tricky. A 1mm slide normally bends the pitch about 6¢. But an offset of +2 makes it 12¢, +3 makes it 18¢, etc. Thus to play in tune with a large column offset you may need both Pitch/X Quantize and Pitch/X Quantize Hold to be on. But if your column offset is +2, setting Quantize on and Quantize Hold off lets you play the skipped notes fairly accurately by sliding into the gap between pads. In fact, you can play 24edo quartertones on a normal 12edo Linnstrument fairly easily this way.*
 
-PER-SPLIT ROW OFFSETS: Setting the row offset for a split overrides the Global Settings row offset for that split only. Unless OFF, it ranges from -25 to +25, plus No Overlap which appears as NOVR. A No Overlap split can be used to launch audio or midi clips while you play normally in the other split. Accessed through the microLinn menu, see below. Guitar tunings are not supported, but are still available globally.
+PER-SPLIT ROW OFFSETS: Setting the row offset for a split overrides the Global Settings row offset for that split only. Unless OFF, it ranges from -25 to +25, plus No Overlap which appears as NOVR. A No Overlap split can be used to launch audio or midi clips while you play normally in the other split. Accessed through the microLinn menu, see below. 
 
 OCTAVE TOGGLE, QUANTIZE TOGGLE: Two new functions for switches and footswitches. 8VE± flips back and forth between Octave Up and normal. This lets you switch octaves while playing using only one footswitch, instead of two for Octave Up and Octave Down. QNT± toggles the Quantize option for the active split. Access them both by long-pressing TAP TEMPO and swiping.
 
-DRUM PAD MODE: The note lights become 14 3x3 mega-pads that play the 14 drum sounds from the sequencer. Accessed through the microLinn menu, see below.
+DRUM PAD MODE: The note lights become 14 3x3 mega-pads (or 10 on the Linnstrument 128) that play the 14 drum sounds from the sequencer. Accessed through the microLinn menu, see below.
 
-*Details: (1) Set PITCH/X on, otherwise a tap that hits two pads will send two notes. The drum sounds won't be accidentally pitch-bent because drum pad mode removes all pitch bends. (2) The midi mode should probably be One Channel. (3) The sequencer has different drum sounds for each split. If you're using both splits, set the split point in between the pads. (4) The two pad colors are the main/accent colors of the split, so you can adjust them if you want. Any custom light pattern you select will overlay the drum pads. So you can make the center of each pad a different color if you want. (5) If you use musical sounds instead of drum sounds, and enter the appropriate pitches into the sequencer, you can make a sort of marimba. (6) To create your own mega-pad layout, turn off Drum Pad mode, use locator CCs instead (see below) and edit one of the custom light patterns to match.*
+*Details:*
+*(1) Set PITCH/X on, otherwise a tap that hits two pads will send two notes. The drum sounds won't be accidentally pitch-bent because drum pad mode removes all pitch bends.*
+*(2) The midi mode should probably be One Channel.*
+*(3) The sequencer has different drum sounds for each split. If you're using both splits, set the split point in between the pads.*
+*(4) The two pad colors are the main/accent colors of the split, so you can adjust them if you want. Any custom light pattern you select will overlay the drum pads. So you can make the center of each pad a different color if you want.*
+*(5) If you use musical sounds instead of drum sounds, and enter the appropriate pitches into the sequencer, you can make a sort of marimba. This is why the 8th column duplicates the 1st column.*
+*(6) To create your own mega-pad layout, turn off Drum Pad mode, use locator CCs instead (see below) and edit one of the custom light patterns to match.*
 
 DETUNING: Detune the entire Linnstrument up or down from A-440 to match a similarly detuned recording or instrument. No guarantee that detuning to A-432 will heal your chakras lol. Accessed through microLinn's anchor cents after setting the edo to 12, see below.
 
@@ -64,70 +72,60 @@ DIM MODE: Normally, tapping the Low Power button (Global Settings column 15) dim
 
 LOCATOR CCs: A locator CC message can be sent immediately before every note-on, indicating the row and column. Your DAW can assign a specific function to a specific pad, e.g. upper lefthand corner = all sound off. Or use this feature plus a custom light pattern to create large drum pads for more easily playing drum midi. Or create a third split, perhaps a column of on/off buttons, or a vertical fader or two.
 
-*Details: One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. For cols 1-16, the data value = (row - 1) + 8 * (col - 1). For cols 17-25, the data value = (row - 1) + 8 * (col - 17). The top row is row 1 and the leftmost column is column 1. Choose the two CC types through the microLinn menu, see below.*
+*Details: One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. For cols 1-16, the data value = (row - 1) + 8 * (col - 1). For cols 17-25, the data value = (row - 1) + 8 * (col - 17). The top row is row 1 and the leftmost column is column 1. Choose the two types of CC messages through the microLinn menu, see below. Don't choose a CC that might be used for other purposes, such as CC 74 for timbre or CC 64 for sustain.*
 
-*There's not much point in using locator CCs in Channel Per Row mode, since the channel serves to locate the note. In One Channel mode the CC can locate a note-on but if the same note is played twice on two separate pads, it can't locate the XYZ data.*
+*Locator CCs are mainly for Channel Per Note mode. There's not much point in using them in Channel Per Row mode, since the channel serves to locate the note. In One Channel mode the CC can locate a note-on but if the same note is played twice on two separate pads, it can't locate the XYZ data.*
 
 *If your DAW isn't programmable, download LinnstrumentLocatorCCs.jsfx from this github. It defines a rectangular region on the Linnstrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. It runs natively in Reaper and can run in any windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live and other platforms.) Thanks to KVR forum member vorp40 for the locator CC idea!*
 
-IMPORTING/EXPORTING: You can back up various settings and/or share them with others via midi files. The 3 custom light patterns, the 16 audience messages, the 6 memories, microtonal data, and more! Check the Linnstrument community wiki for export-request files and importable settings files. See below for details.
+IMPORTING/EXPORTING: You can back up various settings and/or share them with others via midi files. The 3 custom light patterns, the 16 audience messages, the 6 memories, microtonal data, and more! Check the Linnstrument Community Wiki for export-request files and importable settings files.
 
-*Details: Importing: Download a settings file from the wiki. On your Linnstrument, set Accept Imports to YES. In your DAW, set the output of midi track A to your Linnstrument. Load the settings file into track A and press play. Your Linnstrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #5 below.*
+*Details: Importing: Download a settings file from the wiki. On your Linnstrument, set Accept Imports to ON. In your DAW, set the output of midi track A to your Linnstrument. Load the settings file into track A and press play. Your Linnstrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #5 below.*
 
-*To import a custom light pattern, before you press play, you must first display the one you want to overwrite. To import an audience message, before you press play, you must first briefly edit the one you want to overwrite.*
+*To import a custom light pattern, before you press play, you must first display the one you want to overwrite. To import an audience message, before you press play, you must first load for editing the one you want to overwrite. (You needn't actually edit it.)*
 
 *Exporting: Download an export-request file from the wiki. In your DAW, set the input of midi track A and the output of midi track B to your Linnstrument. Put the export-request midi file at the start of track B. Then start recording on track A. When your Linnstrument stops sending midi, stop recording. Save the midi on track A to a midi file (i.e. export it from your DAW), preferably as format 0. Name it something informative such as "lightPattern31edoFretboard.mid" or "22edoScales.mid". Later on you can import this file to restore your settings. Or share it on the wiki.*
 
 *Exporting multiple requests: 1st method: Send the first request and see in your DAW where the Linnstrument stops sending midi. Position the next request file in track B about 1/10 of a second after that. Add additional request files similarly. Record all requests at once, and save the midi to a file as before. 2nd method: Record each export individually. Then position those midi clips next to each other in your DAW, and save them all as one file.*
 
-*Troubleshooting: (1) While importing or exporting, don't play your Linnstrument. (2) Your DAW must be able to handle a midi file that uses multiple midi channels. (3) When importing, slowing down your DAW's playback speed sometimes helps. (4) The All User Settings export is meant for migrating from an old Linnstrument to a new one. It will only work if the OS version on the old one matches the OS version on the new one (or more precisely, if the data structure versions match). (5) If you get "IMPORT FAILURE" followed by a number, that number says which midi message in the import file caused the failure. For example 7 means the 7th midi message. (6) MicroLinn imports data via polyphonic pressure messages. If you have connected something else to your Linnstrument that also sends polypressure messages, there is a small possibility of confusion. If after an import there is no sucess or failure scrolling message, to avoid confusion either set Accept Imports to OFF, or disconnect the Linnstrument's power and reconnect it.*
+*Troubleshooting:*
+*(1) While importing or exporting, don't play your Linnstrument.*
+*(2) Your DAW must be able to handle a midi file that uses multiple midi channels.*
+*(3) When importing, slowing down your DAW's playback speed sometimes helps. Likewise, when exporting, speeding up your DAW's recording speed can help.*
+*(4) The All User Settings export is meant for migrating from an old Linnstrument to a new one. It will only work if the OS version on the old one matches the OS version on the new one (or more precisely, if the data structure versions match).*
+*(5) If you get "IMPORT FAILURE" followed by 2 numbers, the 2nd number says which midi message in the import file caused the failure. For example 7 means the 7th midi message.*
+*(6) wWhen importing, first exit all web browsers in case a webmidi page sends rouge NRPN/polypressure messages.*
+*(7) MicroLinn imports data via polyphonic pressure messages. If you have connected something else to your Linnstrument that also sends polypressure messages, there is a small possibility of confusion. If after an import there is no sucess or failure scrolling message, to avoid confusion either set Accept Imports to OFF, or disconnect the Linnstrument's power and reconnect it.*
 
 *The 16 sequencer projects can be imported and exported as usual via the updater app as *.lpr files. When you export, the filename of microtonal projects should probably contain the edo, since it won't sound right in the wrong edo. The AllUserSettings does not export the current sequencer project, so to export it save it as one of the 16 projects.*
 
-IMPORT REQUEST FILES:
+Import request files available on the Linnstrument Community Wiki:
 
-requestLightPatternA.mid
-requestLightPatternA#.mid
-requestLightPatternB.mid
-
-requestAudienceMsg1.mid
-requestAudienceMsg2.mid
-requestAudienceMsg3.mid
-requestAudienceMsg4.mid
-requestAudienceMsg5.mid
-requestAudienceMsg6.mid
-requestAudienceMsg7.mid
-requestAudienceMsg8.mid
-requestAudienceMsg9.mid
-requestAudienceMsg10.mid
-requestAudienceMsg11.mid
-requestAudienceMsg12.mid
-requestAudienceMsg13.mid
-requestAudienceMsg14.mid
-requestAudienceMsg15.mid
-requestAudienceMsg16.mid
+requestCurrentLightPattern.mid
+requestAllLightPatterns.mid
+requestCurrentAudienceMsg.mid
 requestAllAudienceMsgs.mid
 
 requestScalesCurrentEDO.mid
 requestRainbowCurrentEDO.mid
 requestFretboardCurrentEDO.mid
 requestAllSettingsCurrentEDO.mid
+
 requestScalesAllEDOs.mid
 requestRainbowsAllEDOs.mid
 requestFretboardsAllEDOs.mid
+requestScalesRainbowsFretboardsAllEDOs.mid
 
-requestMemory1.mid
-requestMemory2.mid
-requestMemory3.mid
-requestMemory4.mid
-requestMemory5.mid
-requestMemory6.mid
+requestCurrentMemory.mid
+requestAllMemories.mid
 requestAllUserSettings.mid
 
 
 -------- LIKELY ADDITIONAL NON-MICROTONAL FEATURES (no promises) -------- 
 
-DOUBLE VOLUME FADERS: On the Volume screen, press both split pads at once. There will be two horizontal faders, one for each split. You can use a splitter on your computer's stereo headphones output and send one side to your amp and the other to an earbud that you wear as you play as an in-ear monitor. You can control the volume of both from the Volume screen. Good for noisy gigs, good for chaotic jam sessions where you need to discretely find the key or the chords. *Details: In your DAW, send the synth's output to two tracks, each hard-panned to opposite sides. Each track receives the Linnstrument's midi from one of the 2 main channels (usually 1 and 16). Each track has a gain effect which you midi-learn to the volume CC. Now one volume fader will control your amp and the other will control your earbud.*
+DOUBLE VOLUME FADERS: On the Volume screen, press both split pads at once. There will be two horizontal faders, one for each split. You can use a splitter on your computer's stereo headphones output and send one side to your amp and the other to an earbud that you wear as you play as an in-ear monitor. You can control the volume of both from the Volume screen. Good for noisy gigs, good for chaotic jam sessions where you need to discretely find the key or the chords. 
+
+*Details: In your DAW, send the synth's output to two tracks, each hard-panned to opposite sides. Each track receives the Linnstrument's midi from one of the 2 main channels (usually 1 and 16). Each track has a gain effect which you midi-learn to the volume CC. Now one volume fader will control your amp and the other will control your earbud.*
 
 CHANNEL PRESSURE FIX: see https://www.kvraudio.com/forum/viewtopic.php?t=591770
 
@@ -154,51 +152,53 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function.
 
 10) set drum pad mode, locator CCs, and Tuning Table mode
 
-new layout:
+new menus:
 
-2) Set left/right column offset (0, OFF, 2 to 8)
-3) Set left/right row offset (OFF, -25 to 25, NOVR = no overlap)
+col 2) Set left/right column offset (OFF, 2 to 8)
+col 3) Set left/right row offset (OFF, -25 to 25, NOVR = no overlap)
 
-5) Set left/right non-microtonal
-  6) Collapse to scale (OFF, 1 to N, AVG = average)
-  5) Show custom light pattern (OFF, A, A#, B)
-  4) Hammer-on window (OFF, 10 to 2400)
-  3) Pull-off mode (various)
+col 5) Left/right non-microtonal
+  row 7) * Collapse to scale (OFF, 1 to N, AVG = average)
+  row 6) Show custom light pattern (OFF, A, A#, B)
+  row 5) * Hammer-on window in cents (OFF, 10 to 2400)
+  row 4) * Hammer-on new note-on (OFF, ON)
+  row 3) * Pull-off mode (OFF, various)
 
-7) Global non-microtonal
-  a) Drum pad mode (OFF, ON)
-  b) Locator CC #1 (OFF, 0 to 119)
-  c) Locator CC #2 (OFF, 0 to 119)
-  d) Bulk importing (OFF, ON)
+col 7) Global non-microtonal
+  row 7) Drum pad mode (OFF, ON)
+  row 6) Locator CC #1 (OFF, 0 to 119)
+  row 5) Locator CC #2 (OFF, 0 to 119)
+  row 4) Importing (OFF, ON)
 
-10) Select an edo (notes per octave) (OFF, 5-55)
+col 10) Select an edo (notes per octave) (OFF, 5 to 55)
 
-12) Set the scale aka note lights
+col 12) Set the scale aka note lights
+  col 1, row 7-1) Select scales 1-7
+  col 3, row 7) Rainbow editor
+  col 3, row 6) Rainbow enabler
+  col 3, row 4) Fretboard editor
+  col 3, row 2) * Large edo 
 
-14) Set the left/right tuning table mode (OFF, ON, RCH = rechannel)
+col 14) Left/right microtonal
+  row 7) Set the left/right layout (OFF, Bosanquet, Wicki-Hayden, Harmonic Table)
+  row 6) Set the left/right tuning table mode (OFF, ON, RCH = rechannel)
 
-16) Global microtonal
-  a) Choose the anchor pad
-  b) Set the anchor note (C-1 to G9)
-  c) Set the anchor cents (-60 to 60)
-  d) Set the equave semitones (1 to 48)
-  e) Set the equave cents (-60 to 60)
-
-organize config into Snon = per-split non-xen, Gnon = global non-xen, Sxen = per-split xen, Gxen = global xen
-  __ Col Row __ Snon __ Gnon __ __ edo __ scales __ Sxen __ Gxen
-   2      colOffsets
-   3      rowOffsets
-   5 (6)  Snon: (collapseToScale), (hammerOnWindow), (hammerOnMode), (pullOffMode), showCustomLEDs,
-   7 (8)  Gnon: drumPad, locatorCC1, locatorCC2, Bulk Importing ON/OFF
-  10      edo
-  12      scales aka note lights
-  14      Sxen: tuningTable
-  16 (15) Gxen: anchor x 3, equaveSemitones, equaveCents, (sweeten), (largeEDO)
-
+col 16) Global microtonal
+  row 7) Choose the anchor pad
+  row 6) Set the anchor note (C-1 to G9)
+  row 5) Set the anchor cents (-60 to 60)
+  row 4) Set the equave semitones (1 to 48)
+  row 3) Set the equave cents (-60 to 60)
+  row 2) * Set the sweetening amount in tenths of cents (OFF, 1 to 20)
+  row 1) * Set the superset EDO for collapsed scales (OFF, 56 to 311, 1200)
 
 EDOS
 
-The edo (stands for Equal Division of an Octave, the notes per octave) ranges from 5edo to 55edo, plus "OFF" which makes the Linnstrument run normally. Change the edo by swiping sideways. Once microLinn is on (i.e. once an edo is chosen), you can cycle thru the edos by setting a switch or footswitch to EDO+ or EDO- (long-press TAP TEMPO and swipe). Changing the edo automatically adjusts all column offsets and row offsets so that their size in cents stays roughly the same. So your bosanquet keyboard layout remains bosanquet, and your standard guitar tuning (F#BEADGBE) remains standard.
+The edo (stands for Equal Division of an Octave, the notes per octave) ranges from 5edo to 55edo, plus "OFF" which makes the Linnstrument run normally. Change the edo by swiping sideways. Once microLinn is on (i.e. once an edo is chosen), you can cycle thru the edos by setting a switch or footswitch to EDO+ or EDO- (long-press TAP TEMPO and swipe). 
+
+Changing the edo automatically adjusts all row offsets so that their size in cents stays roughly the same. So your fourths tuning will remain fourths, your fifths will remain fifths, and your standard guitar tuning will remain standard. If either column offset is not OFF, it will get adjusted as well. Furthermore you can set your layout for either split to be Bosanquet etc. and your row/column layout will become (and remain) Bosanquet. 
+
+*Details: Bosanquet = m2/M2, Bosanquet 2 = A1/M2, Wicki-Hayden = P4/M2, Wicki-Hayden 2 = P5/M2, Harmonic Table = M3/m3, and Harmonic Table 2 = P5/m3. But this may vary, to ensure coprime row/col offsets. A layout is stored in the per-split row/col offsets, so it overrides the Global row offset. See also Guitar Tuning below.*
 
 The anchor pad is a specific pad that doesn't change pitch when you change the edo. *Details: The anchor pad chooser displays the row and column of the current anchor pad. For example, "R4C11" (or "4 11" on the Linnstrument 128) means row 4 (from the top) and column 11. Tap the blue "R4C11" anywhere and you'll see the normal display with the anchor pad blinking. Tap any pad to set it as the new anchor pad. This pad beomes the new tonic, and all the note lights will shift accordingly.*
 
@@ -212,25 +212,29 @@ MicroLinn can be set to 12edo. MicroLinn's 12edo has two advantages over the sta
 
 SUGGESTIONS FOR EXPLORING EDOS:
 
-* The first few edos are pretty strange. You may want to start with 15, 17, 19 or 22.
-* Be sure to try the Bosanquet layout for 31edo and the Kite guitar layout for 41edo.
-* The full rainbow scale can be overwhelming. Try setting the played mode to BLNK.
-* To avoid a touched pad turning red (or whatever) and obscuring the pad's usual color, set the played color to blank.
-* Once you know an edo well, you'll probably want to switch to the fretboard dots display.
+* You can cycle through the edos by setting switch 1 to EDO+ and switch 2 to EDO-
+* Set the layout to e.g. Bosanquet to stay in Bosanquet while you cycle
+* The first few edos are pretty strange, so you may want to start with 15, 17, 19 or 22
+* For nice-sounding chords, try the Bosanquet layout for 31edo and the Kite guitar layout for 41edo (memory #5)
+* If the full rainbow scale seems overwhelming, try setting the played mode to blinking (BLNK)
+* To avoid a touched pad turning red (or whatever) and obscuring the pad's usual color, set the played color to blank
+* Once you know an edo and its layout well, you might want to switch to the fretboard dots display
 
 GUITAR TUNING
 
-MicroLinn uses a completely independent guitar tuning than the usual one. MicroLinn's guitar tuning screen doesn't adjust the pitch of each "string". Instead it sets 7 independent row offsets. 
+MicroLinn's guitar tuning is completely independent of the usual one. The guitar tuning screen doesn't set the pitch of each "string". Instead it sets 7 independent row offsets. 
 
-*Details: The "anchor string" is the row that the anchor pad is on. Its pitch is determined solely by the anchor pad, note and cents. On the far left, the anchor string is red, or orange if lit up. The others are green, or cyan if lit up. Tap any button on the far left to select a string. The button lights up and sounds that open string. Assuming it's not the anchor string, one of the neighboring strings, whichever one is closest to the anchor, also lights up. You won't see a note name with an octave number. Instead you'll see a row offset as a number, which can be negative. This is the row offset between the two lit-up strings. Swipe right or left on it as before to increase or decrease it. (Selecting the anchor string doesn't show a row offset.)*
+*Details: On the far left, there are 8 green buttons, one for each string. The "anchor string" is the row that the anchor pad is on. Its pitch is determined solely by the anchor pad, note and cents. The anchor string has a double button. Tap any button to select a string. The button turns light blue and sounds that open string. Assuming it's not the anchor string, one of the neighboring buttons, whichever one is closest to the anchor, turns dark blue. You won't see a note name with an octave number. Instead you'll see a row offset as a number, which can be negative. This is the interval between the two blue strings. Swipe right or left on it as before to increase or decrease it.*
 
-*Changing one row offset doesn't affect the other six row offsets. Thus increasing any row offset above the anchor string sharpens the current string and all strings above it. And increasing any row offset below the anchor string _flattens_ the current string and all strings below it. (Of the two lit-up buttons, the current string is always the one furthest from the anchor string.) To summarize, you're _seeing_ the offset between the two lit-up strings, but _hearing_ the pitch of the outermost lit-up string.*
+*Changing one row offset doesn't affect the other six row offsets. Thus increasing any row offset above the anchor string sharpens the current string and all strings above it. And increasing any row offset below the anchor string _flattens_ the current string and all strings below it. To summarize, you're _seeing_ the offset between the blue strings, but _hearing_ the pitch of the light blue string.*
+
+*If any of the 8 side buttons or 7 offsets is red, that means it's not coprime with one or both of the 2 column offsets.*
 
 A guitar tuning is a standard tuning if the intervals between open strings are all 4ths, except for that one major 3rd between the 2nd and 3rd rows. The exact notes don't matter, just the intervals. If you switch edos while in a standard tuning, you'll stay in a standard tuning. 
 
-*Details: When in a standard tuning, on the Global Settings screen the GUITAR pad is dark blue, otherwise it's bright blue. The edo's 4th is defined as its closest approximation to 4/3. The edo's major 3rd is defined as two octaves minus four 4ths. Thus 22edo's major 3rd is 8\22 = 436¢ not 7\22 = 382¢. There's two possible 4ths for 13edo (5\13 and 6\13) and 18edo (7\18 and 8\18). Either 4th keeps the GUITAR pad dark blue.*
+*Details: When in a standard tuning, on the Global Settings screen the GUITAR pad is dark blue, otherwise it's bright blue (or possibly red). The edo's 4th is defined as its closest approximation to 4/3. The edo's major 3rd is defined as two octaves minus four 4ths. Thus 22edo's major 3rd is 8\22 = 436¢ not 7\22 = 382¢. This ensures a double octave from the 6th string to the 1st string. There's two possible 4ths for 13edo (5\13 and 6\13) and 18edo (7\18 and 8\18). Either 4th keeps the GUITAR pad dark blue.*
 
-In Global Settings, when you long-press the OCTAVE pad, the "-GUI" option for reversed guitar tuning is not available when microLinn is on. To get this reversed tuning, set the guitar tuning manually.
+*In Global Settings, when you long-press the OCTAVE pad, the "-GUI" option for reversed guitar tuning is not available when microLinn is on. To get this reversed tuning, set the guitar tuning manually.*
 
 NOTE LIGHTS
 
@@ -245,11 +249,17 @@ Default scales: of the 8 scales, the 1st and 2nd scales are 5-limit major and 5-
 The colors use the rainbow metaphor, red-yellow-green-blue = sharp-to-flat = supermajor-to-subminor. There's a rainbow of 2nds, a rainbow of 3rds, etc.
 * white = 12-edo-ish = 3-limit
 * yellow / green = downmajor / upminor =  5-over / 5-under (examples: 5/4 and 5/3 are 5-over, 6/5 and 16/15 are 5-under)
-* blue / red = downminor / upmajor = 7-over / 7-under
-* purple = neutral = 11-over or 11-under or 13-over or 13-under
-* pink is reserved for the exact half-octave of 600c, 12-edo-ish but not quite 3-limit, "off-white"
+* blue / red = downminor / upmajor = 7-over / 7-under (examples: 7/4 and 7/6 are 7-over, 8/7 and 9/7 are 7-under)
+* purple = neutral = 11-over or 11-under (e.g. 11/9 or 12/11) or 13-over or 13-under (e.g. 13/8 or 18/13)
+* pink is reserved for C in certain edos
 * cyan / orange = a catch-all pair, e.g. 41edo 7/5 and 10/7, cyan is also for "outside" notes aka interordinals e.g. 24edo
 * orange is used in 55edo for upmid and downmid notes
+
+There are usually 7 white notes, corresponding to CDEFGAB. In a bosanquet layout, they are grouped CDE and FGAB. There are usually 5 yellow sharps and 5 green flats.
+
+* In pentatonic edos 5, 10, 15, 20, 25 and 30, and in supersharp edos 8, 13 and 18, there are only 5 white notes, because E and F are merged, as are B and C
+* In perfect edos 7, 14, 21, 28 and 35, C is pink, to help it stand out
+* In superflat edos, Bb is higher in pitch than B
 
 The dot patterns tend to follow the conventional m3 P4 P5 M6 P8 guitar fret markers. Some edos add M2 and m7. Edos above 24 approximate 12edo, in other words there are dots about every 100 cents. 41edo is an exception. It has kites like a Kite guitar.
 
@@ -301,6 +311,17 @@ For the right split,
 *If the left split only uses two groups, you can use the right split with channel 16. Furthermore, you can set the split to use fewer channels and the blocks will change to match. The channels should go up from 2 or down from 15. Or if there's no Main channel, up from 1 or down from 16. If you have N channels, the 2nd block is N channels higher (or lower for the right split) than the 1st block, the 3rd block is 2xN channels higher/lower, etc. For example, with 2 groups, setting the left split to channels 2-7 (6 channels) makes the 2nd block be 8-13, leaving 3 channels available for the right split.*
 
 ============================= technical notes ==================================
+
+KNOWN ISSUES:
+
+* Arpegiator is not yet microtonal
+* Strumming is not yet microtonal
+* Same/blink carry over leaves extra lights
+* edos above 41 have poor rainbows
+* default scales are incomplete
+* many settings don't yet persist across power cycles:
+* * per-split: row offsets, ShowCustomLEDs and Layouts
+* * global: DrumPadMode, LocatorCCs
 
 To find all changes to the code, search for "microlinn" or "patternChain" or "playedBlink" or "control the sequencer"
 

@@ -199,7 +199,7 @@ NRPN   Value   Description
 166    1       Split Right Sequencer Toggle Mute
 200    0-1     Global Split Active (0: Inactive, 1: Active)
 201    0-1     Global Selected Split (0: Left Split, 1: Right Split)
-202    2-25    Global Split Point Column
+202 *  2-25    Global Split Point Column
 203    0-1     Global Main Note Light C (0: Off, 1: On)
 204    0-1     Global Main Note Light C# (0: Off, 1: On)
 205    0-1     Global Main Note Light D (0: Off, 1: On)
@@ -250,7 +250,7 @@ NRPN   Value   Description
 250    1-127   Global Maximum Value For Velocity
 251    1-127   Global Value For Fixed Velocity
 252    0-512   Device Minimum Interval Between MIDI Bytes Over USB
-253    0-33    Global Custom Row Offset Instead Of Octave (0-32: -16-16 semitone intervals, 33: inverted Guitar)
+253 *  0-33    Global Custom Row Offset Instead Of Octave (0-32: -16-16 semitone intervals, 33: inverted Guitar)
 254    0-1     Device MIDI Through (0: Off, 1: On)
 255    0-127   Global MIDI CC For Foot Left CC65
 256    0-127   Global MIDI CC For Foot Right CC65
@@ -274,8 +274,8 @@ NRPN   Value   Description
 
 Additional NRPN messages for microLinn (nn00-nn49 = non-microtonal, nn50-nn99 = microtonal)
 Important: send a NRPN 1300 after changing certain settings that affect the tuning:
-  NRPNs 19, 36-38, 119, 136-138, 200-202?, 227, 243, 246 above
-  All NRPNs below except 1003-1006, 1103-1105, 1201-1202, 1204, 1265
+  NRPNs 19, 36-38, 119, 136-138, (202 if in no overlap mode), 227, 243, 246, 253 above
+  All NRPNs below except 1003-1006, 1103-1105, 1201-1202, 1241, 1265
 
 NRPN   Value   Description
 -------------------------------------------------------------------------------------------------------------
@@ -288,7 +288,8 @@ NRPN   Value   Description
 1006   0-6     Split Left showCustomLEDs,  0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
 1050   0-14    Split Left transposeEDOsteps,  ranges -7..7, so add/subtract 7 to convert it
 1051   0-14    Split Left transposeEDOlights, ranges -7..7, so add/subtract 7 to convert it
-1052   0-2     Split Left tuningTable, 0..2 = OFF/ON/RCH
+1052   0-6     Split Left layout, 0..6 = OFF, Bosanquet 1 & 2, Wicki-Hayden 1 & 2, Harmonic Table 1 & 2
+1053   0-2     Split Left tuningTable, 0..2 = OFF/ON/RCH
 1100   1-8     Split Right Column Offset 
 1101   0-52    Split Right Row Offset, ranges -26..26, so add/subtract 26 to convert it
 1102   0-56    Split Right collapseBendPerPad, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
@@ -298,7 +299,8 @@ NRPN   Value   Description
 1106   0-6     Split Right showCustomLEDs,  0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
 1150   0-14    Split Right transposeEDOsteps,  ranges -7..7, so add/subtract 7 to convert it
 1151   0-14    Split Right transposeEDOlights, ranges -7..7, so add/subtract 7 to convert it
-1152   0-2     Split Right tuningTable, 0..2 = OFF/ON/RCH
+1152   0-6     Split Right layout, 0..6 = OFF, Bosanquet 1 & 2, Wicki-Hayden 1 & 2, Harmonic Table 1 & 2
+1153   0-2     Split Right tuningTable, 0..2 = OFF/ON/RCH
 1200   0-1     Global drumPadMode, 0 = OFF, 1 = ON
 1201   0-120   Global locatorCC1, 0 = OFF, 1..120 = CC 0-119, so add/subtract 1 to convert it
 1202   0-120   Global locatorCC2   
@@ -325,57 +327,58 @@ NRPN   Value   Description
 MICROLINN BULK IMPORT/EXPORT
 ============================
 
-MicroLinn bulk importing and exporting uses a NRPN plus polypressure messages: 1010cccc 0nnnnnnn 0vvvvvvv, 18 bits
-A polypressure message is much faster than a NRPN or multiple CCs, thanks to KVR forum member dr_loop for the idea!
+MicroLinn bulk importing and exporting uses NRPN plus polypressure messages: 1010cccc 0nnnnnnn 0vvvvvvv, 18 bits
 Linnstrument responds to a NRPN 299 bulk export request with a NRPN 300 header and multiple polypressure messages
 Linnstrument responds to a NRPN 300 header by bulk importing data from subsequent polypressure messages
 
+All importing is blocked unless "Allow Importing" is manually turned on. All exporting is always allowed.
+Importing is automatically turned off every time the user unplugs the Linnstrument.
+
 bulk export request format:
-NRPN 299 = (MSB 2, LSB 43), channel 0, value = 2048 + export type = (MSB 16, LSB 1-35)
+NRPN 299 = (MSB 2, LSB 43), channel 0, value = 2048 + export type = (MSB 16, LSB 1-15)
 
 bulk export format:
-NRPN 300 = (MSB 2, LSB 44), channel 0, value: MSB = export type = 1-35, LSB = 0 or Global.microlinn.EDO
-Polypressure header, channel 8, value: data1 = Device.version, data2 = Device.microLinn.MLversion
-(multiple polypressure data messages on channels 0-3)
-Polypressure footer, channel 12, value: data1 = export type = 1-35, data2 = 0
-
-The edo is stored in NRPN 300 LSB to aid in deducing the length of imports 4, 5, 6 and 27
+NRPN 300 = (MSB 2, LSB 44), channel 0, value: MSB = export type = 1-15, LSB = current edo if export type = 5..8
+Polypressure header, channel 8, value: LSB = Device.version, MSB = Device.microLinn.MLversion
+(multiple polypressure data messages on channels 0..3)
+Polypressure footer, channel 12, value: MSB = export type = 1-15, LSB = 0
 
 For the polypressure messages, channels 1-3 are used to store the 8th bit of each byte:
-channel 1 or 3 = add 128 to data1 when importing 
-channel 2 or 3 = add 128 to data2 when importing
+channel 1 or 3 = add 128 to LSB when importing 
+channel 2 or 3 = add 128 to MSB when importing
 
-Type        # of data bytes     Settings exported                          Notes
--------------------------------------------------------------------------------------------------------------
- 1          208                 Custom light pattern A                     imports into current light pattern
- 2           "                  Custom light pattern A#                       "
- 3           "                  Custom light pattern B                        "
- 4          edo                 Device.microLinn.scales (1 edo only)       if current edo is odd, size = edo + 1
- 5           "                  Device.microLinn.rainbows (1 edo only)        "
- 6           "                  Device.microLinn.fretboards (1 edo only)      "
- 7          1530                Device.microLinn.scales                    
- 8           "                  Device.microLinn.rainbows                  
- 9           "                  Device.microLinn.fretboards                      
-10-25       32                  Audience message 1-16                      imports into last-edited message
-26          496                 Audience messages (all)                    
-27          22 + 3 * edo        All data for the current edo               if edo is odd, size = 22 + 3 * (edo + 1)
-28          14727 *             All User Settings                          no calibration data or sequencer projects
-30-35       396 *               Preset 1-6 (all data)                      top preset is preset #1, bottom one is #6
+Type        # of data bytes     Settings exported                    Notes
+-------------------------------------------------------------------------------------------------------
+ 1          208                 Current light pattern                imports into current light pattern
+ 2          624                 All 3 light patterns                 
+ 3          30                  Last-edited audience message         imports into last-edited message
+ 4          480                 All 16 audience messages             
+
+ 5          edo                 Current edo's 7 scales               size += 1 byte of padding if edo is odd
+ 6           "                  Current edo's rainbow                    "
+ 7           "                  Current edo's fretboard                  "
+ 8          24 + 3 * edo        All data for the current edo         guitarTuning, equave, useRainbow, col/row offsets
+
+ 9          1530                Scales for all 51 edos                    
+10           "                  Rainbows for all 51 edos                
+11           "                  Fretboards for all 51 edos                   
+12          4590                All 3 arrays for all 51 edos         no guitarTuning, equave, useRainbow, col/row offsets
+
+13          396 *               Last-loaded preset                   
+14          2376 *              All 6 presets                        
+15          14727 *             All user settings                    no calibration data or sequencer projects
 
 * will be larger for version 72.1
 
-calibration data is only received if you are actually in the calibration screen
-user setting to enable imports, a runtime var that gets reset to off upon unplugging
-when importing, first exit all web browsers in case webmidi sends rouge NRPN/polypressure messages
-
 Import failure error codes:
-invalid import type
-invalid edo
-1 = unknown (future) data structure version or incompatible (past or future) data structure version
-too many data bytes
-too few data bytes
+invalid import type (must be 1-15)
+invalid edo (must be 5-55)
+unknown data version = can't import from a future data structure version
+data version mismatch = incompatible (past or future) data structure version (all settings import only)
+not enough data = too few data bytes
+excess data = too many data bytes
 FOOTER MISMATCH = import type mismatch between NRPN 300 MSB and polypressure footer MSB
-N = Nth polypressure was invalid, N is 1-indexed
+M N = M is microLinnImportCounter, Nth midi message was invalid, N is 1-indexed, includes the NRPN's 6 CCs
 lack of "SUCCESS" message = no footer
 
 Color Values

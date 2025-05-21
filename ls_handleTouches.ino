@@ -722,9 +722,6 @@ void handleNonPlayingTouch() {
     case displayMicroLinnFretboardEditor:
       handleMicroLinnFretboardEditorNewTouch();
       break;
-    case displayMicroLinnUninstall: 
-      handleMicroLinnUninstallNewTouch();
-      break;
   }
 }
 
@@ -1374,7 +1371,6 @@ void sendReleasedNote() {
     signed char note = sensorCell->note;
     signed char channel = sensorCell->channel;
     if (isMicroLinnDrumPadMode()) {
-      //note = getMicroLinnDrumPadMidiNote();          // delete later
       if (note == -1) return;
     } 
     else if (isMicroLinnOn()) {

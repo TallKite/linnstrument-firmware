@@ -2299,6 +2299,7 @@ void copyConfigurationVLatest(void* target, void* source) {            // copies
   t->device.version = 16 + MICROLINN_VERSION_OFFSET;
 
   memcpy(&t->settings.global, &s->settings.global, sizeof(s->settings.global));
+  if (t->settings.global.customRowOffset == -17) t->settings.global.customRowOffset = -5;   // the "-GUI" option
   for (int split = 0; split < NUMSPLITS; split++) {
     memcpy(&t->settings.split[split], &s->settings.split[split], sizeof(s->settings.split[split]));
     if (t->settings.split[split].playedTouchMode > playedSame) {
@@ -2308,6 +2309,7 @@ void copyConfigurationVLatest(void* target, void* source) {            // copies
 
   for (byte p = 0; p < NUMPRESETS; p++) {
     memcpy(&t->preset[p].global, &s->preset[p].global, sizeof(s->preset[p].global));
+    if (t->preset[p].global.customRowOffset == -17) t->preset[p].global.customRowOffset = -5;
     for (int split = 0; split < NUMSPLITS; split++) {
       memcpy(&t->preset[p].split[split], &s->preset[p].split[split], sizeof(s->preset[p].split[split]));
       if (t->preset[p].split[split].playedTouchMode > playedSame) {
@@ -2321,7 +2323,7 @@ void copyConfigurationVLatest(void* target, void* source) {            // copies
 void migrateFromMicroLinnGlobalV72_0 (MicroLinnGlobal* t, void* source) {
   // copy what's in 72.0, initialize what isn't
   MicroLinnV72_0::MicroLinnGlobal* s = (typeof(s)) source;
-  //t->drumPadMode = false;              // uncomment once 72B is done
+  //t->drumPadMode = false;              // uncomment once 72.1 is done
   //t->locatorCC1 = -1;
   //t->locatorCC2 = -1;
   t->EDO = s->EDO;
@@ -2387,9 +2389,10 @@ void restoreNonMicroLinnConfiguration(void* target, void* source) {
   ConfigurationVLatest* t = (ConfigurationVLatest*)target;
   Configuration* s = (Configuration*)source;
 
-  memcpy(&t->device, &s->device, sizeof(t->device));
+  memcpy(&t->device, &s->device, sizeof(t->device));                                 // sizeof(target) excludes MicroLinnDevice
 
-  memcpy(&t->settings.global, &s->settings.global, sizeof(t->settings.global));      // sizeof(target) excludes microLinnGlobal
+  memcpy(&t->settings.global, &s->settings.global, sizeof(t->settings.global));
+  t->settings.global.customRowOffset = constrain(t->settings.global.customRowOffset, -16, 16);
   for (byte i = 0; i < 5; i++) {
     if (t->settings.global.customSwitchAssignment[i] > MAX_ASSIGNED - 4) {           // no EDO_UP, EDO_DOWN, TOGGLE_QUANTIZE or TOGGLE_8VE
         t->settings.global.customSwitchAssignment[i] = ASSIGNED_TAP_TEMPO;
@@ -2406,6 +2409,7 @@ void restoreNonMicroLinnConfiguration(void* target, void* source) {
 
   for (byte p = 0; p < NUMPRESETS; p++) {
     memcpy(&t->preset[p].global, &s->preset[p].global, sizeof(t->preset[p].global));
+    t->preset[p].global.customRowOffset = constrain(t->preset[p].global.customRowOffset, -16, 16);
     for (byte i = 0; i < 5; i++) {
       if (t->preset[p].global.customSwitchAssignment[i] > MAX_ASSIGNED - 4) {
           t->preset[p].global.customSwitchAssignment[i] = ASSIGNED_TAP_TEMPO;

@@ -63,7 +63,6 @@ displayCustomLedsEditor       : editor for custom LEDs
 displayMicroLinnConfig          : select EDO, anchor data and column offsets
 displayMicroLinnAnchorChooser   : choose the anchor cell from the performance display
 displayMicroLinnFretboardEditor : edit the fret markers for the current edo
-displayMicroLinnUninstall       : ask user if they want to uninstall microLinn, deleting microtonal data
 
 These routines handle the painting of these display modes on LinnStument's 208 LEDs.
 **************************************************************************************************/
@@ -250,9 +249,6 @@ void updateDisplay() {
       break; 
     case displayMicroLinnFretboardEditor:
       paintMicroLinnFretboardEditor(true);
-      break;
-    case displayMicroLinnUninstall:
-      paintMicroLinnUninstall();
       break;
   }
 
@@ -901,6 +897,7 @@ byte getSplitHandednessColor() {
 }
 
 byte getGuitarTuningColor() {
+  if (getMicroLinnRowOffsetColorGuitar1() == COLOR_RED) return COLOR_RED;       // red if not coprime with either column offset
   if (isMicroLinnOn()) {
     return isMicroLinnGuitarTuningStandard() ? globalColor : globalAltColor;
   }
@@ -932,21 +929,20 @@ void paintShowSplitSelection(byte side) {
 void paintOSVersionDisplay() {
   clearDisplay();
 
-  byte color = Split[LEFT].colorMain;
+  byte color = COLOR_GREEN;
   smallfont_draw_string(0, 0, OSVersion, color);
 }
 
 void paintOSVersionBuildDisplay() {
   clearDisplay();
 
-  byte color = Split[LEFT].colorAccent;
+  byte color = COLOR_YELLOW;
   smallfont_draw_string(0, 0, OSVersionBuild, color);
 }
 
 void paintMicroLinnOSVersionDisplay() {
   clearDisplay();
-  byte color = Split[LEFT].colorAccent;
-  smallfont_draw_string(0, 0, microLinnOSVersion, color);
+  smallfont_draw_string(0, 0, microLinnOSVersion, COLOR_CYAN);
 }
 
 // paint the current preset number for a particular side, in large block characters
@@ -1322,10 +1318,15 @@ void paintSplitHandedness() {
 void paintRowOffset() {
   clearDisplay();
   if (Global.customRowOffset == -17 && !isMicroLinnOn()) {
-    condfont_draw_string(0, 0, "-GUI", globalColor, false);
+    byte color = globalColor;
+    for (byte side = 0; side < NUMSPLITS; ++side) {
+      switch (Split[side].microLinn.colOffset) {case 2: case 4: case 5: case 6: case 8: color = COLOR_RED;}
+    }
+    condfont_draw_string(0, 0, "-GUI", color, false);
   }
   else {
-    paintNumericDataDisplay(globalColor, Global.customRowOffset, 0, false);
+    byte color = getMicroLinnRowOffsetColor(Global.customRowOffset);      // red if not coprime with either column offset
+    paintNumericDataDisplay(color, Global.customRowOffset, 0, false);
   }
 }
 
@@ -1337,10 +1338,11 @@ void paintGuitarTuning() {
   clearDisplay();
 
   for (byte r = 0; r < NUMROWS; ++r) {
-    setLed(1, r, guitarTuningRowNum == r ? Split[Global.currentPerSplit].colorAccent : Split[Global.currentPerSplit].colorMain, cellOn);
+    setLed(1, r, getMicroLinnRowOffsetColorGuitar2(r, true), cellOn);
   }
 
-  paintNoteDataDisplay(globalColor, Global.guitarTuning[guitarTuningRowNum], LINNMODEL == 200 ? 2 : 1);
+  byte color = getMicroLinnRowOffsetColorGuitar2(guitarTuningRowNum, false);
+  paintNoteDataDisplay(color, Global.guitarTuning[guitarTuningRowNum], LINNMODEL == 200 ? 2 : 1);
 }
 
 void paintMIDIThrough() {
@@ -1711,6 +1713,17 @@ void paintGlobalSettingsDisplay() {
     lightLed(16, 2);
   }
 
+  // set light for uninstall mode
+#ifdef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
+  if (isMicroLinnUninstallTrue()) lightLed(16, 4);
+#endif
+#ifndef DEBUG_ENABLED
+  if (isMicroLinnUninstallTrue()) {
+    if (LINNMODEL == 200) {lightLed(17, 2);}
+    else {lightLed(16, 4);}
+  }
+#endif
+
   // clearly indicate the calibration status
   setLed(16, 3, getCalibrationColor(), cellOn);
 
@@ -1745,22 +1758,22 @@ void paintGlobalSettingsDisplay() {
 
     switch (Global.rowOffset) {
       case ROWOFFSET_NOOVERLAP: // no overlap
-        lightLed(5, 3);
+        setLed(5, 3, getMicroLinnRowOffsetColorNoOverlap(), cellOn);      // red if not coprime with either column offset
         break;
       case 3:        // +3
-        lightLed(5, 0);
+        setLed(5, 0, getMicroLinnRowOffsetColor(3), cellOn);
         break;
       case 4:        // +4
-        lightLed(6, 0);
+        setLed(6, 0, getMicroLinnRowOffsetColor(4), cellOn);
         break;
       case 5:        // +5
-        lightLed(5, 1);
+        setLed(5, 1, getMicroLinnRowOffsetColor(5), cellOn);
         break;
       case 6:        // +6
-        lightLed(6, 1);
+        setLed(6, 1, getMicroLinnRowOffsetColor(6), cellOn);
         break;
       case 7:        // +7
-        lightLed(5, 2);
+        setLed(5, 2, getMicroLinnRowOffsetColor(7), cellOn);
         break;
       case ROWOFFSET_OCTAVECUSTOM:      // +octave or custom
         setLed(6, 2, getRowOffsetColor(), cellOn);
@@ -1769,7 +1782,8 @@ void paintGlobalSettingsDisplay() {
         setLed(6, 3, getGuitarTuningColor(), cellOn);
         break;
       case ROWOFFSET_ZERO:
-        // no nothing
+        if (Split[LEFT].microLinn.colOffset > 1 || Split[RIGHT].microLinn.colOffset > 1) 
+          setLed(6, 2, COLOR_RED, cellOn);      // indicate missing notes in the octave spot, no better option
         break;
     }
 
@@ -1884,8 +1898,10 @@ void paintCustomLedsEditor() {
 }
 
 byte getRowOffsetColor() {
-  if (isMicroLinnOn()) return getMicroLinnRowOffsetColor();
-  if (Global.customRowOffset != 12) {
+  byte color = getMicroLinnRowOffsetColor(Global.customRowOffset);         // red if not coprime with either column offset
+  if (color == COLOR_RED) return color;
+  byte edo = isMicroLinnOn() ? Global.microLinn.EDO : 12;
+  if (Global.customRowOffset != edo) {
     return globalAltColor;
   }
   return globalColor;

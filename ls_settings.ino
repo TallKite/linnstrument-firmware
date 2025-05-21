@@ -985,11 +985,6 @@ void handleControlButtonRelease() {
     // and save the global settings which may have been changed.
 
     case GLOBAL_SETTINGS_ROW:                                // global settings button released
-      if (displayMode == displayMicroLinnUninstall){
-        setDisplayMode(displayGlobal);
-        updateDisplay();
-        break;
-      }
       if (displayMode == displayReset) {
         // ensure that MPE is actively disabled before resetting
         disableMpe(LEFT);
@@ -2153,9 +2148,11 @@ void handleSplitHandednessRelease() {
 }
 
 void handleRowOffsetNewTouch() {
-  if (isMicroLinnOn()) handleMicroLinnRowOffsetNewTouch();
-  else handleNumericDataNewTouchCol(Global.customRowOffset, -17, 16, true);
-  storeMicroLinnCustomRowOffsetCents();
+  if (isMicroLinnOn()) 
+    handleNumericDataNewTouchCol(Global.customRowOffset, -25, 25, true);
+  else 
+    handleNumericDataNewTouchCol(Global.customRowOffset, -17, 16, true);
+  storeMicroLinnGlobalRowOffsetCents();
 }
 
 void handleRowOffsetRelease() {
@@ -2894,11 +2891,23 @@ void handleGlobalSettingNewTouch() {
             break;
         }
         break;
+
+      case 16:
+        if (sensorRow == 4 && LINNMODEL == 128) toggleMicroLinnUninstall();
+        break;
+
 #ifndef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
       case 17: 
-        if (sensorRow == 2) enterMicroLinnUninstall();   // move this button to col 16 once it's fully tested
+        if (sensorRow == 2 && LINNMODEL == 200) toggleMicroLinnUninstall();
         break;
 #endif
+
+#ifdef DEBUG_ENABLED
+      case 16:
+        if (sensorRow == 4 && LINNMODEL == 200) toggleMicroLinnUninstall();   // use col 16 instead
+        break;
+#endif
+
     }
   }
 
@@ -3045,8 +3054,9 @@ void handleGlobalSettingHold() {
       case 6:
         switch (sensorRow) {
           case 2:
+            if (Global.rowOffset != ROWOFFSET_OCTAVECUSTOM)
+              storeMicroLinnGlobalRowOffsetCents();
             Global.rowOffset = ROWOFFSET_OCTAVECUSTOM;
-            clearMicroLinnGlobalRowOffsetCents();
             resetNumericDataChange();
             setDisplayMode(displayRowOffset);
             updateDisplay();
@@ -3182,7 +3192,7 @@ void handleGlobalSettingRelease() {
       }
       else {
         Global.rowOffset = ROWOFFSET_OCTAVECUSTOM;
-        clearMicroLinnGlobalRowOffsetCents();
+        storeMicroLinnGlobalRowOffsetCents();
       }
   }
   else if (sensorCol == 6 && sensorRow == 3 &&

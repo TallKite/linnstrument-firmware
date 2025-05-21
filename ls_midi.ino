@@ -552,6 +552,7 @@ void receivedRpn(byte midiChannel, int parameter, int value) {
 }
 
 void receivedNrpn(int parameter, int value, int channel) {
+  if (parameter != 299 && !isMicroLinnImportingOn()) return;         // exporting is always allowed
   if (parameter >= 1000) {
     receivedMicroLinnNrpn(parameter, value);
     return;

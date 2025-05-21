@@ -47,7 +47,7 @@ For any questions about this, contact Roger Linn Design at support@rogerlinndesi
 
 const char* OSVersion = "234.";
 const char* OSVersionBuild = ".072";
-const char* microLinnOSVersion = ".001";
+const char* microLinnOSVersion = ".000";
 
 // SPI addresses
 #define SPI_LEDS    10               // Arduino pin for LED control over SPI
@@ -230,7 +230,7 @@ const int LED_PATTERNS = 3;
 
 // Two buffers of ...
 // A 26 by 8 byte array containing one byte for each LED:
-// bits 4-6: 3 bits to select the color: 0:off, 1:red, 2:yellow, 3:green, 4:cyan, 5:blue, 6:magenta
+// bits 3-6: 4 bits to select the color: 0:off, 1:red, 2:yellow, 3:green, 4:cyan, 5:blue, 6:magenta, etc.
 // bits 0-2: 0:off, 1: on, 2: pulse
 const unsigned long LED_LAYER_SIZE = MAXCOLS * MAXROWS;
 const unsigned long LED_ARRAY_SIZE = (MAX_LED_LAYERS+1) * LED_LAYER_SIZE;
@@ -503,8 +503,7 @@ enum DisplayMode {
   displayCustomLedsEditor,
   displayMicroLinnConfig,
   displayMicroLinnAnchorChooser,
-  displayMicroLinnFretboardEditor,
-  displayMicroLinnUninstall
+  displayMicroLinnFretboardEditor
 };
 DisplayMode displayMode = displayNormal;
 
@@ -628,10 +627,11 @@ struct MicroLinnSplit {
   //byte collapseBendPerPad;              // width of a single-pad pitch bend in edosteps, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
   byte hammerOnWindow;                    // maximum width in tens of cents of a hammer-on before it becomes two simultaneous notes, 0..240, 0 = OFF
   boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
-  byte pullOffVelocity;                   // 0 = 2nd note's noteOff velocity, 1 = 1st noteOn veloc, 2 = 2nd noteOn veloc, 3 = average them
+  byte pullOffVelocity;                   // 0 = OFF, 1 = 2nd note's noteOff velocity, 2 = 1st noteOn veloc, 3 = 2nd noteOn veloc, 4 = average them
   //byte showCustomLEDs;                  // 0 = OFF, 1-3 = the three patterns, 4-6 = patterns plus note lights on top
   signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
   signed char transposeEDOlights;
+  //byte layout;                          // 0 = OFF, 1/2 = Bosanquet, 3/4 = Wicki-Hayden, 5/6 = Harmonic Table
   byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
 };
 
@@ -786,7 +786,7 @@ enum SustainBehavior {
 };
 
 struct MicroLinnGlobal {
-  //boolean drumPadMode;                     // creates a 2x5 (on the 128) or 2x7 (on the 200) array of 3x3 drum pads
+  //byte drumPadMode;                        // creates a 2x5 (on the 128) or 2x7 (on the 200) array of 3x3 drum pads, 2x8 in marimba mode
   //signed char locatorCC1;                  // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25...
   //signed char locatorCC2;                  // ...ranges from 0 to 119, -1 = OFF
   byte EDO;                                  // ranges 5-55, plus 4 for OFF
@@ -1107,7 +1107,7 @@ int32_t fxdPitchHoldSamples[NUMSPLITS];                      // for each split t
 int32_t fxdRateXThreshold[NUMSPLITS];                        // the threshold below which the average rate of change of X is considered 'stationary' and pitch hold quantization will start to occur
 int latestNoteNumberForAutoOctave = -1;                      // keep track of the latest note number that was generated to use for auto octave switching
 
-signed char audienceMessageToEdit = -1;             // the audience message to edit when that mode is active
+signed char audienceMessageToEdit = -1;             // the audience message to edit when that mode is active, needs to default to -1 for microLinn exporting to work
 short audienceMessageOffset = 0;                    // the offset in columns for printing the edited audience message
 short audienceMessageLength = 0;                    // the length in pixels of the audience message to edit
 

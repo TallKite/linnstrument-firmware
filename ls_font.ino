@@ -2418,7 +2418,7 @@ void font_scroll_text(struct Font* font, const char* str, byte color) {
   stopAnimation = false;
 
   byte microLinnRow = 0;
-  if (displayMode == displayMicroLinnConfig || displayMode == displayMicroLinnUninstall) microLinnRow = 1;  // avoid the low row buttons
+  if (displayMode == displayMicroLinnConfig) microLinnRow = 1;  // avoid the low row buttons
   int totalwidth = font_width_string(str, font);
   for (int i = 0; i < totalwidth && !stopAnimation; ++i) {
     font_draw_string( -i, microLinnRow, str, color, font, true, false, COLOR_OFF);
