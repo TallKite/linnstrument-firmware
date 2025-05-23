@@ -134,71 +134,52 @@ CHANNEL PRESSURE FIX: see https://www.kvraudio.com/forum/viewtopic.php?t=591770
 
 On the Global Settings screen, long-press the lower left pad (VIEW MAIN) to go to the main microLinn menu. Once the edo (notes per octave) is set to anything other than OFF, VIEW MAIN turns light blue and you can short-press it.
 
-Main menu, *LONG-PRESS EACH BUTTON* to see its function.
-
-1) set left/right column offset
-2) set left/right row offset
-
-3) set edo (notes per octave)
-4) set octave stretch in cents
-
-5) choose anchor pad
-6) set anchor note
-7) set anchor cents
-
-8) choose note lights
-
-9) set additional features
-
-10) set drum pad mode, locator CCs, and Tuning Table mode
-
-new menus:
+Main menu, *LONG-PRESS EACH BUTTON* to see its function (* = not yet functional)
 
 col 2) Set left/right column offset (OFF, 2 to 8)
 col 3) Set left/right row offset (OFF, -25 to 25, NOVR = no overlap)
 
 col 5) Left/right non-microtonal
-  row 7) * Collapse to scale (OFF, 1 to N, AVG = average)
-  row 6) Show custom light pattern (OFF, A, A#, B)
-  row 5) * Hammer-on window in cents (OFF, 10 to 2400)
+  row 1) * Collapse to scale (OFF, 1 to N, AVG = average)
+  row 2) Show custom light pattern (OFF, A, A#, B)
+  row 3) * Hammer-on window in cents (OFF, 10 to 2400)
   row 4) * Hammer-on new note-on (OFF, ON)
-  row 3) * Pull-off mode (OFF, various)
+  row 5) * Pull-off mode (OFF, various)
 
 col 7) Global non-microtonal
-  row 7) Drum pad mode (OFF, ON)
-  row 6) Locator CC #1 (OFF, 0 to 119)
-  row 5) Locator CC #2 (OFF, 0 to 119)
+  row 1) Drum pad mode (OFF, ON)
+  row 2) Locator CC #1 (OFF, 0 to 119)
+  row 3) Locator CC #2 (OFF, 0 to 119)
   row 4) Importing (OFF, ON)
 
 col 10) Select an edo (notes per octave) (OFF, 5 to 55)
 
 col 12) Set the scale aka note lights
-  col 1, row 7-1) Select scales 1-7
-  col 3, row 7) Rainbow editor
-  col 3, row 6) Rainbow enabler
+  col 1, row 1-7) Select scales 1-7
+  col 3, row 1) Rainbow editor
+  col 3, row 2) Rainbow enabler
   col 3, row 4) Fretboard editor
-  col 3, row 2) * Large edo 
 
 col 14) Left/right microtonal
-  row 7) Set the left/right layout (OFF, Bosanquet, Wicki-Hayden, Harmonic Table)
-  row 6) Set the left/right tuning table mode (OFF, ON, RCH = rechannel)
+  row 1) Set the left/right layout (OFF, Bosanquet, Wicki-Hayden, Harmonic Table)
+  row 2) Set the left/right tuning table mode (OFF, ON, RCH = rechannel)
 
 col 16) Global microtonal
-  row 7) Choose the anchor pad
-  row 6) Set the anchor note (C-1 to G9)
-  row 5) Set the anchor cents (-60 to 60)
+  row 1) Choose the anchor pad
+  row 2) Set the anchor note (C-1 to G9)
+  row 3) Set the anchor cents (-60 to 60)
   row 4) Set the equave semitones (1 to 48)
-  row 3) Set the equave cents (-60 to 60)
-  row 2) * Set the sweetening amount in tenths of cents (OFF, 1 to 20)
-  row 1) * Set the superset EDO for collapsed scales (OFF, 56 to 311, 1200)
+  row 5) Set the equave cents (-60 to 60)
+  row 6) * Set the sweetening amount in tenths of cents (OFF, 1 to 20)
+  row 7) * Set the superset EDO for collapsed scales (OFF, 56 to 311, 1200)
 
 EDOS
 
 The edo (stands for Equal Division of an Octave, the notes per octave) ranges from 5edo to 55edo, plus "OFF" which makes the Linnstrument run normally. Change the edo by swiping sideways. Once microLinn is on (i.e. once an edo is chosen), you can cycle thru the edos by setting a switch or footswitch to EDO+ or EDO- (long-press TAP TEMPO and swipe). 
 
-Changing the edo automatically adjusts all row offsets so that their size in cents stays roughly the same. So your fourths tuning will remain fourths, your fifths will remain fifths, and your standard guitar tuning will remain standard. If either column offset is not OFF, it will get adjusted as well. Furthermore you can set your layout for either split to be Bosanquet etc. and your row/column layout will become (and remain) Bosanquet. 
+Changing the edo automatically adjusts all row offsets so that their size in cents stays roughly the same. So your fourths tuning will remain fourths, your fifths will remain fifths, and your standard guitar tuning will remain standard. If either column offset is not OFF, it will get adjusted as well. Furthermore you can set the default layout for either split to be Bosanquet etc. and your layout will become (and remain) Bosanquet. 
 
-*Details: Bosanquet = m2/M2, Bosanquet 2 = A1/M2, Wicki-Hayden = P4/M2, Wicki-Hayden 2 = P5/M2, Harmonic Table = M3/m3, and Harmonic Table 2 = P5/m3. But this may vary, to ensure coprime row/col offsets. A layout is stored in the per-split row/col offsets, so it overrides the Global row offset. See also Guitar Tuning below.*
+*Details: A default layout is stored in the per-split row/col offsets, so it overrides the Global row offset. Bosanquet = m2/M2, Bosanquet 2 = A1/M2, Wicki-Hayden = P4/M2, Wicki-Hayden 2 = P5/M2, Harmonic Table = M3/m3, and Harmonic Table 2 = P5/m3. But this may vary, to ensure coprime row/col offsets. See also Guitar Tuning below.*
 
 The anchor pad is a specific pad that doesn't change pitch when you change the edo. *Details: The anchor pad chooser displays the row and column of the current anchor pad. For example, "R4C11" (or "4 11" on the Linnstrument 128) means row 4 (from the top) and column 11. Tap the blue "R4C11" anywhere and you'll see the normal display with the anchor pad blinking. Tap any pad to set it as the new anchor pad. This pad beomes the new tonic, and all the note lights will shift accordingly.*
 
@@ -212,8 +193,8 @@ MicroLinn can be set to 12edo. MicroLinn's 12edo has two advantages over the sta
 
 SUGGESTIONS FOR EXPLORING EDOS:
 
-* You can cycle through the edos by setting switch 1 to EDO+ and switch 2 to EDO-
-* Set the layout to e.g. Bosanquet to stay in Bosanquet while you cycle
+* You can cycle through the edos by setting switch 1 to EDO+ and switch 2 to EDO- (won't work until you select an edo)
+* Set the default layout to e.g. Bosanquet to stay in Bosanquet while you cycle
 * The first few edos are pretty strange, so you may want to start with 15, 17, 19 or 22
 * For nice-sounding chords, try the Bosanquet layout for 31edo and the Kite guitar layout for 41edo (memory #5)
 * If the full rainbow scale seems overwhelming, try setting the played mode to blinking (BLNK)
@@ -226,7 +207,7 @@ MicroLinn's guitar tuning is completely independent of the usual one. The guitar
 
 *Details: On the far left, there are 8 green buttons, one for each string. The "anchor string" is the row that the anchor pad is on. Its pitch is determined solely by the anchor pad, note and cents. The anchor string has a double button. Tap any button to select a string. The button turns light blue and sounds that open string. Assuming it's not the anchor string, one of the neighboring buttons, whichever one is closest to the anchor, turns dark blue. You won't see a note name with an octave number. Instead you'll see a row offset as a number, which can be negative. This is the interval between the two blue strings. Swipe right or left on it as before to increase or decrease it.*
 
-*Changing one row offset doesn't affect the other six row offsets. Thus increasing any row offset above the anchor string sharpens the current string and all strings above it. And increasing any row offset below the anchor string _flattens_ the current string and all strings below it. To summarize, you're _seeing_ the offset between the blue strings, but _hearing_ the pitch of the light blue string.*
+*Changing one row offset doesn't affect the other six row offsets. Thus increasing any row offset above the anchor string sharpens the current string and all strings above it. And increasing any row offset below the anchor string _flattens_ the current string and all strings below it. To summarize, you're _seeing_ the offset between the two blue strings, but _hearing_ the pitch of the light blue string only.*
 
 *If any of the 8 side buttons or 7 offsets is red, that means it's not coprime with one or both of the 2 column offsets.*
 
@@ -246,19 +227,23 @@ The 3 custom light patterns are totally separate from all this and are still ava
 
 Default scales: of the 8 scales, the 1st and 2nd scales are 5-limit major and 5-limit minor. Scales 3-6 are blank but for the tonic, so that you can create your own scales on the note lights screen. (For the smaller, weirder edos, scales 1-2 are also blank.) The 7th scale is a partial rainbow, and the 8th scale is always the full rainbow.
 
-The colors use the rainbow metaphor, red-yellow-green-blue = sharp-to-flat = supermajor-to-subminor. There's a rainbow of 2nds, a rainbow of 3rds, etc.
-* white = 12-edo-ish = 3-limit
-* yellow / green = downmajor / upminor =  5-over / 5-under (examples: 5/4 and 5/3 are 5-over, 6/5 and 16/15 are 5-under)
-* blue / red = downminor / upmajor = 7-over / 7-under (examples: 7/4 and 7/6 are 7-over, 8/7 and 9/7 are 7-under)
-* purple = neutral = 11-over or 11-under (e.g. 11/9 or 12/11) or 13-over or 13-under (e.g. 13/8 or 18/13)
-* pink is reserved for C in certain edos
-* cyan / orange = a catch-all pair, e.g. 41edo 7/5 and 10/7, cyan is also for "outside" notes aka interordinals e.g. 24edo
-* orange is used in 55edo for upmid and downmid notes
+There are usually 7 white notes, corresponding to CDEFGAB. In a bosanquet layout, they are grouped CDE and FGAB. 
+There are usually 5 yellow sharps and 5 green flats. Large edos have double sharps/flats, or triple or even quadruple.
 
-There are usually 7 white notes, corresponding to CDEFGAB. In a bosanquet layout, they are grouped CDE and FGAB. There are usually 5 yellow sharps and 5 green flats.
+                                 for 5n and 7n edos
+           white = natural       pink = tonic or anchor pad
+           green = b             green = down
+          yellow = #             yellow = up
+            cyan = bb            dud (double down)
+          orange = ##            dup (triple up)
+            blue = bbb           trud/trup
+            pink = x#
+             red = 
+          purple = 
+          yellow/orange = 
 
-* In pentatonic edos 5, 10, 15, 20, 25 and 30, and in supersharp edos 8, 13 and 18, there are only 5 white notes, because E and F are merged, as are B and C
 * In perfect edos 7, 14, 21, 28 and 35, C is pink, to help it stand out
+* In pentatonic edos 5, 10, 15, 20, 25 and 30, and in supersharp edos 8, 13 and 18, there are only 5 white notes, because E and F are merged, as are B and C
 * In superflat edos, Bb is higher in pitch than B
 
 The dot patterns tend to follow the conventional m3 P4 P5 M6 P8 guitar fret markers. Some edos add M2 and m7. Edos above 24 approximate 12edo, in other words there are dots about every 100 cents. 41edo is an exception. It has kites like a Kite guitar.
@@ -319,11 +304,11 @@ KNOWN ISSUES:
 * Same/blink carry over leaves extra lights
 * edos above 41 have poor rainbows
 * default scales are incomplete
-* many settings don't yet persist across power cycles:
-* * per-split: row offsets, ShowCustomLEDs and Layouts
-* * global: DrumPadMode, LocatorCCs
+* several settings don't yet persist across power cycles:
+* * per-split: Row offsets, Show Custom LEDs and Layouts
+* * global: Drum Pad Mode, Locator CCs and Equave semitones
 
-To find all changes to the code, search for "microlinn" or "patternChain" or "playedBlink" or "control the sequencer"
+To find all changes to the code, search for "microlinn" or "playedBlink" or "patternChain" or "control the sequencer"
 
 "Skip-fretting" is a column offset of 2 - each subsequent pad represents every other MIDI note, so note 0 2 4 6 8 ... instead of 0 1 2 3 4. The name is in reference to the microtonal [kite guitar](https://kiteguitar.com/), which obviously uses frets and not keys, but the Linnstrument's rows and columns work just like strings and frets.
 
@@ -339,4 +324,4 @@ This is handy, as 41 notes per octave would not otherwise fit on a single row. B
 
 # Support
 For support with the official firmware, email Roger at support@rogerlinndesign.com.
-For support for this fork, open a new github issue, or inquire at the unofficial Linnstrument discord.
+For support for this fork, open a new github issue, or inquire at the unofficial Linnstrument discord at https://discord.com/channels/1094879990367133706/1094890657170063400. Please do NOT inquire at the official KVR forum.

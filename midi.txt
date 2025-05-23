@@ -282,7 +282,7 @@ NRPN   Value   Description
 1000   0-8     Split Left Column Offset 
 1001   0-52    Split Left Row Offset, ranges -26..26, so add/subtract 26 to convert it
 1002   0-56    Split Left collapseBendPerPad, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
-1003   0-240   Split Left hammerOnWindow, maximum width in tens of cents of a hammer-on, 0 = OFF, 240 = 2 octaves
+1003   0-50    Split Left hammerOnWindow, maximum width in tens of cents of a hammer-on, 0 = OFF, 50 = a 4th
 1004   0-1     Split Left hammerOnNewNoteOn, 0 = hammer-ons send a new midi note, 1 = hammer-ons bend the old one
 1005   0-3     Split Left pullOffVelocity, 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
 1006   0-6     Split Left showCustomLEDs,  0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
@@ -293,7 +293,7 @@ NRPN   Value   Description
 1100   1-8     Split Right Column Offset 
 1101   0-52    Split Right Row Offset, ranges -26..26, so add/subtract 26 to convert it
 1102   0-56    Split Right collapseBendPerPad, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
-1103   0-240   Split Right hammerOnWindow, maximum width in tens of cents of a hammer-on, 0 = OFF, 240 = 2 8ves
+1103   0-50   Split Right hammerOnWindow, maximum width in tens of cents of a hammer-on, 0 = OFF, 50 = a 4th
 1104   0-1     Split Right hammerOnNewNoteOn, 0 = hammer-ons send a new midi note, 1 = hammer-ons bend the old one
 1105   0-3     Split Right pullOffVelocity, 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
 1106   0-6     Split Right showCustomLEDs,  0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
