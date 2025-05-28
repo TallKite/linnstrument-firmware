@@ -1451,12 +1451,18 @@ void paintNoteDataDisplay(byte color, short noteNumber, short offset) {
 // draw a horizontal line to indicate volume for a particular side
 void paintVolumeDisplay(byte side) {
   clearDisplay();
-  paintVolumeDisplayRow(side);
-  paintShowSplitSelection(side);
+  paintMicroLinnVolumeDisplayRow(LEFT,  6);
+  paintMicroLinnVolumeDisplayRow(RIGHT, 1);
 }
 
-void paintVolumeDisplayRow(byte side) {
-  paintCCFaderDisplayRow(side, 5, Split[side].colorMain, 7, 1, NUMCOLS-2);
+void paintMicroLinnVolumeDisplayRow(byte side, byte row) {
+  paintCCFaderDisplayRow(side, row, Split[side].colorMain, 7, 1, NUMCOLS-2);
+  int32_t fxdFaderPosition = fxdCalculateFaderPosition(ccFaderValues[side][7], 1, NUMCOLS-2);
+  byte N = (LINNMODEL == 200 ? 5 : 4);
+  for (byte col = N; col <= NUMCOLS-1; col += N) {      
+    if (Device.calRows[col][0].fxdReferenceX - FXD_CALX_HALF_UNIT <= fxdFaderPosition)
+      setLed (col, row, Split[side].colorAccent, cellOn, LED_LAYER_MAIN);               // make every Nth dot a bright dot
+  }
 }
 
 void paintOctaveTransposeDisplay(byte side) {
@@ -1722,6 +1728,7 @@ void paintGlobalSettingsDisplay() {
     if (LINNMODEL == 200) {lightLed(17, 2);}
     else {lightLed(16, 4);}
   }
+  setLed(17, 1, COLOR_GREEN, cellOn);      // microLinn config shortcut
 #endif
 
   // clearly indicate the calibration status

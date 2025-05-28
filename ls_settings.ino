@@ -2152,7 +2152,7 @@ void handleRowOffsetNewTouch() {
     handleNumericDataNewTouchCol(Global.customRowOffset, -25, 25, true);
   else 
     handleNumericDataNewTouchCol(Global.customRowOffset, -17, 16, true);
-  storeMicroLinnGlobalRowOffsetCents();
+  calcMicroLinnGlobalRowOffsetCents();
 }
 
 void handleRowOffsetRelease() {
@@ -2268,10 +2268,6 @@ void handleSensorRangeZRelease() {
 }
 
 void handleVolumeNewTouch(boolean newVelocity) {
-  // don't change volume on the row that has the split selection
-  if (sensorRow == 7) {
-    return;
-  }
 
   if (sensorCell->velocity) {
     // if a touch is already down, only consider new touches from the same row
@@ -2301,23 +2297,27 @@ void handleVolumeNewTouch(boolean newVelocity) {
     short value = calculateFaderValue(sensorCell->calibratedX(), 1, NUMCOLS-2);
 
     if (value >= 0) {
-      short previous = ccFaderValues[Global.currentPerSplit][7];
-      ccFaderValues[Global.currentPerSplit][7] = value;
-
-      preSendVolume(Global.currentPerSplit, value);
-      if (previous != value) {
-        paintVolumeDisplayRow(Global.currentPerSplit);
+      if (sensorRow >= 3) {                            // rows 3 and 4 affect both splits at once
+        short previous = ccFaderValues[LEFT][7];
+        ccFaderValues[LEFT][7] = value;
+        preSendVolume(LEFT, value);
+        if (previous != value) {
+          paintMicroLinnVolumeDisplayRow(LEFT, 6);
+        }
+      }
+      if (sensorRow <= 4) {
+        short previous = ccFaderValues[RIGHT][7];
+        ccFaderValues[RIGHT][7] = value;
+        preSendVolume(RIGHT, value);
+        if (previous != value) {
+          paintMicroLinnVolumeDisplayRow(RIGHT, 1);
+        }
       }
     }
   }
 }
 
 void handleVolumeRelease() {
-  // see if one of the "Show Split" cells have been hit
-  if (handleShowSplit()) {
-    return;
-  }
-
   // if another touch is already down on the same row, make it take over the
   if (sensorCell->velocity) {
     for (byte col = NUMCOLS - 1; col >= 1; --col) {
@@ -2679,7 +2679,7 @@ void handleGlobalSettingNewTouch() {
             }
             break;
         }
-        storeMicroLinnGlobalRowOffsetCents();
+        calcMicroLinnGlobalRowOffsetCents();
         break;
 
       // select more row offsets
@@ -2692,7 +2692,7 @@ void handleGlobalSettingNewTouch() {
             else {
               Global.rowOffset = 4;
             }
-            storeMicroLinnGlobalRowOffsetCents();
+            calcMicroLinnGlobalRowOffsetCents();
             break;
           case 1:
             if (Global.rowOffset == 6) {
@@ -2701,7 +2701,7 @@ void handleGlobalSettingNewTouch() {
             else {
               Global.rowOffset = 6;
             }
-            storeMicroLinnGlobalRowOffsetCents();
+            calcMicroLinnGlobalRowOffsetCents();
             break;
           case 2:
           case 3:
@@ -2898,7 +2898,8 @@ void handleGlobalSettingNewTouch() {
 
 #ifndef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
       case 17: 
-        if (sensorRow == 2 && LINNMODEL == 200) toggleMicroLinnUninstall();
+        if (sensorRow == 2) toggleMicroLinnUninstall();
+        if (sensorRow == 1) enterMicroLinnConfig();
         break;
 #endif
 
@@ -3055,7 +3056,7 @@ void handleGlobalSettingHold() {
         switch (sensorRow) {
           case 2:
             if (Global.rowOffset != ROWOFFSET_OCTAVECUSTOM)
-              storeMicroLinnGlobalRowOffsetCents();
+              calcMicroLinnGlobalRowOffsetCents();
             Global.rowOffset = ROWOFFSET_OCTAVECUSTOM;
             resetNumericDataChange();
             setDisplayMode(displayRowOffset);
@@ -3192,7 +3193,7 @@ void handleGlobalSettingRelease() {
       }
       else {
         Global.rowOffset = ROWOFFSET_OCTAVECUSTOM;
-        storeMicroLinnGlobalRowOffsetCents();
+        calcMicroLinnGlobalRowOffsetCents();
       }
   }
   else if (sensorCol == 6 && sensorRow == 3 &&

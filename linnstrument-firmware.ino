@@ -622,9 +622,9 @@ enum SequencerDirection {
 };
 
 struct MicroLinnSplit {
-  byte colOffset;                         // column offset, 0 to 8, 1 = OFF
+  byte colOffset;                         // column offset, 0 to 25, 1 = OFF
   //signed char rowOffset;                // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
-  //byte collapseBendPerPad;              // width of a single-pad pitch bend in edosteps, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
+  //byte condensedBendPerPad;             // width of a single-pad pitch bend in edosteps, 0 = OFF, 1 = VAR, 2 = AVG, 3..L+2 = 1..L (L = largest scale step),
   byte hammerOnWindow;                    // maximum width in tens of cents of a hammer-on before it becomes two simultaneous notes, 0..50, 0 = OFF
  //rename to hammerOnMode?
   boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
@@ -633,7 +633,7 @@ struct MicroLinnSplit {
   //byte showCustomLEDs;                  // 0 = OFF, 1-3 = the three patterns, 4-6 = patterns plus note lights on top
   signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
   signed char transposeEDOlights;
-  //byte layout;                          // 0 = OFF, 1/2 = Bosanquet, 3/4 = Wicki-Hayden, 5/6 = Harmonic Table
+  //byte layout;                          // 0 = OFF, 1/2 = Bosanquet, 3/4 = Wicki-Hayden, 5/6 = Harmonic Table, 7/8 = Accordion, 9-10 = Array mbira
   byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
 };
 
@@ -800,8 +800,8 @@ struct MicroLinnGlobal {
   byte anchorRow;                            // top row is 7, bottom row is 0, but the user sees top row as 1, bottom row as 8
   byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
   signed char anchorCents;                   // ranges -60 to +60 cents, even though 50 would do, for convenience
-  //byte equaveSemitones;                    // for non-octave tunings such as bohlen-pierce, 1..48, 1 semitone = 100 cents
-  signed char octaveStretch;                 // rename to equaveCents, -60..+60
+  //byte equaveSemitones;                    // for non-octave tunings such as bohlen-pierce, 1..36, 1 semitone = 100 cents
+  signed char octaveStretch;                 // rename to equaveStretch, -60..+60
   byte sweeten;                              // in tenths of a cent, 0..240, adjust 41edo 5/4, 5/3 by this amount both top and bottom to make it closer to just
   //short largeEDO;                          // ranges 56..312, 55 = OFF, 312 = JI, user can have a 55-note subset of this edo 
   //signed char largeEDOoffsets[55];         // ranges -128..127, edosteps/cent from nearest edo approx
