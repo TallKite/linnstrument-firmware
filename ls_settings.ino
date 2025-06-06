@@ -336,25 +336,33 @@ void loadSettingsFromPreset(byte p) {
     memcpy(&Split[LEFT], &config.preset[p].split[LEFT], sizeof(SplitSettings));
     memcpy(&Split[RIGHT], &config.preset[p].split[RIGHT], sizeof(SplitSettings));
   } else {        
-    // if the preset has microLinn turned off, don't alter any microLinn settings, but load everything else
-    memcpy(&Global, &config.preset[p].global, sizeof(GlobalSettings) - sizeof(MicroLinnGlobal) + 0); 
-    if (microLinnRowOffset[0] == 3) {} //fake line to flag this code, compiler will throw an error
-    // change +0 to +3 for 72.0, include drumPadMode etc.
+    // if the preset has microLinn turned off, don't alter any microtonal settings, but load everything else
+    memcpy(&Global, &config.preset[p].global, sizeof(GlobalSettings) - sizeof(MicroLinnGlobal)); 
+
+  //Global.microLinn.drumPadMode = config.preset[p].global.microLinn.drumPadMode;
+    microLinnDrumPadMode = false;
+  //Global.microLinn.locatorCC1  = config.preset[p].global.microLinn.locatorCC1;
+  //Global.microLinn.locatorCC2  = config.preset[p].global.microLinn.locatorCC2;
+    microLinnLocatorCC1 = -1;
+    microLinnLocatorCC2 = -1;
+
     // only load the column and per-split row offsets if they are not OFF (such offsets are often related to the edo)
     for (byte side = 0; side < NUMSPLITS; ++side) {
       memcpy(&Split[side], &config.preset[p].split[side], sizeof(SplitSettings) - sizeof(MicroLinnSplit));
-      if (config.preset[p].split[side].microLinn.colOffset != 1)
+      if (config.preset[p].split[side].microLinn.colOffset != 1) {
         Split[side].microLinn.colOffset = config.preset[p].split[side].microLinn.colOffset;
-      //if (config.preset[p].split[side].microLinn.rowOffset > -26)
-      //  Split[side].microLinn.rowOffset = config.preset[p].split[side].microLinn.rowOffset;
-    //Split[side].microLinn.collapseBendPerPad = config.preset[p].split[side].microLinn.collapseBendPerPad;
-      Split[side].microLinn.hammerOnWindow     = config.preset[p].split[side].microLinn.hammerOnWindow;
-      Split[side].microLinn.hammerOnNewNoteOn  = config.preset[p].split[side].microLinn.hammerOnNewNoteOn;
-      Split[side].microLinn.pullOffVelocity    = config.preset[p].split[side].microLinn.pullOffVelocity;
-    //Split[side].microLinn.showCustomLEDs     = config.preset[p].split[side].microLinn.showCustomLEDs;
-      Split[side].microLinn.transposeEDOsteps  = config.preset[p].split[side].microLinn.transposeEDOsteps;
-      Split[side].microLinn.transposeEDOlights = config.preset[p].split[side].microLinn.transposeEDOlights;
-      Split[side].microLinn.tuningTable        = config.preset[p].split[side].microLinn.tuningTable; 
+      }
+
+    //if (config.preset[p].split[side].microLinn.rowOffset > -26) {
+    //  Split[side].microLinn.rowOffset = config.preset[p].split[side].microLinn.rowOffset;
+    //}
+      microLinnRowOffset[side] = -26;
+    //Split[side].microLinn.showCustomLEDs    = config.preset[p].split[side].microLinn.showCustomLEDs;
+      microLinnShowCustomLEDs[side] = 0;
+
+      Split[side].microLinn.hammerOnWindow    = config.preset[p].split[side].microLinn.hammerOnWindow;
+      Split[side].microLinn.hammerOnNewNoteOn = config.preset[p].split[side].microLinn.hammerOnNewNoteOn;
+      Split[side].microLinn.pullOffVelocity   = config.preset[p].split[side].microLinn.pullOffVelocity;
     }
   }
 
@@ -2297,20 +2305,13 @@ void handleVolumeNewTouch(boolean newVelocity) {
     short value = calculateFaderValue(sensorCell->calibratedX(), 1, NUMCOLS-2);
 
     if (value >= 0) {
-      if (sensorRow >= 3) {                            // rows 3 and 4 affect both splits at once
-        short previous = ccFaderValues[LEFT][7];
-        ccFaderValues[LEFT][7] = value;
-        preSendVolume(LEFT, value);
-        if (previous != value) {
-          paintMicroLinnVolumeDisplayRow(LEFT, 6);
-        }
-      }
-      if (sensorRow <= 4) {
-        short previous = ccFaderValues[RIGHT][7];
-        ccFaderValues[RIGHT][7] = value;
-        preSendVolume(RIGHT, value);
-        if (previous != value) {
-          paintMicroLinnVolumeDisplayRow(RIGHT, 1);
+      for (byte side = 0; side < NUMSPLITS; ++side) {         // microLinn has double volume faders
+        if ((side == LEFT  && sensorRow >= 3) ||              // LEFT = rows 5-7, RIGHT = rows 0-2
+            (side == RIGHT && sensorRow <= 4)) {              // rows 3 & 4 affect both splits at once
+          short previous = ccFaderValues[side][7];
+          ccFaderValues[side][7] = value;
+          preSendVolume(side, value);
+          if (previous != value) paintVolumeDisplayRow(side);
         }
       }
     }
@@ -2552,7 +2553,7 @@ void handleGlobalSettingNewTouch() {
           // handled at release
           break;
         case 3:
-         // operatingLowPower is now handled at release
+          // operatingLowPower is now handled at release
           break;
       }
       break;

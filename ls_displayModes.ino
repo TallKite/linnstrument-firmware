@@ -60,6 +60,7 @@ displaySequencerDrum0107      : sequencer first 7 drum notes
 displaySequencerDrum0814      : sequencer second 7 drum notes
 displaySequencerColors        : sequencer low row colors
 displayCustomLedsEditor       : editor for custom LEDs
+displayMicroLinnOsVersion       : display the 001 in 234.072.001
 displayMicroLinnConfig          : select EDO, anchor data and column offsets
 displayMicroLinnAnchorChooser   : choose the anchor cell from the performance display
 displayMicroLinnFretboardEditor : edit the fret markers for the current edo
@@ -897,7 +898,7 @@ byte getSplitHandednessColor() {
 }
 
 byte getGuitarTuningColor() {
-  if (getMicroLinnRowOffsetColorGuitar1() == COLOR_RED) return COLOR_RED;       // red if not coprime with either column offset
+  if (getMicroLinnRowOffsetColorGuitar1() == COLOR_RED) return COLOR_RED;       // red unless coprime with both column offsets
   if (isMicroLinnOn()) {
     return isMicroLinnGuitarTuningStandard() ? globalColor : globalAltColor;
   }
@@ -1318,14 +1319,10 @@ void paintSplitHandedness() {
 void paintRowOffset() {
   clearDisplay();
   if (Global.customRowOffset == -17 && !isMicroLinnOn()) {
-    byte color = globalColor;
-    for (byte side = 0; side < NUMSPLITS; ++side) {
-      switch (Split[side].microLinn.colOffset) {case 2: case 4: case 5: case 6: case 8: color = COLOR_RED;}
-    }
-    condfont_draw_string(0, 0, "-GUI", color, false);
+    condfont_draw_string(0, 0, "-GUI", getMicroLinnGUIcolor(), false);
   }
   else {
-    byte color = getMicroLinnRowOffsetColor(Global.customRowOffset);      // red if not coprime with either column offset
+    byte color = getMicroLinnRowOffsetColor(Global.customRowOffset);              // red unless coprime with both column offsets
     paintNumericDataDisplay(color, Global.customRowOffset, 0, false);
   }
 }
@@ -1391,19 +1388,19 @@ void paintNumericDataDisplay(byte color, short value, short offset, boolean cond
   char str[10];
   const char* format;
   byte pos;
-  byte microLinnRow = (displayMode == displayMicroLinnConfig ? 1 : 0);  // avoid the low row buttons
 
   if (value < 100) {
     format = "%2d";
     pos = condensed ? 3 : 5;
   }
   else if (value >= 100 && value < 200) {
+    byte row = (displayMode == displayMicroLinnConfig ? 1 : 0);  // avoid the low row buttons
     // Handle the "1" character specially, to get the spacing right
     if (condensed) {
-      condfont_draw_string(offset, microLinnRow, "1", color, false);
+      condfont_draw_string(offset, row, "1", color, false);
     }
     else {
-      smallfont_draw_string(offset + 2, microLinnRow, "1", color, false);
+      smallfont_draw_string(offset + 2, row, "1", color, false);
     }
     value -= 100;
     format = "%02d";     // to make sure a leading zero is included
@@ -1415,11 +1412,12 @@ void paintNumericDataDisplay(byte color, short value, short offset, boolean cond
   }
 
   snprintf(str, sizeof(str), format, value);
+  byte row = (displayMode == displayMicroLinnConfig ? 1 : 0);  // avoid the low row buttons
   if (condensed) {
-    condfont_draw_string(pos+offset, microLinnRow, str, color, false);
+    condfont_draw_string(pos+offset, row, str, color, false);
   }
   else {
-    smallfont_draw_string(pos+offset, microLinnRow, str, color, false);
+    smallfont_draw_string(pos+offset, row, str, color, false);
   }
 }
 
@@ -1448,20 +1446,22 @@ void paintNoteDataDisplay(byte color, short noteNumber, short offset) {
   condfont_draw_string(offset, row, str, color, false);
 }
 
-// draw a horizontal line to indicate volume for a particular side
+// microLinn draws two horizontal faders to indicate volumes for both sides
 void paintVolumeDisplay(byte side) {
   clearDisplay();
-  paintMicroLinnVolumeDisplayRow(LEFT,  6);
-  paintMicroLinnVolumeDisplayRow(RIGHT, 1);
+  paintVolumeDisplayRow(LEFT);
+  paintVolumeDisplayRow(RIGHT);
 }
 
-void paintMicroLinnVolumeDisplayRow(byte side, byte row) {
+void paintVolumeDisplayRow(byte side) {
+  byte row = (side == LEFT ? 6 : 1);
   paintCCFaderDisplayRow(side, row, Split[side].colorMain, 7, 1, NUMCOLS-2);
-  int32_t fxdFaderPosition = fxdCalculateFaderPosition(ccFaderValues[side][7], 1, NUMCOLS-2);
+  // microLinn makes every Nth dot a bright dot
   byte N = (LINNMODEL == 200 ? 5 : 4);
+  int32_t fxdFaderPosition = fxdCalculateFaderPosition(ccFaderValues[side][7], 1, NUMCOLS-2);
   for (byte col = N; col <= NUMCOLS-1; col += N) {      
     if (Device.calRows[col][0].fxdReferenceX - FXD_CALX_HALF_UNIT <= fxdFaderPosition)
-      setLed (col, row, Split[side].colorAccent, cellOn, LED_LAYER_MAIN);               // make every Nth dot a bright dot
+      setLed (col, row, Split[side].colorAccent, cellOn, LED_LAYER_MAIN);
   }
 }
 
@@ -1728,7 +1728,7 @@ void paintGlobalSettingsDisplay() {
     if (LINNMODEL == 200) {lightLed(17, 2);}
     else {lightLed(16, 4);}
   }
-  setLed(17, 1, COLOR_GREEN, cellOn);      // microLinn config shortcut
+  setLed(17, 1, COLOR_GREEN, cellOn);                // shortcut to microLinn config menus
 #endif
 
   // clearly indicate the calibration status
@@ -1765,7 +1765,7 @@ void paintGlobalSettingsDisplay() {
 
     switch (Global.rowOffset) {
       case ROWOFFSET_NOOVERLAP: // no overlap
-        setLed(5, 3, getMicroLinnRowOffsetColorNoOverlap(), cellOn);      // red if not coprime with either column offset
+        setLed(5, 3, getMicroLinnRowOffsetColorNoOverlap(), cellOn);          // red unless coprime with both column offsets
         break;
       case 3:        // +3
         setLed(5, 0, getMicroLinnRowOffsetColor(3), cellOn);
@@ -1789,8 +1789,9 @@ void paintGlobalSettingsDisplay() {
         setLed(6, 3, getGuitarTuningColor(), cellOn);
         break;
       case ROWOFFSET_ZERO:
-        if (Split[LEFT].microLinn.colOffset > 1 || Split[RIGHT].microLinn.colOffset > 1) 
-          setLed(6, 2, COLOR_RED, cellOn);      // indicate missing notes in the octave spot, no better option
+        if (getMicroLinnRowOffsetColor(0) == COLOR_RED) {
+          setLed(5, 4, COLOR_RED, cellOn);                                // indicate problem in the 5th row, no better option
+        }
         break;
     }
 
@@ -1905,7 +1906,7 @@ void paintCustomLedsEditor() {
 }
 
 byte getRowOffsetColor() {
-  byte color = getMicroLinnRowOffsetColor(Global.customRowOffset);         // red if not coprime with either column offset
+  byte color = getMicroLinnRowOffsetColor(Global.customRowOffset);            // red unless coprime with both column offsets
   if (color == COLOR_RED) return color;
   byte edo = isMicroLinnOn() ? Global.microLinn.EDO : 12;
   if (Global.customRowOffset != edo) {

@@ -281,26 +281,26 @@ NRPN   Value   Description
 -------------------------------------------------------------------------------------------------------------
 1000   1-25    Split Left Column Offset 
 1001   0-52    Split Left Row Offset, ranges -26..26, so add/subtract 26 to convert it
-1002   0-56    Split Left collapseBendPerPad, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
+1002   0-6     Split Left showCustomLEDs,  0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
 1003   0-50    Split Left hammerOnWindow, maximum width in tens of cents of a hammer-on, 0 = OFF, 50 = a 4th
 1004   0-1     Split Left hammerOnNewNoteOn, 0 = hammer-ons send a new midi note, 1 = hammer-ons bend the old one
 1005   0-3     Split Left pullOffVelocity, 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
-1006   0-6     Split Left showCustomLEDs,  0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
-1050   0-14    Split Left transposeEDOsteps,  ranges -7..7, so add/subtract 7 to convert it
-1051   0-14    Split Left transposeEDOlights, ranges -7..7, so add/subtract 7 to convert it
-1052   0-6     Split Left layout, 0..6 = OFF, Bosanquet 1 & 2, Wicki-Hayden 1 & 2, Harmonic Table 1 & 2
-1053   0-2     Split Left tuningTable, 0..2 = OFF/ON/RCH
+1050   0-56    Split Left condensedBendPerPad, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
+1051   0-6     Split Left defaultLayout, 0..6 = OFF, Bosanquet 1 & 2, Wicki-Hayden 1 & 2, Harmonic Table 1 & 2
+1052   0-2     Split Left tuningTable, 0..2 = OFF/ON/RCH
+1053   0-14    Split Left transposeEDOsteps,  ranges -7..7, so add/subtract 7 to convert it
+1054   0-14    Split Left transposeEDOlights, ranges -7..7, so add/subtract 7 to convert it
 1100   1-25    Split Right Column Offset 
 1101   0-52    Split Right Row Offset, ranges -26..26, so add/subtract 26 to convert it
-1102   0-56    Split Right collapseBendPerPad, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
+1102   0-6     Split Right showCustomLEDs,  0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
 1103   0-50    Split Right hammerOnWindow, maximum width in tens of cents of a hammer-on, 0 = OFF, 50 = a 4th
 1104   0-1     Split Right hammerOnNewNoteOn, 0 = hammer-ons send a new midi note, 1 = hammer-ons bend the old one
 1105   0-3     Split Right pullOffVelocity, 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
-1106   0-6     Split Right showCustomLEDs,  0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
-1150   0-14    Split Right transposeEDOsteps,  ranges -7..7, so add/subtract 7 to convert it
-1151   0-14    Split Right transposeEDOlights, ranges -7..7, so add/subtract 7 to convert it
-1152   0-6     Split Right layout, 0..6 = OFF, Bosanquet 1 & 2, Wicki-Hayden 1 & 2, Harmonic Table 1 & 2
-1153   0-2     Split Right tuningTable, 0..2 = OFF/ON/RCH
+1150   0-56    Split Right condensedBendPerPad, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
+1151   0-6     Split Right defaultLayout, 0..6 = OFF, Bosanquet 1 & 2, Wicki-Hayden 1 & 2, Harmonic Table 1 & 2
+1152   0-2     Split Right tuningTable, 0..2 = OFF/ON/RCH
+1153   0-14    Split Right transposeEDOsteps,  ranges -7..7, so add/subtract 7 to convert it
+1154   0-14    Split Right transposeEDOlights, ranges -7..7, so add/subtract 7 to convert it
 1200   0-1     Global drumPadMode, 0 = OFF, 1 = ON
 1201   0-120   Global locatorCC1, 0 = OFF, 1..120 = CC 0-119, so add/subtract 1 to convert it
 1202   0-120   Global locatorCC2   

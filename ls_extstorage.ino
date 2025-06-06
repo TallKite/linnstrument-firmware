@@ -2341,22 +2341,23 @@ void migrateFromMicroLinnGlobalV72_0 (MicroLinnGlobal* t, void* source) {
   //t->equaveSemitones = 12;
   t->octaveStretch = s->octaveStretch;
   t->sweeten = s->sweeten;
-  //t->largeEDO = 55;
-  //memset(largeEdoScale, 0, sizeof(largeEdoScale));
+  //t->largeEDO = 0;
+  //memset(largeEDOoffsets, 0, sizeof(largeEDOoffsets));
 }
 
 void migrateFromMicroLinnSplitV72_0 (MicroLinnSplit* t, void* source) {
   MicroLinnV72_0::MicroLinnSplit* s = (typeof(s)) source;
   t->colOffset = s->colOffset;
-  //t->rowOffset = -26;
-  //t->collapseBendPerPad = 0;
+  //t->rowOffset = -26;                  // uncomment once 72.1 is done
+  //t->showCustomLEDs = 0;
   t->hammerOnWindow = s->hammerOnWindow;
   t->hammerOnNewNoteOn = s->hammerOnNewNoteOn;
   t->pullOffVelocity = s->pullOffVelocity;
-  //t->showCustomLEDs = 0;
+  //t->condensedBendPerPad = 0;
+  //t->defaultLayout = 0;
+  t->tuningTable = s->tuningTable;
   t->transposeEDOsteps = s->transposeEDOsteps;
   t->transposeEDOlights = s->transposeEDOlights;
-  t->tuningTable = s->tuningTable;
 }
 
 void copyConfigurationMicroLinnV72_0(void* target, void* source) {    // copies from 72.0 to the current config, 72.1 or 72.2 or whatever

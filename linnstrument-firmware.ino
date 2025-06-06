@@ -253,7 +253,7 @@ const unsigned long LED_ARRAY_SIZE = (MAX_LED_LAYERS+1) * LED_LAYER_SIZE;
 
 /******************************* MICROLINN DATA STRUCTURE VERSION *******************************/
 
-// the Microlinn version is the official mainline version it's based on (16 as of Dec 2024), plus this offset
+// the Microlinn version is the official mainline version it's based on (16 as of mid 2025), plus this offset
 // (we would rather have used 128, but the updater interprets version as a signed character type,
 // and rejects negative version numbers.)
 #define MICROLINN_VERSION_OFFSET 56
@@ -465,7 +465,6 @@ enum DisplayMode {
   displayGlobalWithTempo,
   displayOsVersion,
   displayOsVersionBuild,
-  displayMicroLinnOsVersion,
   displayCalibration,
   displayReset,
   displayBendRange,
@@ -501,6 +500,7 @@ enum DisplayMode {
   displaySequencerDrum0814,
   displaySequencerColors,
   displayCustomLedsEditor,
+  displayMicroLinnOsVersion,
   displayMicroLinnConfig,
   displayMicroLinnAnchorChooser,
   displayMicroLinnFretboardEditor
@@ -624,17 +624,15 @@ enum SequencerDirection {
 struct MicroLinnSplit {
   byte colOffset;                         // column offset, 0 to 25, 1 = OFF
   //signed char rowOffset;                // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
-  //byte condensedBendPerPad;             // width of a single-pad pitch bend in edosteps, 0 = OFF, 1 = VAR, 2 = AVG, 3..L+2 = 1..L (L = largest scale step),
-  byte hammerOnWindow;                    // maximum width in tens of cents of a hammer-on before it becomes two simultaneous notes, 0..50, 0 = OFF
- //rename to hammerOnMode?
-  boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
- //rename to pullOffMode?
-  byte pullOffVelocity;                   // 0 = OFF, 1 = 2nd note's noteOff velocity, 2 = 1st noteOn veloc, 3 = 2nd noteOn veloc, 4 = average them
   //byte showCustomLEDs;                  // 0 = OFF, 1-3 = the three patterns, 4-6 = patterns plus note lights on top
+  byte hammerOnWindow;                    // maximum width in tens of cents of a hammer-on before it becomes two simultaneous notes, 0..50, 0 = OFF
+  boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
+  byte pullOffVelocity;                   // 0 = OFF, 1 = 2nd note's noteOff velocity, 2 = 1st noteOn veloc, 3 = 2nd noteOn veloc, 4 = average them
+  //byte condensedBendPerPad;             // width of a single-pad pitch bend in edosteps, 0 = OFF, 1 = VAR, 2 = AVG, 3..L+2 = 1..L (L = largest scale step),
+  //byte defaultLayout;                   // 0 = OFF, 1/2 = Bosanquet, 3/4 = Wicki-Hayden, 5/6 = Harmonic Table, 7/8 = Accordion, 9-10 = Array mbira
+  byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
   signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
   signed char transposeEDOlights;
-  //byte layout;                          // 0 = OFF, 1/2 = Bosanquet, 3/4 = Wicki-Hayden, 5/6 = Harmonic Table, 7/8 = Accordion, 9-10 = Array mbira
-  byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
 };
 
 // per-split settings
@@ -803,9 +801,8 @@ struct MicroLinnGlobal {
   //byte equaveSemitones;                    // for non-octave tunings such as bohlen-pierce, 1..36, 1 semitone = 100 cents
   signed char octaveStretch;                 // rename to equaveStretch, -60..+60
   byte sweeten;                              // in tenths of a cent, 0..240, adjust 41edo 5/4, 5/3 by this amount both top and bottom to make it closer to just
-  //short largeEDO;                          // ranges 56..312, 55 = OFF, 312 = JI, user can have a 55-note subset of this edo 
-  //signed char largeEDOoffsets[55];         // ranges -128..127, edosteps/cent from nearest edo approx
-  // possibly: byte largeEdoScale[39];                  // a packed array of booleans up to 311edo  (311 = 39 x 8 - 1)
+  //short largeEDO;                          // ranges 0..53, 0 = OFF, 1..52 = various edos, 53 = 1200edo = JI, user can have a 55-note subset of this edo 
+  //signed char largeEDOoffset[MICROLINN_MAX_EDO];  // ranges -128..127, edosteps from nearest edo approx
 };
 
 struct GlobalSettings {

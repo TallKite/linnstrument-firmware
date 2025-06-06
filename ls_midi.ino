@@ -334,7 +334,6 @@ void handleMidiInput(unsigned long nowMicros) {
 
       case MIDIPolyphonicPressure:
       {
-        // all received polypressure messages are assumed to be part of a microLinn bulk import
         receiveMicroLinnPolyPressure(midiData1, midiData2, midiChannel);
         break;      
       }
@@ -1849,7 +1848,7 @@ int scalePitch(byte split, int pitchValue) {
       break;
   }
   if (isMicroLinnOn() || isMicroLinnColOffset(split)) {
-    pitchValue *= getMicroLinnSemitonesPerPad(split);
+    pitchValue *= getMicroLinnSemitonesPerPad(split, pitchValue);
   }
 
   return pitchValue;
@@ -1955,7 +1954,7 @@ void preSendPitchBend(byte split, int pitchValue, byte channel) {
 void preSendPitchBend(byte split, int pitchValue, byte channel, short tuningBend) {
   if (isMicroLinnDrumPadMode()) return;
   pitchValue = scalePitch(split, pitchValue) + tuningBend;      // tuning bend is from microLinn, it's already scaled
-  midiSendPitchBend(pitchValue, channel);    // Send the bend amount as a difference from bend center (8192)
+  midiSendPitchBend(pitchValue, channel);                       // Send the bend amount as a difference from bend center (8192)
 }
 
 // Calculate the real value if custom limits are set

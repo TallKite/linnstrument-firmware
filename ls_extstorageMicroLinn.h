@@ -38,9 +38,9 @@ namespace MicroLinnV72_0 {
     byte hammerOnWindow;                    // maximum width in tens of cents of a hammer-on before it becomes two simultaneous notes, 0..50, 0 = off
     boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
     byte pullOffVelocity;                   // 0 = 2nd note's noteOff velocity, 1 = 1st noteOn veloc, 2 = 2nd noteOn veloc, 3 = average them
+    byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
     signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
     signed char transposeEDOlights;
-    byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
   };
 
   struct DeviceSettings {
