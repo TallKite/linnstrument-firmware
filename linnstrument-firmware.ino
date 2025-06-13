@@ -625,7 +625,9 @@ struct MicroLinnSplit {
   byte colOffset;                         // column offset, 0 to 25, 1 = OFF
   //signed char rowOffset;                // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
   //byte showCustomLEDs;                  // 0 = OFF, 1-3 = the three patterns, 4-6 = patterns plus note lights on top
-  byte hammerOnWindow;                    // maximum width in tens of cents of a hammer-on before it becomes two simultaneous notes, 0..50, 0 = OFF
+  // rename hammerOnWindow to hammerOnCentsWindow
+  byte hammerOnWindow;                    // maximum width in tens of cents between two note-ons to make a hammer-on, 0..50, 0 = OFF
+  //byte hammerOnTimeWindow;              // minimum time in tens of milliseconds between two note-ons to make a hammer-on, 0..50, 0 = OFF
   boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
   byte pullOffVelocity;                   // 0 = OFF, 1 = 2nd note's noteOff velocity, 2 = 1st noteOn veloc, 3 = 2nd noteOn veloc, 4 = average them
   //byte condensedBendPerPad;             // width of a single-pad pitch bend in edosteps, 0 = OFF, 1 = VAR, 2 = AVG, 3..L+2 = 1..L (L = largest scale step),
@@ -793,7 +795,6 @@ struct MicroLinnGlobal {
   //byte rainbow[MICROLINN_MAX_EDO];         // one row of Device.microLinn.rainbows, used only when loading/saving presets and rawEDO isn't 4
   //byte fretboard[MICROLINN_MAX_EDO];       // ditto for Device.microLinn.fretboards
   boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
-  short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, can be negative, [0] is unused, independent of Global.guitarTuning
   byte anchorCol;                            // ranges 1-25, setting to a number > 16 on a Linnstrument 128 is allowed
   byte anchorRow;                            // top row is 7, bottom row is 0, but the user sees top row as 1, bottom row as 8
   byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
@@ -803,6 +804,7 @@ struct MicroLinnGlobal {
   byte sweeten;                              // in tenths of a cent, 0..240, adjust 41edo 5/4, 5/3 by this amount both top and bottom to make it closer to just
   //short largeEDO;                          // ranges 0..53, 0 = OFF, 1..52 = various edos, 53 = 1200edo = JI, user can have a 55-note subset of this edo 
   //signed char largeEDOoffset[MICROLINN_MAX_EDO];  // ranges -128..127, edosteps from nearest edo approx
+  short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, can be negative, [0] is unused, independent of Global.guitarTuning
 };
 
 struct GlobalSettings {

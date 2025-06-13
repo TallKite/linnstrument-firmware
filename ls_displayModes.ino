@@ -1741,6 +1741,7 @@ void paintGlobalSettingsDisplay() {
     }
 
     if (isMicroLinnOn()) {
+      lightSettings = LIGHTS_ACTIVE;
       setLed(1, 0, globalAltColor, cellOn);
     }
 

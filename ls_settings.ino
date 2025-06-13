@@ -333,7 +333,7 @@ void loadSettingsFromPreset(byte p) {
   if (config.preset[p].global.microLinn.EDO > 4 || p == 4) {
     // if the preset has microLinn turned on, or if the preset is on the bottom row, load everything as usual
     memcpy(&Global, &config.preset[p].global, sizeof(GlobalSettings));
-    memcpy(&Split[LEFT], &config.preset[p].split[LEFT], sizeof(SplitSettings));
+    memcpy(&Split[LEFT],  &config.preset[p].split[LEFT],  sizeof(SplitSettings));
     memcpy(&Split[RIGHT], &config.preset[p].split[RIGHT], sizeof(SplitSettings));
   } else {        
     // if the preset has microLinn turned off, don't alter any microtonal settings, but load everything else

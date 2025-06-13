@@ -24,13 +24,13 @@ namespace MicroLinnV72_0 {
   struct MicroLinnGlobal {
     byte EDO;                                  // ranges 5-55, plus 4 for OFF
     boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
-    short guitarTuning[MAXROWS];               // interval in edosteps from the bottom string, can be negative, [0] is unused, independent of Global.guitarTuning
     byte anchorCol;                            // ranges 1-25, setting to a number > 16 on a Linnstrument 128 is allowed
     byte anchorRow;                            // top row is 7, bottom row is 0, but the user sees top row as 1, bottom row as 8
     byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
     signed char anchorCents;                   // ranges -60 to +60 cents, even though 50 would do, for convenience
     signed char octaveStretch;                 // ranges -120 to 120 cents, for non-octave tunings such as bohlen-pierce
     byte sweeten;                              // in tenths of a cent, adjust 41edo 5/4, 5/3 by this amt both top and bottom to make it closer to just
+    short guitarTuning[MAXROWS];               // interval in edosteps from the bottom string, can be negative, [0] is unused, independent of Global.guitarTuning
   };
 
   struct MicroLinnSplit {

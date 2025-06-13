@@ -306,21 +306,21 @@ NRPN   Value   Description
 1202   0-120   Global locatorCC2   
 1250   4-55    Global EDO, ranges 5-55, plus 4 for OFF
 1251   0-1     Global useRainbow, 1 = yes, 0 = no
-1252   0-640   Global guitarTuning[1] ranges -320..320, so add/subtract 320 to convert it
-1253   0-640   Global guitarTuning[2]   "
-1254   0-640   Global guitarTuning[3]   "
-1255   0-640   Global guitarTuning[4]   "
-1256   0-640   Global guitarTuning[5]   "
-1257   0-640   Global guitarTuning[6]   "
-1258   0-640   Global guitarTuning[7]   "
-1259   1-25    Global anchorCol
-1260   0-8     Global anchorRow
-1261   0-127   Global anchorNote (any midi note)
-1262   0-121   Global anchorCents ranges -60..60, so add/subtract 60 to convert it
-1263   1-36    Global equaveSemitones
-1264   0-121   Global equaveStretch ranges -60..60, so add/subtract 60 to convert it
-1265   0-60    Global sweeten (in tenths of a cent)
-1266   0-53    Global largeEDO, 0 = OFF, 53 = 1200edo
+1252   1-25    Global anchorCol
+1253   0-8     Global anchorRow
+1254   0-127   Global anchorNote (any midi note)
+1255   0-121   Global anchorCents ranges -60..60, so add/subtract 60 to convert it
+1256   1-36    Global equaveSemitones
+1257   0-121   Global equaveStretch ranges -60..60, so add/subtract 60 to convert it
+1258   0-60    Global sweeten (in tenths of a cent)
+1259   0-53    Global largeEDO, 0 = OFF, 53 = 1200edo
+1260   0-640   Global microtonal guitarTuning[1] ranges -320..320, so add/subtract 320 to convert it
+1261   0-640   Global microtonal guitarTuning[2]   "
+1262   0-640   Global microtonal guitarTuning[3]   "
+1263   0-640   Global microtonal guitarTuning[4]   "
+1264   0-640   Global microtonal guitarTuning[5]   "
+1265   0-640   Global microtonal guitarTuning[6]   "
+1266   0-640   Global microtonal guitarTuning[7]   "
 1300   N/A     setup microLinn, do this after changing certain user settings, see above
  
 
@@ -354,15 +354,15 @@ Type        # of data bytes     Settings exported                    Notes
  3          30                  Last-edited audience message         imports into last-edited message
  4          480                 All 16 audience messages             
 
- 5          edo                 Current edo's 7 scales               size += 1 byte of padding if edo is odd
+ 5          edo + 2             Current edo's 7 scales               size += 1 byte of padding if edo is odd
  6           "                  Current edo's rainbow                    "
  7           "                  Current edo's fretboard                  "
- 8          24 + 3 * edo        All data for the current edo         guitarTuning, equave, useRainbow, col/row offsets
+ 8          24 + 3 * edo        All data for the current edo         equave, useRainbow, col/row offsets, guitarTuning
 
  9          1530                Scales for all 51 edos                    
 10           "                  Rainbows for all 51 edos                
 11           "                  Fretboards for all 51 edos                   
-12          4590                All 3 arrays for all 51 edos         no guitarTuning, equave, useRainbow, col/row offsets
+12          4590                All 3 arrays for all 51 edos         no equave, useRainbow, col/row offsets, guitarTuning
 
 13          396 *               Last-loaded preset                   
 14          2376 *              All 6 presets                        

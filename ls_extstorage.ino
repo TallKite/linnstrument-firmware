@@ -1084,10 +1084,11 @@ boolean upgradeConfigurationSettings(int32_t confSize, byte* buff2) {
           byte microLinnVersion = ((struct Configuration *) (buff2))->device.microLinn.MLversion;
 
           if (microLinnVersion == 0) {
-            if (confSize == sizeof(MicroLinnV72_0::Configuration)) {
+            if (confSize == sizeof(MicroLinnV72_0::Configuration)) {      // "::" = the namespace in ls_extstorageMicroLinn.ino
               memcpy(&config, buff2, confSize);
               // once version 72.1 is released, replace the previous memcpy with the following line
               // copyConfigurationFunction = &copyConfigurationMicroLinnV72_0;
+              fixMicroLinnData();
               result = true;
             } else {
               result = false;
@@ -2291,6 +2292,39 @@ void copyConfigurationV15(void* target, void* source) {
 
 /*************************************************************************************************/
 
+void fixMicroLinnData() {
+  // shouldn't be needed, but fixes a mysterious bug where the first 2 Global.microLinn vars are both zero after updating
+  // but initializeMicroLinn() explicitly sets those vars as well as others that aren't zeroed out, e.g. anchorCol
+  // the bug is probably using sizeof(GlobalSettings) or sizeof(MicroLinnGlobal) when there's 2 bytes of padding somewhere
+  if (config.settings.global.microLinn.EDO == 0) {
+    config.settings.global.microLinn.EDO = 4; 
+    config.settings.global.microLinn.useRainbow = true;
+  }
+  for (byte split = 0; split < NUMSPLITS; split++) {
+    if (config.settings.split[split].microLinn.colOffset == 0) {
+      config.settings.split[split].microLinn.colOffset = 1;
+    //config.settings.split[split].microLinn.rowOffset = -26;       // uncomment for 72.1
+    }
+  }
+
+  for (byte p = 0; p < NUMPRESETS; p++) {
+    if (config.preset[p].global.microLinn.EDO == 0) {
+      config.preset[p].global.microLinn.EDO = 4; 
+      config.preset[p].global.microLinn.useRainbow = true;
+    }
+    for (byte split = 0; split < NUMSPLITS; split++) {
+      if (config.preset[p].split[split].microLinn.colOffset == 0) {
+        config.preset[p].split[split].microLinn.colOffset = 1;
+      //config.preset[p].split[split].microLinn.rowOffset = -26;       // uncomment for 72.1
+      }
+    }
+  }
+
+  if (config.device.microLinn.MLversion == 0) {
+    //config.device.microLinn.MLversion = MLversion;       // uncomment for 72.n, pass MLversion to this function
+  }
+}
+
 void copyConfigurationVLatest(void* target, void* source) {            // copies from V16 to microLinn 72.n
   Configuration* t = (Configuration*)target;
   ConfigurationVLatest* s = (ConfigurationVLatest*) source;
@@ -2300,12 +2334,15 @@ void copyConfigurationVLatest(void* target, void* source) {            // copies
 
   memcpy(&t->settings.global, &s->settings.global, sizeof(s->settings.global));
   if (t->settings.global.customRowOffset == -17) t->settings.global.customRowOffset = -5;   // the "-GUI" option
+
   for (int split = 0; split < NUMSPLITS; split++) {
     memcpy(&t->settings.split[split], &s->settings.split[split], sizeof(s->settings.split[split]));
     if (t->settings.split[split].playedTouchMode > playedSame) {
         t->settings.split[split].playedTouchMode += 1;                // make room for the BLNK option
     }
   }
+
+  fixMicroLinnData();
 
   for (byte p = 0; p < NUMPRESETS; p++) {
     memcpy(&t->preset[p].global, &s->preset[p].global, sizeof(s->preset[p].global));
@@ -2331,9 +2368,6 @@ void migrateFromMicroLinnGlobalV72_0 (MicroLinnGlobal* t, void* source) {
   //memcpy (t->rainbow,   &Device.microLinn.rainbows[i], s->EDO);
   //memcpy (t->fretboard, &Device.microLinn.fretboards[i], s->EDO);
   t->useRainbow = s->useRainbow;
-  for (byte row = 0; row < MAXROWS; row++) {
-    t->guitarTuning[row] = s->guitarTuning[row];
-  }
   t->anchorCol = s->anchorCol;
   t->anchorRow = s->anchorRow;
   t->anchorNote = s->anchorNote;
@@ -2343,9 +2377,13 @@ void migrateFromMicroLinnGlobalV72_0 (MicroLinnGlobal* t, void* source) {
   t->sweeten = s->sweeten;
   //t->largeEDO = 0;
   //memset(largeEDOoffsets, 0, sizeof(largeEDOoffsets));
+  for (byte row = 0; row < MAXROWS; row++) {
+    t->guitarTuning[row] = s->guitarTuning[row];
+  }
 }
 
 void migrateFromMicroLinnSplitV72_0 (MicroLinnSplit* t, void* source) {
+  // copy what's in 72.0, initialize what isn't
   MicroLinnV72_0::MicroLinnSplit* s = (typeof(s)) source;
   t->colOffset = s->colOffset;
   //t->rowOffset = -26;                  // uncomment once 72.1 is done
@@ -2360,9 +2398,9 @@ void migrateFromMicroLinnSplitV72_0 (MicroLinnSplit* t, void* source) {
   t->transposeEDOlights = s->transposeEDOlights;
 }
 
-void copyConfigurationMicroLinnV72_0(void* target, void* source) {    // copies from 72.0 to the current config, 72.1 or 72.2 or whatever
+void copyConfigurationMicroLinnV72_0(void* target, void* source) {   // copies from 72.0 to the current config, 72.1 or 72.2 or whatever
   Configuration* t = (Configuration*)target;
-  MicroLinnV72_0::Configuration* s = (typeof(s)) source;
+  MicroLinnV72_0::Configuration* s = (typeof(s)) source;             // "::" refers to the namespace in ls_extstorageMicroLinn.ino
 
   memcpy(&t->device, &s->device, sizeof(s->device));                 // Device.microLinn gets copied automatically
   t->device.version = 16 + MICROLINN_VERSION_OFFSET;                 // redundant, delete?

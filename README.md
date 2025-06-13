@@ -14,14 +14,14 @@ For experienced linnstrumentalists, microLinn makes exploring microtonality very
 1) Go to https://www.rogerlinndesign.com/support/support-linnstrument-update-software and follow the "How to Check Your Software Version" instructions. If it's not 2.3.3, follow the "How to Update Your LinnStrument Software‍" instructions to update to 2.3.3.
 2) Download linnstrument-firmware-microLinn.ino.bin.zip from the Linnstrument Community wiki and unzip it. Important: if on a mac, put the .bin file on your **desktop**. 
 3) Follow the "How to Update Your LinnStrument Software‍" instructions, with one difference: after you download (and possibly unzip) the updater and before running it, put it in the same folder as the .bin file from step 2. Mac users: when you run the updater, if it asks for permission to read files from the desktop, say yes.
-4) Unplug the Linnstrument and plug it back in (temporary workaround). Check your OS version to confirm the update. Tap twice to see all three numbers. It should be 234.072.001 or higher. If not, reboot your computer and try again. 
+4) Check your OS version to confirm the update. Tap twice to see all three numbers. It should be 234.072.001 or higher. If not, reboot your computer and try again. 
 5) Important, read the next section about uninstalling!
 
 
 ================== UPGRADING / UNINSTALLING ================== 
 
 
-IMPORTANT: Updating to a newer version of microLinn is done normally. But if you want to uninstall microLinn and go back to an official (non-microtonal) version of the firmware, there's an extra step. Just before you run the updater, on the Global Settings screen, tap the pad to the right of the "Update OS" pad (17th column, 3rd row from the bottom) so that it turns dark blue. (On a 128, tap the pad just above the calibration pad, 16th column, 5th row). This avoids deleting your calibration data and user settings.
+IMPORTANT: Updating to a newer version of microLinn is done normally (altho you may have to unplug the Linnstrument and plug it back in afterwards). But if you want to uninstall microLinn and go back to an official (non-microtonal) version of the firmware, there's an extra step. Just before you run the updater, on the Global Settings screen, tap the pad to the right of the "Update OS" pad (17th column, 3rd row from the bottom) so that it turns dark blue. On a 128, tap the pad just above the calibration pad, 16th column, 5th row. This avoids deleting your calibration data and user settings.
 
 If you see "Couldn't retrieve Linnstrument's settings, interrupting firmware upgrade. Go ahead with default settings?", quit the updater app and try updating with the opposite setting.
 
@@ -39,6 +39,7 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
   
   col 5) Per-split non-microtonal settings
     row 1) Show custom light pattern (OFF, A, A#, B, A', A#', B')
+    rows 2-5) (reserved for future use)
   
   col 7) Global non-microtonal settings
     row 1) Drum pad mode (OFF, ON)
@@ -49,10 +50,11 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
   col 10) EDO (notes per octave) (OFF, 5 to 55)
   
   col 12) Microtonal note lights
-    col 1, row 1-7) Select scales 1-7
-    col 3, row 1) Rainbow editor
-    col 3, row 2) Rainbow enabler
-    col 3, row 4) Fretboard editor
+    col 1, row 1-7) Select scales 1-7 (long-press to reset the notes)
+    col 3, row 1) Rainbow editor (long-press to reset the colors)
+    col 3, row 2) Rainbow enabler (yellow = ON, green = OFF)
+    col 3, row 4) Fretboard editor (long-press to reset the dots)
+    columns 5-16) (tap here to select notes, colors or fretboard dots)
   
   col 14) Per-split microtonal settings
     row 1) Condense to scale (OFF, VAR = variable bend per pad, 1 to N = bend per pad in edosteps)
@@ -60,8 +62,8 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
     row 3) Tuning table mode (OFF, ON, RCH = rechannel)
   
   col 16) Global microtonal settings
-    row 1) Anchor pad
-    row 2) Anchor note (C-1 to G9)
+    row 1) Anchor pad (row 1 to row 8, column 1 to column 25)
+    row 2) Anchor note (C-2 to G8, middle-C is C3)
     row 3) Anchor cents (-60 to 60)
     row 4) Equave semitones (1 to 36)
     row 5) Equave cents (-60 to 60)
@@ -107,11 +109,27 @@ Make the unlit pads go away! Bending still works. Accessed through the microLinn
 
 *If you turn off pitch bending (thus avoiding all these issues), there's no difference between VAR, 1, and 2.*
 
-*There's a school of thought that says there's only 12 notes, it's not that hard to learn your way around, and removing 5 of the 12 notes doesn't make the scale all that much more compact. So is it really worth condensing if it causes bending issues? Perhaps not if one plays only in 12edo. But if playing microtonally, condensing a large edo to a smaller scale can be very useful. For example, you can condense a 31edo chain-of-5ths scale of 12 notes to get quarter-comma meantone.*
+Condensing can be combined with column offsets. First the scale is condensed, then columns are omitted.
 
-*Condensing makes the row offset an inconsistent number of semitones but a consistent number of scale steps, e.g. sometimes 3 semitones, sometimes 4, but always a third. To get inconsistent scale steps, use a guitar tuning. For example, suppose you use the +6 row offset, and you're used to the octave always being 2 rows and 0 columns away. If you condense the major scale, your +6 row offset becomes a 5th, and octaves are 2 columns away. To get the octave back to 0 columns, set your guitar tuning to alternating 4ths and 5ths.*
+There's a school of thought that says there's only 12 notes, it's not that hard to learn your way around, and removing 5 of the 12 notes doesn't make the scale all that much more compact. So is it really worth condensing if it causes bending issues? Perhaps not if one plays only in 12edo. But if playing microtonally, condensing a large edo to a smaller scale can be very useful. For example, you can condense a 31edo chain-of-5ths scale of 12 notes to get quarter-comma meantone. But even in 12edo, condensing has its uses. For example, you can use condensing to create a vertical Wicki-Hayden layout. (Playing vertically means rotating the Linnstrument 90 degrees.) The range is huge, almost 8 octaves on a Linnstrument 128!
 
-*Condensing can be combined with column offsets. First the scale is condensed, then columns are omitted.*
+*Details: Condensing usually affects the row offsets as well as the column offsets. It makes the row offsets an inconsistent number of semitones but a consistent number of scale steps, e.g. sometimes 3 semitones, sometimes 4, but always a third. However, if using a guitar tuning, the row offsets do not change when you condense.*
+
+*Vertical Wicki-Hayden layout:*
+* *Set both the column offset and the per-split row offset to OFF*
+* *Set the EDO to 12*
+* *Set up one of the first 7 scales to contain only the tonic and the 4th*
+* *Switch directly from that scale to the 8th scale with the rainbow enabled*
+* *Set Condense To Scale to 1*
+* *Set the anchor pad to row 3 col 8 (col 12 on a Linn 200) and the anchor note to C3*
+* *Set the guitar tuning to -2 between all strings*
+* *Optional: In the left split turn off pitch bending, and in the right split turn on pitch quantization*
+
+*You'll get a "squared-off" Wicki-Hayden that doesn't drift off sideways. The 7 white keys will be in rows 3-6. The 5 black keys (actually green) will be mostly in the top two rows and the bottom two rows. The row offset will be -2 and the column offset will alternate between +5 and +7. Now rotate the Linnstrument 90 degrees so that the Settings buttons are closest to you and play! Swipe vertically for pitch bends.*
+
+*This layout is not isomorphic but it is dimorphic (two shapes). The restriction of only 3 notes per column becomes only 3 notes per row, much less of an issue.*
+
+*(Alternative layout: set the scale to use the 5th not the 4th, and set the anchor pad to row 4 not 3.)*
 
 OCTAVE TOGGLE, QUANTIZE TOGGLE
 
@@ -192,7 +210,7 @@ IMPORTING/EXPORTING
 
 You can back up various settings and/or share them with others via midi files. The 3 custom light patterns, the 16 audience messages, the 6 memories, microtonal data, and more! Check the Linnstrument Community Wiki for export-request files and importable settings files.
 
-*Details: Importing: Download a settings file from the wiki. On your Linnstrument, set Allow Importing to ON. In your DAW, set the output of midi track A to your Linnstrument. Load the settings file into track A and press play. Your Linnstrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #7 below.*
+*Details: Importing: Download a settings file from the wiki. On your Linnstrument, set Allow Importing to ON. In your DAW, set the output of midi track A to your Linnstrument. Load the settings file into track A and press play. Your Linnstrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #8 below.*
 
 *To import a custom light pattern, before you press play, you must first display the one you want to overwrite. To import an audience message, before you press play, you must first load for editing the one you want to overwrite. (You needn't actually edit it.)*
 
@@ -202,12 +220,13 @@ You can back up various settings and/or share them with others via midi files. T
 
 *Troubleshooting:*
 * *(1) While importing or exporting, don't play your Linnstrument.*
-* *(2) Your DAW must be able to handle a midi file that uses multiple midi channels.*
-* *(3) When importing, slowing down your DAW's playback speed sometimes helps. Likewise, when exporting, speeding up your DAW's recording speed can help.*
-* *(4) The All User Settings export is meant for migrating from an old Linnstrument to a new one. It will only work if the OS version on the old one matches the OS version on the new one (or more precisely, if the data structure versions match).*
-* *(5) If you get "IMPORT FAILURE" followed by 2 numbers, the 2nd number says which midi message in the import file caused the failure. For example, 7 means the 7th midi message.*
-* *(6) When importing, first exit all web browsers in case a webmidi page sends rouge NRPN or polypressure messages.*
-* *(7) MicroLinn imports data via polyphonic pressure messages. If you have connected something else to your Linnstrument that also sends polypressure messages, there is a small possibility of confusion. If after an import there is no sucess or failure scrolling message, to avoid confusion either set Allow Importing to OFF, or disconnect the Linnstrument's power and reconnect it.*
+* *(2) To import, in your DAW, your Linnstrument must be enabled as a midi output device (not just input).*
+* *(3) Your DAW must be able to handle a midi file that uses multiple midi channels.*
+* *(4) When importing, first exit all web browsers in case a webmidi page sends rouge NRPN or polypressure messages.*
+* *(5) When importing, slowing down your DAW's playback speed sometimes helps. Likewise, when exporting, speeding up your DAW's recording speed can help.*
+* *(6) The All User Settings export is meant for migrating from an old Linnstrument to a new one. It will only work if the OS version on the old one matches the OS version on the new one (or more precisely, if the data structure versions match).*
+* *(7) If you get "IMPORT FAILURE" followed by 2 numbers, the 2nd number says which midi message in the import file caused the failure. For example, 7 means the 7th midi message.*
+* *(8) MicroLinn imports data via polyphonic pressure messages. If you have connected something else to your Linnstrument that also sends polypressure messages, there is a small possibility of confusion. If after an import there is no sucess or failure scrolling message, to avoid confusion either set Allow Importing to OFF, or disconnect the Linnstrument's power and reconnect it.*
 
 *The 16 sequencer projects can be imported and exported as usual via the updater app as *.lpr files. When you export, the filename of microtonal projects should probably contain the edo, since it won't sound right in the wrong edo. The AllUserSettings export does not export the current sequencer project, so to export it save it as one of the 16 projects.*
 
