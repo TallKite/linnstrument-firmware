@@ -113,7 +113,7 @@ Condensing can be combined with column offsets. First the scale is condensed, th
 
 There's a school of thought that says there's only 12 notes, it's not that hard to learn your way around, and removing 5 of the 12 notes doesn't make the scale all that much more compact. So is it really worth condensing if it causes bending issues? Perhaps not if one plays only in 12edo. But if playing microtonally, condensing a large edo to a smaller scale can be very useful. For example, you can condense a 31edo chain-of-5ths scale of 12 notes to get quarter-comma meantone. But even in 12edo, condensing has its uses. For example, you can use condensing to create a vertical Wicki-Hayden layout. (Playing vertically means rotating the Linnstrument 90 degrees.) The range is huge, almost 8 octaves on a Linnstrument 128!
 
-*Details: Condensing usually affects the row offsets as well as the column offsets. It makes the row offsets an inconsistent number of semitones but a consistent number of scale steps, e.g. sometimes 3 semitones, sometimes 4, but always a third. However, if using a guitar tuning, the row offsets do not change when you condense.*
+*Details: Condensing usually affects the row offsets as well as the column offsets. It makes the row offsets an inconsistent number of semitones but a consistent number of scale steps, e.g. sometimes 3 semitones, sometimes 4, but always a third. However, if using a guitar tuning, this is not always true. In the guitar tuning dispaly, when you select the anchor row, a row offset is not displayed. Usually nothing is displayed. But when condensing is on, you'll see DIA for diatonic/condensed. Swipe right to get CHRO for chromatic/uncondensed. In diatonic mode, the row offsets are condensed as usual. But in chromatic mode, the row offsets don't get condensed, and the notes in the anchor column don't change. Each row is an exact chromatic transposition of the anchor row. Thus while the anchor row has no unlit pads, the other rows usually do.*
 
 *Vertical Wicki-Hayden layout:*
 * *Set both the column offset and the per-split row offset to OFF*
@@ -122,8 +122,8 @@ There's a school of thought that says there's only 12 notes, it's not that hard 
 * *Switch directly from that scale to the 8th scale with the rainbow enabled*
 * *Set Condense To Scale to 1*
 * *Set the anchor pad to row 3 col 8 (col 12 on a Linn 200) and the anchor note to C3*
-* *Set the guitar tuning to -2 between all strings*
-* *Optional: In the left split turn off pitch bending, and in the right split turn on pitch quantization*
+* *Set the guitar tuning to -2 between all strings and change DIA to CHRO*
+* *Optional: Condense the other split similarly, and in the left split turn off pitch bending, and in the right split turn on pitch quantization*
 
 *You'll get a "squared-off" Wicki-Hayden that doesn't drift off sideways. The 7 white keys will be in rows 3-6. The 5 black keys (actually green) will be mostly in the top two rows and the bottom two rows. The row offset will be -2 and the column offset will alternate between +5 and +7. Now rotate the Linnstrument 90 degrees so that the Settings buttons are closest to you and play! Swipe vertically for pitch bends.*
 
@@ -213,6 +213,8 @@ You can back up various settings and/or share them with others via midi files. T
 *Details: Importing: Download a settings file from the wiki. On your Linnstrument, set Allow Importing to ON. In your DAW, set the output of midi track A to your Linnstrument. Load the settings file into track A and press play. Your Linnstrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #8 below.*
 
 *To import a custom light pattern, before you press play, you must first display the one you want to overwrite. To import an audience message, before you press play, you must first load for editing the one you want to overwrite. (You needn't actually edit it.)*
+
+*All Settings for Current EDO imports/exports not only the scales, rainbow and fretboard, but also the equave semitones, the equave cents, the guitar tuning, and all row and column offsets.*
 
 *Exporting: Download an export-request file from the wiki. In your DAW, set the input of midi track A and the output of midi track B to your Linnstrument. Put the export-request midi file at the start of track B. Then start recording on track A. When your Linnstrument stops sending midi, stop recording. Save the midi on track A to a midi file (i.e. export it from your DAW), preferably as format 0. Name it something informative such as "lightPattern31edoFretboard.mid" or "22edoScales.mid". Later on you can import this file to restore your settings. Or share it on the wiki.*
 

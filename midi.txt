@@ -314,13 +314,14 @@ NRPN   Value   Description
 1257   0-121   Global equaveStretch ranges -60..60, so add/subtract 60 to convert it
 1258   0-60    Global sweeten (in tenths of a cent)
 1259   0-53    Global largeEDO, 0 = OFF, 53 = 1200edo
-1260   0-640   Global microtonal guitarTuning[1] ranges -320..320, so add/subtract 320 to convert it
-1261   0-640   Global microtonal guitarTuning[2]   "
-1262   0-640   Global microtonal guitarTuning[3]   "
-1263   0-640   Global microtonal guitarTuning[4]   "
-1264   0-640   Global microtonal guitarTuning[5]   "
-1265   0-640   Global microtonal guitarTuning[6]   "
-1266   0-640   Global microtonal guitarTuning[7]   "
+1260   0-1     Global microtonal guitarTuning[0] (diatonic/chromatic flag for condensed guitar tunings)
+1261   0-640   Global microtonal guitarTuning[1] ranges -320..320, so add/subtract 320 to convert it
+1262   0-640   Global microtonal guitarTuning[2]   "
+1263   0-640   Global microtonal guitarTuning[3]   "
+1264   0-640   Global microtonal guitarTuning[4]   "
+1265   0-640   Global microtonal guitarTuning[5]   "
+1266   0-640   Global microtonal guitarTuning[6]   "
+1267   0-640   Global microtonal guitarTuning[7]   "
 1300   N/A     setup microLinn, do this after changing certain user settings, see above
  
 
@@ -357,7 +358,7 @@ Type        # of data bytes     Settings exported                    Notes
  5          edo + 2             Current edo's 7 scales               size += 1 byte of padding if edo is odd
  6           "                  Current edo's rainbow                    "
  7           "                  Current edo's fretboard                  "
- 8          24 + 3 * edo        All data for the current edo         equave, useRainbow, col/row offsets, guitarTuning
+ 8          26 + 3 * edo        All data for the current edo         equave, useRainbow, col/row offsets, guitarTuning
 
  9          1530                Scales for all 51 edos                    
 10           "                  Rainbows for all 51 edos                

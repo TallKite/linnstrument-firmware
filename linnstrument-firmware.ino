@@ -635,6 +635,7 @@ struct MicroLinnSplit {
   byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
   signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
   signed char transposeEDOlights;
+  byte padding;                           // makes the number of bytes in microLinnSplit an even number, but doesn't fix the bug
 };
 
 // per-split settings
@@ -689,6 +690,7 @@ struct SplitSettings {
   boolean mpe;                            // true when MPE is active for this split
   boolean sequencer;                      // true when the sequencer of this split is enabled
   SequencerView sequencerView;            // see SequencerView
+  byte padding;                           // makes microLinnSplit start on an even number of bytes, to fix the bug
   MicroLinnSplit microLinn;               // microtonal data
 };
 
@@ -801,10 +803,10 @@ struct MicroLinnGlobal {
   signed char anchorCents;                   // ranges -60 to +60 cents, even though 50 would do, for convenience
   //byte equaveSemitones;                    // for non-octave tunings such as bohlen-pierce, 1..36, 1 semitone = 100 cents
   signed char octaveStretch;                 // rename to equaveStretch, -60..+60
-  byte sweeten;                              // in tenths of a cent, 0..240, adjust 41edo 5/4, 5/3 by this amount both top and bottom to make it closer to just
+  byte sweeten;                              // in tenths of a cent, 0..60, adjust 41edo 5/4, 5/3 by this amount both top and bottom to make it closer to just
   //short largeEDO;                          // ranges 0..53, 0 = OFF, 1..52 = various edos, 53 = 1200edo = JI, user can have a 55-note subset of this edo 
   //signed char largeEDOoffset[MICROLINN_MAX_EDO];  // ranges -128..127, edosteps from nearest edo approx
-  short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, can be negative, [0] is unused, independent of Global.guitarTuning
+  short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, can be negative, [0] is DIA/CHRO, independent of Global.guitarTuning
 };
 
 struct GlobalSettings {
@@ -835,6 +837,7 @@ struct GlobalSettings {
   signed char arpOctave;                     // the number of octaves that the arpeggiator has to operate over: 0, +1, or +2
   SustainBehavior sustainBehavior;           // the way the sustain pedal influences the notes
   boolean splitActive;                       // false = split off, true = split on
+  short padding;                             // makes microLinnGlobal start on a 4-even number of bytes, to fix the bug
   MicroLinnGlobal microLinn;                 // microtonal data
 };
 #define Global config.settings.global

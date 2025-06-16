@@ -2303,7 +2303,7 @@ void fixMicroLinnData() {
   for (byte split = 0; split < NUMSPLITS; split++) {
     if (config.settings.split[split].microLinn.colOffset == 0) {
       config.settings.split[split].microLinn.colOffset = 1;
-    //config.settings.split[split].microLinn.rowOffset = -26;       // uncomment for 72.1
+    //config.settings.split[split].microLinn.rowOffset = -26;          // uncomment for 72.1
     }
   }
 
@@ -2321,8 +2321,34 @@ void fixMicroLinnData() {
   }
 
   if (config.device.microLinn.MLversion == 0) {
-    //config.device.microLinn.MLversion = MLversion;       // uncomment for 72.n, pass MLversion to this function
+    //config.device.microLinn.MLversion = 1;                           // uncomment for 72.1
   }
+}
+
+void initMicroLinnData() {
+  // shouldn't be needed, but fixes a mysterious bug where the first 2 Global.microLinn vars are both zero after updating
+  // but initializeMicroLinn() explicitly sets those vars as well as others that aren't zeroed out, e.g. anchorCol
+  // the bug is probably using sizeof(GlobalSettings) or sizeof(MicroLinnGlobal) when there's 2 bytes of padding somewhere
+  // initializeMicroLinn() overrides what anchorCol is set to here, so it must run later?
+  config.settings.global.microLinn.EDO = 4; 
+  config.settings.global.microLinn.useRainbow = true;
+  for (byte split = 0; split < NUMSPLITS; split++) {
+    config.settings.split[split].microLinn.colOffset = 1;
+    //config.settings.split[split].microLinn.rowOffset = -26;          // uncomment for 72.1
+  }
+
+  config.settings.global.microLinn.anchorCol = 15;   // experiment, delete later
+
+  for (byte p = 0; p < NUMPRESETS; p++) {
+    config.preset[p].global.microLinn.EDO = 4; 
+    config.preset[p].global.microLinn.useRainbow = true;
+    for (byte split = 0; split < NUMSPLITS; split++) {
+      config.preset[p].split[split].microLinn.colOffset = 1;
+    //config.preset[p].split[split].microLinn.rowOffset = -26;       // uncomment for 72.1
+    }
+  }
+
+  //config.device.microLinn.MLversion = 1;                           // uncomment for 72.1
 }
 
 void copyConfigurationVLatest(void* target, void* source) {            // copies from V16 to microLinn 72.n
@@ -2342,9 +2368,7 @@ void copyConfigurationVLatest(void* target, void* source) {            // copies
     }
   }
 
-  fixMicroLinnData();
-
-  for (byte p = 0; p < NUMPRESETS; p++) {
+  for (byte p = 0; p < 6; p++) {
     memcpy(&t->preset[p].global, &s->preset[p].global, sizeof(s->preset[p].global));
     if (t->preset[p].global.customRowOffset == -17) t->preset[p].global.customRowOffset = -5;
     for (int split = 0; split < NUMSPLITS; split++) {
@@ -2355,6 +2379,8 @@ void copyConfigurationVLatest(void* target, void* source) {            // copies
     }
   }
   memcpy(&t->project, &s->project, sizeof(s->project));
+
+  initMicroLinnData();
 }
 
 void migrateFromMicroLinnGlobalV72_0 (MicroLinnGlobal* t, void* source) {
@@ -2446,7 +2472,7 @@ void restoreNonMicroLinnConfiguration(void* target, void* source) {
     }
   }
 
-  for (byte p = 0; p < NUMPRESETS; p++) {
+  for (byte p = 0; p < 6; p++) {
     memcpy(&t->preset[p].global, &s->preset[p].global, sizeof(t->preset[p].global));
     t->preset[p].global.customRowOffset = constrain(t->preset[p].global.customRowOffset, -16, 16);
     for (byte i = 0; i < 5; i++) {
