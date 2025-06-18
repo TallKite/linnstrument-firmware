@@ -1085,9 +1085,7 @@ boolean upgradeConfigurationSettings(int32_t confSize, byte* buff2) {
 
           if (microLinnVersion == 0) {
             if (confSize == sizeof(MicroLinnV72_0::Configuration)) {      // "::" = the namespace in ls_extstorageMicroLinn.ino
-              memcpy(&config, buff2, confSize);
-              // once version 72.1 is released, replace the previous memcpy with the following line
-              // copyConfigurationFunction = &copyConfigurationMicroLinnV72_0;
+              copyConfigurationFunction = &copyConfigurationMicroLinnV72_0;
               fixMicroLinnData();
               result = true;
             } else {
@@ -2303,7 +2301,7 @@ void fixMicroLinnData() {
   for (byte split = 0; split < NUMSPLITS; split++) {
     if (config.settings.split[split].microLinn.colOffset == 0) {
       config.settings.split[split].microLinn.colOffset = 1;
-    //config.settings.split[split].microLinn.rowOffset = -26;          // uncomment for 72.1
+      config.settings.split[split].microLinn.rowOffset = -26;
     }
   }
 
@@ -2315,13 +2313,13 @@ void fixMicroLinnData() {
     for (byte split = 0; split < NUMSPLITS; split++) {
       if (config.preset[p].split[split].microLinn.colOffset == 0) {
         config.preset[p].split[split].microLinn.colOffset = 1;
-      //config.preset[p].split[split].microLinn.rowOffset = -26;       // uncomment for 72.1
+        config.preset[p].split[split].microLinn.rowOffset = -26;
       }
     }
   }
 
   if (config.device.microLinn.MLversion == 0) {
-    //config.device.microLinn.MLversion = 1;                           // uncomment for 72.1
+    config.device.microLinn.MLversion = 1;
   }
 }
 
@@ -2334,21 +2332,19 @@ void initMicroLinnData() {
   config.settings.global.microLinn.useRainbow = true;
   for (byte split = 0; split < NUMSPLITS; split++) {
     config.settings.split[split].microLinn.colOffset = 1;
-    //config.settings.split[split].microLinn.rowOffset = -26;          // uncomment for 72.1
+    config.settings.split[split].microLinn.rowOffset = -26;
   }
-
-  config.settings.global.microLinn.anchorCol = 15;   // experiment, delete later
 
   for (byte p = 0; p < NUMPRESETS; p++) {
     config.preset[p].global.microLinn.EDO = 4; 
     config.preset[p].global.microLinn.useRainbow = true;
     for (byte split = 0; split < NUMSPLITS; split++) {
       config.preset[p].split[split].microLinn.colOffset = 1;
-    //config.preset[p].split[split].microLinn.rowOffset = -26;       // uncomment for 72.1
+      config.preset[p].split[split].microLinn.rowOffset = -26;
     }
   }
 
-  //config.device.microLinn.MLversion = 1;                           // uncomment for 72.1
+  config.device.microLinn.MLversion = 1;
 }
 
 void copyConfigurationVLatest(void* target, void* source) {            // copies from V16 to microLinn 72.n
@@ -2386,23 +2382,23 @@ void copyConfigurationVLatest(void* target, void* source) {            // copies
 void migrateFromMicroLinnGlobalV72_0 (MicroLinnGlobal* t, void* source) {
   // copy what's in 72.0, initialize what isn't
   MicroLinnV72_0::MicroLinnGlobal* s = (typeof(s)) source;
-  //t->drumPadMode = false;              // uncomment once 72.1 is done
-  //t->locatorCC1 = -1;
-  //t->locatorCC2 = -1;
+  t->drumPadMode = false;
+  t->locatorCC1 = -1;
+  t->locatorCC2 = -1;
   t->EDO = s->EDO;
-  //short i = microLinnTriIndex(s->EDO, 0);
-  //memcpy (t->rainbow,   &Device.microLinn.rainbows[i], s->EDO);
-  //memcpy (t->fretboard, &Device.microLinn.fretboards[i], s->EDO);
+  short i = microLinnTriIndex(s->EDO, 0);
+  memcpy (t->rainbow,   &Device.microLinn.rainbows[i],   s->EDO);
+  memcpy (t->fretboard, &Device.microLinn.fretboards[i], s->EDO);
   t->useRainbow = s->useRainbow;
   t->anchorCol = s->anchorCol;
   t->anchorRow = s->anchorRow;
   t->anchorNote = s->anchorNote;
   t->anchorCents = s->anchorCents;
-  //t->equaveSemitones = 12;
-  t->octaveStretch = s->octaveStretch;
+  t->equaveSemitones = 12;
+  t->equaveStretch = s->octaveStretch;    // octaveStretch was renamed
   t->sweeten = s->sweeten;
-  //t->largeEDO = 0;
-  //memset(largeEDOoffsets, 0, sizeof(largeEDOoffsets));
+  t->largeEDO = 0;
+  memset(t->largeEDOoffset, 0, sizeof(t->largeEDOoffset));
   for (byte row = 0; row < MAXROWS; row++) {
     t->guitarTuning[row] = s->guitarTuning[row];
   }
@@ -2412,19 +2408,20 @@ void migrateFromMicroLinnSplitV72_0 (MicroLinnSplit* t, void* source) {
   // copy what's in 72.0, initialize what isn't
   MicroLinnV72_0::MicroLinnSplit* s = (typeof(s)) source;
   t->colOffset = s->colOffset;
-  //t->rowOffset = -26;                  // uncomment once 72.1 is done
-  //t->showCustomLEDs = 0;
-  t->hammerOnWindow = s->hammerOnWindow;
+  t->rowOffset = -26;
+  t->showCustomLEDs = 0;
+  t->hammerOnCentsWindow = s->hammerOnWindow;
+  t->hammerOnTimeWindow = 0;
   t->hammerOnNewNoteOn = s->hammerOnNewNoteOn;
   t->pullOffVelocity = s->pullOffVelocity;
-  //t->condensedBendPerPad = 0;
-  //t->defaultLayout = 0;
+  t->condensedBendPerPad = 0;
+  t->defaultLayout = 0;
   t->tuningTable = s->tuningTable;
   t->transposeEDOsteps = s->transposeEDOsteps;
   t->transposeEDOlights = s->transposeEDOlights;
 }
 
-void copyConfigurationMicroLinnV72_0(void* target, void* source) {   // copies from 72.0 to the current config, 72.1 or 72.2 or whatever
+void copyConfigurationMicroLinnV72_0(void* target, void* source) {   // copies from 72.0 to 72.1
   Configuration* t = (Configuration*)target;
   MicroLinnV72_0::Configuration* s = (typeof(s)) source;             // "::" refers to the namespace in ls_extstorageMicroLinn.ino
 
@@ -2451,10 +2448,25 @@ void copyConfigurationMicroLinnV72_0(void* target, void* source) {   // copies f
 
 /* Roll back settings to latest non-MicroLinn format, in effect uninstall microLinn */
 void restoreNonMicroLinnConfiguration(void* target, void* source) {
+
+
+  // experiment, delete later
+  //removeMicroLinnData();
+  //byte* array;                 // used to configure complex structs as a simple array of bytes
+  //int32_t n = sizeof(struct ConfigurationVLatest);
+  //array = (byte *) &config.device.version;
+  //for (unsigned short i = 0; i < n; i += 1) {
+  //  microLinnSendPolyPressure(0, array[i]);        // dump the data to midi before updating
+  //}
+  //return;
+
+
   ConfigurationVLatest* t = (ConfigurationVLatest*)target;
   Configuration* s = (Configuration*)source;
 
+  // perhaps memcpying in place is the problem?
   memcpy(&t->device, &s->device, sizeof(t->device));                                 // sizeof(target) excludes MicroLinnDevice
+  t->device.operatingLowPower = false;                                               // avoid 2 = dimmed display
 
   memcpy(&t->settings.global, &s->settings.global, sizeof(t->settings.global));
   t->settings.global.customRowOffset = constrain(t->settings.global.customRowOffset, -16, 16);
@@ -2491,4 +2503,32 @@ void restoreNonMicroLinnConfiguration(void* target, void* source) {
 
   memcpy(&t->project, &s->project, sizeof(t->project));
   t->device.version = 16;
+}
+
+int removeMicroLinnData () {    // experiment, delete later
+  short sizeMLglobal = sizeof(MicroLinnGlobal);
+  short sizeGlobal = sizeof(GlobalSettings) - sizeMLglobal;
+  short sizeMLsplit = sizeof(MicroLinnSplit);
+  short sizeSplit = sizeof(SplitSettings) - sizeMLsplit;
+  int sizeMLdata = sizeof(MicroLinnDevice);                     // a running total of what we're overwriting
+
+  memcpy(&Global - sizeMLdata, &Global, sizeGlobal);
+  sizeMLdata += sizeMLglobal;
+  memcpy(&Split[LEFT] - sizeMLdata, &Split[LEFT], sizeSplit);
+  sizeMLdata += sizeMLsplit;
+  memcpy(&Split[RIGHT] - sizeMLdata, &Split[RIGHT], sizeSplit);
+  sizeMLdata += sizeMLsplit;
+
+  for (byte p = 0; p < NUMPRESETS; ++p) {
+    memcpy (&config.preset[p].global - sizeMLdata, &config.preset[p].global, sizeGlobal);
+    sizeMLdata += sizeMLglobal;
+    memcpy (&config.preset[p].split[LEFT]  - sizeMLdata, &config.preset[p].split[LEFT],  sizeSplit);
+    sizeMLdata += sizeMLsplit;
+    memcpy (&config.preset[p].split[RIGHT] - sizeMLdata, &config.preset[p].split[RIGHT], sizeSplit);
+    sizeMLdata += sizeMLsplit;
+  }
+
+  memcpy (&config.project - sizeMLdata, &config.project, sizeof(config.project));
+
+  return sizeof(config) - sizeMLdata;                           // return the new size of config
 }

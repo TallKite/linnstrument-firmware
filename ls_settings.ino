@@ -338,31 +338,23 @@ void loadSettingsFromPreset(byte p) {
   } else {        
     // if the preset has microLinn turned off, don't alter any microtonal settings, but load everything else
     memcpy(&Global, &config.preset[p].global, sizeof(GlobalSettings) - sizeof(MicroLinnGlobal)); 
-
-  //Global.microLinn.drumPadMode = config.preset[p].global.microLinn.drumPadMode;
-    microLinnDrumPadMode = false;
-  //Global.microLinn.locatorCC1  = config.preset[p].global.microLinn.locatorCC1;
-  //Global.microLinn.locatorCC2  = config.preset[p].global.microLinn.locatorCC2;
-    microLinnLocatorCC1 = -1;
-    microLinnLocatorCC2 = -1;
-
+    Global.microLinn.drumPadMode = config.preset[p].global.microLinn.drumPadMode;
+    Global.microLinn.locatorCC1  = config.preset[p].global.microLinn.locatorCC1;
+    Global.microLinn.locatorCC2  = config.preset[p].global.microLinn.locatorCC2;
     // only load the column and per-split row offsets if they are not OFF (such offsets are often related to the edo)
     for (byte side = 0; side < NUMSPLITS; ++side) {
       memcpy(&Split[side], &config.preset[p].split[side], sizeof(SplitSettings) - sizeof(MicroLinnSplit));
       if (config.preset[p].split[side].microLinn.colOffset != 1) {
         Split[side].microLinn.colOffset = config.preset[p].split[side].microLinn.colOffset;
       }
-
-    //if (config.preset[p].split[side].microLinn.rowOffset > -26) {
-    //  Split[side].microLinn.rowOffset = config.preset[p].split[side].microLinn.rowOffset;
-    //}
-      microLinnRowOffset[side] = -26;
-    //Split[side].microLinn.showCustomLEDs    = config.preset[p].split[side].microLinn.showCustomLEDs;
-      microLinnShowCustomLEDs[side] = 0;
-
-      Split[side].microLinn.hammerOnWindow    = config.preset[p].split[side].microLinn.hammerOnWindow;
-      Split[side].microLinn.hammerOnNewNoteOn = config.preset[p].split[side].microLinn.hammerOnNewNoteOn;
-      Split[side].microLinn.pullOffVelocity   = config.preset[p].split[side].microLinn.pullOffVelocity;
+      if (config.preset[p].split[side].microLinn.rowOffset > -26) {
+        Split[side].microLinn.rowOffset = config.preset[p].split[side].microLinn.rowOffset;
+      }
+      Split[side].microLinn.showCustomLEDs      = config.preset[p].split[side].microLinn.showCustomLEDs;
+      Split[side].microLinn.hammerOnCentsWindow = config.preset[p].split[side].microLinn.hammerOnCentsWindow;
+      Split[side].microLinn.hammerOnTimeWindow  = config.preset[p].split[side].microLinn.hammerOnTimeWindow;
+      Split[side].microLinn.hammerOnNewNoteOn   = config.preset[p].split[side].microLinn.hammerOnNewNoteOn;
+      Split[side].microLinn.pullOffVelocity     = config.preset[p].split[side].microLinn.pullOffVelocity;
     }
   }
 

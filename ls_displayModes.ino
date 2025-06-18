@@ -537,7 +537,7 @@ void paintNormalDisplayCell(byte split, byte col, byte row) {
     setLed(col, row, colour, cellOn, LED_LAYER_MAIN);    
     return;
   }
-  byte lightPattern = getMicroLinnShowCustomLEDs(split);
+  byte lightPattern = Split[split].microLinn.showCustomLEDs;
   if (lightPattern >= 1 && lightPattern <= 3 && !isLowRow) {
     byte colour = Device.customLeds[lightPattern - 1][col + MAXCOLS * row] >> 3;
     if (colour == COLOR_OFF) colour = COLOR_BLACK;

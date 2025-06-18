@@ -283,8 +283,8 @@ byte sensorSplit = 0;                       // the split of the currently read t
 
 // The most-recently touched cell within each channel of each split is said to have "focus",
 // saved as the specific column and row for the focus cell.
-// If in 1Ch/Poly mode, continuous X and Y messages are sent only from movements within the focused cell.
-// If in 1Ch/Chan mode, continuous X, Y and Z messages are sent only from movements within the focused cell.
+// If in 1Ch/PolyAT mode, continuous X and Y messages are sent only from movements within the focused cell.
+// If in 1Ch/ChanAT mode, continuous X, Y and Z messages are sent only from movements within the focused cell.
 struct __attribute__ ((packed)) FocusCell {
   byte col:5;
   byte row:3;
@@ -622,20 +622,24 @@ enum SequencerDirection {
 };
 
 struct MicroLinnSplit {
-  byte colOffset;                         // column offset, 0 to 25, 1 = OFF
-  //signed char rowOffset;                // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
-  //byte showCustomLEDs;                  // 0 = OFF, 1-3 = the three patterns, 4-6 = patterns plus note lights on top
-  // rename hammerOnWindow to hammerOnCentsWindow
-  byte hammerOnWindow;                    // maximum width in tens of cents between two note-ons to make a hammer-on, 0..50, 0 = OFF
-  //byte hammerOnTimeWindow;              // minimum time in tens of milliseconds between two note-ons to make a hammer-on, 0..50, 0 = OFF
+  byte colOffset;                         // column offset, 1 to 8, 1 = OFF
+  signed char rowOffset;                  // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
+  byte showCustomLEDs;                    // 0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
+  byte hammerOnCentsWindow;               // maximum width in tens of cents between two note-ons to make a hammer-on, 0..50, 0 = OFF
+  byte hammerOnTimeWindow;                // minimum time in tens of milliseconds between two note-ons to make a hammer-on, 0..50, 0 = OFF
   boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
   byte pullOffVelocity;                   // 0 = OFF, 1 = 2nd note's noteOff velocity, 2 = 1st noteOn veloc, 3 = 2nd noteOn veloc, 4 = average them
-  //byte condensedBendPerPad;             // width of a single-pad pitch bend in edosteps, 0 = OFF, 1 = VAR, 2 = AVG, 3..L+2 = 1..L (L = largest scale step),
-  //byte defaultLayout;                   // 0 = OFF, 1/2 = Bosanquet, 3/4 = Wicki-Hayden, 5/6 = Harmonic Table, 7/8 = Accordion, 9-10 = Array mbira
+  byte condensedBendPerPad;               // width of a single-pad pitch bend in edosteps, 0 = OFF, 1 = VAR, 2 = AVG, 3..L+2 = 1..L (L = largest scale step),
+  byte defaultLayout;                     // 0 = OFF, 1/2 = Bosanquet, 3/4 = Wicki-Hayden, 5/6 = Harmonic Table, 7/8 = Accordion, 9-10 = Array mbira
   byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
   signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
   signed char transposeEDOlights;
-  byte padding;                           // makes the number of bytes in microLinnSplit an even number, but doesn't fix the bug
+  byte reserved1;                         // reserved for future use, 1 byte per empty menu row
+  byte reserved2;                         //    "
+  byte reserved3;                         //    "
+  byte reserved4;                         //    "
+  byte reserved5;                         //    "
+  byte reserved6;                         //    "
 };
 
 // per-split settings
@@ -659,12 +663,15 @@ struct SplitSettings {
   unsigned short minForY;                 // 0-127
   unsigned short maxForY;                 // 0-127
   boolean relativeY;                      // true when Y should be sent relative to the initial touch, false when it's absolute
+  byte padding1;                          // added by the compiler, declaring it explicitly helps with the updating and importing code
   unsigned short initialRelativeY;        // 0-127
   LoudnessExpression expressionForZ;      // the expression that should be used for loudness
+  byte padding2;                          // see padding1
   unsigned short customCCForZ;            // 0-127
   unsigned short minForZ;                 // 0-127
   unsigned short maxForZ;                 // 0-127
   boolean ccForZ14Bit;                    // true when 14-bit messages should be sent when Z CC is between 0-31, false when only 7-bit messages should be sent
+  byte padding3;                          // see padding1
   unsigned short ccForFader[8];           // each fader can control a CC number ranging from 0-128 (with 128 being placeholder for ChannelPressure)
   byte colorMain;                         // color for non-accented cells
   byte colorAccent;                       // color for accented cells
@@ -678,6 +685,7 @@ struct SplitSettings {
   byte lowRowCCXBehavior;                 // see LowRowCCBehavior values
   unsigned short ccForLowRow;             // 0-128 (with 128 being placeholder for ChannelPressure)
   byte lowRowCCXYZBehavior;               // see LowRowCCBehavior values
+  byte padding4;                          // see padding1
   unsigned short ccForLowRowX;            // 0-128 (with 128 being placeholder for ChannelPressure)
   unsigned short ccForLowRowY;            // 0-128 (with 128 being placeholder for ChannelPressure)
   unsigned short ccForLowRowZ;            // 0-128 (with 128 being placeholder for ChannelPressure)
@@ -690,7 +698,7 @@ struct SplitSettings {
   boolean mpe;                            // true when MPE is active for this split
   boolean sequencer;                      // true when the sequencer of this split is enabled
   SequencerView sequencerView;            // see SequencerView
-  byte padding;                           // makes microLinnSplit start on an even number of bytes, to fix the bug
+  byte padding5;                          // makes microLinnSplit start on an even number of bytes, to fix weird updating bug
   MicroLinnSplit microLinn;               // microtonal data
 };
 
@@ -713,10 +721,12 @@ const short MICROLINN_ARRAY_SIZE = (MICROLINN_MAX_EDO * (MICROLINN_MAX_EDO + 1))
 
 struct MicroLinnDevice {
   byte MLversion;                                 // current version of the microLinn data structures, currently 0, will become 1
-  byte padding;                                   // makes the importing code easier
+  byte padding;                                   // added to make the importing code simpler
   byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
   byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
   byte fretboards[MICROLINN_ARRAY_SIZE];          // one byte per fret, one bit per row, transposable, lefthandedness reverses it, ignores column offsets
+  byte padding1;                                  // added by the compiler, declaring it explicitly helps with the updating and importing code
+  byte padding2;                                  //   "
 };
 
 struct DeviceSettings {
@@ -728,8 +738,10 @@ struct DeviceSettings {
   boolean calCrcCalculated;                       // indicates whether the CRC of the calibration was calculated, previous firmware versions didn't
   boolean calibrated;                             // indicates whether the calibration data actually resulted from a calibration operation
   boolean calibrationHealed;                      // indicates whether the calibration data was healed
+  byte padding1;                                  // added by the compiler, declaring it explicitly helps with the updating and importing code
   unsigned short minUSBMIDIInterval;              // the minimum delay between MIDI bytes when sent over USB
   byte sensorSensitivityZ;                        // the scaling factor of the raw value of Z in percentage
+  byte padding2;                                  // see padding1
   unsigned short sensorLoZ;                       // the lowest acceptable raw Z value to start a touch
   unsigned short sensorFeatherZ;                  // the lowest acceptable raw Z value to continue a touch
   unsigned short sensorRangeZ;                    // the maximum raw value of Z
@@ -790,23 +802,27 @@ enum SustainBehavior {
 };
 
 struct MicroLinnGlobal {
-  //byte drumPadMode;                        // creates a 2x5 (on the 128) or 2x7 (on the 200) array of 3x3 drum pads, 2x8 in marimba mode
-  //signed char locatorCC1;                  // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25...
-  //signed char locatorCC2;                  // ...ranges from 0 to 119, -1 = OFF
+  boolean drumPadMode;                       // creates a 2x5 (on the 128) or 2x7 (on the 200) array of 3x3 drum pads, 2x8 in marimba mode
+  signed char locatorCC1;                    // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25...
+  signed char locatorCC2;                    // ...ranges from 0 to 119, -1 = OFF
   byte EDO;                                  // ranges 5-55, plus 4 for OFF
-  //byte rainbow[MICROLINN_MAX_EDO];         // one row of Device.microLinn.rainbows, used only when loading/saving presets and rawEDO isn't 4
-  //byte fretboard[MICROLINN_MAX_EDO];       // ditto for Device.microLinn.fretboards
+  byte rainbow[MICROLINN_MAX_EDO];           // one row of Device.microLinn.rainbows, used only when loading/saving presets and rawEDO isn't 4
+  byte fretboard[MICROLINN_MAX_EDO];         // ditto for Device.microLinn.fretboards
   boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
   byte anchorCol;                            // ranges 1-25, setting to a number > 16 on a Linnstrument 128 is allowed
   byte anchorRow;                            // top row is 7, bottom row is 0, but the user sees top row as 1, bottom row as 8
   byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
   signed char anchorCents;                   // ranges -60 to +60 cents, even though 50 would do, for convenience
-  //byte equaveSemitones;                    // for non-octave tunings such as bohlen-pierce, 1..36, 1 semitone = 100 cents
-  signed char octaveStretch;                 // rename to equaveStretch, -60..+60
+  byte equaveSemitones;                      // for non-octave tunings such as bohlen-pierce, 1..36, 1 semitone = 100 cents
+  signed char equaveStretch;                 // cents, -60..+60
   byte sweeten;                              // in tenths of a cent, 0..60, adjust 41edo 5/4, 5/3 by this amount both top and bottom to make it closer to just
-  //short largeEDO;                          // ranges 0..53, 0 = OFF, 1..52 = various edos, 53 = 1200edo = JI, user can have a 55-note subset of this edo 
-  //signed char largeEDOoffset[MICROLINN_MAX_EDO];  // ranges -128..127, edosteps from nearest edo approx
+  byte largeEDO;                             // ranges 0..53, 0 = OFF, 1..52 = various edos, 53 = 1200edo = JI, user can have a 55-note subset of this edo 
+  signed char largeEDOoffset[MICROLINN_MAX_EDO];  // ranges -128..127, edosteps from nearest large-edo approximation
   short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, can be negative, [0] is DIA/CHRO, independent of Global.guitarTuning
+  boolean teknico;                           // use KVR forum member teknico's channel pressure fix
+  byte reserved1;                            // reserved for future use, 1 byte per empty menu row
+  byte reserved2;                            //    "
+  byte padding;                              // makes the struct an even number of bytes
 };
 
 struct GlobalSettings {
@@ -815,12 +831,14 @@ struct GlobalSettings {
   byte splitPoint;                           // leftmost column number of right split (0 = leftmost column of playable area)
   byte currentPerSplit;                      // controls which split's settings are being displayed
   byte activeNotes;                          // controls which of the 12 collections of note lights presets is active
+  byte padding1;                             // added by the compiler, declaring it explicitly helps with the updating and importing code
   int mainNotes[12];                         // 12 bitmasks that determine which notes receive "main" lights, mainNotes[0] is for the 1st scale, [9-11] no longer used
   int accentNotes[12];                       // 12 bitmasks that determine which notes receive accent lights (octaves, white keys, black keys, etc.)
   byte rowOffset;                            // interval between rows, 0 = no overlap, 3-7 = interval, 12 = custom, 13 = guitar, 127 = zero offset
   signed char customRowOffset;               // the custom row offset that can be configured at the location of the octave setting
   byte guitarTuning[MAXROWS];                // the notes used for each row for the guitar tuning, 0-127
   VelocitySensitivity velocitySensitivity;   // See VelocitySensitivity values
+  byte padding2;                             // see padding1
   unsigned short minForVelocity;             // 1-127
   unsigned short maxForVelocity;             // 1-127
   unsigned short valueForFixedVelocity;      // 1-127
@@ -837,7 +855,7 @@ struct GlobalSettings {
   signed char arpOctave;                     // the number of octaves that the arpeggiator has to operate over: 0, +1, or +2
   SustainBehavior sustainBehavior;           // the way the sustain pedal influences the notes
   boolean splitActive;                       // false = split off, true = split on
-  short padding;                             // makes microLinnGlobal start on a 4-even number of bytes, to fix the bug
+  //short padding3;                          // makes microLinnGlobal start on a 4-even number of bytes, to fix the bug
   MicroLinnGlobal microLinn;                 // microtonal data
 };
 #define Global config.settings.global

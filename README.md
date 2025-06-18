@@ -33,7 +33,7 @@ To go to the main microLinn menu, on the Global Settings screen, long-press the 
 
 Main menu, *LONG-PRESS EACH BUTTON* to see its function
 
-  col 2) Per-split column offset (OFF, 2 to 25)
+  col 2) Per-split column offset (OFF, 2 to 8)
   
   col 3) Per-split row offset (OFF, -25 to 25, NOVR = no overlap)
   
@@ -68,10 +68,6 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
     row 4) Equave semitones (1 to 36)
     row 5) Equave cents (-60 to 60)
 
-LINKING PER-SPLIT SETTINGS
-
-You can set both column offsets at once by linking them. Hold the right split button and tap the left one. You'll be switched to the left split, and the left offset will change to match the right offset. Both split buttons remain lit up, and any change affects both offsets. To unlink them, tap either split button. All microLinn per-split settings can be linked this way.
-
 
 ================== NON-MICROTONAL FEATURES ================== 
 
@@ -84,6 +80,10 @@ Ranges from 1 (OFF) to 8. For negative offsets, use the hidden lefthanded settin
 * Harmonic Table layout translates to (+4 +3) or (+7 +3)
 
 The column offset can be set for each split independently. You can have one of these six layouts on the left for easy chord playing (probably with pitch bending off) and the usual layout on the right for easy melody playing, somewhat analogous to an accordion's layout. Accessed through the microLinn menu.
+
+You can set both column offsets at once by linking them. In the upper right there are two split buttons. Hold the right one and tap the left one. You'll be switched to the left split, and the left offset will change to match the right offset. Both split buttons remain lit up, and any change affects both offsets. To unlink them, tap either split button. 
+
+----->  All microLinn per-split settings can be linked this way.  <------
 
 *Details: Beware, if the column offset is 2 and the row offset is an even number, you lose half the notes and only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors. If they do, both the row offset and the column offset will be displayed in red.*
 
@@ -113,7 +113,9 @@ Condensing can be combined with column offsets. First the scale is condensed, th
 
 There's a school of thought that says there's only 12 notes, it's not that hard to learn your way around, and removing 5 of the 12 notes doesn't make the scale all that much more compact. So is it really worth condensing if it causes bending issues? Perhaps not if one plays only in 12edo. But if playing microtonally, condensing a large edo to a smaller scale can be very useful. For example, you can condense a 31edo chain-of-5ths scale of 12 notes to get quarter-comma meantone. But even in 12edo, condensing has its uses. For example, you can use condensing to create a vertical Wicki-Hayden layout. (Playing vertically means rotating the Linnstrument 90 degrees.) The range is huge, almost 8 octaves on a Linnstrument 128!
 
-*Details: Condensing usually affects the row offsets as well as the column offsets. It makes the row offsets an inconsistent number of semitones but a consistent number of scale steps, e.g. sometimes 3 semitones, sometimes 4, but always a third. However, if using a guitar tuning, this is not always true. In the guitar tuning dispaly, when you select the anchor row, a row offset is not displayed. Usually nothing is displayed. But when condensing is on, you'll see DIA for diatonic/condensed. Swipe right to get CHRO for chromatic/uncondensed. In diatonic mode, the row offsets are condensed as usual. But in chromatic mode, the row offsets don't get condensed, and the notes in the anchor column don't change. Each row is an exact chromatic transposition of the anchor row. Thus while the anchor row has no unlit pads, the other rows usually do.*
+*Details: Condensing usually affects the row offsets as well as the column offsets. It makes the row offsets an inconsistent number of semitones but a consistent number of scale steps, e.g. sometimes 3 semitones, sometimes 4, but always a third. However, if using a guitar tuning, this is not always true.*
+
+*In the guitar tuning dispaly, when you select the anchor row, a row offset is not displayed. Usually nothing is displayed. But when condensing is on, you'll see DIA for diatonic/condensed. Swipe right to get CHRO for chromatic/uncondensed. In diatonic mode, the row offsets are condensed as usual. But in chromatic mode, the row offsets don't get condensed, and the notes in the anchor column don't change. Each row is an exact chromatic transposition of the anchor row. Thus while the anchor row has no unlit pads, the other rows usually do.*
 
 *Vertical Wicki-Hayden layout:*
 * *Set both the column offset and the per-split row offset to OFF*
@@ -130,6 +132,17 @@ There's a school of thought that says there's only 12 notes, it's not that hard 
 *This layout is not isomorphic but it is dimorphic (two shapes). The restriction of only 3 notes per column becomes only 3 notes per row, much less of an issue.*
 
 *(Alternative layout: set the scale to use the 5th not the 4th, and set the anchor pad to row 4 not 3.)*
+
+CHANNEL PRESSURE FIX
+
+The Linnstrument normally resets pressure data at note on/off, and only sends pressure data for the most recent pad held. For non-MPE synths (or any synth played in "One Chan" or "ChPerRow" mode), releasing a note causes an abrupt jump in z-values from 0 to the value of whatever prior pad is held. Y-values behave similarly. MicroLinn includes a fix by KVR forum member teknico that solves the problem.  
+
+*Details: The output of both Y (timbre) and Z (loudness) when not using Polyphonic Aftertouch is thus changed:*
+* *Zero-value messages before note-on and note-off are only sent for the first simultaneous note on the same channel*
+* *Only the maximum value of all simultaneous notes on the same channel is sent*
+*This allows smoother playing in One Channel and Channel Per Row modes and better compatibility with non-MPE synths, while not impacting Channel per Note (MPE) mode (except in the rare case of more that one note on the same channel). See https://www.kvraudio.com/forum/viewtopic.php?t=591770*
+
+*This fix is permanently enabled. This is a rare instance of microLinn changing the behavior of the Linnstrument, as opposed to adding a new feature. If anyone prefers the old behavior, let us know, and we can make the new behavior optional.*
 
 OCTAVE TOGGLE, QUANTIZE TOGGLE
 
@@ -391,18 +404,16 @@ For the right split,
 
 KNOWN ISSUES:
 
-* Immediately after updating, you must unplug the Linnstrument and plug it back in
+* Immediately after updating microLinn to another version of microLinn, you must unplug the Linnstrument and plug it back in
+* Uninstalling doesn't always preserve calibration and user settings
 * Arpegiator is not yet microtonal
 * Strumming is not yet microtonal
 * Same/blink carry-over leaves extra lights on
-* Condensing to a scale makes the playedSame red dots wrong
+* Condensing to a scale makes the red playedSame dots appear in the wrong places
 * Edos above 41 rainbows are not ideal
 * Default scales are incomplete
-* Several settings don't yet persist across power cycles:
-* * Per-split: Row offsets, Show Custom LEDs and Default layouts
-* * Global: Drum Pad Mode, Locator CCs and Equave semitones
 
-To find all changes to the code, search for "microlinn" or "playedBlink" or "patternChain" or "control the sequencer"
+To find all changes to the code, search for "microlinn" or "playedBlink" or "patternChain" or "control the sequencer" or "teknico"
 
 "Skip-fretting" is a column offset of 2 - each subsequent pad represents every other MIDI note, so note 0 2 4 6 8 ... instead of 0 1 2 3 4. The name is in reference to the microtonal [kite guitar](https://kiteguitar.com/), which obviously uses frets and not keys, but the Linnstrument's rows and columns work just like strings and frets.
 
@@ -418,4 +429,6 @@ This is handy, as 41 notes per octave would not otherwise fit on a single row. B
 
 # Support
 For support with the official firmware, email Roger at support@rogerlinndesign.com.
-For support for this fork, open a new github issue, or inquire at the unofficial Linnstrument discord at https://discord.com/channels/1094879990367133706/1094890657170063400. Please do NOT inquire at the official KVR forum.
+For support for this fork, inquire at the unofficial Linnstrument discord at https://discord.com/channels/1094879990367133706/1094890657170063400. Please do NOT inquire at the official KVR forum.
+
+Many heartfelt thanks to Roger Linn for making the Linnstrument firmware open source!!!

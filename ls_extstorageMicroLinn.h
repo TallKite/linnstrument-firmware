@@ -1,5 +1,4 @@
 // This file preserves the older versions of the microLinn data structures, for version migration by ls_extstorage.ino
-// When microLinn 72.1 comes out, change the structures in Linnstrument-firmware.ino, not these
 // When microLinn 72.2 comes out, add MicroLinnV72_1 to this file in its own namespace
 // When a new official version comes out, say V17, 
 //    Merge the official changes into the microLinn version (this will include V16 code)
