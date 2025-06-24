@@ -218,16 +218,37 @@ void serialSendSettings() {
 
   // if the user is reverting to the mainline firmware, we need to send the updater a version
   // of the configuration that's compatible with mainline
-  if (isMicroLinnUninstallTrue()) {
+  if (getMicroLinnUninstall() == 12) {
     // this does an in-place overwrite of the current configuration with a smaller one that has all the
     // MicroLinn data stripped out, so it's important that nothing ever tries to access
     // the configuration fields at their old locations between now and the next reboot
     // (the 16 sequencer projects are read directly from flash)
     restoreNonMicroLinnConfiguration(&config, &config);
     confSize = sizeof(struct ConfigurationVLatest);
-  } else {
+  } else if (getMicroLinnUninstall() == 41) {
     confSize = sizeof(Configuration);
-  }
+  } else return;
+
+  // mysterious bug: restoreNonMicroLinnConfiguration() doesn't run even when microLinnUninstall is clearly true!!!!!!
+  // "if (isMicroLinnUninstallTrue())" fails
+  // "if (microLinnUninstall)" also fails
+  // moving the runtime var microLinnUninstall to linnstrument-firmware.ino also fails
+  // moving it to ls_serial.ino also fails
+  // changing it to Device.microLinn.uninstall also fails
+  // changing it to Device.microLinnUninstall also fails
+  // changing it to Global.microLinn.uninstall works sometimes
+  // changing it to a byte with 12 = yes and 41 = no and anything else = invalid also fails
+  // calling restoreNonMicroLinnConfiguration() without an if statement works fine
+
+  /******** test, this also fails
+  confSize = sizeof(Configuration);
+  for (byte i = 0; i < 100; i++) {
+    if (isMicroLinnUninstallTrue()) {
+      restoreNonMicroLinnConfiguration(&config, &config);
+      confSize = sizeof(ConfigurationVLatest);
+      break;
+    }
+  } *********/
 
   // send the size of the settings
   Serial.write((byte*)&confSize, sizeof(int32_t));
@@ -266,6 +287,13 @@ boolean serialWaitForMaximumTwoSeconds() {
 void serialRestoreSettings() {
   Serial.write(ackCode);
 
+  // initialize diagnostic global vars used for troubleshooting
+  updaterVersion = 0;
+  updaterMicroLinnVersion = 0;
+  updaterSettingsSize = 0;
+  updaterImpliedSettingsSize = 0;
+  updaterBadBatch = -1;
+
   clearDisplayImmediately();
   delayUsec(1000);
 
@@ -280,6 +308,7 @@ void serialRestoreSettings() {
   }
   int32_t settingsSize;
   memcpy(&settingsSize, buff1, sizeof(int32_t));
+  updaterSettingsSize = settingsSize;
 
   Serial.write(ackCode);
 
@@ -298,7 +327,10 @@ void serialRestoreSettings() {
     }
 
     int crc = negotiateIncomingCRC(buff2, actual);
-    if (crc == -1)      return;
+    if (crc == -1) {
+      updaterBadBatch = (projectOffset - SETTINGS_OFFSET) / batchsize;       // the batch number that flunked
+      return;
+    }
     else if (crc == 0)  continue;
 
     dueFlashStorage.write(projectOffset, buff2, actual);

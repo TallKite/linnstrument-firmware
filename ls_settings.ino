@@ -949,6 +949,7 @@ void handleControlButtonNewTouch() {
       setLed(0, PER_SPLIT_ROW, globalColor, cellOn);
       setDisplayMode(displayPerSplit);
       resetNumericDataChange();
+      setMidiChannelSelect();
       updateDisplay();
       break;
   }
@@ -1258,6 +1259,7 @@ void handlePerSplitSettingNewTouch() {
           if (sensorRow == 5) {
             Split[Global.currentPerSplit].midiChanPerRowReversed = false;
           }
+          setMidiChannelSelect();
           updateSplitMidiChannels(Global.currentPerSplit);
           break;
       }
@@ -1825,6 +1827,7 @@ boolean handleShowSplit() {
       // otherwise switch the split for the currently active panel
       else {
         Global.currentPerSplit = newSplit;
+        setMidiChannelSelect();
       }
       resetNumericDataChange();
       updateDisplay();
@@ -2889,18 +2892,18 @@ void handleGlobalSettingNewTouch() {
         if (sensorRow == 4 && LINNMODEL == 128) toggleMicroLinnUninstall();
         break;
 
-#ifndef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
+//#ifndef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
       case 17: 
         if (sensorRow == 2) toggleMicroLinnUninstall();
         if (sensorRow == 1) enterMicroLinnConfig();
         break;
-#endif
-
+//#endif
+/***********
 #ifdef DEBUG_ENABLED
       case 16:
         if (sensorRow == 4 && LINNMODEL == 200) toggleMicroLinnUninstall();   // use col 16 instead
         break;
-#endif
+#endif  **************/
 
     }
   }

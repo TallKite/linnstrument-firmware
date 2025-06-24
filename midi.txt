@@ -340,12 +340,12 @@ channel 2 or 3 = add 128 to MSB when importing
 
 Type        # of data bytes     Settings exported                    Notes
 -------------------------------------------------------------------------------------------------------
- 1          208                 Current light pattern                imports into current light pattern
+ 1          208                 Currently-displayed light pattern    imports into currently-displayed pattern
  2          624                 All 3 light patterns                 
  3          30                  Last-edited audience message         imports into last-edited message
  4          480                 All 16 audience messages             
 
- 5          edo + 2             Current edo's 7 scales               size += 1 byte of padding if edo is odd
+ 5          edo                 Current edo's 7 scales               for odd edos, add 1 byte of padding to the size
  6           "                  Current edo's rainbow                    "
  7           "                  Current edo's fretboard                  "
  8          28 + 3 * edo        All data for the current edo         equave, useRainbow, col/row offsets, guitarTuning
@@ -355,19 +355,19 @@ Type        # of data bytes     Settings exported                    Notes
 11           "                  Fretboards for all 51 edos                   
 12          4590                All 3 arrays for all 51 edos         no equave, useRainbow, col/row offsets, guitarTuning
 
-13          592                 Last-loaded preset                   
+13          592                 Last-loaded preset                   overwrites current Global & Split settings
 14          3552                All 6 presets                        
-15          14727 *             All user settings                    no calibration data or sequencer projects
+15          9880                All user settings                    no calibration data or sequencer projects
 
-* will be larger for version 72.1
+overall size of the midi file in bytes = 1.5 * (# of data bytes) + 24
 
-Import failure error codes:
-invalid import type (must be 1-15)
-invalid edo (must be 5-55)
-unknown data version = can't import from a future data structure version
-data version mismatch = incompatible (past or future) data structure version (all settings import only)
-not enough data = too few data bytes
-excess data = too many data bytes
+Import failure error messages:
+INVALID IMPORT TYPE (type must be 1-15)
+INVALID EDO (edo must be 5-55)
+UNKNOWN DATA VERSION = can't import from a future data structure version
+DATA VERSION MISMATCH = incompatible (past or future) data structure version (all settings import only)
+NOT ENOUGH DATA = too few data bytes
+EXCESS DATA = too many data bytes
 FOOTER MISMATCH = import type mismatch between NRPN 300 MSB and polypressure footer MSB
 M N = M is microLinnImportCounter, Nth midi message was invalid, N is 1-indexed, includes the NRPN's 6 CCs
 lack of "SUCCESS" message = no footer

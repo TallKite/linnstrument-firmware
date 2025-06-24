@@ -972,6 +972,8 @@ boolean upgradeConfigurationSettings(int32_t confSize, byte* buff2) {
   boolean result = false;
 
   byte settingsVersion = buff2[0];
+  updaterVersion = settingsVersion;
+  updaterImpliedSettingsSize = 0;
 
   // if the stored version is newer than what this firmware supports, resort to default settings
   if (settingsVersion > Device.version) {
@@ -1074,6 +1076,8 @@ boolean upgradeConfigurationSettings(int32_t confSize, byte* buff2) {
         break;
       // this is the v16 of the configuration configuration, apply it if the size is right
       case 16:
+        // ideally cases 1-15 would also compute updaterImpliedSettingsSize
+        updaterImpliedSettingsSize = sizeof(ConfigurationVLatest);
         if (confSize == sizeof(ConfigurationVLatest)) {
           copyConfigurationFunction = &copyConfigurationVLatest;
         }
@@ -1082,20 +1086,23 @@ boolean upgradeConfigurationSettings(int32_t confSize, byte* buff2) {
       case (16 + MICROLINN_VERSION_OFFSET):
         {
           byte microLinnVersion = ((struct Configuration *) (buff2))->device.microLinn.MLversion;
-
+          updaterMicroLinnVersion = microLinnVersion;
           if (microLinnVersion == 0) {
+            updaterImpliedSettingsSize = sizeof(MicroLinnV72_0::Configuration);
             if (confSize == sizeof(MicroLinnV72_0::Configuration)) {      // "::" = the namespace in ls_extstorageMicroLinn.ino
               copyConfigurationFunction = &copyConfigurationMicroLinnV72_0;
-              fixMicroLinnData();
+              setupMicroLinn();
               result = true;
             } else {
               result = false;
             }
           } else if (microLinnVersion == 1) {
+            updaterImpliedSettingsSize = sizeof(Configuration);
             if (confSize == sizeof(Configuration)) {
               memcpy(&config, buff2, confSize);
               // when version 72.2 is released, replace the previous memcpy with the following line
               // copyConfigurationFunction = &copyConfigurationMicroLinnV72_1;
+              setupMicroLinn();
               result = true;
             } else {
               result = false;
@@ -2290,44 +2297,11 @@ void copyConfigurationV15(void* target, void* source) {
 
 /*************************************************************************************************/
 
-void fixMicroLinnData() {
-  // shouldn't be needed, but fixes a mysterious bug where the first 2 Global.microLinn vars are both zero after updating
-  // but initializeMicroLinn() explicitly sets those vars as well as others that aren't zeroed out, e.g. anchorCol
-  // the bug is probably using sizeof(GlobalSettings) or sizeof(MicroLinnGlobal) when there's 2 bytes of padding somewhere
-  if (config.settings.global.microLinn.EDO == 0) {
-    config.settings.global.microLinn.EDO = 4; 
-    config.settings.global.microLinn.useRainbow = true;
-  }
-  for (byte split = 0; split < NUMSPLITS; split++) {
-    if (config.settings.split[split].microLinn.colOffset == 0) {
-      config.settings.split[split].microLinn.colOffset = 1;
-      config.settings.split[split].microLinn.rowOffset = -26;
-    }
-  }
-
-  for (byte p = 0; p < NUMPRESETS; p++) {
-    if (config.preset[p].global.microLinn.EDO == 0) {
-      config.preset[p].global.microLinn.EDO = 4; 
-      config.preset[p].global.microLinn.useRainbow = true;
-    }
-    for (byte split = 0; split < NUMSPLITS; split++) {
-      if (config.preset[p].split[split].microLinn.colOffset == 0) {
-        config.preset[p].split[split].microLinn.colOffset = 1;
-        config.preset[p].split[split].microLinn.rowOffset = -26;
-      }
-    }
-  }
-
-  if (config.device.microLinn.MLversion == 0) {
-    config.device.microLinn.MLversion = 1;
-  }
-}
-
 void initMicroLinnData() {
-  // shouldn't be needed, but fixes a mysterious bug where the first 2 Global.microLinn vars are both zero after updating
+  // shouldn't be needed, but fixes a mysterious bug where the first 2 microLinn vars are both zero after updating
   // but initializeMicroLinn() explicitly sets those vars as well as others that aren't zeroed out, e.g. anchorCol
-  // the bug is probably using sizeof(GlobalSettings) or sizeof(MicroLinnGlobal) when there's 2 bytes of padding somewhere
-  // initializeMicroLinn() overrides what anchorCol is set to here, so it must run later?
+  // the bug might be using sizeof(GlobalSettings) or sizeof(MicroLinnGlobal) when there's 2 bytes of padding somewhere
+  // initializeMicroLinn() will overrides what things are set to here, so it must run later
   config.settings.global.microLinn.EDO = 4; 
   config.settings.global.microLinn.useRainbow = true;
   for (byte split = 0; split < NUMSPLITS; split++) {
@@ -2446,26 +2420,13 @@ void copyConfigurationMicroLinnV72_0(void* target, void* source) {   // copies f
   memcpy(&t->project, &s->project, sizeof(s->project));
 }
 
-/* Roll back settings to latest non-MicroLinn format, in effect uninstall microLinn */
+/* Roll back settings to latest non-MicroLinn format, so user can uninstall microLinn */
 void restoreNonMicroLinnConfiguration(void* target, void* source) {
-
-
-  // experiment, delete later
-  //removeMicroLinnData();
-  //byte* array;                 // used to configure complex structs as a simple array of bytes
-  //int32_t n = sizeof(struct ConfigurationVLatest);
-  //array = (byte *) &config.device.version;
-  //for (unsigned short i = 0; i < n; i += 1) {
-  //  microLinnSendPolyPressure(0, array[i]);        // dump the data to midi before updating
-  //}
-  //return;
-
-
   ConfigurationVLatest* t = (ConfigurationVLatest*)target;
   Configuration* s = (Configuration*)source;
 
-  // perhaps memcpying in place is the problem?
   memcpy(&t->device, &s->device, sizeof(t->device));                                 // sizeof(target) excludes MicroLinnDevice
+  t->device.version = 16;
   t->device.operatingLowPower = false;                                               // avoid 2 = dimmed display
 
   memcpy(&t->settings.global, &s->settings.global, sizeof(t->settings.global));
@@ -2502,33 +2463,4 @@ void restoreNonMicroLinnConfiguration(void* target, void* source) {
   }
 
   memcpy(&t->project, &s->project, sizeof(t->project));
-  t->device.version = 16;
-}
-
-int removeMicroLinnData () {    // experiment, delete later
-  short sizeMLglobal = sizeof(MicroLinnGlobal);
-  short sizeGlobal = sizeof(GlobalSettings) - sizeMLglobal;
-  short sizeMLsplit = sizeof(MicroLinnSplit);
-  short sizeSplit = sizeof(SplitSettings) - sizeMLsplit;
-  int sizeMLdata = sizeof(MicroLinnDevice);                     // a running total of what we're overwriting
-
-  memcpy(&Global - sizeMLdata, &Global, sizeGlobal);
-  sizeMLdata += sizeMLglobal;
-  memcpy(&Split[LEFT] - sizeMLdata, &Split[LEFT], sizeSplit);
-  sizeMLdata += sizeMLsplit;
-  memcpy(&Split[RIGHT] - sizeMLdata, &Split[RIGHT], sizeSplit);
-  sizeMLdata += sizeMLsplit;
-
-  for (byte p = 0; p < NUMPRESETS; ++p) {
-    memcpy (&config.preset[p].global - sizeMLdata, &config.preset[p].global, sizeGlobal);
-    sizeMLdata += sizeMLglobal;
-    memcpy (&config.preset[p].split[LEFT]  - sizeMLdata, &config.preset[p].split[LEFT],  sizeSplit);
-    sizeMLdata += sizeMLsplit;
-    memcpy (&config.preset[p].split[RIGHT] - sizeMLdata, &config.preset[p].split[RIGHT], sizeSplit);
-    sizeMLdata += sizeMLsplit;
-  }
-
-  memcpy (&config.project - sizeMLdata, &config.project, sizeof(config.project));
-
-  return sizeof(config) - sizeMLdata;                           // return the new size of config
 }

@@ -1720,16 +1720,25 @@ void paintGlobalSettingsDisplay() {
   }
 
   // set light for uninstall mode
+/**********
 #ifdef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
-  if (isMicroLinnUninstallTrue()) lightLed(16, 4);
-#endif
-#ifndef DEBUG_ENABLED
-  if (isMicroLinnUninstallTrue()) {
-    if (LINNMODEL == 200) {lightLed(17, 2);}
-    else {lightLed(16, 4);}
+  if (getMicroLinnUninstall() == 12) {
+    lightLed(16, 4);
+  } else if (getMicroLinnUninstall() != 41) {
+    setLed(16, 4, COLOR_RED, cellOn);                 // warn that the data is bad
   }
-  setLed(17, 1, COLOR_GREEN, cellOn);                // shortcut to microLinn config menus
 #endif
+**************/
+//#ifndef DEBUG_ENABLED
+  byte col = (LINNMODEL == 200 ? 17 : 16);
+  byte row = (LINNMODEL == 200 ?  2 : 4);
+  if (getMicroLinnUninstall() == 12) {
+    lightLed(col, row);
+  } else if (getMicroLinnUninstall() != 41) {
+    setLed(col, row, COLOR_RED, cellOn);              // warn that the data is bad
+  }
+  if (LINNMODEL == 200) setLed(17, 1, COLOR_CYAN, cellOn);        // shortcut to microLinn menus
+//#endif
 
   // clearly indicate the calibration status
   setLed(16, 3, getCalibrationColor(), cellOn);
