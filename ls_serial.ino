@@ -216,6 +216,10 @@ void serialSendSettings() {
   const uint8_t batchsize = 96;
   byte* src = (byte*)&config;
 
+  Device.microLinnUninstall = getMicroLinnUninstall();       // for debugging, delete later
+  Device.audienceMessages[0][0] = '0' + (Device.microLinnUninstall / 10);
+  Device.audienceMessages[0][1] = '0' + (Device.microLinnUninstall % 10);
+
   // if the user is reverting to the mainline firmware, we need to send the updater a version
   // of the configuration that's compatible with mainline
   if (getMicroLinnUninstall() == 12) {
@@ -229,7 +233,8 @@ void serialSendSettings() {
     confSize = sizeof(Configuration);
   } else return;
 
-  // mysterious bug: restoreNonMicroLinnConfiguration() doesn't run even when microLinnUninstall is clearly true!!!!!!
+  // mysterious bug: restoreNonMicroLinnConfiguration() doesn't run even when microLinnUninstall is clearly true!!!!
+  // on the Global Settings screen, tap col 16 row 4 to toggle microLinnUninstall, tap col 17 row 4 to see its value
   // "if (isMicroLinnUninstallTrue())" fails
   // "if (microLinnUninstall)" also fails
   // moving the runtime var microLinnUninstall to linnstrument-firmware.ino also fails
@@ -238,7 +243,10 @@ void serialSendSettings() {
   // changing it to Device.microLinnUninstall also fails
   // changing it to Global.microLinn.uninstall works sometimes
   // changing it to a byte with 12 = yes and 41 = no and anything else = invalid also fails
-  // calling restoreNonMicroLinnConfiguration() without an if statement works fine
+  // changing "if (isMicroLinnUninstallTrue())" to "if (true)" uninstalls fine, but forces the user to uninstall
+
+  // workaround for beta testers wanting to uninstall: have them update to a special version that has "if (true)",
+  // then have them down-date from that version to the mainstream code, their data won't be lost
 
   /******** test, this also fails
   confSize = sizeof(Configuration);

@@ -740,7 +740,7 @@ struct DeviceSettings {
   boolean calCrcCalculated;                       // indicates whether the CRC of the calibration was calculated, previous firmware versions didn't
   boolean calibrated;                             // indicates whether the calibration data actually resulted from a calibration operation
   boolean calibrationHealed;                      // indicates whether the calibration data was healed
-  //byte microLinnUninstall;                        // used by ls_serial.ino, should be a runtime var but mysterious bug prevents that
+  byte microLinnUninstall;                        // used by ls_serial.ino, should be a runtime var but mysterious bug prevents that
 //byte padding3;                                  // see padding1, microLinnUninstall replaces this byte
   unsigned short minUSBMIDIInterval;              // the minimum delay between MIDI bytes when sent over USB
   byte sensorSensitivityZ;                        // the scaling factor of the raw value of Z in percentage
@@ -1167,6 +1167,7 @@ short guitarTuningPreviewChannel = -1;              // active channel that is pr
 byte customLedColor = COLOR_GREEN;                  // color is used for drawing in the custom LED editor
 
 // these vars report on the user settings the current firmware received from the updater app, for troubleshooting
+// part of the microLinn fork, display them by tapping row 7 cols 12-16 on the Global Settings screen
 // these are lost upon power down, so they must be examined immediately after updating
 // -2 means a power down has already happened, so no valid data to display
 signed char updaterVersion = -2;                    // the 2 version numbers contained in the incoming settings

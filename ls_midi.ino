@@ -569,7 +569,6 @@ void receivedNrpn(int parameter, int value, int channel) {
       if (inRange(value, 0, 2)) {
         preResetMidiExpression(split);
         Split[split].midiMode = value;
-        if (split == Global.currentPerSplit) setMidiChannelSelect();
         // ensure MPE is turned off
         disableMpe(split);
         updateSplitMidiChannels(split);

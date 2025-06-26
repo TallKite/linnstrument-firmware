@@ -1,4 +1,4 @@
-# ======= MICROLINN =======
+#  MICROLINN 
 
 Unfinished, still a few more features to add, plus a few features don't quite work right yet. 
 Beta testers needed!
@@ -8,11 +8,11 @@ The  LinnStrument is an amazing instrument, very feature-rich. If it's new to yo
 For experienced linnstrumentalists, microLinn makes exploring microtonality very easy. Load up your usual MPE synths, set the notes per octave, and play! It's that simple!
 
 
-# ======= INSTALLATION ======= 
+#  INSTALLATION  
 
 
 1) Go to https://www.rogerlinndesign.com/support/support-linnstrument-update-software and follow the "How to Check Your Software Version" instructions. If it's not 2.3.3, follow the "How to Update Your LinnStrument Software‍" instructions to update to 2.3.3.
-2) Download linnstrument-firmware-microLinn.ino.bin.zip from the LinnStrument Community wiki and unzip it. Important: if on a mac, put the .bin file on your **desktop**. 
+2) Download linnstrument-firmware-microLinn-234.072.001.ino.bin.zip from the LinnStrument Community wiki and unzip it. Important: if on a mac, put the .bin file on your **desktop**. 
 3) Follow the "How to Update Your LinnStrument Software‍" instructions, with one difference: after you download and unzip the updater and before running it, put it in the same folder as the .bin file from step 2. Mac users: when you run the updater, if it asks for permission to read files from the desktop, say yes.
 4) Check your OS version to confirm the update. Tap twice to see all three numbers. It should be 234.072.001 or higher. If not, reboot your computer and try again. 
 5) Important, read the next section about uninstalling!
@@ -24,13 +24,13 @@ If you see "Couldn't retrieve LinnStrument's settings, interrupting firmware upg
 If you accidentally long-press the Update OS button, the display will go blank. To return to normal, just unplug your Linnstrument.
 
 
-# ======= UPDATING / UNINSTALLING ======= 
+#  UPDATING / UNINSTALLING  
 
 
-IMPORTANT: Updating to a newer version of microLinn is done normally. But if you want to go back to an official (non-microtonal) version of the firmware, there's an extra step. Just before you run the updater, on the Global Settings screen, tap the pad to the right of the "Update OS" pad (17th column, 3rd row from the bottom) so that it turns dark blue. If on a LinnStrument 128, tap the pad just above the calibration pad (16th column, 5th row). This tells your LinnStrument to *uninstall* microLinn. This deletes all your microtonal data, necessary in order to avoid deleting your calibration data and all your user settings.
+IMPORTANT: Updating to a newer version of microLinn is done normally. Put the new .bin file next to the updater app, etc. But if you want to go back to an official (non-microtonal) version of the firmware, there's an extra step. Just before you run the updater, on the Global Settings screen, tap the pad to the right of the "Update OS" pad (17th column, 3rd row from the bottom) so that it turns dark blue. If on a LinnStrument 128, tap the pad just above the calibration pad (16th column, 5th row). This tells your LinnStrument to *uninstall* microLinn. This deletes all your microtonal data, necessary in order to avoid deleting your calibration data and all your user settings. Don't uninstall when updating to a newer version of microLinn, because you'll delete your microtonal data needlessly.
 
 
-# ======= MAIN MENU ======= 
+#  MAIN MENU  
 
 
 To go to the main microLinn menu, on the Global Settings screen, long-press the lower left pad (VIEW MAIN). Once the edo (notes per octave) is set to anything other than OFF, VIEW MAIN turns light blue and you can short-press it. On a LinnStrument 200, you can also tap the green button in column 17.
@@ -40,17 +40,17 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
   col 2) Per-split column offset (OFF, 2 to 8)
   
 
-  col 3) Per-split row offset (OFF, -25 to 25, NOVR = no overlap)
+  col 4) Per-split row offset (OFF, -25 to 25, NOVR = no overlap)
   
 
-  col 5) Per-split non-microtonal settings
+  col 6) Per-split non-microtonal settings
 
     row 1) Show custom light pattern (OFF, A, A#, B, A', A#', B')
 
     rows 2-5) (reserved for future use)
 
 
-  col 7) Global non-microtonal settings
+  col 8) Global non-microtonal settings
 
     row 1) Drum pad mode (OFF, ON)
   
@@ -99,7 +99,7 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
     row 5) Equave cents (-60 to 60)
 
 
-# ======= NON-MICROTONAL FEATURES ======= 
+#  NON-MICROTONAL FEATURES  
 
 
 COLUMN OFFSETS
@@ -121,7 +121,7 @@ You can set both column offsets at once by linking them. In the upper right ther
 
 PER-SPLIT ROW OFFSETS
 
-Setting the row offset for a split overrides the Global Settings row offset for that split only. It ranges from -25 to +25, plus OFF and No Overlap which appears as NOVR. A No Overlap split can be used to launch audio or midi clips while you play normally in the other split. Accessed through the microLinn menu. 
+Setting the row offset for a split overrides the Global Settings row offset for that split only. This is indicated by turning the Global Settings pad pink when that split is active. The per-split row offset ranges from -25 to +25, plus OFF and No Overlap which appears as NOVR. A No Overlap split can be used to launch audio or midi clips while you play normally in the other split. Accessed through the microLinn menu.
 
 CONDENSE TO SCALE
 
@@ -277,14 +277,14 @@ Import request files available on the LinnStrument Community Wiki:
 * requestAllUserSettings.mid
 
 
-# ======= MICROTONAL FEATURES ======= 
+#  MICROTONAL FEATURES  
 
 
 EDOS
 
-The edo (stands for Equal Division of an Octave, the notes per octave) ranges from 5edo to 55edo, plus "OFF" which makes the LinnStrument run normally. Change the edo by swiping sideways. Once microLinn is on (i.e. once an edo is chosen), you can cycle thru the edos by setting a switch or footswitch to EDO+ or EDO- (long-press TAP TEMPO and swipe). 
+The edo (stands for Equal Division of an Octave, the notes per octave) ranges from 5edo to 55edo, plus "OFF" which makes the LinnStrument run normally. Change the edo by swiping sideways. You don't need to do anything to your synth to make it microtonal because all the microtonal fine-tuning tuning is done via pitch bends. 
 
-Changing the edo automatically adjusts all row offsets so that their size in cents stays roughly the same. So your fourths tuning will remain fourths, your fifths tuning will remain fifths, and your standard guitar tuning will remain standard. If either column offset is not OFF, it will get adjusted as well. Furthermore you can set the default layout for either split to be Bosanquet etc. and your layout will become (and remain) Bosanquet. 
+Once microLinn is on (i.e. once an edo is chosen), you can cycle thru the edos by setting a switch or footswitch to EDO+ or EDO- (long-press TAP TEMPO and swipe). Changing the edo automatically adjusts all row offsets so that their size in cents stays roughly the same. So your fourths tuning will remain fourths, your fifths tuning will remain fifths, and your standard guitar tuning will remain standard. If either column offset is not OFF, it will get adjusted as well. Furthermore you can set the default layout for either split to be Bosanquet etc. and your layout will become (and remain) Bosanquet. 
 
 *Details: A default layout is stored in the per-split row/col offsets, so it overrides the Global row offset. Bosanquet = m2/M2, Bosanquet 2 = A1/M2, Wicki-Hayden = P4/M2, Wicki-Hayden 2 = P5/M2, Harmonic Table = M3/m3, and Harmonic Table 2 = P5/m3. But this may vary from edo to edo, to ensure coprime row/col offsets. See also Guitar Tuning below.*
 
@@ -371,11 +371,11 @@ VERTICAL WICKI-HAYDEN LAYOUT
 
 You can use a chromatically condensed guitar tuning to create a vertical Wicki-Hayden layout. (Playing vertically means rotating the LinnStrument 90 degrees.) The range is huge, almost 8 octaves on a LinnStrument 128!
 
-\*  \*  C  D  E  *  *  *
-\*  \*  F  G  A  B  *  *
-\*  \*  C  D  E  *  *  *
-\*  \*  F  G  A  B  *  *
-\*  \*  C  D  E  *  *  *
+    *  *  C  D  E  *  *  *
+    *  *  F  G  A  B  *  *
+    *  *  C  D  E  *  *  *
+    *  *  F  G  A  B  *  *
+    *  *  C  D  E  *  *  *
 
 * *Set both the column offset and the per-split row offset to OFF*
 * *Set the EDO to 12*
@@ -406,7 +406,7 @@ BEYOND EDOS: TUNING TABLE MODE
 
 Tuning table mode is meant for non-edo tunings such as just intonation or rank-2 temperaments. Each note of an N-note scale is sharp or flat from N-edo, thus the pad's pitch will be different slid up to vs played directly. However this is often only a comma difference even on long slides. You can hide the comma by turning on Quantize Hold. Otherwise you have to bend by ear, just like on a guitar.
 
-Once an edo is selected, the LinnStrument outputs standard midi notes with tuning bends, and several edo notes will share the same midi note. But a split that's set to Tuning Table mode outputs edosteps instead. The lower left pad (or the lower right pad if the split is set to lefthanded) is midi note 0. The midi notes for the other pads increase from there according to the split's column and row offsets. Thus each edostep is a unique midi note. Certain synths need this format to play edos. But the main reason to use Tuninng Table mode is to retune each edostep individually to something else, by loading a tuning table in the form of a scala file into your synth (or running microtonal software such as alt-tuner).
+If an edo is selected, the LinnStrument outputs standard midi notes with tuning bends, and several edo notes will share the same midi note. But a split that's set to Tuning Table mode outputs edosteps instead. The lower left pad (or the lower right pad if the split is set to lefthanded) is midi note 0. The midi notes for the other pads increase from there according to the split's column and row offsets. Thus each edostep is a unique midi note. Certain synths need this format to play edos. But the main reason to use Tuninng Table mode is to retune each edostep individually to something else, by loading a tuning table in the form of a scala file into your synth (or running microtonal software such as alt-tuner).
 
 The midi note number each pad outputs is determined entirely by the column and row offsets. The edo you select in theory doesn't matter. However when the edo is set correctly, transposing works better and the note lights make more sense.
 
@@ -442,17 +442,19 @@ For the right split,
 *If the left split only uses two groups, you can use the right split with channel 16. Furthermore, you can set the split to use fewer channels and the blocks will change to match. The channels should go up from 2 or down from 15. Or if there's no Main channel, up from 1 or down from 16. If you have N channels, the 2nd block is N channels higher (or lower for the right split) than the 1st block, the 3rd block is 2xN channels higher/lower, etc. For example, with 2 groups, setting the left split to channels 2-7 (6 channels) makes the 2nd block be 8-13, leaving 3 channels available for the right split.*
 
 
-# ======= Technical notes =======
+#  Technical notes 
 
 
 KNOWN ISSUES:
 
+* Uninstalling involves first updating to a special version of microLinn (for now, fix coming soon)
 * Arpegiator is not yet microtonal
 * Strumming is not yet microtonal
 * Same/blink carry-over leaves extra lights on
 * Condensing to a scale makes the red playedSame dots appear in the wrong places
 * For edos above 41, rainbows are not ideal
 * Default scales are incomplete
+* See also the issues on the github
 
 To find all changes to the code, search for "microlinn" or "playedBlink" or "patternChain" or "control the sequencer" or "teknico"
 
@@ -468,7 +470,7 @@ This is handy, as 41 notes per octave would not otherwise fit on a single row. B
 - Sets the Custom Row Offset to 13 steps (kite tuning)
 - Sets `PLAYED` note lighting to `SAME` mode, so you can see which other pads represent the same note as you learn the kite layout (optional)
 
-# ======= Support =======
+#  Support 
 For support with the official firmware, email Roger at support@rogerlinndesign.com.
 For support for this fork, inquire at the unofficial LinnStrument discord at https://discord.com/channels/1094879990367133706/1094890657170063400.
 

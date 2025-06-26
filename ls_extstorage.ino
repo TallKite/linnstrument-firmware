@@ -2302,16 +2302,20 @@ void initMicroLinnData() {
   // but initializeMicroLinn() explicitly sets those vars as well as others that aren't zeroed out, e.g. anchorCol
   // the bug might be using sizeof(GlobalSettings) or sizeof(MicroLinnGlobal) when there's 2 bytes of padding somewhere
   // initializeMicroLinn() will overrides what things are set to here, so it must run later
-  config.settings.global.microLinn.EDO = 4; 
-  config.settings.global.microLinn.useRainbow = true;
+  config.settings.global.microLinn.drumPadMode = false; 
+  config.settings.global.microLinn.locatorCC1 = -1; 
+  //config.settings.global.microLinn.EDO = 4; 
+  //config.settings.global.microLinn.useRainbow = true;
   for (byte split = 0; split < NUMSPLITS; split++) {
     config.settings.split[split].microLinn.colOffset = 1;
     config.settings.split[split].microLinn.rowOffset = -26;
   }
 
   for (byte p = 0; p < NUMPRESETS; p++) {
-    config.preset[p].global.microLinn.EDO = 4; 
-    config.preset[p].global.microLinn.useRainbow = true;
+    config.preset[p].global.microLinn.drumPadMode = false; 
+    config.preset[p].global.microLinn.locatorCC1 = -1; 
+    //config.preset[p].global.microLinn.EDO = 4; 
+    //config.preset[p].global.microLinn.useRainbow = true;
     for (byte split = 0; split < NUMSPLITS; split++) {
       config.preset[p].split[split].microLinn.colOffset = 1;
       config.preset[p].split[split].microLinn.rowOffset = -26;

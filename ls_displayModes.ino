@@ -898,11 +898,11 @@ byte getSplitHandednessColor() {
 }
 
 byte getGuitarTuningColor() {
-  if (getMicroLinnRowOffsetColorGuitar1() == COLOR_RED) return COLOR_RED;       // red unless coprime with both column offsets
+  byte color = getMicroLinnRowOffsetColorGuitar1();
+  if (color != globalColor) return color;                 // pink if overridden, red if not coprime with either column offset
   if (isMicroLinnOn()) {
     return isMicroLinnGuitarTuningStandard() ? globalColor : globalAltColor;
   }
-  byte color = globalColor;
   if (Global.guitarTuning[0] != 30 ||
       Global.guitarTuning[1] != 35 ||
       Global.guitarTuning[2] != 40 ||
@@ -1720,15 +1720,15 @@ void paintGlobalSettingsDisplay() {
   }
 
   // set light for uninstall mode
-/**********
-#ifdef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
+/**********/
+//#ifdef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
   if (getMicroLinnUninstall() == 12) {
     lightLed(16, 4);
   } else if (getMicroLinnUninstall() != 41) {
     setLed(16, 4, COLOR_RED, cellOn);                 // warn that the data is bad
   }
-#endif
-**************/
+//#endif
+/**************
 //#ifndef DEBUG_ENABLED
   byte col = (LINNMODEL == 200 ? 17 : 16);
   byte row = (LINNMODEL == 200 ?  2 : 4);
@@ -1739,6 +1739,7 @@ void paintGlobalSettingsDisplay() {
   }
   if (LINNMODEL == 200) setLed(17, 1, COLOR_CYAN, cellOn);        // shortcut to microLinn menus
 //#endif
+**********/
 
   // clearly indicate the calibration status
   setLed(16, 3, getCalibrationColor(), cellOn);
@@ -1917,7 +1918,7 @@ void paintCustomLedsEditor() {
 
 byte getRowOffsetColor() {
   byte color = getMicroLinnRowOffsetColor(Global.customRowOffset);            // red unless coprime with both column offsets
-  if (color == COLOR_RED) return color;
+  if (color != globalColor) return color;
   byte edo = isMicroLinnOn() ? Global.microLinn.EDO : 12;
   if (Global.customRowOffset != edo) {
     return globalAltColor;

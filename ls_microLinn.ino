@@ -90,11 +90,10 @@ microLinn 72.0 to standard, uninstall on
   also happens w versions Apr 6, Apr 8, Apr 11
   microLinn is sending version 72 not 16
   works sometimes via Global.microLinn.uninstall
+  only safe way to uninstall is to updte to a special version of microLinn that forces an uninstall
 
 microLinn 72.0 to standard, uninstall off
-  "Couldn't retrieve Linnstrument's settings, interrupting firmware upgrade. Go ahead with default settings?"
-  calibration and settings are lost
-  ???
+  calibration and settings are lost, of course
 
 microLinn 72.0 to microLinn 72.0, uninstall on
   should delete the microlinn data, doesn't
@@ -248,6 +247,7 @@ qanun-style mandals: set one split to CC faders and set the 1st CC to 129 = MND 
   if one scale note is moved past another, the notes are reordered
 
 make the red dot follow a slide to the next pad? see transferFromSameRowCell()
+  It already follows if played mode is CELL
 
 add a few custom colors? user can set the rgb values themselves. use jay sullivan's code:
 https://github.com/rogerlinndesign/linnstrument-firmware/commit/5ea10702f9f98afa2af1cda266b8d4e90e5483ea
@@ -1254,9 +1254,9 @@ void initializeMicroLinn() {
   config.preset[5].split[RIGHT].midiChanMain = 16;
   config.preset[5].split[RIGHT].midiChanSet[15] = false;
   config.preset[5].global.microLinn.EDO = 41;
-  //short i = microLinnTriIndex(41, 0); 
-  //memcpy(&Global.microLinn.rainbow,   &Device.microLinn.rainbows[i],   41); 
-  //memcpy(&Global.microLinn.fretboard, &Device.microLinn.fretboards[i], 41); 
+  short i = microLinnTriIndex(41, 0); 
+  memcpy(&Global.microLinn.rainbow,   &Device.microLinn.rainbows[i],   41); 
+  memcpy(&Global.microLinn.fretboard, &Device.microLinn.fretboards[i], 41); 
   config.preset[5].global.microLinn.anchorRow = 3;                // 5th row from top, places the two rainbows nicely
   config.preset[5].global.microLinn.anchorCol = 6;
   config.preset[5].global.microLinn.anchorNote = 54;              // ^F#2, Kite guitar standard tuning with D = 0 cents
@@ -1290,9 +1290,9 @@ void initializeMicroLinn() {
   config.preset[5].split[RIGHT].midiChanMain = 16;
   config.preset[5].split[RIGHT].midiChanSet[15] = false;
   config.preset[5].global.microLinn.EDO = 31;
-  //short i = microLinnTriIndex(31, 0); 
-  //memcpy(&Global.microLinn.rainbow,   &Device.microLinn.rainbows[i],   31); 
-  //memcpy(&Global.microLinn.fretboard, &Device.microLinn.fretboards[i], 31);
+  short i = microLinnTriIndex(31, 0); 
+  memcpy(&Global.microLinn.rainbow,   &Device.microLinn.rainbows[i],   31); 
+  memcpy(&Global.microLinn.fretboard, &Device.microLinn.fretboards[i], 31);
   config.preset[5].global.activeNotes = 6;                        // partial rainbow
   config.preset[5].global.rowOffset = 3;                          // 31-equal minor 2nd
   config.preset[5].split[LEFT].microLinn.colOffset = 5;           // 31-equal major 2nd
@@ -1315,17 +1315,17 @@ void initializeMicroLinn() {
 void storeMicroLinnRainbowAndFretboard() {         // called from storeSettingsToPreset()
   byte rawEDO = Global.microLinn.EDO;
   if (rawEDO == 4) return;
-  //short i = microLinnTriIndex(rawEDO, 0);  
-  //memcpy(&Global.microLinn.rainbow,   &Device.microLinn.rainbows[i],   rawEDO);
-  //memcpy(&Global.microLinn.fretboard, &Device.microLinn.fretboards[i], rawEDO); 
+  short i = microLinnTriIndex(rawEDO, 0);  
+  memcpy(&Global.microLinn.rainbow,   &Device.microLinn.rainbows[i],   rawEDO);
+  memcpy(&Global.microLinn.fretboard, &Device.microLinn.fretboards[i], rawEDO); 
 }
 
 void loadMicroLinnRainbowAndFretboard() {          // called from loadSettingsFromPreset()
   byte rawEDO = Global.microLinn.EDO;
   if (rawEDO == 4) return;
-  //short i = microLinnTriIndex(rawEDO, 0);
-  //memcpy(&Device.microLinn.rainbows[i],   &Global.microLinn.rainbow,   rawEDO);
-  //memcpy(&Device.microLinn.fretboards[i], &Global.microLinn.fretboard, rawEDO); 
+  short i = microLinnTriIndex(rawEDO, 0);
+  memcpy(&Device.microLinn.rainbows[i],   &Global.microLinn.rainbow,   rawEDO);
+  memcpy(&Device.microLinn.fretboards[i], &Global.microLinn.fretboard, rawEDO); 
 }
 
 void microLinnSetupKitesPersonalPrefs() {       // speed up debugging cycle, delete later once things are more stable
@@ -2082,7 +2082,10 @@ void paintMicroLinnPlusMinus() {                                   // for the "8
 
 byte getMicroLinnRowOffsetColor(short rowOffset) {                            // for most Global displays
   for (byte side = 0; side < NUMSPLITS; ++side) {
-    if (Split[side].microLinn.rowOffset > -26) continue;                      // per-split offset overrides it
+    if (Split[side].microLinn.rowOffset > -26) {                              // per-split offset overrides it
+      if (side == Global.currentPerSplit) return COLOR_PINK;
+      continue;
+    }
     if (microLinnGCD(rowOffset, Split[side].microLinn.colOffset) != 1) return COLOR_RED;
   }
   return globalColor;
@@ -2090,7 +2093,10 @@ byte getMicroLinnRowOffsetColor(short rowOffset) {                            //
 
 byte getMicroLinnRowOffsetColorNoOverlap() {                                  // for Global NO OVERLAP button
   for (byte side = 0; side < NUMSPLITS; ++side) {
-    if (Split[side].microLinn.rowOffset > -26) continue;                      // per-split offset overrides it
+    if (Split[side].microLinn.rowOffset > -26) {                              // per-split offset overrides it
+      if (side == Global.currentPerSplit) return COLOR_PINK;
+      continue;      
+    }
     if (microLinnGCD(microLinnGetSplitWidth(side), Split[side].microLinn.colOffset) != 1) return COLOR_RED;
   }
   return globalColor;
@@ -2099,7 +2105,10 @@ byte getMicroLinnRowOffsetColorNoOverlap() {                                  //
 byte getMicroLinnRowOffsetColorGuitar1() {                                    // for Global GUITAR button
   short rowOffset;
   for (byte side = 0; side < NUMSPLITS; ++side) {
-    if (Split[side].microLinn.rowOffset > -26) continue;                      // per-split offset overrides it
+    if (Split[side].microLinn.rowOffset > -26) {                              // per-split offset overrides it
+      if (side == Global.currentPerSplit) return COLOR_PINK;
+      continue;      
+    }
     for (byte row = 1; row < NUMROWS; ++row) {                                // skip row 0 = DIA/CHRO flag
       if (isMicroLinnOn()) {
         rowOffset = Global.microLinn.guitarTuning[row];
@@ -2272,11 +2281,7 @@ void paintMicroLinnDebugDump() {     // delete later from here and from ls_displ
     if (sensorCol == 7)  paintNumericDataDisplay(Split[sp].colorMain, sizeof(SplitSettings), 0, true);
     if (sensorCol == 8)  paintNumericDataDisplay(Split[sp].colorMain, sizeof(MicroLinnSplit), 0, true);
     if (sensorCol == 9)  paintNumericDataDisplay(Split[sp].colorMain, sizeof(SplitSettings) - sizeof(MicroLinnSplit), 0, true);
-    if (sensorCol == 12) paintNumericDataDisplay(Split[sp].colorMain, updaterVersion, 0, false);
-    if (sensorCol == 13) paintNumericDataDisplay(Split[sp].colorMain, updaterMicroLinnVersion, 0, false);
-    if (sensorCol == 14) paintNumericDataDisplay(Split[sp].colorMain, updaterSettingsSize, 0, false);
-    if (sensorCol == 15) paintNumericDataDisplay(Split[sp].colorMain, updaterImpliedSettingsSize, 0, false);
-    if (sensorCol == 16) paintNumericDataDisplay(Split[sp].colorMain, updaterBadBatch, 0, false);
+    if (sensorCol == 11) paintNumericDataDisplay(Split[sp].colorMain, Device.microLinnUninstall, 0, false);
     if (sensorCol == 17) paintNumericDataDisplay(Split[sp].colorMain, getMicroLinnUninstall(), 0, false);
   }
 }
@@ -2328,7 +2333,7 @@ void microLinnScrollSmall (String text) {
 
 void microLinnPaintConfigButtons() {
   for (byte col = 2; col <= 16; col += 2) {                              // skip over odd columns
-    byte color = (col <= 8 ? COLOR_GREEN : COLOR_YELLOW);
+    byte color = (col <= 8 ? COLOR_GREEN : COLOR_LIME);
     if (col == microLinnConfigColNum) color = COLOR_CYAN;
     setLed(col, 0, color, cellOn);
   }
@@ -2365,10 +2370,7 @@ void paintMicroLinnConfig() {
 }
 
 boolean microLinnIsConfigButton() {
-  if (sensorRow > 0) return false;
-  if (sensorCol < 2 || sensorCol > 16) return false;
-  if (sensorCol % 2 == 1) return false;
-  return true;
+  return (sensorRow == 0 && sensorCol <= 16 && sensorCol % 2 == 0);
 }
 
 // called from handleNonPlayingTouch() in ls_handleTouches.ino
@@ -2642,8 +2644,8 @@ void microLinnHandlePerSplitSettingsRelease() {                                /
 
 void microLinnPaintGlobalSettingsButtons() {
   for (byte row = 3; row <= 7; ++row) {
-    byte color = (row == microLinnGlobalSettingsRowNum ? COLOR_CYAN : COLOR_GREEN);
-    if (row == 6 || row == 5) color = COLOR_LIME;
+    byte color = (row == 6 || row == 5) ? COLOR_LIME : COLOR_GREEN;
+    if (row == microLinnGlobalSettingsRowNum) color = COLOR_CYAN;
     setLed(1, row, color, cellOn);
   }
 }
@@ -2668,20 +2670,20 @@ void microLinnPaintGlobalSettings() {
       break;
     case 6:
       if (Global.microLinn.locatorCC1 == -1) {
-        smallfont_draw_string(2, 1, "OFF", globalColor, false);
+        smallfont_draw_string(2, 1, "NONE", globalColor, false);
       } else {
         paintNumericDataDisplay(globalColor, Global.microLinn.locatorCC1, 1, false);
       }
       break;
     case 5:
       if (Global.microLinn.locatorCC2 == -1) {
-        smallfont_draw_string(2, 1, "OFF", globalColor, false);
+        smallfont_draw_string(2, 1, "NONE", globalColor, false);
       } else {
         paintNumericDataDisplay(globalColor, Global.microLinn.locatorCC2, 1, false);
       }
       break;
     case 4:
-      smallfont_draw_string(2, 1, microLinnImportingOn ? "ON" : "OFF", globalColor, false);
+      smallfont_draw_string(2, 1, microLinnImportingOn ? "YES" : "NO", globalColor, false);
       break;
     case 3:
       smallfont_draw_string(2, 1, Global.microLinn.teknico ? "ON" : "OFF", globalColor, false);
@@ -3078,8 +3080,8 @@ void microLinnSetUpRechannelling(byte side) {
 
 void microLinnPaintGlobalXenSettingsButtons() {
   for (byte row = 3; row <= 7; ++row) {        // change 3 to 1 for sweetening and fine tuning
-    byte color = (row == microLinnGlobalXenSettingsRowNum ? COLOR_CYAN : COLOR_GREEN);
-    if (row == 4 || row == 3 || row == 1) color = COLOR_LIME;
+    byte color = (row == 4 || row == 3 || row == 1) ? COLOR_LIME : COLOR_GREEN;
+    if (row == microLinnGlobalXenSettingsRowNum) color = COLOR_CYAN;
     setLed(1, row, color, cellOn);
   }
 }
