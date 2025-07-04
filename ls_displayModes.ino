@@ -530,7 +530,7 @@ void paintNormalDisplayCell(byte split, byte col, byte row) {
   if (userFirmwareActive) return;
 
   boolean isLowRow = (row == 0 && Split[split].lowRowMode != lowRowNormal);
-  if (isMicroLinnDrumPadMode() && !isLowRow) {
+  if (Global.microLinn.drumPadMode && !isLowRow) {
     byte padNum = floor((col - 2) / 3) + floor((row - 1) / 3);     // 3x3 mega-pads
     byte colour = (padNum % 2 == 0 ? Split[split].colorMain : Split[split].colorAccent);
     if (col == 1 || col > 22 || row == 0 || row == 7) colour = COLOR_BLACK;
@@ -1737,9 +1737,9 @@ void paintGlobalSettingsDisplay() {
   } else if (getMicroLinnUninstall() != 41) {
     setLed(col, row, COLOR_RED, cellOn);              // warn that the data is bad
   }
-  if (LINNMODEL == 200) setLed(17, 1, COLOR_CYAN, cellOn);        // shortcut to microLinn menus
 //#endif
 **********/
+  if (LINNMODEL == 200) setLed(17, 1, COLOR_CYAN, cellOn);        // shortcut to microLinn menus
 
   // clearly indicate the calibration status
   setLed(16, 3, getCalibrationColor(), cellOn);

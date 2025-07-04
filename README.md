@@ -233,7 +233,7 @@ IMPORTING/EXPORTING
 
 You can back up various settings and/or share them with others via midi files. The 3 custom light patterns, the 16 audience messages, the 6 memories, microtonal data, and more! Check the LinnStrument Community Wiki for export-request files and importable settings files.
 
-*Details: Importing: Download a settings file from the wiki. On your LinnStrument, set Allow Importing to ON. In your DAW, set the output of midi track A to your LinnStrument. Load the settings file into track A and press play. Your LinnStrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #8 below.*
+*Details: Importing: Download a settings file from the wiki. On your LinnStrument, set Allow Importing to ON. In your DAW, set the output of midi track A to your LinnStrument. Load the settings file into track A and press play. Your LinnStrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #9 below.*
 
 *To import a custom light pattern, before you press play, you must first display the one you want to overwrite. To import an audience message, before you press play, you must first load for editing the one you want to overwrite. (You needn't actually edit it.)*
 
@@ -247,11 +247,12 @@ You can back up various settings and/or share them with others via midi files. T
 * *(1) While importing or exporting, don't play your LinnStrument.*
 * *(2) To import, in your DAW, your LinnStrument must be enabled as a midi output device (not just input).*
 * *(3) Your DAW must be able to handle a midi file that uses multiple midi channels.*
-* *(4) When importing, first exit all web browsers in case a webmidi page sends rouge NRPN or polypressure messages.*
-* *(5) When importing, slowing down your DAW's playback speed sometimes helps. Likewise, when exporting, speeding up your DAW's recording speed can help.*
-* *(6) The All User Settings export is meant for migrating from an old LinnStrument to a new one. It will only work if the OS version on the old one matches the OS version on the new one (or more precisely, if the data structure versions match).*
-* *(7) If you get "IMPORT FAILURE" followed by 2 numbers, the 2nd number says which midi message in the import file caused the failure. For example, 7 means the 7th midi message.*
-* *(8) MicroLinn imports data via polyphonic pressure messages. If you have connected something else to your LinnStrument that also sends polypressure messages, there is a small possibility of confusion. If after an import there is no sucess or failure scrolling message, to avoid confusion either set Allow Importing to OFF, or disconnect the LinnStrument's power and reconnect it.*
+* *(4) For security, unplugging the LinnStrument turns Allow Importing off, so you must turn it on each time you import.*
+* *(5) When importing, first exit all web browsers in case a webmidi page sends rouge NRPN or polypressure messages.*
+* *(6) When importing, slowing down your DAW's playback speed sometimes helps. Likewise, when exporting, speeding up your DAW's recording speed can help.*
+* *(7) The All User Settings export is meant for migrating from an old LinnStrument to a new one. It will only work if the OS version on the old one matches the OS version on the new one (or more precisely, if the data structure versions match).*
+* *(8) If you get "IMPORT FAILURE" followed by 2 numbers, the 2nd number says which midi message in the import file caused the failure. For example, 7 means the 7th midi message.*
+* *(9) MicroLinn imports data via polyphonic pressure messages. If you have connected something else to your LinnStrument that also sends polypressure messages, there is a small possibility of confusion. If after an import there is no sucess or failure scrolling message, to avoid confusion either set Allow Importing to OFF, or just unplug the LinnStrument.*
 
 *The 16 sequencer projects can be imported and exported as usual via the updater app as *.lpr files. When you export, the filename of microtonal projects should probably contain the edo, since it won't sound right in the wrong edo. The AllUserSettings export does not export the current sequencer project, so to export it save it as one of the 16 projects.*
 

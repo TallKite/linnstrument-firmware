@@ -2325,7 +2325,7 @@ void initMicroLinnData() {
   config.device.microLinn.MLversion = 1;
 }
 
-void copyConfigurationVLatest(void* target, void* source) {            // copies from V16 to microLinn 72.n
+void copyConfigurationVLatest(void* target, void* source) {            // copies from V16 to microLinn 72.1
   Configuration* t = (Configuration*)target;
   ConfigurationVLatest* s = (ConfigurationVLatest*) source;
 
@@ -2334,6 +2334,16 @@ void copyConfigurationVLatest(void* target, void* source) {            // copies
 
   memcpy(&t->settings.global, &s->settings.global, sizeof(s->settings.global));
   if (t->settings.global.customRowOffset == -17) t->settings.global.customRowOffset = -5;   // the "-GUI" option
+
+  // condense both arrays of ints down to shorts
+  //short* array = (short *) &Global.mainNotes;                   // configure both old arrays as a simple array of bytes
+  //for (byte i = 0; i < 9; i++) {
+  //  Global.mainNotes[i] = array[2*i];
+  //}
+  //for (byte i = 0; i < 9; i++) {
+  //  Global.accentNotes[i] = array[2*i + 18];
+  //}
+  //memset (array[18], 0, 60);
 
   for (int split = 0; split < NUMSPLITS; split++) {
     memcpy(&t->settings.split[split], &s->settings.split[split], sizeof(s->settings.split[split]));
@@ -2376,7 +2386,7 @@ void migrateFromMicroLinnGlobalV72_0 (MicroLinnGlobal* t, void* source) {
   t->equaveStretch = s->octaveStretch;    // octaveStretch was renamed
   t->sweeten = s->sweeten;
   t->largeEDO = 0;
-  memset(t->largeEDOoffset, 0, sizeof(t->largeEDOoffset));
+//memset(t->largeEDOoffset, 0, sizeof(t->largeEDOoffset));   uncomment later
   for (byte row = 0; row < MAXROWS; row++) {
     t->guitarTuning[row] = s->guitarTuning[row];
   }

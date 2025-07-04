@@ -812,7 +812,7 @@ struct MicroLinnGlobal {
   byte rainbow[MICROLINN_MAX_EDO];           // one row of Device.microLinn.rainbows, used only when loading/saving presets and rawEDO isn't 4
   byte fretboard[MICROLINN_MAX_EDO];         // ditto for Device.microLinn.fretboards
   boolean useRainbow;                        // if false, instead of the 9 colors, use only colorMain, and colorAccent for the tonic
-  byte anchorCol;                            // ranges 1-25, setting to a number > 16 on a Linnstrument 128 is allowed
+  byte anchorCol;                            // ranges 1-25, setting to a number > 16 on a Linnstrument 128 can happen if a preset from a 200 is loaded
   byte anchorRow;                            // top row is 7, bottom row is 0, but the user sees top row as 1, bottom row as 8
   byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
   signed char anchorCents;                   // ranges -60 to +60 cents, even though 50 would do, for convenience
@@ -820,7 +820,7 @@ struct MicroLinnGlobal {
   signed char equaveStretch;                 // cents, -60..+60
   byte sweeten;                              // in tenths of a cent, 0..60, adjust 41edo 5/4, 5/3 by this amount both top and bottom to make it closer to just
   byte largeEDO;                             // ranges 0..53, 0 = OFF, 1..52 = various edos, 53 = 1200edo = JI, user can have a 55-note subset of this edo 
-  signed char largeEDOoffset[MICROLINN_MAX_EDO];  // ranges -128..127, edosteps from nearest large-edo approximation
+//signed char largeEDOoffset[MICROLINN_MAX_EDO];  // ranges -128..127, edosteps from nearest large-edo approximation
   short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, can be negative, [0] is DIA/CHRO, independent of Global.guitarTuning
   boolean teknico;                           // use KVR forum member teknico's channel pressure fix
   byte reserved1;                            // reserved for future use, 1 byte per empty menu row
@@ -1167,7 +1167,7 @@ short guitarTuningPreviewChannel = -1;              // active channel that is pr
 byte customLedColor = COLOR_GREEN;                  // color is used for drawing in the custom LED editor
 
 // these vars report on the user settings the current firmware received from the updater app, for troubleshooting
-// part of the microLinn fork, display them by tapping row 7 cols 12-16 on the Global Settings screen
+// part of the microLinn fork, display them by tapping row 7 cols 17-21 on the Global Settings screen
 // these are lost upon power down, so they must be examined immediately after updating
 // -2 means a power down has already happened, so no valid data to display
 signed char updaterVersion = -2;                    // the 2 version numbers contained in the incoming settings

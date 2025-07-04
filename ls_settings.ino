@@ -3001,6 +3001,28 @@ void handleGlobalSettingNewTouch() {
           break;
       }
       break;
+
+    // display diagnostics for what settings the current firmware got from the updater app, part of the microLinn fork
+    case 17: 
+      if (sensorRow == 7 && updaterVersion > -2) 
+        paintNumericDataDisplay(COLOR_GREEN, updaterVersion, 0, false);
+      break;
+    case 18:
+      if (sensorRow == 7 && updaterMicroLinnVersion > -2) 
+        paintNumericDataDisplay(COLOR_GREEN, updaterMicroLinnVersion, 0, false);
+      break;
+    case 19:
+      if (sensorRow == 7 && updaterSettingsSize > -2) 
+        paintNumericDataDisplay(COLOR_GREEN, updaterSettingsSize, 0, false);
+      break;
+    case 20:
+      if (sensorRow == 7 && updaterImpliedSettingsSize > -2) 
+        paintNumericDataDisplay(COLOR_GREEN, updaterImpliedSettingsSize, 0, false);
+      break;
+    case 21:
+      if (sensorRow == 7 && updaterBadBatch > -2) 
+        paintNumericDataDisplay(COLOR_GREEN, updaterBadBatch, 0, false);
+      break;      
   }
 
   if (sensorRow == 7 && sensorCol <= 16) {
@@ -3207,18 +3229,7 @@ void handleGlobalSettingRelease() {
     if (calcTimeDelta(micros(), tempoChangeTime) >= 1000000) {
       if (sensorCol <= 16 && ensureCellBeforeHoldWait(COLOR_BLACK, cellOff)) {
         clearDisplay();
-        // display diagnostics for what settings the current firmware got from the updater app, part of the microLinn fork
-        if (sensorCol == 12 && updaterVersion > -2) {
-          paintNumericDataDisplay(COLOR_GREEN, updaterVersion, 0, false);
-        } else if (sensorCol == 13 && updaterMicroLinnVersion > -2) {
-          paintNumericDataDisplay(COLOR_GREEN, updaterMicroLinnVersion, 0, false);
-        } else if (sensorCol == 14 && updaterSettingsSize > -2) {
-          paintNumericDataDisplay(COLOR_GREEN, updaterSettingsSize, 0, false);
-        } else if (sensorCol == 15 && updaterImpliedSettingsSize > -2) {
-          paintNumericDataDisplay(COLOR_GREEN, updaterImpliedSettingsSize, 0, false);
-        } else if (sensorCol == 16 && updaterBadBatch > -2) {
-          paintNumericDataDisplay(COLOR_GREEN, updaterBadBatch, 0, false);
-        } else big_scroll_text_flipped(Device.audienceMessages[sensorCol - 1], Split[LEFT].colorMain);        
+        big_scroll_text_flipped(Device.audienceMessages[sensorCol - 1], Split[LEFT].colorMain);        
       }
       else if (sensorCol == 25) {
         Device.sleepActive = true;
