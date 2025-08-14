@@ -1322,7 +1322,8 @@ void paintRowOffset() {
     condfont_draw_string(0, 0, "-GUI", getMicroLinnGUIcolor(), false);
   }
   else {
-    byte color = getMicroLinnRowOffsetColor(Global.customRowOffset);              // red unless coprime with both column offsets
+    // pink if overridden by current split's row offset, else red unless coprime with both column offsets
+    byte color = getMicroLinnRowOffsetColor(Global.customRowOffset);
     paintNumericDataDisplay(color, Global.customRowOffset, 0, false);
   }
 }
@@ -1775,8 +1776,9 @@ void paintGlobalSettingsDisplay() {
     }
 
     switch (Global.rowOffset) {
+      // pink if overridden by current split's row offset, else red unless coprime with both column offsets
       case ROWOFFSET_NOOVERLAP: // no overlap
-        setLed(5, 3, getMicroLinnRowOffsetColorNoOverlap(), cellOn);          // red unless coprime with both column offsets
+        setLed(5, 3, getMicroLinnRowOffsetColorNoOverlap(), cellOn);
         break;
       case 3:        // +3
         setLed(5, 0, getMicroLinnRowOffsetColor(3), cellOn);
@@ -1799,9 +1801,10 @@ void paintGlobalSettingsDisplay() {
       case ROWOFFSET_GUITAR:            // guitar tuning
         setLed(6, 3, getGuitarTuningColor(), cellOn);
         break;
-      case ROWOFFSET_ZERO:
-        if (getMicroLinnRowOffsetColor(0) == COLOR_RED) {
-          setLed(5, 4, COLOR_RED, cellOn);                                // indicate problem in the 5th row, no better option
+      case ROWOFFSET_ZERO: {
+          // indicate overridden or coprime in the 5th row, no better option
+          byte color = getMicroLinnRowOffsetColor(0);
+          if (color != globalColor) setLed(5, 4, color, cellOn);
         }
         break;
     }
@@ -1917,7 +1920,8 @@ void paintCustomLedsEditor() {
 }
 
 byte getRowOffsetColor() {
-  byte color = getMicroLinnRowOffsetColor(Global.customRowOffset);            // red unless coprime with both column offsets
+  // pink if overridden by current split's row offset, else red unless coprime with both column offsets
+  byte color = getMicroLinnRowOffsetColor(Global.customRowOffset);
   if (color != globalColor) return color;
   byte edo = isMicroLinnOn() ? Global.microLinn.EDO : 12;
   if (Global.customRowOffset != edo) {

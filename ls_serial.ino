@@ -216,9 +216,9 @@ void serialSendSettings() {
   const uint8_t batchsize = 96;
   byte* src = (byte*)&config;
 
-  Device.microLinnUninstall = getMicroLinnUninstall();       // for debugging, delete later
-  Device.audienceMessages[0][0] = '0' + (Device.microLinnUninstall / 10);
-  Device.audienceMessages[0][1] = '0' + (Device.microLinnUninstall % 10);
+  byte uninstall = getMicroLinnUninstall();       // for debugging, delete later
+  Device.audienceMessages[0][0] = '0' + (uninstall / 10);
+  Device.audienceMessages[0][1] = '0' + (uninstall % 10);
 
   // if the user is reverting to the mainline firmware, we need to send the updater a version
   // of the configuration that's compatible with mainline

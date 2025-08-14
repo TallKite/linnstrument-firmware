@@ -27,13 +27,13 @@ If you accidentally long-press the Update OS button, the display will go blank. 
 #  UPDATING / UNINSTALLING  
 
 
-IMPORTANT: Updating to a newer version of microLinn is done normally. Put the new .bin file next to the updater app, etc. But if you want to go back to an official (non-microtonal) version of the firmware, there's an extra step. Just before you run the updater, on the Global Settings screen, tap the pad to the right of the "Update OS" pad (17th column, 3rd row from the bottom) so that it turns dark blue. If on a LinnStrument 128, tap the pad just above the calibration pad (16th column, 5th row). This tells your LinnStrument to *uninstall* microLinn. This deletes all your microtonal data, necessary in order to avoid deleting your calibration data and all your user settings. Don't uninstall when updating to a newer version of microLinn, because you'll delete your microtonal data needlessly.
+IMPORTANT: Updating to a newer version of microLinn is done normally. Put the new .bin file next to the updater app, etc. But if you want to go back to an official (non-microtonal) version of the firmware, there's an extra step. Just before you run the updater, on the Global Settings screen, tap the pad to the right of the "Update OS" pad (17th column, 3rd row from the bottom) so that it turns dark blue. If on a LinnStrument 128, tap the pad just above the calibration pad (16th column, 5th row). This tells your LinnStrument to *uninstall* microLinn. This deletes all your microtonal data, necessary in order to avoid deleting your calibration data and all your user settings. Don't uninstall when updating to a newer version of microLinn, because you'll delete your microtonal data needlessly. (Uninstalling is currently broken, contact us for a workaround.)
 
 
 #  MAIN MENU  
 
 
-To go to the main microLinn menu, on the Global Settings screen, long-press the lower left pad (VIEW MAIN). Once the edo (notes per octave) is set to anything other than OFF, VIEW MAIN turns light blue and you can short-press it. On a LinnStrument 200, you can also tap the green button in column 17.
+To go to the main microLinn menu, on the Global Settings screen, long-press the lower left pad (VIEW MAIN). Once the edo (notes per octave) is set to anything other than OFF, VIEW MAIN turns light blue and you can simply tap it. On a LinnStrument 200, you can also tap the green button in column 17.
 
 Main menu, *LONG-PRESS EACH BUTTON* to see its function
 
@@ -59,6 +59,8 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
     row 3) Locator CC #2 (OFF, 0 to 119)
   
     row 4) Allow Importing (OFF, ON)
+
+    row 3) Channel Pressure Fix (OFF, ON)
 
 
   col 10) EDO (notes per octave) (OFF, 5 to 55)
@@ -117,7 +119,9 @@ You can set both column offsets at once by linking them. In the upper right ther
 
 *Details: Beware, if the column offset is 2 and the row offset is an even number, you lose half the notes and only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors. If they do, both the row offset and the column offset will be displayed in red.*
 
-*Playing melodies with pitch bending can be tricky. A 1mm slide normally bends the pitch about 6¢. But an offset of +2 makes it 12¢, +3 makes it 18¢, etc. Thus to play in tune with a large column offset you may need both Pitch/X Quantize and Pitch/X Quantize Hold to be on. But if your column offset is +2, setting Quantize on and Quantize Hold off lets you play the skipped notes fairly accurately by sliding into the gap between pads. In fact, you can play 24edo quartertones on a normal 12edo LinnStrument fairly easily this way.*
+*Playing melodies with pitch bending can be tricky. A 1mm slide normally bends the pitch about 6¢. But an offset of +2 makes it 12¢, +3 makes it 18¢, etc. Thus to play in tune with a large column offset you may need both Pitch/X Quantize and Pitch/X Quantize Hold to be on. (But if your column offset is +2, setting Quantize on and Quantize Hold off lets you play the skipped notes fairly accurately by sliding into the gap between pads. In fact, you can play 24edo quartertones on a normal 12edo LinnStrument fairly easily this way.)*
+
+*You can also use mismatched bend ranges. For example, set your LinnStrument to 24 semitones and your synth to 12 semitones. Now sliding by 1 pad bends by 1 semitone, as usual. Bends are easier to control, but when you slide up to a note and then play it again without sliding, the bent pitch won't match the unbent pitch. So this method works best when only small bends are used.*
 
 PER-SPLIT ROW OFFSETS
 
@@ -145,14 +149,12 @@ There's a school of thought that says there's only 12 notes, it's not that hard 
 
 CHANNEL PRESSURE FIX
 
-The LinnStrument normally resets pressure data at note on/off, and only sends pressure data for the most recent pad held. For non-MPE synths (or any synth played in "One Chan" or "ChPerRow" mode), releasing a note causes an abrupt jump in z-values from 0 to the value of whatever prior pad is held. Y-values behave similarly. MicroLinn includes a fix by KVR forum member teknico that solves the problem.  
+The LinnStrument normally resets pressure data at note on/off, and only sends pressure data for the most recent pad held. For non-MPE synths (or any synth played in "One Chan" or "ChPerRow" mode), releasing a note causes an abrupt jump in z-values from 0 to the value of whatever prior pad is held. Y-values behave similarly. MicroLinn includes a fix by KVR forum member teknico that solves the problem. Accessed through the microLinn menu.
 
 *Details: The output of both Y (timbre) and Z (loudness) when not using Polyphonic Aftertouch is thus changed:*
 * *Zero-value messages before note-on and note-off are only sent for the first simultaneous note on the same channel*
 * *Only the maximum value of all simultaneous notes on the same channel is sent*
 *This allows smoother playing in One Channel and Channel Per Row modes and better compatibility with non-MPE synths, while not impacting Channel per Note (MPE) mode (except in the rare case of more that one note on the same channel). See https://www.kvraudio.com/forum/viewtopic.php?t=591770*
-
-*This fix is permanently enabled. This is a rare instance of microLinn changing the behavior of the LinnStrument, as opposed to adding a new feature. If anyone prefers the old behavior, let us know, and we can make the new behavior optional.*
 
 OCTAVE TOGGLE, QUANTIZE TOGGLE
 
@@ -221,9 +223,11 @@ Normally, tapping the Low Power button (Global Settings column 15) dims the disp
 
 LOCATOR CCs
 
-A locator CC message can be sent immediately before every note-on, indicating the row and column. Your DAW can assign a specific function to a specific pad, e.g. upper lefthand corner = all sound off. Or use this feature plus a custom light pattern to create large drum pads for more easily playing drum midi. Or create a third split, perhaps a column of on/off buttons, or a vertical fader or two, or even a horizontal split. Accessed through the microLinn menu. 
+A locator CC message can be sent immediately before every note-on, indicating the row and column. Your DAW can assign a specific function to a specific pad, e.g. upper lefthand corner = all sound off. Or use this feature plus a custom light pattern to create large drum pads for more easily playing drum midi. Or create a third split, perhaps a column of on/off buttons, or a vertical fader or two, or even a horizontal split. Accessed through the microLinn menu.
 
-*Details: One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. For cols 1-16, the data value = (row - 1) + 8 * (col - 1). For cols 17-25, the data value = (row - 1) + 8 * (col - 17). A LinnStrument 128 will never send the 2nd type. The top row is row 1 and the leftmost column is column 1. Don't choose a CC that might be used for other purposes, such as CC 74 for timbre or CC 64 for sustain.*
+On an actual guitar, middle-C played on the 2nd string 1st fret sounds very different when played on the 6th string 20th fret. Many guitar VSTis allow you to set the playing position (higher or lower on the fretboard) through keyswitches. Depending on your VSTi, it may be possible for code on your laptop to translate a locator CC to such a keyswitch and thus directly map the Linnstrument's columns to the virtual guitar's frets, making the guitar sound much more realistic. (It may also be possible to do this without locator CCs simply by using Channel Per Row mode.)
+
+*Details: One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. (A LinnStrument 128 will never send the 2nd type.) For cols 1-16, the data value = (row - 1) + 8 * (col - 1). For cols 17-25, the data value = (row - 1) + 8 * (col - 17). Row 1 is the top row and column 1 is the leftmost column. Don't choose a CC that might be used for other purposes, such as CC 74 for timbre or CC 64 for sustain.*
 
 *Locator CCs are mainly for Channel Per Note mode. There's not much point in using them in Channel Per Row mode, since the channel serves to locate the note. In One Channel mode the CC can locate a note-on but if the same note is played twice on two separate pads, it can't locate the XYZ data.*
 
@@ -250,7 +254,7 @@ You can back up various settings and/or share them with others via midi files. T
 * *(4) For security, unplugging the LinnStrument turns Allow Importing off, so you must turn it on each time you import.*
 * *(5) When importing, first exit all web browsers in case a webmidi page sends rouge NRPN or polypressure messages.*
 * *(6) When importing, slowing down your DAW's playback speed sometimes helps. Likewise, when exporting, speeding up your DAW's recording speed can help.*
-* *(7) The All User Settings export is meant for migrating from an old LinnStrument to a new one. It will only work if the OS version on the old one matches the OS version on the new one (or more precisely, if the data structure versions match).*
+* *(7) The All User Settings export is meant for migrating from an old LinnStrument to a new one. It will only import if the OS version on the old one matches the OS version on the new one (or more precisely, if the data structure versions match).*
 * *(8) If you get "IMPORT FAILURE" followed by 2 numbers, the 2nd number says which midi message in the import file caused the failure. For example, 7 means the 7th midi message.*
 * *(9) MicroLinn imports data via polyphonic pressure messages. If you have connected something else to your LinnStrument that also sends polypressure messages, there is a small possibility of confusion. If after an import there is no sucess or failure scrolling message, to avoid confusion either set Allow Importing to OFF, or just unplug the LinnStrument.*
 
@@ -283,7 +287,9 @@ Import request files available on the LinnStrument Community Wiki:
 
 EDOS
 
-The edo (stands for Equal Division of an Octave, the notes per octave) ranges from 5edo to 55edo, plus "OFF" which makes the LinnStrument run normally. Change the edo by swiping sideways. You don't need to do anything to your synth to make it microtonal because all the microtonal fine-tuning tuning is done via pitch bends. 
+The edo (stands for Equal Division of an Octave, the notes per octave) ranges from 5edo to 55edo, plus "OFF" which makes the LinnStrument run normally. Change the edo by swiping sideways. You don't need to do anything to your synth to make it microtonal because all the microtonal fine-tuning is done via pitch bends. True "plug-and-play" microtonality!
+
+*Details: When PITCH/X is off, the LinnStrument outputs standard midi notes with "tuning bends". For example, in 24edo notes have either a 0¢ bend or a 50¢ bend. When PITCH/X is on, any "played bends" are automatically added on to the tuning bend. As always, large bend ranges create a slight inaccuracy. A bend range of 96 semitones rounds all bends to the nearest 9600/8192 = 1.17¢.*
 
 Once microLinn is on (i.e. once an edo is chosen), you can cycle thru the edos by setting a switch or footswitch to EDO+ or EDO- (long-press TAP TEMPO and swipe). Changing the edo automatically adjusts all row offsets so that their size in cents stays roughly the same. So your fourths tuning will remain fourths, your fifths tuning will remain fifths, and your standard guitar tuning will remain standard. If either column offset is not OFF, it will get adjusted as well. Furthermore you can set the default layout for either split to be Bosanquet etc. and your layout will become (and remain) Bosanquet. 
 
@@ -456,6 +462,8 @@ KNOWN ISSUES:
 * For edos above 41, rainbows are not ideal
 * Default scales are incomplete
 * See also the issues on the github
+
+NOTES:
 
 To find all changes to the code, search for "microlinn" or "playedBlink" or "patternChain" or "control the sequencer" or "teknico"
 

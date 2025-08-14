@@ -90,7 +90,7 @@ microLinn 72.1 to standard, uninstall on
   also happens w 72.0 versions Apr 6, Apr 8, Apr 11
   microLinn is sending version 72 not 16
   works sometimes via Global.microLinn.uninstall
-  only safe way to uninstall is to updte to a special version of microLinn that forces an uninstall
+  only safe way to uninstall is to update to a special version of microLinn that forces an uninstall
 
 microLinn 72.1 to standard, uninstall off
   calibration and settings are lost, of course
@@ -179,6 +179,10 @@ fix microLinnCalcHammerOnEdosteps(), include equave semitones & cents
 
 ask on the forum about the unplugging bug for NRPN send/receive
 
+change per-split row offset GUI to: OFF, NOVR, 0, 1, 2... 25, swipe down/up on 1-25 to make it - or +
+
+make runtime var isLinn200 = (LINNMODEL == 200), set to false for testing 128 output on my 200
+
 pack the rainbows array, 2 colors per byte = 765 bytes savings, but makes it much harder to edit
 maybe don't pack the constant array?
 
@@ -199,10 +203,13 @@ void microLinnSetRainbowColor(byte edo, byte edostep, byte color) {
   }
 }
 
+"This fix is permanently enabled. This is a rare instance of microLinn changing the behavior of the LinnStrument, as 
+opposed to adding a new feature. If anyone prefers the old behavior, let us know, and we can make the new behavior optional."
+
 test if changing splits always triggers a calctuning call, if so, just calc the displayed split(s)
 
 41edo in mono mode, play 2 pads that output the same midi note, note-on note-on note-off ends both notes
-  hammer-ons might fix this
+  hammer-ons will fix this, if it's set to no new noteon
 
 test new switch function 8VE± with transposing, also make it and toggle_quantize not latch on a long press
 
@@ -279,6 +286,8 @@ hammerons/pulloffs screen, select for each split,
   a window of so many cents, 0 = off
   a window of so many tens of milliseconds? inside this window both notes sound, outside only 1 sounds
   option to send or not send a new noteon when hammering or pulling off? (guitar = yes, wind instrument = no)
+  if new noteOn, send the noteOn on the same channel (same as the current strumming behavior)
+  if no new noteOn, send a big pitch bend instead (solves the 41edo mono trill issue)
   pulloffs: old note's velocity = the new note's velocity or the original old velocity? (pull-off vs lift-off)
   byte pullOffVelocity; 0 = 2nd note's noteOff velocity, 1 = 1st noteOn veloc, 2 = 2nd noteOn veloc, 3 = average them
   see handleStrummedRowChange(), handleStrummedOpenRow()
@@ -390,6 +399,11 @@ POSSIBLE MEMORY USAGE AND SPEED OPTIMIZATIONS
 
 reduce Global.mainNotes and Global.accentNotes from [12] to [9] and change from int to short? 
   96 bytes becomes 36 bytes, saves 420 bytes with 6 presets, 840 bytes if 12 presets
+Device struct, cut 8 audience messages saves 248 bytes
+MicroLinnDevice, pack the rainbows array to 4-bit values saves 765 bytes
+Split struct, pack midiChanSet[16] saves 14 bytes, replace all shorts w bytes saves 23 bytes, total is 2 * 37 = 74 bytes
+Global struct, pack mainNotes and accentNotes saves 60 bytes, change shorts to bytes saves 19 bytes, total = 79 bytes
+MicroLinnGlobal, pack rainbow, saves 27 bytes
 
 implement color and scale tables, to speed up cell painting? gets calced in calcTuning()
   byte microLinnColor[NUMSPLITS][MAXCOLS][MAXROWS];              // high 4 bits: the color of each cell, low 4 bits = the CellDisplay (on, off, pulse, etc.)
@@ -2274,7 +2288,7 @@ void paintMicroLinnDebugDump() {     // delete later from here and from ls_displ
     if (sensorCol == 7)  paintNumericDataDisplay(Split[sp].colorMain, sizeof(SplitSettings), 0, true);
     if (sensorCol == 8)  paintNumericDataDisplay(Split[sp].colorMain, sizeof(MicroLinnSplit), 0, true);
     if (sensorCol == 9)  paintNumericDataDisplay(Split[sp].colorMain, sizeof(SplitSettings) - sizeof(MicroLinnSplit), 0, true);
-    if (sensorCol == 11) paintNumericDataDisplay(Split[sp].colorMain, Device.microLinnUninstall, 0, false);
+    if (sensorCol == 11) paintNumericDataDisplay(Split[sp].colorMain, microLinnUninstall, 0, false);
     if (sensorCol == 17) paintNumericDataDisplay(Split[sp].colorMain, getMicroLinnUninstall(), 0, false);
   }
 }
@@ -3471,7 +3485,7 @@ void receivedMicroLinnNrpn(int parameter, int value) {
     case 1005: if (inRange(value, 0, 1))   Split[side].microLinn.hammerOnNewNoteOn = (value == 1); break;
     case 1006: if (inRange(value, 0, 3))   Split[side].microLinn.pullOffVelocity = value; break;
     case 1050: if (inRange(value, 0, 55))  Split[side].microLinn.condensedBendPerPad = value; break;
-    case 1051:  if (inRange(value, 0,10))  Split[side].microLinn.defaultLayout = value; break;
+    case 1051: if (inRange(value, 0, 10))  Split[side].microLinn.defaultLayout = value; break;
     case 1052: if (inRange(value, 0, 2))   Split[side].microLinn.tuningTable = value; break;
     case 1053: if (inRange(value, 0, 14))  Split[side].microLinn.transposeEDOsteps = value - 7; break;
     case 1054: if (inRange(value, 0, 14))  Split[side].microLinn.transposeEDOlights = value - 7; break;
