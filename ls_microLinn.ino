@@ -165,6 +165,12 @@ uninstalling is broken :(
 
 add Global.microLinn.teknico to import/export code and updating code, or else make it permanently on
 
+write a new function, isLinn200(), use for string output, makes it easy to test all linn128 strings on a 200
+write an alternate version of microLinnDrawString(), takes 2 strings, one for linn200, one for linn128
+for default layouts, for linn 128, change BSQ2 to BS2
+
+increase MICROLINN_MAX_COL_OFFSET to 10 at least (M2 of 54edo)
+
 does preset advance send note-offs?
 
 color-code the menu buttons? makes them more memorable
@@ -1194,7 +1200,8 @@ FocusCell microLinnFIndEdostep(byte side, short edostep) {
 /************** initialization functions ************************/
 
 void initializeMicroLinn() {
-  // called in reset(), runs when microLinn firmware is first installed or when the user does a global reset 
+  // called in reset(), runs when microLinn firmware is first installed or when the user does a global reset
+  microLinnImportingOn = false;
   //Device.microLinnUninstall = 41;     // 41 = don't uninstall
   Device.microLinn.MLversion = 1;     // the 1 in 72.1
   memcpy (&Device.microLinn.scales,   &MICROLINN_SCALES,   MICROLINN_ARRAY_SIZE);

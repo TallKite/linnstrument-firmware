@@ -1,7 +1,7 @@
 #  MICROLINN 
 
 Unfinished, still a few more features to add, plus a few features don't quite work right yet. 
-Beta testers needed!
+Use at your own risk. Beta testers needed!
 
 The  LinnStrument is an amazing instrument, very feature-rich. If it's new to you, we *strongly* reccommend waiting to install microLinn until after you've explored all the standard features.
 
@@ -60,7 +60,7 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
   
     row 4) Allow Importing (OFF, ON)
 
-    row 3) Channel Pressure Fix (OFF, ON)
+    row 5) Channel Pressure Fix (OFF, ON)
 
 
   col 10) EDO (notes per octave) (OFF, 5 to 55)
@@ -162,12 +162,12 @@ Two new functions for switches and footswitches. 8VE± flips back and forth betw
 
 DRUM PAD MODE
 
-The note lights become 14 3x3 mega-pads (or 10 on the LinnStrument 128) that play the 14 drum sounds from the sequencer. Accessed through the microLinn menu.
+The note lights become 14 3x3 mega-pads (or 10 on the LinnStrument 128) that play the 14 drum sounds from the sequencer. Lets you roll on one note with two or more fingers. Accessed through the microLinn menu.
 
 *Details:*
 * *Set PITCH/X on, otherwise a tap that hits two pads will send two notes. The drum sounds won't be accidentally pitch-bent because drum pad mode filters out all sliding pitch bends.*
 * *You can use the low row for pitch bending, restriking, etc.*
-* *The midi mode should probably be One Channel.*
+* *The midi mode should usually be One Channel. (You could possibly use channelPerRow to make the 3 rows of each pad sound slightly different, for example high hat closed tightly/loosely)*
 * *The sequencer has different drum sounds for each split. If you're using both splits, set the split point in between the pads.*
 * *The two pad colors are the main/accent colors of the split, so you can adjust them if you want. Any custom light pattern you select will overlay the drum pads. So you can make the center of each pad a different color if you want.*
 * *If you use musical sounds instead of drum sounds, and enter the appropriate pitches into the sequencer, you can make a sort of marimba.*
@@ -215,7 +215,7 @@ Each of the 12 notes can be any color. Transposable. Accessed through the microL
 
 SHOW A CUSTOM LIGHT PATTERN IN ONE SPLIT ONLY
 
-Choose any of the 3 patterns (the scales marked A, A# and B) and it will replace the note lights. If you use one split as a clip launcher, you can color-code your clips. See also Locator CCs below. Choosing A', A#' or B' displays the note lights as well, on top of the light pattern. This lets you for example set the note lights to show just the tonic and overlay that onto the fretboard. BTW this feature fixes a bug in which a custom light pattern would cover up a split set to CC faders or strum. Accessed through the microLinn menu.
+Choose any of the 3 patterns (the scales marked A, A# and B) and it will replace the note lights. If you use one split as a clip launcher, you can color-code your clips. See also Locator CCs below. Choosing A', A#' or B' displays the note lights as well, on top of the light pattern. This lets you for example set the note lights to show just the tonic and overlay that onto the fretboard. Incidentally, this feature fixes a bug in which a custom light pattern would cover up a split set to CC faders or strum. Accessed through the microLinn menu.
 
 DIM MODE
 
@@ -223,11 +223,11 @@ Normally, tapping the Low Power button (Global Settings column 15) dims the disp
 
 LOCATOR CCs
 
-A locator CC message can be sent immediately before every note-on, indicating the row and column. Your DAW can assign a specific function to a specific pad, e.g. upper lefthand corner = all sound off. Or use this feature plus a custom light pattern to create large drum pads for more easily playing drum midi. Or create a third split, perhaps a column of on/off buttons, or a vertical fader or two, or even a horizontal split. Accessed through the microLinn menu.
+A locator CC message can be sent immediately before every note-on, indicating the row and column. Your DAW can assign a specific function to a specific pad, e.g. upper lefthand corner is All Sound Off, or each pad in the last column is a specific Bank Select message. Or use this feature plus a custom light pattern to create large drum pads for more easily playing drum midi. Or create a third split, perhaps a column of on/off buttons, or a vertical fader or two, or even a horizontal split. Accessed through the microLinn menu.
 
 On an actual guitar, middle-C played on the 2nd string 1st fret sounds very different when played on the 6th string 20th fret. Many guitar VSTis allow you to set the playing position (higher or lower on the fretboard) through keyswitches. Depending on your VSTi, it may be possible for code on your laptop to translate a locator CC to such a keyswitch and thus directly map the Linnstrument's columns to the virtual guitar's frets, making the guitar sound much more realistic. (It may also be possible to do this without locator CCs simply by using Channel Per Row mode.)
 
-*Details: One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. (A LinnStrument 128 will never send the 2nd type.) For cols 1-16, the data value = (row - 1) + 8 * (col - 1). For cols 17-25, the data value = (row - 1) + 8 * (col - 17). Row 1 is the top row and column 1 is the leftmost column. Don't choose a CC that might be used for other purposes, such as CC 74 for timbre or CC 64 for sustain.*
+*Details: One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. (A LinnStrument 128 will never send the 2nd type.) For cols 1-16, the data value is (row - 1) + 8 * (col - 1). For cols 17-25, the data value is (row - 1) + 8 * (col - 17). Row 1 is the top row and column 1 is the leftmost column. Beware, don't choose a CC that might be used by your synths for other purposes, such as CC 74 for timbre or CC 64 for sustain.*
 
 *Locator CCs are mainly for Channel Per Note mode. There's not much point in using them in Channel Per Row mode, since the channel serves to locate the note. In One Channel mode the CC can locate a note-on but if the same note is played twice on two separate pads, it can't locate the XYZ data.*
 
@@ -289,7 +289,7 @@ EDOS
 
 The edo (stands for Equal Division of an Octave, the notes per octave) ranges from 5edo to 55edo, plus "OFF" which makes the LinnStrument run normally. Change the edo by swiping sideways. You don't need to do anything to your synth to make it microtonal because all the microtonal fine-tuning is done via pitch bends. True "plug-and-play" microtonality!
 
-*Details: When PITCH/X is off, the LinnStrument outputs standard midi notes with "tuning bends". For example, in 24edo notes have either a 0¢ bend or a 50¢ bend. When PITCH/X is on, any "played bends" are automatically added on to the tuning bend. As always, large bend ranges create a slight inaccuracy. A bend range of 96 semitones rounds all bends to the nearest 9600/8192 = 1.17¢.*
+*Details: When PITCH/X is off, the LinnStrument outputs standard midi notes (60 = middle-C, 69 = A-440, etc.) with "tuning bends". For example, in 24edo half the notes will have a 50¢ tuning bend. When PITCH/X is on, any "played bends" are automatically added on to the tuning bend. (As always, large bend ranges create a slight inaccuracy. A bend range of 96 semitones rounds all bends to the nearest 9600/8192 = 1.17¢.) See also Tuning Table mode below, which uses non-standard midi notes without tuning bends.*
 
 Once microLinn is on (i.e. once an edo is chosen), you can cycle thru the edos by setting a switch or footswitch to EDO+ or EDO- (long-press TAP TEMPO and swipe). Changing the edo automatically adjusts all row offsets so that their size in cents stays roughly the same. So your fourths tuning will remain fourths, your fifths tuning will remain fifths, and your standard guitar tuning will remain standard. If either column offset is not OFF, it will get adjusted as well. Furthermore you can set the default layout for either split to be Bosanquet etc. and your layout will become (and remain) Bosanquet. 
 
@@ -323,7 +323,7 @@ GUITAR TUNING
 
 MicroLinn's guitar tuning is completely independent of the usual one. The guitar tuning screen doesn't set the pitch of each "string". Instead it sets 7 independent row offsets. 
 
-*Details: On the far left, there are 8 green buttons, one for each string. The "anchor string" is the row that the anchor pad is on. Its pitch is determined solely by the anchor pad, note and cents. The anchor string has a double button. Tap any button to select a string. The button turns light blue and sounds that open string. Assuming it's not the anchor string, one of the neighboring buttons, whichever one is closest to the anchor, turns dark blue. You won't see a note name with an octave number. Instead you'll see a row offset as a number, which can be negative. This is the interval between the two blue strings. Swipe right or left on it as before to increase or decrease it.*
+*Details: On the far left, there are 8 green buttons, one for each string. The "anchor string" is the row that the anchor pad is on. Its pitch is determined solely by the anchor pad, note and cents. The anchor string has a double button. Tap any button to select a string. The button turns light blue and sounds that open string. Assuming it's not the anchor string, one of the neighboring buttons, whichever one is closest to the anchor, turns dark blue. You won't see a note name with an octave number as before. Instead you'll see a row offset as a number, which can be negative. This is the interval between the two blue strings. Swipe right or left on it as before to increase or decrease it.*
 
 *Changing one row offset doesn't affect the other six row offsets. Thus increasing any row offset above the anchor string sharpens the current string and all strings above it. And increasing any row offset below the anchor string _flattens_ the current string and all strings below it. To summarize, you're _seeing_ the offset between the two blue strings, but _hearing_ the pitch of the light blue string only.*
 
@@ -337,9 +337,9 @@ A guitar tuning is a standard tuning if the intervals between open strings are a
 
 Guitar tunings can be condensed either diatonically or chromatically.
 
-*Details: Condensing usually affects the row offsets as well as the column offsets. It makes the row offsets an inconsistent number of semitones but a consistent number of scale steps, e.g. sometimes 3 semitones, sometimes 4, but always a third. However, if condensing a guitar tuning, this is not always true.*
+*Details: Condensing usually affects the row offsets as well as the column offsets. It makes the row offsets an inconsistent number of edosteps but a consistent number of scale steps. For exampe if condensing a 12edo major scale with a +4 row offset, the row offsets will be sometimes 3 semitones, sometimes 4, but always a third. However, if condensing a guitar tuning, this is not always true.*
 
-*In the guitar tuning display, when you select the anchor row, a row offset is not displayed. Usually nothing is displayed. But when condensing is on, you'll see DIA for diatonic/condensed. Swipe right to get CHRO for chromatic/uncondensed. In diatonic mode, the row offsets are condensed as usual. But in chromatic mode, the row offsets don't get condensed, and the notes in the anchor column don't change. Each row is an exact chromatic transposition of the anchor row. Thus while the anchor row has no unlit pads, the other rows usually do.*
+*In the guitar tuning display, when you select the anchor string, a row offset is not displayed. Usually nothing is displayed. But when condensing is on, you'll see DIA for diatonic/condensed. Swipe right to get CHRO for chromatic/uncondensed. In diatonic mode, the row offsets are condensed as usual. But in chromatic mode, the row offsets don't get condensed, and the notes in the anchor column don't change. Each row is an exact chromatic transposition of the anchor row. Thus while the anchor row has no unlit pads, the other rows usually do.*
 
 NOTE LIGHTS
 
@@ -399,7 +399,7 @@ You can use a chromatically condensed guitar tuning to create a vertical Wicki-H
 
 *In 12edo, 10 of the 12 major keys have a compact scale 4 columns wide. But Db major and F# major don't. You can make these 2 keys more usable (and 2 others less usable) by adjusting the anchor cell, or by using alternative layout #1.*
 
-*Alternative layouts: (1) To shift the CDE row of white keys right one pad, set the scale to use the 5th not the 4th, and set the anchor pad to row 4 not 3. (2) For a clockwise rotation, tap Global Settings col 1 row 4 to enter lefthanded mode and set all the guitar tuning row offsets to +2. (3) For a lefthanded layout, do just one of those two things.*
+*Alternative layouts: (1) To shift the CDE row of white keys right one pad, set the scale to use the 5th not the 4th, and set the anchor pad to row 4 not row 3. (2) For a clockwise rotation, tap Global Settings col 1 row 4 to enter lefthanded mode and set all the guitar tuning row offsets to +2. (3) For a lefthanded layout, do just one of those two things.*
 
 MEMORIES (PRESETS)
 
@@ -412,6 +412,8 @@ The 2nd memory from the bottom emulates the [Kite guitar](https://KiteGuitar.com
 BEYOND EDOS: TUNING TABLE MODE 
 
 Tuning table mode is meant for non-edo tunings such as just intonation or rank-2 temperaments. Each note of an N-note scale is sharp or flat from N-edo, thus the pad's pitch will be different slid up to vs played directly. However this is often only a comma difference even on long slides. You can hide the comma by turning on Quantize Hold. Otherwise you have to bend by ear, just like on a guitar.
+
+Tuning table mode is also needed for a polyphonic synth that doesn't have MPE (thus pitch bends affect notes on every channel), but does let you retune it via scala files or MTS/ESP.
 
 If an edo is selected, the LinnStrument outputs standard midi notes with tuning bends, and several edo notes will share the same midi note. But a split that's set to Tuning Table mode outputs edosteps instead. The lower left pad (or the lower right pad if the split is set to lefthanded) is midi note 0. The midi notes for the other pads increase from there according to the split's column and row offsets. Thus each edostep is a unique midi note. Certain synths need this format to play edos. But the main reason to use Tuninng Table mode is to retune each edostep individually to something else, by loading a tuning table in the form of a scala file into your synth (or running microtonal software such as alt-tuner).
 
@@ -459,6 +461,7 @@ KNOWN ISSUES:
 * Strumming is not yet microtonal
 * Same/blink carry-over leaves extra lights on
 * Condensing to a scale makes the red playedSame dots appear in the wrong places
+* In tuning table mode, sliding is inconsistent, especially when condensing to VAR
 * For edos above 41, rainbows are not ideal
 * Default scales are incomplete
 * See also the issues on the github
@@ -481,6 +484,6 @@ This is handy, as 41 notes per octave would not otherwise fit on a single row. B
 
 #  Support 
 For support with the official firmware, email Roger at support@rogerlinndesign.com.
-For support for this fork, inquire at the unofficial LinnStrument discord at https://discord.com/channels/1094879990367133706/1094890657170063400.
+For support for this fork, inquire at the unofficial LinnStrument discord at https://discord.com/channels/1094879990367133706/1094890657170063400 and ping TallKite, or inquire at the LinnStrument KVR forum.
 
 Many heartfelt thanks to Roger Linn for making the LinnStrument firmware open source!!!
