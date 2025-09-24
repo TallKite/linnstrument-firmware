@@ -39,7 +39,7 @@ namespace MicroLinnV72_0 {
     byte pullOffVelocity;                   // 0 = 2nd note's noteOff velocity, 1 = 1st noteOn veloc, 2 = 2nd noteOn veloc, 3 = average them
     byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
     signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
-    signed char transposeEDOlights;
+    signed char transposeEDOlights;         // (removed from 72.1)
   };
 
   struct DeviceSettings {

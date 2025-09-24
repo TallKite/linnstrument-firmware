@@ -347,7 +347,7 @@ void loadSettingsFromPreset(byte p) {
       if (config.preset[p].split[side].microLinn.colOffset != 1) {
         Split[side].microLinn.colOffset = config.preset[p].split[side].microLinn.colOffset;
       }
-      if (config.preset[p].split[side].microLinn.rowOffset > -26) {
+      if (config.preset[p].split[side].microLinn.rowOffset >= -MICROLINN_MAX_ROW_OFFSET) {
         Split[side].microLinn.rowOffset = config.preset[p].split[side].microLinn.rowOffset;
       }
       Split[side].microLinn.showCustomLEDs      = config.preset[p].split[side].microLinn.showCustomLEDs;
@@ -2345,6 +2345,7 @@ void handleOctaveTransposeNewTouch() {
 }
 
 void handleOctaveTransposeNewTouchSplit(byte side) {
+  byte lightsRow = Global.microLinn.EDO <= 12 ? SWITCH_2_ROW : SPLIT_ROW;
   if (sensorRow == OCTAVE_ROW) {
     switch (sensorCol) {
       case 3: Split[side].transposeOctave = -60; break;
@@ -2366,13 +2367,16 @@ void handleOctaveTransposeNewTouchSplit(byte side) {
       Split[side].transposePitch = sensorCol - 8;
     }
   }
-  else if (sensorRow == SWITCH_2_ROW) {
+  else if (sensorRow == lightsRow) {
     if (sensorCol > 0 && sensorCol < 16) {
       Split[side].transposeLights = sensorCol - 8;
     }
   }
-
-  handleMicroLinnOctaveTransposeNewTouchSplit(side); 
+  else if (Global.microLinn.EDO > 12 && sensorRow == SWITCH_2_ROW) {
+    if (sensorCol > 0 && sensorCol < 16) {
+      Split[side].microLinn.transposeEDOsteps = sensorCol - 8;
+    }
+  }
 }
 
 void handleOctaveTransposeRelease() {

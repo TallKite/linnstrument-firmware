@@ -222,14 +222,15 @@ void serialSendSettings() {
 
   // if the user is reverting to the mainline firmware, we need to send the updater a version
   // of the configuration that's compatible with mainline
-  if (getMicroLinnUninstall() == 12) {
+  //if (getMicroLinnUninstall() == 12) {
+  if (uninstall == 12) {
     // this does an in-place overwrite of the current configuration with a smaller one that has all the
     // MicroLinn data stripped out, so it's important that nothing ever tries to access
     // the configuration fields at their old locations between now and the next reboot
     // (the 16 sequencer projects are read directly from flash)
     restoreNonMicroLinnConfiguration(&config, &config);
     confSize = sizeof(struct ConfigurationVLatest);
-  } else if (getMicroLinnUninstall() == 41) {
+  } else if (uninstall == 41) {
     confSize = sizeof(Configuration);
   } else return;
 

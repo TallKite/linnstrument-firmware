@@ -1501,17 +1501,18 @@ void paintOctaveTransposeDisplay(byte side) {
   }
 
   // Paint the light transpose values
+  byte row = Global.microLinn.EDO <= 12 ? SWITCH_2_ROW : SPLIT_ROW;
   if (!doublePerSplit || Split[LEFT].transposeLights == Split[RIGHT].transposeLights) {
-    paintTranspose(Split[Global.currentPerSplit].colorMain, SWITCH_2_ROW, Split[side].transposeLights);
+    paintTranspose(Split[Global.currentPerSplit].colorMain, row, Split[side].transposeLights);
   }
   else if (doublePerSplit) {
     if (abs(Split[LEFT].transposeLights) > abs(Split[RIGHT].transposeLights)) {
-      paintTranspose(Split[LEFT].colorMain, SWITCH_2_ROW, Split[LEFT].transposeLights);
-      paintTranspose(Split[RIGHT].colorMain, SWITCH_2_ROW, Split[RIGHT].transposeLights);
+      paintTranspose(Split[LEFT].colorMain, row, Split[LEFT].transposeLights);
+      paintTranspose(Split[RIGHT].colorMain, row, Split[RIGHT].transposeLights);
     }
     else {
-      paintTranspose(Split[RIGHT].colorMain, SWITCH_2_ROW, Split[RIGHT].transposeLights);
-      paintTranspose(Split[LEFT].colorMain, SWITCH_2_ROW, Split[LEFT].transposeLights);
+      paintTranspose(Split[RIGHT].colorMain, row, Split[RIGHT].transposeLights);
+      paintTranspose(Split[LEFT].colorMain, row, Split[LEFT].transposeLights);
     }
   }
 

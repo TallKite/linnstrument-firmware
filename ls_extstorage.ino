@@ -2301,7 +2301,7 @@ void initMicroLinnData() {
   // shouldn't be needed, but fixes a mysterious bug where the first 2 microLinn vars are both zero after updating
   // but initializeMicroLinn() explicitly sets those vars as well as others that aren't zeroed out, e.g. anchorCol
   // the bug might be using sizeof(GlobalSettings) or sizeof(MicroLinnGlobal) when there's 2 bytes of padding somewhere
-  // initializeMicroLinn() will overrides what things are set to here, so it must run later
+  // initializeMicroLinn() will override what things are set to here, so it must run later
   config.settings.global.microLinn.drumPadMode = false; 
   config.settings.global.microLinn.locatorCC1 = -1; 
   //config.settings.global.microLinn.EDO = 4; 
@@ -2390,10 +2390,11 @@ void migrateFromMicroLinnGlobalV72_0 (MicroLinnGlobal* t, void* source) {
   for (byte row = 0; row < MAXROWS; row++) {
     t->guitarTuning[row] = s->guitarTuning[row];
   }
+  t->teknico = 0;
 }
 
 void migrateFromMicroLinnSplitV72_0 (MicroLinnSplit* t, void* source) {
-  // copy what's in 72.0, initialize what isn't
+  // copy what's in 72.0, initialize what isn't, ignore what's in 72.0 but not in 72.1
   MicroLinnV72_0::MicroLinnSplit* s = (typeof(s)) source;
   t->colOffset = s->colOffset;
   t->rowOffset = -26;
@@ -2406,7 +2407,6 @@ void migrateFromMicroLinnSplitV72_0 (MicroLinnSplit* t, void* source) {
   t->defaultLayout = 0;
   t->tuningTable = s->tuningTable;
   t->transposeEDOsteps = s->transposeEDOsteps;
-  t->transposeEDOlights = s->transposeEDOlights;
 }
 
 void copyConfigurationMicroLinnV72_0(void* target, void* source) {   // copies from 72.0 to 72.1

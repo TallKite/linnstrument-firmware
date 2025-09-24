@@ -629,17 +629,17 @@ struct MicroLinnSplit {
   byte hammerOnTimeWindow;                // minimum time in tens of milliseconds between two note-ons to make a hammer-on, 0..50
   boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
   byte pullOffVelocity;                   // 0 = OFF, 1 = 2nd note's noteOff velocity, 2 = 1st noteOn veloc, 3 = 2nd noteOn veloc, 4 = average them
-  byte condensedBendPerPad;               // width of a single-pad pitch bend in edosteps, 0 = OFF, 1 = VAR, 2 = AVG, 3..L+2 = 1..L (L = largest scale step),
+  byte condensedBendPerPad;               // width of a single-pad pitch bend in edosteps, 0 = OFF, 1 = VAR, 2..L+1 = 1..L (L = largest scale step),
   byte defaultLayout;                     // 0 = OFF, 1/2 = Bosanquet, 3/4 = Wicki-Hayden, 5/6 = Harmonic Table, 7/8 = Accordion, 9-10 = Array mbira
   byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
   signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
-  signed char transposeEDOlights;
   byte reserved1;                         // reserved for future use, 1 byte per empty menu row
   byte reserved2;                         //    "
   byte reserved3;                         //    "
   byte reserved4;                         //    "
   byte reserved5;                         //    "
   byte reserved6;                         //    "
+  byte reserved7;                         //    "
 };
 
 // per-split settings
@@ -690,8 +690,8 @@ struct SplitSettings {
   unsigned short ccForLowRowY;            // 0-128 (with 128 being placeholder for ChannelPressure)
   unsigned short ccForLowRowZ;            // 0-128 (with 128 being placeholder for ChannelPressure)
   signed char transposeOctave;            // -60, -48, -36, -24, -12, 0, +12, +24, +36, +48, +60
-  signed char transposePitch;             // transpose output midi notes. Range is -12 to +12
-  signed char transposeLights;            // transpose lights on display. Range is -12 to +12
+  signed char transposePitch;             // transpose output midi notes. Range is -7 to +7
+  signed char transposeLights;            // transpose lights on display. Range is -7 to +7
   boolean ccFaders;                       // true to activated 8 CC faders for this split, false for regular music performance
   boolean arpeggiator;                    // true when the arpeggiator is on, false if notes should be played directly
   boolean strum;                          // true when this split strums the touches of the other split
@@ -822,7 +822,7 @@ struct MicroLinnGlobal {
   byte largeEDO;                             // ranges 0..53, 0 = OFF, 1..52 = various edos, 53 = 1200edo = JI, user can have a 55-note subset of this edo 
 //signed char largeEDOoffset[MICROLINN_MAX_EDO];  // ranges -128..127, edosteps from nearest large-edo approximation
   short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, can be negative, [0] is DIA/CHRO, independent of Global.guitarTuning
-  boolean teknico;                           // use KVR forum member teknico's channel pressure fix
+  byte teknico;                              // use KVR forum member teknico's channel pressure fix, 0 = OFF, 1 = only Z-data, 2 = both Z & Y data
   byte reserved1;                            // reserved for future use, 1 byte per empty menu row
   byte reserved2;                            //    "
 //byte padding;                              // added by the compiler, makes the MicroLinnGlobal struct an even number of bytes

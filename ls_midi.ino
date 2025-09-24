@@ -1769,11 +1769,13 @@ short getNoteNumColumn(byte split, byte notenum, byte row) {
   short row_offset_note = determineRowOffsetNote(split, row);
   signed char colOffset = Split[split].microLinn.colOffset;
   if (colOffset == 0) return -1;
-  if (!isMicroLinnOn())                                              // microLinn's tuning tables take transposition into account already
-    row_offset_note += Split[split].transposeOctave + Split[split].transposePitch - Split[split].transposeLights;
+  if (!isMicroLinnOn()) {                                            // microLinn's tuning tables take transposition into account already
+    signed char direction = isLeftHandedSplit(split) ? -1 : 1;       // avoid transposeLights working backwards when lefty
+    row_offset_note += Split[split].transposeOctave + Split[split].transposePitch - Split[split].transposeLights * direction;
+  }
   if ((notenum - row_offset_note) % colOffset != 0) return -1;       // check if the column offset makes us skip over the note
   short col = (notenum - row_offset_note) / colOffset + 1;           // add 1 because row_offset_note is in col 1
-  if (isLeftHandedSplit(split) && !isMicroLinnOn()) {                // microLinn's tuning tables take handedness into account already
+  if (isLeftHandedSplit(split)) {
     col = NUMCOLS - col;
   }
 

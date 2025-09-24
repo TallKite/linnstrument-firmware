@@ -1170,9 +1170,7 @@ boolean handleXYZupdate() {
       // if Y-axis movements are enabled and it's a candidate for
       // X/Y expression based on the MIDI mode and the currently held down cells
       // Teknico says: Check the max value for each note against all others, not just the last played one (focused)
-    //if (valueY != INVALID_DATA && Split[sensorSplit].sendY && isYExpressiveCell()) {                          // non-Teknico way
-    //if (valueY != INVALID_DATA && Split[sensorSplit].sendY && (hasYExpressiveNotes() || isMaxY(valueY))) {    // Teknico way
-      boolean yes = Global.microLinn.teknico ? (hasYExpressiveNotes() || isMaxY(valueY)) : isYExpressiveCell();
+      boolean yes = Global.microLinn.teknico > 1 ? (hasYExpressiveNotes() || isMaxY(valueY)) : isYExpressiveCell();
       if (valueY != INVALID_DATA && Split[sensorSplit].sendY && yes) {
 
         signed char note = sensorCell->note;
@@ -1206,9 +1204,7 @@ boolean handleXYZupdate() {
       // if sensing Z is enabled...
       // send different pressure update depending on midiMode
       // Teknico says: Check the max value for each note against all others, not just the last played one (focused)
-    //if (Split[sensorSplit].sendZ && isZExpressiveCell()) {                              // non-Teknico way
-    //if (Split[sensorSplit].sendZ && (hasZExpressiveNotes() || isMaxZ(valueZHi))) {      // Teknico way
-      yes = Global.microLinn.teknico ? (hasZExpressiveNotes() || isMaxZ(valueZHi)) : isZExpressiveCell();
+      yes = Global.microLinn.teknico > 0 ? (hasZExpressiveNotes() || isMaxZ(valueZHi)) : isZExpressiveCell();
       if (Split[sensorSplit].sendZ && yes) {
         signed char note = sensorCell->note;
         signed char channel = sensorCell->channel;
@@ -1445,9 +1441,7 @@ void sendNewNote() {
 
     // reset pressure to 0 before sending the note, the actually pressure value will
     // be sent right after the note on
-  //if (Split[sensorSplit].sendZ && isZExpressiveCell()) {         // non-Teknico way
-  //if (Split[sensorSplit].sendZ && hasZExpressiveNotes()) {       // Teknico way
-    boolean yes = Global.microLinn.teknico ? hasZExpressiveNotes() : isZExpressiveCell();
+    boolean yes = Global.microLinn.teknico > 0 ? hasZExpressiveNotes() : isZExpressiveCell();
     if (Split[sensorSplit].sendZ && yes) {
       preSendLoudness(sensorSplit, 0, 0, note, channel);
     }
@@ -1947,9 +1941,7 @@ void handleTouchRelease() {
   else if (sensorCell->hasNote()) {
 
     // reset the pressure when the note is released and that setting is active
-  //if (Split[sensorSplit].sendZ && isZExpressiveCell()) {       // non-Teknico way
-  //if (Split[sensorSplit].sendZ && hasZExpressiveNotes()) {     // Teknico way
-    boolean yes = Global.microLinn.teknico ? hasZExpressiveNotes() : isZExpressiveCell();
+    boolean yes = Global.microLinn.teknico > 0 ? hasZExpressiveNotes() : isZExpressiveCell();
     if (Split[sensorSplit].sendZ && yes) {
       signed char note = sensorCell->note;                // used *only* for sending actual midi
       signed char channel = sensorCell->channel;          // ditto
@@ -2171,7 +2163,8 @@ short getNoteNumber(byte split, byte col, byte row) {
 
   notenum = determineRowOffsetNote(split, row) + noteCol - 1;
 
-  return notenum - Split[split].transposeLights * Split[split].microLinn.colOffset;
+  signed char direction = isLeftHandedSplit(split) ? -1 : 1;    // avoid transposeLights working backwards when lefty
+  return notenum - Split[split].transposeLights * Split[split].microLinn.colOffset * direction;
 }
 
 short determineRowOffsetNote(byte split, byte row) {  // determine the col 1 note of a given row (col 25 if lefty)

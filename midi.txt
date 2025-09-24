@@ -276,29 +276,31 @@ Additional NRPN messages for microLinn (nn00-nn49 = non-microtonal, nn50-nn99 = 
 
 NRPN   Value   Description
 -------------------------------------------------------------------------------------------------------------
-1000 *  1-25    Split Left Column Offset 
-1001 *  0-52    Split Left Row Offset, ranges -26..26, so add/subtract 26 to convert it
+1000 *  1-8     Split Left Column Offset 
+1001 *  0-52    Split Left Row Offset, ranges -26..26 (-26 = OFF, 26 = NOVR), so add/subtract 26 to convert it
 1002    0-6     Split Left showCustomLEDs,  0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
 1003    0-50    Split Left hammerOnCentsWindow, maximum width in tens of cents of a hammer-on, 0 = OFF, 50 = a 4th
-1004    0-50    Split Left hammerOnTimeWindow, maximum time in tens of milliseconds between two note-ons to make a hammer-on, 0..50, 0 = OFF
+1004    0-50    Split Left hammerOnTimeWindow, minimum time in tens of milliseconds between two note-ons to make a hammer-on
 1005    0-1     Split Left hammerOnNewNoteOn, 0 = hammer-ons send a new midi note, 1 = hammer-ons bend the old one
 1006    0-3     Split Left pullOffVelocity, 0 = 1st noteOn veloc, 1 = 2nd noteOn veloc, 2 = average them, 3 = 2nd note's noteOff velocity
-1050 *  0-56    Split Left condensedBendPerPad, 0 = OFF, 1..L (L = largest scale step), L+1 = AVG = 1\N-edo
-1051 *  0-6     Split Left defaultLayout, 0..6 = OFF, Bosanquet 1 & 2, Wicki-Hayden 1 & 2, Harmonic Table 1 & 2
+1050 *  0-56    Split Left condensedBendPerPad, 0 = OFF, 1 = VAR, 2..L+1 = 1..L (L = largest scale step)
+1051 *  0-6     Split Left defaultLayout, 0..7, OFF, Bosanquet 1 & 2, Accordion, Wicki-Hayden 1 & 2, Array Mbira 1 & 2
 1052 *  0-2     Split Left tuningTable, 0..2 = OFF/ON/RCH
 1053 *  0-14    Split Left transposeEDOsteps,  ranges -7..7, so add/subtract 7 to convert it
-1054 *  0-14    Split Left transposeEDOlights, ranges -7..7, so add/subtract 7 to convert it
-1100-1199       ===== same for Split Right =====
+
+1100-1199       ===== same as 1000-1099, but for Split Right =====
+
 1200 *  0-1     Global drumPadMode, 0 = OFF, 1 = ON
 1201    0-120   Global locatorCC1, 0 = OFF, 1..120 = CC 0-119, so add/subtract 1 to convert it
 1202    0-120   Global locatorCC2
+1203    0-2     Global channel pressure fix, 0 = OFF, 1 = Z only, 2 = both Y and Z
 1250 *  4-55    Global EDO, ranges 5-55, plus 4 for OFF
 1251    0-1     Global useRainbow, 1 = yes, 0 = no
 1252 *  1-25    Global anchorCol
-1253 *  0-8     Global anchorRow
+1253 *  0-7     Global anchorRow, 0 = bottom row, 7 = top row
 1254 *  0-127   Global anchorNote (any midi note)
 1255 *  0-121   Global anchorCents ranges -60..60, so add/subtract 60 to convert it
-1256 *  1-36    Global equaveSemitones
+1256 *  5-36    Global equaveSemitones
 1257 *  0-121   Global equaveStretch ranges -60..60, so add/subtract 60 to convert it
 1258 *  0-60    Global sweeten (in tenths of a cent)
 1259 *  0-53    Global largeEDO, 0 = OFF, 53 = 1200edo
@@ -371,6 +373,7 @@ EXCESS DATA = too many data bytes
 FOOTER MISMATCH = import type mismatch between NRPN 300 MSB and polypressure footer MSB
 M N = M is microLinnImportCounter, Nth midi message was invalid, N is 1-indexed, includes the NRPN's 6 CCs
 lack of "SUCCESS" message = no footer
+
 
 Color Values
 ============

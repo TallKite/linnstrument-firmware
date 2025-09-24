@@ -33,21 +33,21 @@ IMPORTANT: Updating to a newer version of microLinn is done normally. Put the ne
 #  MAIN MENU  
 
 
-To go to the main microLinn menu, on the Global Settings screen, long-press the lower left pad (VIEW MAIN). Once the edo (notes per octave) is set to anything other than OFF, VIEW MAIN turns light blue and you can simply tap it. On a LinnStrument 200, you can also tap the green button in column 17.
+To go to the main microLinn menu, on the Global Settings screen, long-press the lower left pad (VIEW MAIN). Once the edo (notes per octave) is set to anything other than OFF, VIEW MAIN turns light blue and you can simply tap it. On a LinnStrument 200, you can also tap the light blue button in column 17.
 
 Main menu, *LONG-PRESS EACH BUTTON* to see its function
 
   col 2) Per-split column offset (OFF, 2 to 8)
   
 
-  col 4) Per-split row offset (OFF, -25 to 25, NOVR = no overlap)
+  col 4) Per-split row offset (OFF, NOVR = no overlap, 0 to 25, swipe up/down for positive/negative offsets)
   
 
   col 6) Per-split non-microtonal settings
 
     row 1) Show custom light pattern (OFF, A, A#, B, A', A#', B')
 
-    rows 2-5) (reserved for future use)
+    rows 2-4) (reserved for future use)
 
 
   col 8) Global non-microtonal settings
@@ -58,9 +58,9 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
   
     row 3) Locator CC #2 (OFF, 0 to 119)
   
-    row 4) Allow Importing (OFF, ON)
+    row 4) Allow Importing (NO, YES)
 
-    row 5) Channel Pressure Fix (OFF, ON)
+    row 5) Channel Pressure Fix (OFF, Z, Y&Z)
 
 
   col 10) EDO (notes per octave) (OFF, 5 to 55)
@@ -83,7 +83,7 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
 
     row 1) Condense to scale (OFF, VAR = variable bend per pad, 1 to N = bend per pad in edosteps)
 
-    row 2) Default layout (OFF, Bosanquet, Wicki-Hayden, Harmonic Table, Accordion, Array Mbira)
+    row 2) Default layout (OFF, Bosanquet 1 & 2, Accordion, Wicki-Hayden 1 & 2, Array Mbira 1 & 2)
 
     row 3) Tuning table mode (OFF, ON, RCH = rechannel)
 
@@ -123,21 +123,23 @@ You can set both column offsets at once by linking them. In the upper right ther
 
 *You can also use mismatched bend ranges. For example, set your LinnStrument to 24 semitones and your synth to 12 semitones. Now sliding by 1 pad bends by 1 semitone, as usual. Bends are easier to control, but when you slide up to a note and then play it again without sliding, the bent pitch won't match the unbent pitch. So this method works best when only small bends are used.*
 
+*In the Octave/Transpose screen, "transpose lights" tranposes by columns not semitones. For example, if your column offset is 2, transposing the lights by 1 shifts everything over 1 column, changing the pitch of each pad by 2 semitones.*
+
 PER-SPLIT ROW OFFSETS
 
-Setting the row offset for a split overrides the Global Settings row offset for that split only. This is indicated by turning the Global Settings pad pink when that split is active. The per-split row offset ranges from -25 to +25, plus OFF and No Overlap which appears as NOVR. A No Overlap split can be used to launch audio or midi clips while you play normally in the other split. Accessed through the microLinn menu.
+Setting the row offset for a split overrides the Global Settings row offset for that split only. This is indicated by turning the Global Settings pad pink when that split is active. The per-split row offset ranges from -25 to +25, plus OFF and No Overlap which appears as NOVR. A No Overlap split can be used to launch audio or midi clips while you play normally in the other split. Accessed through the microLinn menu. To get a positive/negative row offset, swipe up/down.
 
 CONDENSE TO SCALE
 
 Make the unlit pads go away! Bending still works. Accessed through the microLinn menu.
 
-*Details: Condensing uses various microtonal features. Set the edo to 12 and select one of the 7 microtonal scales. If your scale is all one color (e.g. the 12edo major scale is all white notes), fix that in the note lights screen. Adjust the color of one or more notes with the rainbow editor, or simply turn off the rainbow enabler to use the usual 2 colors.*
+*Details: Condensing uses various microtonal features (see below). Set the edo to 12 and select one of the 7 microtonal scales. If your scale is all one color (e.g. the 12edo major scale is all white notes), fix that in the note lights screen. Adjust the color of one or more notes with the rainbow editor, or simply turn off the rainbow enabler to use the usual 2 colors.*
 
-*In the Per-split Microtonal Settings menu, top row, change Condense To Scale from OFF to VAR, which stands for variable bending. When you slide up to a note and then play it again without sliding, the bent pitch matches the unbent pitch. The bend slope is usually a constant 1 semitone per pad, which is about 6¢ per mm. But now the slope is lower when traversing a small scale step and higher when traversing a large scale step. Over a 12edo minor 2nd it's the usual 6¢/mm, but over a 12edo major 2nd it doubles to 12¢/mm. The bend slope changes sharply at the center of the pad.*
+*In the Per-split Microtonal Settings menu, top row, change Condense To Scale from OFF to VAR, which stands for variable bend slope. Bends are consistent, meaning that when you slide up to a note and then play it again without sliding, the bent pitch matches the unbent pitch. The bend slope is usually a constant 1 semitone per pad, which is about 6¢ per mm. But now the slope is lower when traversing a small scale step and higher when traversing a large scale step. Over a 12edo minor 2nd it's the usual 6¢/mm, but over a 12edo major 2nd it doubles to 12¢/mm. The bend slope changes sharply at the center of the pad.*
 
 *This variable bend slope causes certain issues. (1) It makes vibrato on certain notes lopsided. For example, a normal vibrato on C of a C major scale will tend to be wider when sharpening and narrower when flattening, making the C note sound slightly sharp. So you might want to do a slightly off-center vibrato, going closer to B than to D. (2) When sliding slowly at a steady speed through a large interval, you may notice the bending becoming faster and slower. So you might want to slide through minor 2nds faster than major 2nds.*
 
-*If you rarely do large bends, you might prefer a consistent bend slope. This avoids lopsided vibrato. You can set the slope to a specific number of semitones per pad, ranging from 1 to whatever the largest step is. For example, the largest step in a 12edo major scale is 2 semitones, so you can swipe Condense To Scale past VAR to either 1 or 2. You can still do large bends, but they can be tricky. If you choose 1 semitone, overshoot and bend by ear. If you choose 2 semitones, set QUANTIZE HOLD off and you can slide into the gap between pads to reach all the notes of the scale.*
+*If you rarely do large bends, you might prefer a constant bend slope. This avoids lopsided vibrato. You can set the slope to a specific number of semitones per pad, ranging from 1 to whatever the largest step is. For example, the largest step in a 12edo major scale is 2 semitones, so you can swipe Condense To Scale past VAR to either 1 or 2. You can still do large bends, but they can be tricky. If you choose 1 semitone, overshoot and bend by ear. If you choose 2 semitones, set QUANTIZE HOLD off and you can slide into the gap between pads to reach all the notes of the scale.*
 
 *You can also experiment with changing the pitch bend range on the LinnStrument to the number of notes in your scale, or some multiple of that. For a 7 note scale, change 12 to 7, 24 to 14, etc. Leave your synth set to 12 or 24, so that the bend ranges don't match. With Condense To Scale set to 1, this makes your actual bend slope 1.7 semitones per pad = 10¢/mm. This is good for very large bends, because the octaves are easy to slide to.*
 
@@ -145,13 +147,13 @@ Make the unlit pads go away! Bending still works. Accessed through the microLinn
 
 Condensing can be combined with column offsets. First the scale is condensed, then columns are omitted. Setting the column offset to 2 omits every other column, setting it to 3 omits 2 out of 3 columns, etc.
 
-There's a school of thought that says there's only 12 notes, it's not that hard to learn your way around, and removing 5 of the 12 notes doesn't make the scale all that much more compact. So is it really worth condensing if it causes bending issues? Perhaps not if one plays only in 12edo. But if playing microtonally, condensing a large edo to a smaller scale can be very useful. For example, you can condense a 31edo chain-of-5ths scale of 12 notes to get quarter-comma meantone, the dominant tuning in Western music for 200 years. But even in 12edo, condensing has its uses. For example, you can create a vertical Wicki-Hayden layout. (Playing vertically means rotating the LinnStrument 90 degrees.) The range is huge, almost 8 octaves on a LinnStrument 128! See below. Furthermore, if the bend slope is set to 1, all the non-scale notes can be easily bent to, so in a sense nothing is lost.
+There's a school of thought that says there's only 12 notes, it's not that hard to learn your way around, and removing 5 of the 12 notes doesn't make the scale all that much more compact. So is it really worth condensing if it causes bending issues? Perhaps not if one plays only in 12edo. But if playing microtonally, condensing a large edo to a smaller scale can be very useful. For example, you can condense a 31edo chain-of-5ths scale of 12 notes to get quarter-comma meantone, the dominant tuning in Western music for 200 years. Or condense 53edo to the 22 shrutis of Indian music, or to a subset of that. But even in 12edo, condensing has its uses. For example, you can create a vertical Wicki-Hayden layout. (Playing vertically means rotating the LinnStrument 90 degrees.) The range is huge, almost 8 octaves on a LinnStrument 128! See below for details.
 
 CHANNEL PRESSURE FIX
 
-The LinnStrument normally resets pressure data at note on/off, and only sends pressure data for the most recent pad held. For non-MPE synths (or any synth played in "One Chan" or "ChPerRow" mode), releasing a note causes an abrupt jump in z-values from 0 to the value of whatever prior pad is held. Y-values behave similarly. MicroLinn includes a fix by KVR forum member teknico that solves the problem. Accessed through the microLinn menu.
+The LinnStrument normally resets pressure data at note on/off, and only sends pressure data for the most recent pad held. For non-MPE synths (or any synth played in "One Chan" or "ChPerRow" mode), releasing a note causes an abrupt jump in Z-values from 0 to the value of whatever prior pad is held. MicroLinn includes a fix by KVR forum member teknico that solves the problem via a "soft takeover" as opposed to the current "hard takeover". Y-values (timbre) behave similarly, and can optionally be fixed similarly. Accessed through the microLinn menu. "Z" affects only Z-values, "Y&Z" affects Y-values too.
 
-*Details: The output of both Y (timbre) and Z (loudness) when not using Polyphonic Aftertouch is thus changed:*
+*Details: The output of Z (loudness) and optionally Y (timbre) when not using Polyphonic Aftertouch is thus changed:*
 * *Zero-value messages before note-on and note-off are only sent for the first simultaneous note on the same channel*
 * *Only the maximum value of all simultaneous notes on the same channel is sent*
 *This allows smoother playing in One Channel and Channel Per Row modes and better compatibility with non-MPE synths, while not impacting Channel per Note (MPE) mode (except in the rare case of more that one note on the same channel). See https://www.kvraudio.com/forum/viewtopic.php?t=591770*
@@ -301,11 +303,11 @@ Changing the anchor note transposes by 12edo semitones. Changing the anchor cent
 
 Besides transposing via the anchor note, each split can be transposed by edosteps via the Octave/Transpose screen. 
 
-*Details: When the notes per octave is greater than 12, the screen shows two extra rows for transposing by edosteps. The 2nd and 3rd rows now transpose not by semitones but by major 2nds (since most edos have several different semitones). A major 2nd is defined as the interval between the 4th and the 5th, e.g. 3 edosteps for 15edo but only 2 edosteps for 16edo.*
+*Details: When the notes per octave is greater than 12, the screen adds an extra row for transposing by edosteps. This is the 3rd row, and transpose-lights is moved down to the 4th row. The 2nd row now transposes not by semitones but by major 2nds (since most edos have several different kinds of semitones). A major 2nd is defined as the interval between the 4th and the 5th, e.g. 3 edosteps for 15edo but only 2 edosteps for 16edo.*
 
 It's possible to stretch the octave or even create non-octave scales like Bohlen-Pierce. 
 
-*Details: The octave is really the equave, the interval of equivalence. It's defined as twelve 12edo semitones plus zero cents. Redefine it by swiping on Equave Semitones (1 to 36) and/or Equave Stretch (-60 to 60).*
+*Details: The octave is really the equave, the interval of equivalence. It's defined as twelve 12edo semitones plus zero cents. Redefine it by swiping on Equave Semitones (5 to 36) and/or Equave Stretch (-60 to 60).*
 
 MicroLinn can be set to 12edo. MicroLinn's 12edo has three advantages over the standard, non-microLinn 12edo. (1) It can be stretched and/or detuned. (2) You can have multi-colored note lights. (3) It can be condensed to the scale notes.
 
@@ -378,11 +380,11 @@ VERTICAL WICKI-HAYDEN LAYOUT
 
 You can use a chromatically condensed guitar tuning to create a vertical Wicki-Hayden layout. (Playing vertically means rotating the LinnStrument 90 degrees.) The range is huge, almost 8 octaves on a LinnStrument 128!
 
-    *  *  C  D  E  *  *  *
+    *  *  C  D  E  *  *  *      higher
     *  *  F  G  A  B  *  *
     *  *  C  D  E  *  *  *
     *  *  F  G  A  B  *  *
-    *  *  C  D  E  *  *  *
+    *  *  C  D  E  *  *  *      lower
 
 * *Set both the column offset and the per-split row offset to OFF*
 * *Set the EDO to 12*
@@ -413,11 +415,13 @@ BEYOND EDOS: TUNING TABLE MODE
 
 Tuning table mode is meant for non-edo tunings such as just intonation or rank-2 temperaments. Each note of an N-note scale is sharp or flat from N-edo, thus the pad's pitch will be different slid up to vs played directly. However this is often only a comma difference even on long slides. You can hide the comma by turning on Quantize Hold. Otherwise you have to bend by ear, just like on a guitar.
 
-Tuning table mode is also needed for a polyphonic synth that doesn't have MPE (thus pitch bends affect notes on every channel), but does let you retune it via scala files or MTS/ESP.
+Tuning table mode is also needed for a polyphonic synth that doesn't have MPE (thus pitch bends one one channel affect notes on other channels), but does let you retune it via scala files or MTS/ESP.
 
 If an edo is selected, the LinnStrument outputs standard midi notes with tuning bends, and several edo notes will share the same midi note. But a split that's set to Tuning Table mode outputs edosteps instead. The lower left pad (or the lower right pad if the split is set to lefthanded) is midi note 0. The midi notes for the other pads increase from there according to the split's column and row offsets. Thus each edostep is a unique midi note. Certain synths need this format to play edos. But the main reason to use Tuninng Table mode is to retune each edostep individually to something else, by loading a tuning table in the form of a scala file into your synth (or running microtonal software such as alt-tuner).
 
 The midi note number each pad outputs is determined entirely by the column and row offsets. The edo you select in theory doesn't matter. However when the edo is set correctly, transposing works better and the note lights make more sense.
+
+Large bends several pads wide won't work consistently because the Linnstrument doesn't know what the scale is, and thus doesn't know what note to bend to.
 
 There are only 128 midi notes. What if your tuning spans more than 128 edosteps? One solution is to use splits. Each split has up to 128 notes, so there can be a total of 256 pitches. But you can't slide across the split point. Also a large edo combined with large column and row offsets can actually exceed 256 edosteps. See the next two sections for two other solutions.
 
