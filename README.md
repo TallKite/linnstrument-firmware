@@ -54,13 +54,13 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
 
     row 1) Drum pad mode (OFF, ON)
   
-    row 2) Locator CC #1 (OFF, 0 to 119)
+    row 2) Locator CC #1 (OFF, 0 to 119) (used for the first 16 columns)
   
-    row 3) Locator CC #2 (OFF, 0 to 119)
+    row 3) Locator CC #2 (OFF, 0 to 119) (used for the last 9 columns)
   
     row 4) Allow Importing (NO, YES)
 
-    row 5) Channel Pressure Fix (OFF, Z, Y&Z)
+    row 5) Timbre/Y and Loudness/Z Smoothing (OFF, Z, Y&Z)
 
 
   col 10) EDO (notes per octave) (OFF, 5 to 55)
@@ -85,7 +85,9 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
 
     row 2) Default layout (OFF, Bosanquet 1 & 2, Accordion, Wicki-Hayden 1 & 2, Array Mbira 1 & 2)
 
-    row 3) Tuning table mode (OFF, ON, RCH = rechannel)
+    row 3) Tuning table mode (OFF, ON, CC = send midi grouping CCs, RCH = rechannel)
+
+    row 4) Midi grouping CC (OFF, 0 to 119, used in tuning table CC mode)
 
 
   col 16) Global microtonal settings
@@ -96,9 +98,9 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
 
     row 3) Anchor cents (-60 to 60)
 
-    row 4) Equave semitones (1 to 36)
+    row 4) Equave semitones (5 to 36)
 
-    row 5) Equave cents (-60 to 60)
+    row 5) Equave cents (-50 to 50)
 
 
 #  NON-MICROTONAL FEATURES  
@@ -117,7 +119,7 @@ You can set both column offsets at once by linking them. In the upper right ther
 
 ----->  All microLinn per-split settings can be linked this way.  <------
 
-*Details: Beware, if the column offset is 2 and the row offset is an even number, you lose half the notes and only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors. If they do, both the row offset and the column offset will be displayed in red.*
+*Details: Beware, if the column offset is 2 and the row offset is an even number, you lose half the notes and only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors. If they do, both offsets will be displayed in red.*
 
 *Playing melodies with pitch bending can be tricky. A 1mm slide normally bends the pitch about 6¢. But an offset of +2 makes it 12¢, +3 makes it 18¢, etc. Thus to play in tune with a large column offset you may need both Pitch/X Quantize and Pitch/X Quantize Hold to be on. (But if your column offset is +2, setting Quantize on and Quantize Hold off lets you play the skipped notes fairly accurately by sliding into the gap between pads. In fact, you can play 24edo quartertones on a normal 12edo LinnStrument fairly easily this way.)*
 
@@ -127,7 +129,9 @@ You can set both column offsets at once by linking them. In the upper right ther
 
 PER-SPLIT ROW OFFSETS
 
-Setting the row offset for a split overrides the Global Settings row offset for that split only. This is indicated by turning the Global Settings pad pink when that split is active. The per-split row offset ranges from -25 to +25, plus OFF and No Overlap which appears as NOVR. A No Overlap split can be used to launch audio or midi clips while you play normally in the other split. Accessed through the microLinn menu. To get a positive/negative row offset, swipe up/down.
+Setting the row offset for a split overrides the Global Settings row offset for that split only. This is indicated by turning the Global Settings pad pink when that split is active. The per-split row offset ranges from -25 to +25, plus OFF and No Overlap which appears as NOVR. A No Overlap split can be used to launch audio or midi clips while you play normally in the other split. Accessed through the microLinn menu. To get a positive/negative row offset, swipe firmly and swiftly up/down.
+
+*Details: The No Overlap row offset equals the physical width of the split, even if column offset is on. Once an edo is chosen, each pad no longer has a unique midi note. To use a No Overlap split as a clip launcher, use Tuning Table mode, which does supply unique midi notes.*
 
 CONDENSE TO SCALE
 
@@ -149,9 +153,9 @@ Condensing can be combined with column offsets. First the scale is condensed, th
 
 There's a school of thought that says there's only 12 notes, it's not that hard to learn your way around, and removing 5 of the 12 notes doesn't make the scale all that much more compact. So is it really worth condensing if it causes bending issues? Perhaps not if one plays only in 12edo. But if playing microtonally, condensing a large edo to a smaller scale can be very useful. For example, you can condense a 31edo chain-of-5ths scale of 12 notes to get quarter-comma meantone, the dominant tuning in Western music for 200 years. Or condense 53edo to the 22 shrutis of Indian music, or to a subset of that. But even in 12edo, condensing has its uses. For example, you can create a vertical Wicki-Hayden layout. (Playing vertically means rotating the LinnStrument 90 degrees.) The range is huge, almost 8 octaves on a LinnStrument 128! See below for details.
 
-CHANNEL PRESSURE FIX
+TIMBRE/Y AND LOUDNESS/Z SMOOTHING
 
-The LinnStrument normally resets pressure data at note on/off, and only sends pressure data for the most recent pad held. For non-MPE synths (or any synth played in "One Chan" or "ChPerRow" mode), releasing a note causes an abrupt jump in Z-values from 0 to the value of whatever prior pad is held. MicroLinn includes a fix by KVR forum member teknico that solves the problem via a "soft takeover" as opposed to the current "hard takeover". Y-values (timbre) behave similarly, and can optionally be fixed similarly. Accessed through the microLinn menu. "Z" affects only Z-values, "Y&Z" affects Y-values too.
+The LinnStrument normally resets pressure data at note on/off, and only sends pressure data for the most recent pad held. For non-MPE synths (or any synth played in "One Chan" or "ChPerRow" mode), releasing a note causes an abrupt jump in Z-values from 0 to the value of whatever prior pad is held. MicroLinn includes a fix by KVR forum member teknico that solves the problem via a "soft takeover" as opposed to a "hard takeover". Y-values (timbre) behave similarly, and can optionally be smoothed similarly. Accessed through the microLinn menu. "Z" affects only Z-values, "Y&Z" affects Y-values too.
 
 *Details: The output of Z (loudness) and optionally Y (timbre) when not using Polyphonic Aftertouch is thus changed:*
 * *Zero-value messages before note-on and note-off are only sent for the first simultaneous note on the same channel*
@@ -217,7 +221,7 @@ Each of the 12 notes can be any color. Transposable. Accessed through the microL
 
 SHOW A CUSTOM LIGHT PATTERN IN ONE SPLIT ONLY
 
-Choose any of the 3 patterns (the scales marked A, A# and B) and it will replace the note lights. If you use one split as a clip launcher, you can color-code your clips. See also Locator CCs below. Choosing A', A#' or B' displays the note lights as well, on top of the light pattern. This lets you for example set the note lights to show just the tonic and overlay that onto the fretboard. Incidentally, this feature fixes a bug in which a custom light pattern would cover up a split set to CC faders or strum. Accessed through the microLinn menu.
+Choose any of the 3 patterns (the scales marked A, A# and B) and it will replace the note lights. If you use one split as a clip launcher, you can color-code your clips. Choosing A', A#' or B' displays the note lights as well, on top of the light pattern. This lets you for example set the note lights to show just the tonic and overlay that onto the fretboard. Incidentally, this feature fixes a bug in which a custom light pattern would cover up a split set to CC faders or strum. Accessed through the microLinn menu.
 
 DIM MODE
 
@@ -225,13 +229,13 @@ Normally, tapping the Low Power button (Global Settings column 15) dims the disp
 
 LOCATOR CCs
 
-A locator CC message can be sent immediately before every note-on, indicating the row and column. Your DAW can assign a specific function to a specific pad, e.g. upper lefthand corner is All Sound Off, or each pad in the last column is a specific Bank Select message. Or use this feature plus a custom light pattern to create large drum pads for more easily playing drum midi. Or create a third split, perhaps a column of on/off buttons, or a vertical fader or two, or even a horizontal split. Accessed through the microLinn menu.
+A locator CC message can be sent immediately before every note-on, indicating the row and column. Code on your laptop can then assign a specific function to a specific pad, e.g. upper lefthand corner is All Sound Off, or each pad in the last column is a specific Bank Select message. Or use this feature plus a custom light pattern to create large drum pads for more easily playing drum midi. Or create a third split, perhaps a column of on/off buttons, or a vertical fader or two, or even a horizontal split. Accessed through the microLinn menu.
 
 On an actual guitar, middle-C played on the 2nd string 1st fret sounds very different when played on the 6th string 20th fret. Many guitar VSTis allow you to set the playing position (higher or lower on the fretboard) through keyswitches. Depending on your VSTi, it may be possible for code on your laptop to translate a locator CC to such a keyswitch and thus directly map the Linnstrument's columns to the virtual guitar's frets, making the guitar sound much more realistic. (It may also be possible to do this without locator CCs simply by using Channel Per Row mode.)
 
 *Details: One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. (A LinnStrument 128 will never send the 2nd type.) For cols 1-16, the data value is (row - 1) + 8 * (col - 1). For cols 17-25, the data value is (row - 1) + 8 * (col - 17). Row 1 is the top row and column 1 is the leftmost column. Beware, don't choose a CC that might be used by your synths for other purposes, such as CC 74 for timbre or CC 64 for sustain.*
 
-*Locator CCs are mainly for Channel Per Note mode. There's not much point in using them in Channel Per Row mode, since the channel serves to locate the note. In One Channel mode the CC can locate a note-on but if the same note is played twice on two separate pads, it can't locate the XYZ data.*
+*Locator CCs are mainly for Channel Per Note mode. There's not much point in using them in Channel Per Row mode, since the channel serves to locate the note. In One Channel mode the locator CC can locate a note-on but it can't locate the XYZ data.*
 
 *If your DAW isn't programmable, download LinnStrumentLocatorCCs.jsfx from this github. It defines a rectangular region on the LinnStrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. It runs natively in Reaper and can run in any windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live and other platforms.) Thanks to KVR forum member vorp40 for the locator CC idea!*
 
@@ -239,7 +243,7 @@ IMPORTING/EXPORTING
 
 You can back up various settings and/or share them with others via midi files. The 3 custom light patterns, the 16 audience messages, the 6 memories, microtonal data, and more! Check the LinnStrument Community Wiki for export-request files and importable settings files.
 
-*Details: Importing: Download a settings file from the wiki. On your LinnStrument, set Allow Importing to ON. In your DAW, set the output of midi track A to your LinnStrument. Load the settings file into track A and press play. Your LinnStrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #9 below.*
+*Details: Importing: Download a settings file from the wiki. On your LinnStrument, set Allow Importing to YES. In your DAW, set the output of a midi track to your LinnStrument. Load the settings file into that track and press play. Your LinnStrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #9 below.*
 
 *To import a custom light pattern, before you press play, you must first display the one you want to overwrite. To import an audience message, before you press play, you must first load for editing the one you want to overwrite. (You needn't actually edit it.)*
 
@@ -258,7 +262,7 @@ You can back up various settings and/or share them with others via midi files. T
 * *(6) When importing, slowing down your DAW's playback speed sometimes helps. Likewise, when exporting, speeding up your DAW's recording speed can help.*
 * *(7) The All User Settings export is meant for migrating from an old LinnStrument to a new one. It will only import if the OS version on the old one matches the OS version on the new one (or more precisely, if the data structure versions match).*
 * *(8) If you get "IMPORT FAILURE" followed by 2 numbers, the 2nd number says which midi message in the import file caused the failure. For example, 7 means the 7th midi message.*
-* *(9) MicroLinn imports data via polyphonic pressure messages. If you have connected something else to your LinnStrument that also sends polypressure messages, there is a small possibility of confusion. If after an import there is no sucess or failure scrolling message, to avoid confusion either set Allow Importing to OFF, or just unplug the LinnStrument.*
+* *(9) MicroLinn imports data via polyphonic pressure messages. If you have connected something else to your LinnStrument that also sends polypressure messages, there is a small possibility of confusion. If after an import there is no sucess or failure scrolling message, to avoid confusion either set Allow Importing to NO, or just unplug the LinnStrument.*
 
 *The 16 sequencer projects can be imported and exported as usual via the updater app as *.lpr files. When you export, the filename of microtonal projects should probably contain the edo, since it won't sound right in the wrong edo. The AllUserSettings export does not export the current sequencer project, so to export it save it as one of the 16 projects.*
 
@@ -293,17 +297,24 @@ The edo (stands for Equal Division of an Octave, the notes per octave) ranges fr
 
 *Details: When PITCH/X is off, the LinnStrument outputs standard midi notes (60 = middle-C, 69 = A-440, etc.) with "tuning bends". For example, in 24edo half the notes will have a 50¢ tuning bend. When PITCH/X is on, any "played bends" are automatically added on to the tuning bend. (As always, large bend ranges create a slight inaccuracy. A bend range of 96 semitones rounds all bends to the nearest 9600/8192 = 1.17¢.) See also Tuning Table mode below, which uses non-standard midi notes without tuning bends.*
 
-Once microLinn is on (i.e. once an edo is chosen), you can cycle thru the edos by setting a switch or footswitch to EDO+ or EDO- (long-press TAP TEMPO and swipe). Changing the edo automatically adjusts all row offsets so that their size in cents stays roughly the same. So your fourths tuning will remain fourths, your fifths tuning will remain fifths, and your standard guitar tuning will remain standard. If either column offset is not OFF, it will get adjusted as well. Furthermore you can set the default layout for either split to be Bosanquet etc. and your layout will become (and remain) Bosanquet. 
+Once microLinn is on (i.e. once an edo is chosen), you can cycle thru the edos by setting a switch or footswitch to EDO+ or EDO- (long-press TAP TEMPO and swipe). Changing the edo automatically adjusts all row offsets so that their size in cents stays roughly the same. So your fourths tuning will remain fourths, your fifths tuning will remain fifths, and your standard guitar tuning will remain standard. If either column offset is not OFF, it will get adjusted as well. Furthermore, you can set the default layout for either split to be Bosanquet etc. and your layout will become (and remain) Bosanquet. 
 
-*Details: A default layout is stored in the per-split row/col offsets, so it overrides the Global row offset. Bosanquet = m2/M2, Bosanquet 2 = A1/M2, Wicki-Hayden = P4/M2, Wicki-Hayden 2 = P5/M2, Harmonic Table = M3/m3, and Harmonic Table 2 = P5/m3. But this may vary from edo to edo, to ensure coprime row/col offsets. See also Guitar Tuning below.*
+*Details: A default layout is stored in the per-split row/col offsets, so it overrides the Global row offset. Bosanquet = A1/M2, Bosanquet 2 = m2/M2, Accordion = m3/M2, Wicki-Hayden = P4/M2, Wicki-Hayden 2 = P5/M2. Array Mbira 1 = P4/P5, Array Mbira 2 = P8/P5. But this may vary in certain edos, to ensure coprime row/col offsets. For example, 24edo Bosanquet is not 10/4 but 5/4. See also Guitar Tuning below.*
 
-*The anchor pad is a specific pad that doesn't change pitch when you change the edo. The anchor pad chooser displays the row and column of the current anchor pad. For example, "R4C11" (or "4 11" on the LinnStrument 128) means row 4 (from the top) and column 11. Tap the blue "R4C11" anywhere and you'll see the normal display with the anchor pad blinking. Tap any pad to set it as the new anchor pad. This pad beomes the new tonic, and all the note lights will shift accordingly.*
+The actual pitches of each pad are set via the anchor pad and the anchor note.
 
-Changing the anchor note transposes by 12edo semitones. Changing the anchor cents detunes the entire LinnStrument. Like the guitar tuning screen, a midi note is sent when you change either one. 
+*Details: The anchor pad is a specific pad that doesn't change pitch when you change the edo. The anchor pad chooser displays the row and column of the current anchor pad. For example, "R4C11" (or "4 11" on the LinnStrument 128) means row 4 (from the top) and column 11. Tap the blue "R4C11" anywhere and you'll see the normal display with the anchor pad blinking. Tap any pad to set it as the new anchor pad. This pad beomes the new tonic, and all the note lights will shift accordingly.*
+
+*Changing the anchor pad shifts the note lights much like transpose lights does, only you can shift by rows as well as columns. Changing the anchor note transposes by 12edo semitones. Changing the anchor cents detunes the entire LinnStrument. Like the guitar tuning screen, a midi note is sent when you change either one.* 
 
 Besides transposing via the anchor note, each split can be transposed by edosteps via the Octave/Transpose screen. 
 
-*Details: When the notes per octave is greater than 12, the screen adds an extra row for transposing by edosteps. This is the 3rd row, and transpose-lights is moved down to the 4th row. The 2nd row now transposes not by semitones but by major 2nds (since most edos have several different kinds of semitones). A major 2nd is defined as the interval between the 4th and the 5th, e.g. 3 edosteps for 15edo but only 2 edosteps for 16edo.*
+*Details: When the notes per octave is greater than 12, the Octave/Transpose screen has 4 rows.*
+* *The top row transposes by octaves as usual*
+* *The 2nd row transposes by major 2nds*
+* *The 3rd row transposes by edosteps*
+* *The bottom row shifts the lights sideways as usual, i.e. transposes by columns*
+*A major 2nd is defined as the interval between the 4th and the 5th, e.g. 3 edosteps for 15edo but only 2 edosteps for 16edo.*
 
 It's possible to stretch the octave or even create non-octave scales like Bohlen-Pierce. 
 
@@ -345,7 +356,7 @@ Guitar tunings can be condensed either diatonically or chromatically.
 
 NOTE LIGHTS
 
-The 9 scales in Global Settings columns 2-4 are now microtonal and change for each edo. You can still select a scale using columns 2-4, but you can no longer edit a scale there, because for larger edos there are too many notes to fit into the 3x4 box. As a result, when microLinn is on, the VIEW MAIN and VIEW ACCENT buttons do not work, and the SCALE SELECT button is always on. To edit a scale and its colors, instead go to the main microLinn menu and go to the note lights screen. Shortcut: you can long-press the scale's pad in cols 2-4 in the Global Settings screen to go directly to that scale.
+The 9 scales in Global Settings columns 2-4 are now microtonal and change for each edo. You can still select a scale using columns 2-4, but you can no longer edit a scale there, because for larger edos there are too many notes to fit into the 3x4 box. As a result, when microLinn is on, the VIEW MAIN and VIEW ACCENT buttons do not work, and the SCALE SELECT button is always on. To edit a scale and its colors, instead go to the microLinn menu and go to the note lights screen. Shortcut: you can long-press the scale's pad in cols 2-4 in the Global Settings screen to go directly to that scale.
 
 *Details: The note lights screen has 7 scale buttons plus the rainbow editor, the fretboard selector and the yellow rainbow-enabler button. Excluding the rainbow enabler, there are 9 buttons, corresponding to the 9 scales in cols 2-4 in the Global Settings screen. Tap any of these 9 buttons to select it. Tap any already-selected button to backtrack to the previous button. Repeatedly tap a button to quickly switch back and forth between two scales.*
 
@@ -413,46 +424,50 @@ The 2nd memory from the bottom emulates the [Kite guitar](https://KiteGuitar.com
 
 BEYOND EDOS: TUNING TABLE MODE 
 
-Tuning table mode is meant for non-edo tunings such as just intonation or rank-2 temperaments. Each note of an N-note scale is sharp or flat from N-edo, thus the pad's pitch will be different slid up to vs played directly. However this is often only a comma difference even on long slides. You can hide the comma by turning on Quantize Hold. Otherwise you have to bend by ear, just like on a guitar.
+Tuning table mode is meant for non-edo tunings such as just intonation or rank-2 temperaments. Tuning table mode is also needed for a polyphonic synth that doesn't have MPE (thus pitch bends on one channel affect notes on other channels), but does allow retuning by other methods.
 
-Tuning table mode is also needed for a polyphonic synth that doesn't have MPE (thus pitch bends one one channel affect notes on other channels), but does let you retune it via scala files or MTS/ESP.
+Once an edo is selected, the LinnStrument usually outputs standard midi notes with tuning bends, and several edosteps will share the same midi note. But a split that's set to Tuning Table mode outputs edosteps instead. The lower left pad (or the lower right pad if the split is set to lefthanded) is midi note 0. The midi notes for the other pads increase from there according to the split's column and row offsets. Thus each edostep is a unique midi note. Certain synths need this format to play edos. But the main reason to use Tuninng Table mode is to retune each edostep individually, by loading a tuning table in the form of a scala file into your synth, or by using MTS/ESP, or by running microtonal software such as alt-tuner.
 
-If an edo is selected, the LinnStrument outputs standard midi notes with tuning bends, and several edo notes will share the same midi note. But a split that's set to Tuning Table mode outputs edosteps instead. The lower left pad (or the lower right pad if the split is set to lefthanded) is midi note 0. The midi notes for the other pads increase from there according to the split's column and row offsets. Thus each edostep is a unique midi note. Certain synths need this format to play edos. But the main reason to use Tuninng Table mode is to retune each edostep individually to something else, by loading a tuning table in the form of a scala file into your synth (or running microtonal software such as alt-tuner).
+The midi note number each pad outputs is determined entirely by the column and row offsets. In theory, the edo you select doesn't matter. But when the edo is set correctly, transposing works better and the note lights make more sense.
 
-The midi note number each pad outputs is determined entirely by the column and row offsets. The edo you select in theory doesn't matter. However when the edo is set correctly, transposing works better and the note lights make more sense.
+Each note of an N-note scale is somewhat sharp or flat from N-edo. The Linnstrument doesn't know what those discrepancies are, and thus doesn't know what note to slide to. Thus the pad's pitch will be different slid up to vs played directly. However this is often only a comma difference even on long slides. You can hide the comma by turning on Quantize Hold. Otherwise you have to bend by ear, just like on a guitar.
 
-Large bends several pads wide won't work consistently because the Linnstrument doesn't know what the scale is, and thus doesn't know what note to bend to.
+*Example: Suppose you want to use Harry Partch's 43-note JI tuning. Set the edo to 43 and turn on Tuning Table mode. Load the appropriate scala file into your synth. Since the anchor pad and anchor note have no effect in Tuning Table mode, you may need to load a keyboard mapping file (file type .kbm) into your synth as well. This file sets a specific midi note to a specific frequency and another specific midi note to be the first note of your tuning. For example, midi note 69 = A above middle-C might be set to 440hz. But since Harry Partch used G for 1/1, using A for our anchor midi note is not ideal. Since there are 43 notes per octave but only 128 midi notes, we can only get about 3 octaves. Let's center our 3 octaves around middle-C. Set midi note 0 to 98hz, which is the G about 1.5 octaves below middle-C. Set the starting note to midi note 0. (Setting anchor note 43 to 196hz and/or setting the starting note to 43 would work just as well.)*
 
-There are only 128 midi notes. What if your tuning spans more than 128 edosteps? One solution is to use splits. Each split has up to 128 notes, so there can be a total of 256 pitches. But you can't slide across the split point. Also a large edo combined with large column and row offsets can actually exceed 256 edosteps. See the next two sections for two other solutions.
+There are only 128 midi notes. What if your tuning spans more than 128 edosteps? (For example, 3 octaves of 53edo.) One solution is to use splits. Each split has up to 128 notes, so there can be a total of 256 pitches. But you can't slide across the split point. Also a large edo combined with large column and row offsets can actually exceed 256 edosteps. See the next two sections for two other solutions.
 
-TUNING TABLE MODE WITH NO OVERLAP
+*When tuning table is set to ON (no CCs or rechannelling), all notes above 127 become dead pads.*
 
-If a split uses both No Overlap offset and Tuning Table mode, not only does each pitch have a unique midi note, each pad does too. Such a split can be used to launch audio or midi clips while you play normally in the other split.
+TUNING TABLE MODE WITH MIDI GROUPING CCs
 
-No OverLap can only cover 128 pads per split. But No OverLap combined with Tuning Table mode can give each of the 200 pads its own unique midi note/channel combo, even with large row/column offsets. 
+When there are more than 128 notes, microLinn assigns the notes to midi groups. There are up to 8 groups of 128 notes each. Group 1 is notes 0-127, group 2 is notes 128-255, etc. A group uses up to 16 midi channels as usual. Thus up to 1024 notes can be sent on any channel.
 
-*Details: The row offset equals the width of the split, even if column offset is on. Midi notes above 127 wrap around and start over at zero. When both Tuning Table mode and locator CC #1 are turned on (but rechannelling is off), the locator CC value changes to the midi group number, where group 1 is notes 0-127, group 2 is notes 128-255, etc. Your DAW can then run a simple script that uses the locator CC to redirect notes of a different group to a track with a different instance of your softsynth, into which you have loaded a different scala file. See the TallKite github for example code. (to do: write this code)*
+Your linnstrument can send a CC message immediately before every note-on indicating the midi group. Your DAW can then use a custom midi effect that filters out all but one group. Your DAW would have multiple tracks, each receiving from only one group, and each with one instance of your softsynth into which you have loaded the appropriate scala and kbm files.
 
-*Example: Suppose you want to detemper the Kite guitar layout into a JI tuning. (to do: complete this)*
+*Details: To send grouping CCs, swipe the tuning table mode past "ON" to "CC". You must also select a midi grouping CC. (Until you do, "CC" will be displayed in red.) The CC value is the midi group number, 1-8. Within a group, midi notes run from 0 to 127. Thus note 128 becomes midi note 0 in group 2. See the TallKite github for microLinnMidiGroupFilter.jsfx, a plug-in for Reaper, and microLinnMidiGroupDemo.RPP, an example Reaper project. Upon receiving a grouping CC, the filtering effect assigns a group (the CC's value) to the CC's channel. It then only passes midi data from those channels that a certain group has been assigned to.*
+
+*Midi grouping CCs are sent before locator CCs, so that locator CCs can be filtered out.*
 
 TUNING TABLE MODE WITH RECHANNELLING
 
-Rechannelling IDs the midi group by sending certain midi notes to channels beyond those selected. Rechannelling doesn't require programming your DAW like locator CCs do. But it does reduce the number of channels you can use, and hence reduces the polyphony. And because most or all of the 16 midi channels will often be used up, you might only be able to use one split. 
+Rechannelling indicates the midi group by sending certain midi notes to channels beyond those selected. Rechannelling doesn't require a custom filter effect like midi group CCs do. But it does reduce the number of channels you can use, and hence reduces the polyphony. And because most or all of the 16 midi channels will often be used up, you might only be able to use one split. 
 
-*Details: Turn on rechannelling by swiping past "ON" to "RCH". This will automatically set the split to use channel-per-note mode and a certain block of channels. Midi group 1 uses this block, and the other midi groups are sent to other blocks. Your DAW should send each block plus the main channel to a different synth with a different tuning table. The size of a channel block depends on the number of midi groups needed, which depends on how many midi notes your tuning uses. The number of groups is indicated by a vertical stack of 1, 2, 3 or 4 dots after the "RCH".*
+*Details: Turn on rechannelling by swiping past "CC" to "RCH". This will automatically set the current split to use channel-per-note mode and a certain block of channels. Midi group 1 uses this block, and the other midi groups are sent to other blocks. Your DAW should send each block plus the main channel to a different synth with a different kbm file. The size of a channel block depends on the number of midi groups needed, which depends on how many notes your tuning uses. MicroLinn automatically calculates all this. There is a maximum of 4 midi groups. The number of groups is indicated by a vertical stack of 1, 2, 3 or 4 dots after the "RCH".*
 
 For the left split,
-* For up to 128 midi notes = 1 group, rechannelling doesn't happen ("RCH" acts the same as "ON")
-* For 129-256 midi notes = 2 groups, the split will use channels 2-8. Midi in group 2 is sent to channels 9-15.
-* For 257-384 midi notes = 3 groups, the split will use channels 2-6. Group 2 uses 7-11 and group 3 uses 12-16.
-* For 385-512 midi notes = 4 groups, the split will use channels 1-4 (no Main channel). Group 2 uses 5-8, group 3 uses 9-12, and group 4 uses 13-16.
+* For up to 128 notes = 1 group, rechannelling doesn't happen ("RCH" acts the same as "ON")
+* For 129-256 notes = 2 groups, midi in group 1 is sent to channels 2-8. Midi in group 2 is sent to channels 9-15.
+* For 257-384 notes = 3 groups, group 1 uses channels 2-6, group 2 uses 7-11 and group 3 uses 12-16.
+* For 385-512 notes = 4 groups, group 1 uses channels 1-4 (no Main channel). Group 2 uses 5-8, group 3 uses 9-12, and group 4 uses 13-16.
 
 For the right split, 
-* For 2 groups, the split will use channels 9-15. Midi in group 2 is sent to channels 2-8.
-* For 3 groups, the split will use channels 11-15. Group 2 uses 6-10 and group 3 uses 1-5.
-* For 4 groups, the split will use channels 13-16 (no Main channel). Group 2 uses 9-12, group 3 uses 5-8, and group 4 uses 1-4.
+* For 2 groups, midi in group 1 is sent to channels 9-15. Midi in group 2 is sent to channels 2-8.
+* For 3 groups, group 1 uses channels 11-15, group 2 uses 6-10 and group 3 uses 1-5.
+* For 4 groups, group 1 uses channels 13-16 (no Main channel). Group 2 uses 9-12, group 3 uses 5-8, and group 4 uses 1-4.
 
-*If the left split only uses two groups, you can use the right split with channel 16. Furthermore, you can set the split to use fewer channels and the blocks will change to match. The channels should go up from 2 or down from 15. Or if there's no Main channel, up from 1 or down from 16. If you have N channels, the 2nd block is N channels higher (or lower for the right split) than the 1st block, the 3rd block is 2xN channels higher/lower, etc. For example, with 2 groups, setting the left split to channels 2-7 (6 channels) makes the 2nd block be 8-13, leaving 3 channels available for the right split.*
+*In the Per-Split display, the additional midi channel blocks are displayed in the accent color. Make sure the other split doesn't use these channels.*
+
+*You can only rechannel one split at a time. If the left split only uses two groups, channel 16 is free and you can use it for the right split. Furthermore, you can set the rechannelled split to use fewer channels and the blocks will change to match. The channels must be a contiguous block going up from 2 or down from 15. Or if there's 4 groups and no Main channel, up from 1 or down from 16. If you have N channels, the 2nd block is N channels higher (or lower for the right split) than the 1st block, the 3rd block is 2xN channels higher/lower, etc. For example, with 2 groups, setting the left split to channels 2-7 (6 channels) makes the 2nd block be 8-13, leaving 3 channels available for the right split. Don't select too many channels (e.g. 2-9), or some pads will be silent.*
 
 
 #  Technical notes 
@@ -465,7 +480,7 @@ KNOWN ISSUES:
 * Strumming is not yet microtonal
 * Same/blink carry-over leaves extra lights on
 * Condensing to a scale makes the red playedSame dots appear in the wrong places
-* In tuning table mode, sliding is inconsistent, especially when condensing to VAR
+* There is a hard upper limit of 1024 edosteps total
 * For edos above 41, rainbows are not ideal
 * Default scales are incomplete
 * See also the issues on the github

@@ -25,7 +25,7 @@ MicroLinn includes KVR forum member teknico's channel pressure fix, many thanks 
 See https://www.kvraudio.com/forum/viewtopic.php?t=591770
 https://github.com/rogerlinndesign/linnstrument-firmware/compare/master...teknico:linnstrument-firmware:less-jumpy-z-and-y-axes
 
-Current beta testers: Kite, Austin, Ira
+Current beta testers: Kite, Gordon, Austin, Ira
 
 ======================= TO DO ==============================
 
@@ -163,18 +163,15 @@ FIX/TEST/DEBUG
 
 uninstalling is broken :(
 
+tuning table modes: 55ed(4/3-50c) = 440/3 notes per octave, 1024 total notes means 1024x3/440 = 384/55 = 7 octaves
+
+decide, should tuning table notes be transposable?
+
 after bulk importing, or after unplugging, bend slope is too big, going to global menu fixes it
 
-when impprting/exporting, clear screen and display "IMP" or "EXP"?
-
-prevent simultaneously condensing and being in tuning table mode? 
+when bulk importing/exporting, clear screen and display "IMP" or "EXP"?
 
 merge hammerOnNewNoteOn into pullOffVelocity, 0 = no new note, 1 = noteOff velocity, etc.
-
-In lefty mode, with microLinn on, the red SAME dots are way off
-
-write a new function, isLinn200(), use for string output, makes it easy to test all linn128 strings on a 200
-write an alternate version of microLinnDrawString(), takes 2 strings, one for linn200, one for linn128
 
 increase MICROLINN_MAX_COL_OFFSET to 10 at least (M2 of 54edo)
 
@@ -187,8 +184,6 @@ import types 9-11: warning excess data
 import type 14, 15: various data failures
 
 fix bug with anchor row = 0 and guitar tuning, strings preview note are off by one
-
-fix microLinnCalcHammerOnEdosteps(), include equave semitones & cents
 
 ask on the forum about the unplugging bug for NRPN send/receive
 
@@ -238,8 +233,7 @@ try implementing getMicroLinnNoteNumColumn()
 
 comment out microLinnSetupKitesPersonalPrefs() call
 
-on the 200, move everything but the far left column over 2 cells?
-On the note lights screen, move both pink walls in 1 column? or move the whole display over 2 cells if on a 200 model?
+fix colors for 39, 43 & 47edo -- no pink next to the pink wall
 
 OLD WAY
 The colors use the rainbow metaphor, red-yellow-green-blue = sharp-to-flat = supermajor-to-subminor. There's a rainbow of 2nds, a rainbow of 3rds, etc.
@@ -258,7 +252,7 @@ warning: RAM is limited, can cause Arduino IDE triple compile error
 col 5) Per-split non-microtonal settings
   row 2) Hammer-on window in tens of cents (OFF, 10, 20... 500)
   row 3) Hammer-on window in tens of milliseconds (0, 10, 20... 500)
-  row 4) Hammer-on new note-on (YES, NO)
+  row 4) Hammer-on mode (NNN = no new note, NOV = NoteOff velocity...)
   row 5) Pull-off mode (various)
 
 col 12) Microtonal scale aka note lights
@@ -267,6 +261,8 @@ col 12) Microtonal scale aka note lights
 col 16) Global microtonal settings
   row 6) Sweetening amount in tenths of cents (OFF, 0.1 to 6.0)
   row 7) Large EDO for fine tuning (OFF, various 56-311, 1200)
+
+timbre/Y smoothing - as well as maxY, compute avgY? OFF, Z, Z&Y, Z&Y'
 
 improve XYZ behavior with Nathan Kopp's code?
   https://github.com/nathankopp/linnstrument-firmware/wiki
@@ -287,6 +283,8 @@ rather than swiping, press pads harder/softer to scroll faster/slower thru value
 
 midi looper?
 
+besides 8VE± footswitch option, have 8VE minus-plus, lowers by an 8ve when pressed
+
 add a few custom colors? user can set the rgb values themselves. use jay sullivan's code:
 https://github.com/rogerlinndesign/linnstrument-firmware/commit/5ea10702f9f98afa2af1cda266b8d4e90e5483ea
 add new color between lime and green for neutral intervals?
@@ -298,11 +296,15 @@ drum pad mode, besides ON and OFF, add MRMB/MRB for marimba mode
   if custom light pattern or if microLinn fretboard, use the previous scale or else the 1st scale
 
 hammerons/pulloffs screen, select for each split,
+  see colsInRowsTouched[MAXROWS]
+  play C vC ^C, lift up ^C, go to C or vC? (closest vs. latest)
+  play vC ^C C, lift up C, go to ^C or vC? both are equally close (highest vs lowest vs latest)
   a window of so many cents, 0 = off
-  a window of so many tens of milliseconds? inside this window both notes sound, outside only 1 sounds
+  a window of so many tens of milliseconds, inside this window both notes sound, outside only 1 sounds
   option to send or not send a new noteon when hammering or pulling off? (guitar = yes, wind instrument = no)
   if new noteOn, send the noteOn on the same channel (same as the current strumming behavior)
   if no new noteOn, send a big pitch bend instead (solves the 41edo mono trill issue)
+  thus the cents window cant't be bigger than the pitchbend range if no new noteOns
   pulloffs: old note's velocity = the new note's velocity or the original old velocity? (pull-off vs lift-off)
   byte pullOffVelocity; 0 = 2nd note's noteOff velocity, 1 = 1st noteOn veloc, 2 = 2nd noteOn veloc, 3 = average them
   see handleStrummedRowChange(), handleStrummedOpenRow()
@@ -483,7 +485,7 @@ const byte MICROLINN_MAJ_2ND[MICROLINN_MAX_EDO+1] = {      // defined not as bes
 
 const byte MICROLINN_MAJ_2ND_TR[MICROLINN_MAX_EDO+1] = {   // defined not as best 9/8 but as best 3/2 minus best 4/3
   0,  0,  0,  0,  1,   1,  1,  1,  1,  1,    // 0-9        // but it's actually just a single edostep for edos 6, 8, 10 & 12
-  1,  1,  1,  1,  2,   3,  2,  3,  2,  3,    // 10-19      // and it's 13b and 18b, not 13 and 18
+  1,  1,  1,  3,  2,   3,  2,  3,  4,  3,    // 10-19      // 13 and 18, not 13b and 18b
   4,  3,  4,  3,  4,   5,  4,  5,  4,  5,    // 20-29      // used for transposePitch
   6,  5,  6,  5,  6,   5,  6,  7,  6,  7,    // 30-39
   6,  7,  8,  7,  8,   7,  8,  7,  8,  9,    // 40-49
@@ -828,8 +830,8 @@ float edostepSize;                                              // edo's step si
 float microLinnSemitonesPerPad[NUMSPLITS];                      // number of 12edo semitones in a pitch bend one pad wide, positive even when lefty
 short microLinnColOffsetCents[NUMSPLITS];                       // row/col offset cents are set only when user sets an offset directly...
 short microLinnRowOffsetCents[NUMSPLITS];                       // ...used to avoid the offset drifting too wide or too narrow when switching edos
-short microLinnGlobalRowOffsetCents;
-short microLinnGuitarTuningCents[MAXROWS];                      // cents between open strings, can be negative, [0] is unused
+short microLinnGlobalRowOffsetCents;                            // used to adjust either Global.rowOffset or Global.customRowOffset when changing the edo
+short microLinnGuitarTuningCents[MAXROWS];                      // cents between open strings, can be negative, [0] is used as DIA/CHRO flag
 short microLinnGuitarTuning[MAXROWS];                           // cumulative row offsets, unlike Global.microLinn.guitarTuning, for a faster calcTuning()
 short microLinnHighestGuitarNote;                               // the highest/lowest note in the anchor column, as edosteps from the anchor cell...
 short microLinnLowestGuitarNote;                                // ...used to find lowestEdostep and numGroups, and to limit guitar range when changing edos
@@ -913,6 +915,7 @@ short microLinnLCM (short x,  short y) {        // returns the least common mult
   return (z == 0 ? 0 : abs (x * y) / z);        // LCM (x, 0) = x, LCM (0, y) = y, LCM (0, 0) = 0
 }
 
+// unused, delete?
 short microLinnRound (float x) {
   return floor (x + 0.5);                       // round towards positive infinity
 }
@@ -965,6 +968,11 @@ byte microLinnGetFret(byte side, byte col) {
   return microLinnMod (fret - 1, modBase);
 }
 
+boolean isLinn200() {          // only call this function for text displays! not calibration, scan order, Z-bias, etc.!
+//return false;                // uncomment this line to test linn128 text displays on a linn200
+  return LINNMODEL == 200;
+}
+
 boolean isMicroLinnOn() {
   return Global.microLinn.EDO >= 5;
 }
@@ -999,7 +1007,7 @@ void toggleMicroLinnUninstall() {
 // the lowest edostep is usually in one of the corners, but in guitar tuning it can be in any row of col 1 or 25
 // there are often more than 128 edosteps, so midi notes come in groups of 128, up to 4 groups for a total of 512 notes
 // VirtualTouchInfo, StepEventState have note as a short 0..511 plus -1 for no note
-// TouchInfo, VirtualTouchInfo have note as a signed char -1..127, also have microLinnGroup 0..3
+// TouchInfo, VirtualTouchInfo have note as a signed char -1..127, also have microLinnGroup 0..7
 // all the sequencer functions treat the note as a short because getNote and setNote unpack data[0] and data[5]
 
 // to do: ls_arpeggiator.ino: playingArpNote, stepArpNote, also low row strumming, restrike
@@ -1053,7 +1061,8 @@ signed char getMicroLinnMidiNote(byte side, signed char note, byte group) {
 signed char getMicroLinnMidiNote(byte side, short edostep) {
   if (edostep < 0) return -1;
   if (Split[side].microLinn.tuningTable > 0) {
-    // discard higher bits, the DAW should use locator CCs or rechannelling to deduce them
+    if (edostep > 127 && Split[side].microLinn.tuningTable == 1) return -1;       // bug: should this be transposed?
+    // discard higher bits, the DAW should use midi group CCs or rechannelling to deduce them
     return microLinnMod(edostep + microLinnTransposition(sensorSplit), 128);      // bug: should this be transposed?
   }
   return microLinnMidiNote[side][edostep];
@@ -1153,12 +1162,23 @@ short getMicroLinnRowOffsetNote(byte side, byte row) {
 // this gives every pad a unique combo of midi note and midi channel
 signed char rechannelMicroLinnGroup(byte side, signed char chan, byte group) {
   if (group == 0) return chan;
-  if (Split[side].microLinn.tuningTable != 2) return chan;
+  if (Split[side].microLinn.tuningTable < 3) return chan;
   if (side == RIGHT) group *= -1;                         // right split adds new blocks below not above
   chan += group * microLinnChannelCount[side];
-  if (chan > 16) chan -= 16;                              // wrap around in case the user picked the channels wrong
-  if (chan < 1)  chan += 16;
+  if (chan > 16) return -1;                               // bad channel = dead pad
+  if (chan < 1)  return -1;
   return chan;
+}
+
+void showMicroLinnExtraMidiChannels(byte side) {
+  if (!isMicroLinnOn()) return;
+  if (Split[side].microLinn.tuningTable < 3) return;
+  byte n = microLinnChannelCount[side];
+  byte numExtraChannels = n * (microLinnNumGroups[side] - 1);
+  byte firstChannel = (side == LEFT ? 2 + n : 16 - n - numExtraChannels);
+  for (byte chan = firstChannel; chan < firstChannel + numExtraChannels; ++chan) {
+    if (!Split[side].midiChanSet[chan-1]) setMidiChannelLed(chan, Split[side].colorAccent);
+  }
 }
 
 // called from StepEvent::getFaderMax() in ls_sequencer.ino
@@ -1237,6 +1257,7 @@ void initializeMicroLinn() {
     Split[side].microLinn.condensedBendPerPad = 0;
     Split[side].microLinn.defaultLayout = 0;
     Split[side].microLinn.tuningTable = 0;
+    Split[side].microLinn.midiGroupCC = -1;
     Split[side].microLinn.transposeEDOsteps = 0;
   }
 
@@ -1340,6 +1361,7 @@ void microLinnSetupKitesPersonalPrefs() {       // speed up debugging cycle, del
   Split[LEFT].pitchCorrectHold = Split[RIGHT].pitchCorrectHold = pitchCorrectHoldOff;
   Split[LEFT].expressionForZ   = Split[RIGHT].expressionForZ   = loudnessChannelPressure;
   Split[LEFT].playedTouchMode  = Split[RIGHT].playedTouchMode  = playedSame;
+  Split[LEFT].microLinn.midiGroupCC = Split[RIGHT].microLinn.midiGroupCC = 20;
   Split[RIGHT].colorMain = COLOR_LIME;
   if (Global.microLinn.EDO == 4) {Global.rowOffset = 4;}              // 12edo in 3rds
   Global.setSwitchAssignment(3, ASSIGNED_MICROLINN_EDO_UP,   false); 
@@ -1355,6 +1377,9 @@ void microLinnSetupKitesPersonalPrefs() {       // speed up debugging cycle, del
   customLedPatternActive = true;                                      // 41edo fretboard
   config.preset[5].split[LEFT].playedTouchMode  = playedSame;
   config.preset[5].split[RIGHT].playedTouchMode = playedSame;
+  config.preset[5].split[LEFT].microLinn.midiGroupCC  = 20;
+  config.preset[5].split[RIGHT].microLinn.midiGroupCC = 20;
+  config.preset[5].split[RIGHT].colorMain = COLOR_LIME;
 };
 
 boolean microLinnIsLinked (byte leftVal, byte rightVal, byte offVal) {      // don't auto-link two OFFs
@@ -1377,6 +1402,7 @@ void setupMicroLinn() {                              // runs when the Linnstrume
   microLinnPerSplitXenSettingsLinked[7] = microLinnIsLinked(Split[LEFT].microLinn.condensedBendPerPad, Split[RIGHT].microLinn.condensedBendPerPad, 0);
   microLinnPerSplitXenSettingsLinked[6] = microLinnIsLinked(Split[LEFT].microLinn.defaultLayout, Split[RIGHT].microLinn.defaultLayout, 0);
   microLinnPerSplitXenSettingsLinked[5] = microLinnIsLinked(Split[LEFT].microLinn.tuningTable, Split[RIGHT].microLinn.tuningTable, 0);
+  microLinnPerSplitXenSettingsLinked[4] = microLinnIsLinked(Split[LEFT].microLinn.midiGroupCC, Split[RIGHT].microLinn.midiGroupCC, -1);
 
   calcMicroLinnTuning();
   for (byte side = 0; side < NUMSPLITS; ++side) {
@@ -1397,7 +1423,9 @@ void setupMicroLinn() {                              // runs when the Linnstrume
 }
 
 void microLinnCalcHammerOnEdosteps(byte side) {
-  microLinnHammerOnEdosteps[side] = floor((edo * Split[side].microLinn.hammerOnCentsWindow) / 120.0);       // window is dimes not cents
+  short equave = 100 * Global.microLinn.equaveSemitones + Global.microLinn.equaveStretch;
+  // use paretheses to ensure division happens last. edosteps are automatically floored, so 180c = 1\12
+  microLinnHammerOnEdosteps[side] = (edo * Split[side].microLinn.hammerOnCentsWindow * 10) / equave;
 }
 
 void microLinnResetFretboard (byte edo) {
@@ -1434,7 +1462,7 @@ void microLinnUpdateAnchorString() {
     digit1 = '0' + floor (Global.microLinn.anchorCol / 10.0);
     digit2 = '0' + Global.microLinn.anchorCol % 10;
   }
-  if (LINNMODEL == 128 && Global.microLinn.anchorCol >= 10) {        // "3 12 ", drop R and C to fit 3 digits in
+  if (!isLinn200() && Global.microLinn.anchorCol >= 10) {            // "3 12 ", drop R and C to fit 3 digits in
     microLinnAnchorString[0] = '8' - Global.microLinn.anchorRow; 
     microLinnAnchorString[1] = ' ';
     microLinnAnchorString[2] = digit1;
@@ -1452,16 +1480,7 @@ void microLinnUpdateAnchorString() {
 /************** functions to adjust the col/row offsets when the edo changes *********************/
 
 short microLinnEDOstepsToCents (short edosteps) {
-  return (100 * Global.microLinn.equaveSemitones + Global.microLinn.equaveStretch) * edosteps / edo;
-  /*************** delete later 
-  short cents = (1200.0 * edosteps) / edo;                  // unstretched 8ve because we're comparing edos not tunings
-                                                            // short not float because we're computing offsets not tunings
-  if (cents ==  500) cents =  498;                          // 498¢ so that 12edo -> 30edo makes 480c not 520c
-  if (cents ==  700) cents =  702;
-  if (cents == -500) cents = -498;
-  if (cents == -700) cents = -702;
-  return cents;
-  *************************/
+  return round((100.0 * Global.microLinn.equaveSemitones + Global.microLinn.equaveStretch) * edosteps / edo);
 }
 
 void microLinnCalcColOffsetCents(byte side) {
@@ -1476,7 +1495,8 @@ void microLinnCalcRowOffsetCents(byte side) {
 
 // called from handleGlobalSettingNewTouch(), handleGlobalSettingHold(), 
 // handleGlobalSettingRelease() and handleRowOffsetNewTouch()
-void calcMicroLinnGlobalRowOffsetCents() {      
+void calcMicroLinnGlobalRowOffsetCents() {
+  // if there's no rowOffset, use the customRowOffset, because that's what will get adjusted when changing edos
   if (Global.rowOffset == ROWOFFSET_ZERO ||
       Global.rowOffset == ROWOFFSET_GUITAR ||
       Global.rowOffset == ROWOFFSET_NOOVERLAP ||
@@ -1552,15 +1572,16 @@ void microLinnApplyDefaultLayout(byte side) {
   signed char row, col;
   byte m2 = MICROLINN_MIN_2ND[edo];
   byte M2 = MICROLINN_MAJ_2ND[edo];
+  byte A1 = abs(M2 - m2);                         // use abs so that the row offset is > 0 even with superflat edos like 16 
   byte P4 = MICROLINN_PERF_4TH[edo];
   switch (Split[side].microLinn.defaultLayout) {
-    case 1:  {row = abs(M2 - m2);  col = M2;        break;}      // A1, M2 = Bosanquet
-    case 2:  {row = m2;            col = M2;        break;}      // m2, M2 = Bosanquet 2
-    case 3:  {row = P4 - M2;       col = M2;        break;}      // m3, M2 = Accordion B/C
-    case 4:  {row = P4;            col = M2;        break;}      // P4, M2 = Wicki-Hayden
-    case 5:  {row = P4 + M2;       col = M2;        break;}      // P5, M2 = Wicki-Hayden 2
-    case 6:  {row = P4;            col = edo - P4;  break;}      // P4, P5 = Array mbira
-    case 7:  {row = edo;           col = edo - P4;  break;}      // P8, P5 = Array mbira 2
+    case 1:  {row = A1;       col = M2;       break;}      // A1, M2 = Bosanquet
+    case 2:  {row = m2;       col = M2;       break;}      // m2, M2 = Bosanquet 2
+    case 3:  {row = P4 - M2;  col = M2;       break;}      // m3, M2 = Accordion B/C
+    case 4:  {row = P4;       col = M2;       break;}      // P4, M2 = Wicki-Hayden
+    case 5:  {row = P4 + M2;  col = M2;       break;}      // P5, M2 = Wicki-Hayden 2
+    case 6:  {row = P4;       col = P4 + M2;  break;}      // P4, P5 = Array mbira
+    case 7:  {row = edo;      col = P4 + M2;  break;}      // P8, P5 = Array mbira 2
     default: {
       // swiping from BSQ to OFF sets the row/col offsets to OFF
       Split[side].microLinn.colOffset = 1;
@@ -1626,7 +1647,7 @@ void microLinnAdjustColAndRowOffsets() {
     microLinnCalcGuitarTuning();
   }
   else {
-    // row = 1 because microLinnGuitarTuningCents[0] is unused
+    // row = 1 because microLinnGuitarTuningCents[0] is only used for the DIA/CHRO flag
     for (byte row = 1; row < NUMROWS; ++row) {
       newOffset = round ((edo * microLinnGuitarTuningCents[row]) / 1200.0);
       if (newOffset == 0) {
@@ -1735,9 +1756,9 @@ void microLinnCalcGuitarTuning() {
 // calcs what, not where, also calcs numGroups and channelCount for rechanneling
 void microLinnCalcLowestEdostepEtc(byte side) {
   short lowestRow, lowestCol, distance, highestRow, highestEdostep;
-  if (Split[side].microLinn.rowOffset >= 0) {                                       // use this split's row offset if positive or NOVR
+  if (Split[side].microLinn.rowOffset >= 0) {                                       // use the per-split row offset if it's positive or NOVR
     lowestRow = 0;
-  } else if (Split[side].microLinn.rowOffset >= -MICROLINN_MAX_ROW_OFFSET) {        // or if negative but not OFF
+  } else if (Split[side].microLinn.rowOffset >= -MICROLINN_MAX_ROW_OFFSET) {        // ...or if it's negative but not OFF
     lowestRow = 7;
   } else if (Global.rowOffset == ROWOFFSET_OCTAVECUSTOM) {
     lowestRow = Global.customRowOffset >= 0 ? 0 : 7;
@@ -1770,6 +1791,14 @@ void microLinnCalcLowestEdostepEtc(byte side) {
   microLinnNumGroups[side] = ((highestEdostep - microLinnLowestEdostep[side]) >> 7) + 1;
 
   // calc microLinnChannelCount for rechannelling
+  microLinnChannelCount[side] = 0;
+  for (byte ch = 0; ch < 16; ++ch) {
+    if (Split[side].midiChanSet[ch]) microLinnChannelCount[side] += 1;
+  }
+}
+
+// called by toggleChannel() in ls_settings.ino
+void calcMicroLinnNumChannels(byte side) {
   microLinnChannelCount[side] = 0;
   for (byte ch = 0; ch < 16; ++ch) {
     if (Split[side].midiChanSet[ch]) microLinnChannelCount[side] += 1;
@@ -1816,8 +1845,10 @@ void calcMicroLinnTuning() {
   // also needed for changes to the split point if in NO_OVERLAP mode
 
   if (!isMicroLinnOn()) return;
+
 midiSendControlChange(41, 41, 1, true);    // for debugging, delete later
 MLcalcTuningTimer = micros();
+
   if (Split[LEFT].microLinn.condensedBendPerPad > 0 ||
       Split[RIGHT].microLinn.condensedBendPerPad > 0) {
     microLinnCalcCondensedScale();
@@ -1842,6 +1873,11 @@ MLcalcTuningTimer = micros();
       microLinnCalcCondensedTuning(side);
       continue;
     }
+    /************ bug, JI tunings can be condensed
+    if (Split[side].microLinn.tuningTable > 0) {
+      microLinnCalcTuningTable(side);
+      continue;
+    }**********/
     short colOffset = Split[side].microLinn.colOffset;
     microLinnSemitonesPerPad[side] = colOffset * edostepSize;                       // e.g. kite tuning is 2\41 = 0.5854 semitones
     if (isLeftHandedSplit(side)) colOffset *= -1;
@@ -1967,6 +2003,26 @@ void microLinnCalcCondensedTuning(byte side) {                                  
   }
 }
 
+// needs work, delete?
+void microLinnCalcTuningTable(byte side){
+  short colOffset = Split[side].microLinn.colOffset;
+  short colWidth = 0;
+  if (isLeftHandedSplit(side)) {
+    colWidth = (NUMCOLS - 2) * colOffset;
+    colOffset *= -1;
+  }
+  short virtualEdostep;
+  for (byte row = 0; row < NUMROWS; ++row) {
+    short rowOffset = microLinnSumOfRowOffsets(side, 0, row);                // edosteps from the lowest row
+    for (byte col = 1; col < NUMCOLS; ++col) {
+      virtualEdostep = rowOffset + (col-1) * colOffset + colWidth;           // the lower left cell is always edostep 0, unless lefty
+      microLinnEdostep[side][col][row] = virtualEdostep;
+      microLinnMidiNote[side][virtualEdostep] = virtualEdostep;
+      microLinnTuningBend[side][virtualEdostep] = 0;                         // not actually needed
+    }
+  }
+}
+
 /************** footswitch functions called in ls_switches.ino ************************/
 
 void changeMicroLinnEDO(int delta) {
@@ -2079,13 +2135,17 @@ byte revealMicroLinnRainbowColor(byte split, short col, byte row) {
   return microLinnRainbowColor(edo, microLinnEdostep[split][col][row]);
 }
 
+byte microLinnWarningColor (byte side) {
+  return (Split[side].colorMain == COLOR_RED ? COLOR_MAGENTA : COLOR_RED);
+}
+
 void paintMicroLinnPlusMinus() {                                   // for the "8VE±" foot pedal when swiping TAP TEMPO
-  if (LINNMODEL == 200) {
-    bigfont_draw_string(18,  2, "+", globalColor, true);           // true/false = erase
+  if (isLinn200()) {
+    bigfont_draw_string(18,  2, "+", globalColor, false);          // true/false = erase
     bigfont_draw_string(18, -2, "-", globalColor, false);
   } else {
-    smallfont_draw_string(12,  1, "+", globalColor, true);
-    smallfont_draw_string(12, -2, "-", globalColor, false);
+    smallfont_draw_string(13,  1, "+", globalColor, false);
+    smallfont_draw_string(13, -2, "-", globalColor, false);
   }
 }
 
@@ -2166,7 +2226,7 @@ byte getMicroLinnRowOffsetColor() {                                             
   if (rowOffset < -MICROLINN_MAX_ROW_OFFSET) return Split[side].colorMain;               // OFF is never red
   if (rowOffset >  MICROLINN_MAX_ROW_OFFSET) rowOffset = microLinnGetSplitWidth(side);   // NOVR
   if (microLinnGCD(rowOffset, Split[side].microLinn.colOffset) != 1) {
-    return (Split[side].colorMain == COLOR_RED ? COLOR_MAGENTA : COLOR_RED);
+    return microLinnWarningColor(side);
   }
   return Split[side].colorMain;
 }
@@ -2175,7 +2235,7 @@ byte getMicroLinnColOffsetColor() {                                             
   byte side = Global.currentPerSplit;
   byte colOffset = Split[side].microLinn.colOffset;
   if (colOffset == 1) return Split[side].colorMain;
-  byte badColor = (Split[side].colorMain == COLOR_RED ? COLOR_MAGENTA : COLOR_RED);
+  byte badColor = microLinnWarningColor(side);
 
   signed char rowOffset = Split[side].microLinn.rowOffset;
   if (rowOffset > MICROLINN_MAX_ROW_OFFSET) {rowOffset = microLinnGetSplitWidth(side);}  // NOVR
@@ -2274,12 +2334,12 @@ void paintMicroLinnDebugDump() {     // delete later from here and from ls_displ
     if (sensorCol == 25) paintNumericDataDisplay(Split[sp].colorMain, fretboards, 0, false);
   } else if (sensorRow == 5) {
     byte side = sensorCol % 2;
-    if (sensorCol <= 2) paintNumericDataDisplay(Split[1-side].colorMain, Split[1-side].microLinn.colOffset, 0, false);
-    if (sensorCol == 3) paintNumericDataDisplay(Split[sp].colorMain, Global.microLinn.useRainbow, 0, false);
+    if (sensorCol <= 2)  paintNumericDataDisplay(Split[1-side].colorMain, Split[1-side].microLinn.colOffset, 0, false);
+    if (sensorCol == 3)  paintNumericDataDisplay(Split[sp].colorMain, Global.microLinn.useRainbow, 0, false);
     if (sensorCol >= 4 && sensorCol <= 15) 
-                        paintNumericDataDisplay(Split[side].colorMain, config.preset[(sensorCol-4)/2].split[side].microLinn.colOffset, 0, false);
+                         paintNumericDataDisplay(Split[side].colorMain, config.preset[(sensorCol-4)/2].split[side].microLinn.colOffset, 0, false);
     if (sensorCol >= 16 && sensorCol <= 21) 
-                        paintNumericDataDisplay(Split[sp].colorMain, config.preset[sensorCol-16].global.microLinn.useRainbow, 0, false);
+                         paintNumericDataDisplay(Split[sp].colorMain, config.preset[sensorCol-16].global.microLinn.useRainbow, 0, false);
   } else if (sensorRow == 4) {
     if (sensorCol == 1)  paintNumericDataDisplay(Split[sp].colorMain, sizeof(Device), 0, true);
     if (sensorCol == 2)  paintNumericDataDisplay(Split[sp].colorMain, sizeof(MicroLinnDevice), 0, true);
@@ -2324,8 +2384,13 @@ byte microLinnGetColor (boolean selected) {
 }
 
 void microLinnDrawString (byte col, byte row, const char* str, byte color, boolean erase) {
-  if (LINNMODEL == 200) {smallfont_draw_string(col, row, str, color, erase);}
-  else                   {condfont_draw_string(col, row, str, color, erase);}
+  if (isLinn200()) {smallfont_draw_string(col, row, str, color, erase);}
+  else               {condfont_draw_string(col, row, str, color, erase);}
+}
+
+void microLinnDrawString (byte col, byte row, const char* str, const char* str2, byte color, boolean erase) {
+  if (isLinn200()) {smallfont_draw_string(col, row, str,  color, erase);}
+  else               {condfont_draw_string(col, row, str2, color, erase);}
 }
 
 void microLinnScrollSmall (String text) {
@@ -2502,7 +2567,6 @@ void microLinnHandleColOffsetNewTouch() {
 void microLinnPaintRowOffset() {
   byte side = Global.currentPerSplit;
   byte color = getMicroLinnRowOffsetColor();
-  microLinnPaintShowSplitSelection (microLinnRowOffsetLinked);
   if (Split[side].microLinn.rowOffset < -MICROLINN_MAX_ROW_OFFSET) {
     smallfont_draw_string(2, 1, "OFF", Split[side].colorMain, false);
   }
@@ -2510,16 +2574,7 @@ void microLinnPaintRowOffset() {
     microLinnDrawString(0, 1, "NOVR", color, false);
   }
   else paintNumericDataDisplay(color, Split[side].microLinn.rowOffset, -4, false);
-}
-
-boolean microLinnHandleNumericDataNewTouchRow(boolean &currentData) {       // only called for microLinn per-split row offsets
-  unsigned short newData = handleNumericDataNewTouchRowRaw(currentData, false, true);
-  if (newData != currentData) {
-    currentData = newData;
-    updateDisplay();
-    return true;
-  }
-  return false;
+  microLinnPaintShowSplitSelection (microLinnRowOffsetLinked);              // paint this last or else linn128 NOVR covers it up
 }
 
 void microLinnHandleRowOffsetNewTouch() {
@@ -2529,17 +2584,17 @@ void microLinnHandleRowOffsetNewTouch() {
 
   // convert from "stored as" format to "appears as" format
   signed char rowOffset = Split[side].microLinn.rowOffset;                           // stored as -26=OFF, -25..25, 26=NOVR 
-  boolean isPositive = inRange (rowOffset, 0, MICROLINN_MAX_ROW_OFFSET);
+  byte isPositive = inRange (rowOffset, 0, MICROLINN_MAX_ROW_OFFSET) ? 1 : 0;        // pseudo-boolean for handleNumericDataNewTouchRow()
        if (rowOffset == -MICROLINN_MAX_ROW_OFFSET - 1) {rowOffset = -2;}             // OFF
   else if (rowOffset ==  MICROLINN_MAX_ROW_OFFSET + 1) {rowOffset = -1;}             // NOVR = no overlap
   else rowOffset = abs(rowOffset);
   // handle touches
   handleNumericDataNewTouchCol(rowOffset, -2, MICROLINN_MAX_ROW_OFFSET, true);       // appears as OFF, NOVR, 0, ±(1..25)
-  if (rowOffset > 0) microLinnHandleNumericDataNewTouchRow(isPositive);
+  if (rowOffset > 0) handleNumericDataNewTouchRow(isPositive, 0, 1);
   // convert back
        if (rowOffset == -2) {rowOffset = -MICROLINN_MAX_ROW_OFFSET - 1;}             // OFF
   else if (rowOffset == -1) {rowOffset =  MICROLINN_MAX_ROW_OFFSET + 1;}             // NOVR
-  else if (!isPositive)     {rowOffset *= -1;}
+  else if (isPositive == 0) {rowOffset *= -1;}
   Split[side].microLinn.rowOffset = rowOffset;
 
   microLinnCalcRowOffsetCents(side);
@@ -2551,7 +2606,7 @@ void microLinnHandleRowOffsetNewTouch() {
 }
 
 void microLinnPaintPerSplitSettingsButtons() {
-  for (byte row = 7; row <= 7; ++row) {           // change row = 7 to row = 3 for hammer-ons
+  for (byte row = 7; row <= 7; ++row) {           // change row = 7 to row = 4 for hammer-ons
     setLed(1, row, microLinnGetColor(microLinnPerSplitSettingsRowNum == row), cellOn);
   }
 }
@@ -2566,8 +2621,7 @@ void microLinnPaintPerSplitSettings() {
       case 7: microLinnScrollSmall ("SHOW CUSTOM LIGHT PATTERN"); break;
     //case 6: microLinnScrollSmall ("HAMMER-ON WINDOW IN CENTS"); break;
     //case 5: microLinnScrollSmall ("HAMMER-ON WINDOW IN MILLISECONDS"); break;
-    //case 4: microLinnScrollSmall ("HAMMER-ON MODE"); break;
-    //case 3: microLinnScrollSmall ("PULL-OFF MODE"); break;
+    //case 4: microLinnScrollSmall ("PULL-OFF MODE"); break;
     }
     microLinnPaintConfigButtons();
     microLinnPaintShowSplitSelection(microLinnPerSplitSettingsLinked[microLinnPerSplitSettingsRowNum]);
@@ -2598,9 +2652,6 @@ void microLinnPaintPerSplitSettings() {
       paintNumericDataDisplay(color, 10 * Split[side].microLinn.hammerOnTimeWindow, 2, true);
       break;
     case 4:
-      smallfont_draw_string(2, 1, Split[side].microLinn.hammerOnNewNoteOn ? "YES" : "NO", color, false);
-      break;
-    case 3:
       paintNumericDataDisplay(color, Split[side].microLinn.pullOffVelocity, -2, false);
       break;
     ***********/
@@ -2610,7 +2661,7 @@ void microLinnPaintPerSplitSettings() {
 void microLinnHandlePerSplitSettingsNewTouch() {
   microLinnPerSplitSettingsNowScrolling = false;
   if (sensorCol == 1) {
-    if (sensorRow >= 7 || sensorRow == 0) {   // change 7 to 3 for hammer-ons
+    if (sensorRow >= 7 || sensorRow == 0) {   // change 7 to 4 for hammer-ons
       microLinnPerSplitSettingsRowNum = sensorRow;
       updateDisplay(); 
     }
@@ -2620,7 +2671,7 @@ void microLinnHandlePerSplitSettingsNewTouch() {
   byte side = Global.currentPerSplit;
   byte otherSide = 1 - side;
   microLinnHandleShowSplit(microLinnPerSplitSettingsLinked[microLinnPerSplitSettingsRowNum]);
-  if (microLinnPerSplitSettingsRowNum < 7)   // change 7 to 3 for hammer-ons
+  if (microLinnPerSplitSettingsRowNum < 7)   // change 7 to 4 for hammer-ons
     microLinnPerSplitSettingsLinked[microLinnPerSplitSettingsRowNum] = false;        // don't link if there's nothing to link
 
   switch (microLinnPerSplitSettingsRowNum) {
@@ -2639,19 +2690,11 @@ void microLinnHandlePerSplitSettingsNewTouch() {
       }
       break;
     case 5:
-      handleNumericDataNewTouchCol(Split[side].microLinn.hammerOnTimeWindow, 0, 50, true);   // in hundredths of a second
-      microLinnCalcHammerOnEdosteps(side);
-      if (microLinnPerSplitSettingsLinked[6]) {
+      handleNumericDataNewTouchCol(Split[side].microLinn.hammerOnTimeWindow, 0, 50, true);       // in hundredths of a second
+      if (microLinnPerSplitSettingsLinked[5]) 
         Split[otherSide].microLinn.hammerOnTimeWindow = Split[side].microLinn.hammerOnTimeWindow;
-        microLinnCalcHammerOnEdosteps(otherSide);
-      }
       break;
     case 4:
-      handleNumericDataNewTouchCol(Split[side].microLinn.hammerOnNewNoteOn);
-      if (microLinnPerSplitSettingsLinked[5])
-        Split[otherSide].microLinn.hammerOnNewNoteOn = Split[side].microLinn.hammerOnNewNoteOn;
-      break;
-    case 3:
       handleNumericDataNewTouchCol(Split[side].microLinn.pullOffVelocity, 0, 4, true);
       if (microLinnPerSplitSettingsLinked[4])
         Split[otherSide].microLinn.pullOffVelocity = Split[side].microLinn.pullOffVelocity;
@@ -2662,7 +2705,7 @@ void microLinnHandlePerSplitSettingsNewTouch() {
 }
 
 void microLinnHandlePerSplitSettingsHold() {
-  if (sensorCol == 1 && sensorRow >= 7 &&  // change 7 to 3 for hammer-ons     // long-press col 1
+  if (sensorCol == 1 && sensorRow >= 7 &&  // change 7 to 4 for hammer-ons     // long-press col 1
       isCellPastSensorHoldWait() && 
       !microLinnPerSplitSettingsNowScrolling) {     
     microLinnPerSplitSettingsNowScrolling = true;
@@ -2671,7 +2714,7 @@ void microLinnHandlePerSplitSettingsHold() {
 }
 
 void microLinnHandlePerSplitSettingsRelease() {                                // short-press col 1
-  if (sensorCol == 1 && sensorRow >= 7) updateDisplay();    // change 7 to 3 for hammer-ons
+  if (sensorCol == 1 && sensorRow >= 7) updateDisplay();    // change 7 to 4 for hammer-ons
 }
 
 void microLinnPaintGlobalSettingsButtons() {
@@ -2690,7 +2733,7 @@ void microLinnPaintGlobalSettings() {
       case 6: microLinnScrollSmall("LOCATOR CC #1"); break;
       case 5: microLinnScrollSmall("LOCATOR CC #2"); break;
       case 4: microLinnScrollSmall("ALLOW IMPORTING"); break;
-      case 3: microLinnScrollSmall("CHANNEL PRESSURE FIX"); break;
+      case 3: microLinnScrollSmall("X & Y SMOOTHING"); break;
     }
     microLinnPaintConfigButtons();
     microLinnPaintGlobalSettingsButtons();
@@ -2702,14 +2745,14 @@ void microLinnPaintGlobalSettings() {
       break;
     case 6:
       if (Global.microLinn.locatorCC1 == -1) {
-        smallfont_draw_string(2, 1, "NONE", globalColor, false);
+        smallfont_draw_string(2, 1, "OFF", globalColor, false);
       } else {
         paintNumericDataDisplay(globalColor, Global.microLinn.locatorCC1, 1, false);
       }
       break;
     case 5:
       if (Global.microLinn.locatorCC2 == -1) {
-        smallfont_draw_string(2, 1, "NONE", globalColor, false);
+        smallfont_draw_string(2, 1, "OFF", globalColor, false);
       } else {
         paintNumericDataDisplay(globalColor, Global.microLinn.locatorCC2, 1, false);
       }
@@ -2718,12 +2761,10 @@ void microLinnPaintGlobalSettings() {
       smallfont_draw_string(2, 1, microLinnImportingOn ? "YES" : "NO", globalColor, false);
       break;
     case 3:
-      if (Global.microLinn.teknico == 0) {
-        smallfont_draw_string(2, 1, "OFF", globalColor, false);
-      } else if (Global.microLinn.teknico == 1) {
-        smallfont_draw_string(2, 1, "Z", globalColor, false);
-      } else {
-        smallfont_draw_string(2, 1, "Y&Z", globalColor, false);
+      switch (Global.microLinn.teknico) {
+        case 0: smallfont_draw_string(2, 1, "OFF", globalColor, false); break;
+        case 1: smallfont_draw_string(2, 1, "Z",   globalColor, false); break;
+        case 2: smallfont_draw_string(2, 1, "Y+Z", globalColor, false); break;
       }
       break;
   }
@@ -2745,9 +2786,7 @@ void microLinnHandleGlobalSettingsNewTouch() {
       handleNumericDataNewTouchCol(Global.microLinn.drumPadMode);
       if (Global.microLinn.drumPadMode && !prevDrumPadMode) {
         // clear all previous pitch bends so all drum hits sound the same
-        for (byte ch = 0; ch < 16; ++ch) {
-          midiSendPitchBend(0, ch);
-        }
+        for (byte ch = 0; ch < 16; ++ch) {midiSendPitchBend(0, ch);}
       }  
       break;
     case 6:
@@ -2820,13 +2859,13 @@ void microLinnPaintNoteLights() {
     }
     col = MICROLINN_SCALEROWS[edo][0];                                                // pink borders
     for (stepspan = 0; stepspan < 7; ++stepspan) {
-      setLed(col + 14, 7 - stepspan, COLOR_PINK, cellOn);
+      setLed(col + 13, 7 - stepspan, COLOR_PINK, cellOn);
     }
     col = MICROLINN_SCALEROWS[edo][1] - MICROLINN_SCALEROWS[edo][0];                  // 2nd - 1sn = major 2nd
     col = max (col, MICROLINN_SCALEROWS[edo][3] - MICROLINN_SCALEROWS[edo][2]);       // 4th - 3rd = minor 2nd
     col -= MICROLINN_SCALEROWS[edo][0];
     for (stepspan = 0; stepspan < 7; ++stepspan) {
-      setLed(11 - col, 7 - stepspan, COLOR_PINK, cellOn);
+      setLed(12 - col, 7 - stepspan, COLOR_PINK, cellOn);
     }
   } else if (currScale == 8) {
     paintMicroLinnFretboardEditor(false);                                                 // blue dots
@@ -2980,7 +3019,7 @@ void handleMicroLinnFretboardEditorNewTouch() {
 }
 
 void microLinnPaintPerSplitXenSettingsButtons() {
-  for (byte row = 5; row <= 7; ++row) {
+  for (byte row = 4; row <= 7; ++row) {
     setLed(1, row, microLinnGetColor(microLinnPerSplitXenSettingsRowNum == row), cellOn);
   }
 }
@@ -2995,6 +3034,7 @@ void microLinnPaintPerSplitXenSettings() {
       case 7: microLinnScrollSmall("CONDENSE TO SCALE"); break;
       case 6: microLinnScrollSmall("DEFAULT LAYOUT BOSANQUET ACCORDION WICKI-HAYDEN ARRAY-MBIRA"); break;
       case 5: microLinnScrollSmall("TUNING TABLE + RECHANNEL"); break;
+      case 4: microLinnScrollSmall("MIDI GROUP CC"); break;
     }
     microLinnPaintConfigButtons();
     microLinnPaintShowSplitSelection(microLinnPerSplitXenSettingsLinked[microLinnPerSplitXenSettingsRowNum]);
@@ -3004,28 +3044,50 @@ void microLinnPaintPerSplitXenSettings() {
   switch (microLinnPerSplitXenSettingsRowNum) {
     case 7:
       switch (Split[side].microLinn.condensedBendPerPad) {
-        case 0:  smallfont_draw_string(2, 1, "OFF", color, false); break;
-        case 1:  smallfont_draw_string(2, 1, "VAR", color, false); break;
+        case 0:  adaptfont_draw_string(2, 1, "OFF", color, false); break;
+        case 1:  adaptfont_draw_string(2, 1, "VAR", color, false); break;
         default: paintNumericDataDisplay(color, Split[side].microLinn.condensedBendPerPad - 1, -2, false);
       }
       break;    
     case 6:
       switch (Split[side].microLinn.defaultLayout) {
-        case 0:smallfont_draw_string(2, 1, "OFF", color, false); break;
-        case 1:  microLinnDrawString(2, 1, "BSQ", color, false); break;
-        case 2:  microLinnDrawString(2, 1, "BS2", color, false); break; 
-        case 3:  microLinnDrawString(2, 1, "ACC", color, false); break;
-        case 4:  microLinnDrawString(2, 1, "WH",  color, false); break;
-        case 5:  microLinnDrawString(2, 1, "WH2", color, false); break;
-        case 6:  microLinnDrawString(2, 1, "ARR", color, false); break;
-        case 7:  microLinnDrawString(2, 1, "AR2", color, false); break;
+        case 0:smallfont_draw_string(2, 1, "OFF",         color, false); break;
+        case 1:  microLinnDrawString(2, 1, "BSQ",         color, false); break;
+        case 2:  microLinnDrawString(2, 1, "BSQ2", "BS2", color, false); break; 
+        case 3:  microLinnDrawString(2, 1, "ACC",         color, false); break;
+        case 4:  microLinnDrawString(2, 1, "WH",          color, false); break;
+        case 5:  microLinnDrawString(2, 1, "WH2",         color, false); break;
+        case 6:  microLinnDrawString(2, 1, "ARR",         color, false); break;
+        case 7:  microLinnDrawString(2, 1, "ARR2", "AR2", color, false); break;
       }
       break;
     case 5:
+      if ((Split[side].microLinn.tuningTable == 2 && Split[side].microLinn.midiGroupCC == -1) ||    // in CC mode, but no CC chosen?
+          (Split[side].microLinn.tuningTable == 3 && microLinnNumGroups[side] > 4)) {               // in RCH mode, but too many groups?
+        color = microLinnWarningColor(side);
+      }
       switch (Split[side].microLinn.tuningTable) {
         case 0: smallfont_draw_string(2, 1, "OFF", color, false); break;
         case 1: smallfont_draw_string(2, 1, "ON",  color, false); break;
-        case 2: smallfont_draw_string(2, 1, "RCH", color, false); break;
+        case 2: smallfont_draw_string(2, 1, "CC",  color, false); break;
+        case 3: adaptfont_draw_string(2, 1, "RCH", color, false); break;
+      }
+      if (Split[side].microLinn.tuningTable >= 2) {                            // if CC or RCH, paint a column of dots
+        for (byte i = 0; i < microLinnNumGroups[side]; ++i) {
+          if (Split[side].microLinn.tuningTable == 3 && i >= 4)
+            color = microLinnWarningColor(side);
+          setLed(isLinn200() ? 18 : 16, i+2, color, cellOn);
+        }
+      }
+      break;
+    case 4:
+      if (Split[side].microLinn.midiGroupCC == -1) {
+        if (Split[side].microLinn.tuningTable == 2) {
+          color = microLinnWarningColor(side);
+        }
+        smallfont_draw_string(2, 1, "OFF", color, false);
+      } else {
+        paintNumericDataDisplay(color, Split[side].microLinn.midiGroupCC, 2, !isLinn200());
       }
       break;
   }
@@ -3034,7 +3096,7 @@ void microLinnPaintPerSplitXenSettings() {
 void microLinnHandlePerSplitXenSettingsNewTouch() {
   microLinnPerSplitXenSettingsNowScrolling = false;
   if (sensorCol == 1) {
-    if (sensorRow >= 5 || sensorRow == 0) {
+    if (sensorRow >= 4 || sensorRow == 0) {
       microLinnPerSplitXenSettingsRowNum = sensorRow;
       updateDisplay(); 
     }
@@ -3043,12 +3105,16 @@ void microLinnHandlePerSplitXenSettingsNewTouch() {
 
   byte side = Global.currentPerSplit;
   byte otherSide = 1 - side;
-  microLinnHandleShowSplit(microLinnPerSplitXenSettingsLinked[microLinnPerSplitXenSettingsRowNum]);
-  if (microLinnPerSplitXenSettingsRowNum < 5)
+  if (microLinnPerSplitXenSettingsRowNum == 5 && Split[side].microLinn.tuningTable == 3) {     // don't link while rechannelling
+    handleShowSplit();
+    updateDisplay();
+  } else microLinnHandleShowSplit(microLinnPerSplitXenSettingsLinked[microLinnPerSplitXenSettingsRowNum]);
+  if (microLinnPerSplitXenSettingsRowNum < 4)
     microLinnPerSplitXenSettingsLinked[microLinnPerSplitXenSettingsRowNum] = false;        // don't link if there's nothing to link
 
   byte colOffset = Split[side].microLinn.colOffset;
   byte prevTuningTable = Split[side].microLinn.tuningTable;
+  boolean canRechannel = Split[otherSide].microLinn.tuningTable != 3;                  // user can only rechannel one side at a time
   switch (microLinnPerSplitXenSettingsRowNum) {
     case 7:
       microLinnCalcCondensedScale();
@@ -3073,18 +3139,25 @@ void microLinnHandlePerSplitXenSettingsNewTouch() {
       }
       break;
     case 5: 
-      handleNumericDataNewTouchCol(Split[side].microLinn.tuningTable, 0, 2, true);
-      if (microLinnPerSplitXenSettingsLinked[5])
+      handleNumericDataNewTouchCol(Split[side].microLinn.tuningTable, 0, canRechannel ? 3 : 2, true);
+      if (Split[side].microLinn.tuningTable == 3 && prevTuningTable != 3) {
+        microLinnSetUpRechannelling(side);
+        microLinnPerSplitXenSettingsLinked[5] = false;
+      } else if (microLinnPerSplitXenSettingsLinked[5]) {
         Split[otherSide].microLinn.tuningTable = Split[side].microLinn.tuningTable;
-      if (Split[side].microLinn.tuningTable == 2 && prevTuningTable != 2) 
-        microLinnSetUpRechannelling(side);                                        // don't rechannel the other side!
+      }
+      break;
+    case 4: 
+      handleNumericDataNewTouchCol(Split[side].microLinn.midiGroupCC, -1, 119, true);
+      if (microLinnPerSplitXenSettingsLinked[4])
+        Split[otherSide].microLinn.midiGroupCC = Split[side].microLinn.midiGroupCC;
       break;
   }
   updateDisplay(); 
 }
 
 void microLinnHandlePerSplitXenSettingsHold() {
-  if (sensorCol == 1 && sensorRow >= 5 &&                                         // long-press col 1
+  if (sensorCol == 1 && sensorRow >= 4 &&                                         // long-press col 1
       isCellPastSensorHoldWait() && 
       !microLinnPerSplitXenSettingsNowScrolling) {     
     microLinnPerSplitXenSettingsNowScrolling = true;
@@ -3093,14 +3166,14 @@ void microLinnHandlePerSplitXenSettingsHold() {
 }
 
 void microLinnHandlePerSplitXenSettingsRelease() {                                // short-press col 1
-  if (sensorCol == 1 && sensorRow >= 5) updateDisplay();
+  if (sensorCol == 1 && sensorRow >= 4) updateDisplay();
 }
 
 void microLinnSetUpRechannelling(byte side) {
   microLinnCalcLowestEdostepEtc(side);
-  if (microLinnNumGroups[side] == 1) return;
+  if (!inRange(microLinnNumGroups[side], 2, 4)) return;
   Split[side].midiMode = channelPerNote;
-  Split[side].midiChanMain = 1;
+  Split[side].midiChanMain = side == LEFT ? 1 : 16;
   Split[side].midiChanMainEnabled = microLinnNumGroups[side] < 4;
   memset(&Split[side].midiChanSet, false, 16);
   if (side == LEFT) {
@@ -3141,10 +3214,11 @@ void microLinnPaintGlobalXenSettings() {
   signed char offset = 0;
   switch (microLinnGlobalXenSettingsRowNum) {
     case 7:
-      microLinnDrawString(1, 1, microLinnAnchorString, globalColor, false);
+      offset = (!isLinn200() && inRange(Global.microLinn.anchorCol, 2, 9)) ? 1 : 2;
+      microLinnDrawString(offset, 1, microLinnAnchorString, globalColor, false);
       break;
     case 6:
-      paintNoteDataDisplay(globalColor, Global.microLinn.anchorNote, LINNMODEL == 200 ? 2 : 1);
+      paintNoteDataDisplay(globalColor, Global.microLinn.anchorNote, 2);
       break;
     case 5:
       if (Global.microLinn.anchorCents <= -10) offset = -3;
@@ -3204,9 +3278,13 @@ void microLinnHandleGlobalXenSettingsNewTouch() {
       break;
     case 4:
       handleNumericDataNewTouchCol(Global.microLinn.equaveSemitones, 5, 36, true);
+      microLinnCalcHammerOnEdosteps(LEFT);
+      microLinnCalcHammerOnEdosteps(RIGHT);
       break;
     case 3:
-      handleNumericDataNewTouchCol(Global.microLinn.equaveStretch, -60, 60, true);
+      handleNumericDataNewTouchCol(Global.microLinn.equaveStretch, -50, 50, true);
+      microLinnCalcHammerOnEdosteps(LEFT);
+      microLinnCalcHammerOnEdosteps(RIGHT);
       break;
     /*******************
     case 2:
@@ -3397,16 +3475,15 @@ void microLinnSendPreviewNote (short edostep) {                                 
   midiSendNoteOn(Global.currentPerSplit, guitarTuningPreviewNote, 96, guitarTuningPreviewChannel);
 }
 
-// indicates pad's row/column, sent before every played (not arpeggiated, strummed or sequenced) note-on
-// called from sendNewNote() in ls_handleTouches.ino, thanks to KVR forum member vorp40 for the idea!
-void sendMicroLinnLocatorCC(byte channel) {
+// called from sendNewNote() in ls_handleTouches.ino
+void sendMicroLinnMidiGroupAndLocatorCCs(byte channel) {
+  // indicates midi group when tuning table mode = CC, sent before every played (not arpeggiated, strummed or sequenced) note-on
   // channel differs from sensorCell->channel when in tuning table mode and rechanneling
-  if (Split[sensorSplit].microLinn.tuningTable == 1) {
-    if (Global.microLinn.locatorCC1 >= 0) {
-      midiSendControlChange(Global.microLinn.locatorCC1, sensorCell->microLinnGroup, channel, true); 
-    }
-    return;
+  if (Split[sensorSplit].microLinn.tuningTable == 2 && Split[sensorSplit].microLinn.midiGroupCC >= 0) {
+    midiSendControlChange(Split[sensorSplit].microLinn.midiGroupCC, sensorCell->microLinnGroup + 1, channel, true); 
   }
+  // indicates pad's row/column, sent before every played (not arpeggiated, strummed or sequenced) note-on
+  // thanks to KVR forum member vorp40 for the idea!
   if (sensorCol <= 16 && Global.microLinn.locatorCC1 >= 0)
     midiSendControlChange(Global.microLinn.locatorCC1, (7 - sensorRow) + 8 * (sensorCol - 1), channel, true);
   if (sensorCol >= 17 && Global.microLinn.locatorCC2 >= 0)
@@ -3434,7 +3511,8 @@ void sendMicroLinnNrpnParameter(int parameter, int channel) {
     case 1050: value = Split[side].microLinn.condensedBendPerPad; break;
     case 1051: value = Split[side].microLinn.defaultLayout; break;
     case 1052: value = Split[side].microLinn.tuningTable; break;
-    case 1053: value = Split[side].microLinn.transposeEDOsteps + 7; break;
+    case 1053: value = Split[side].microLinn.midiGroupCC + 1; break;
+    case 1054: value = Split[side].microLinn.transposeEDOsteps + 7; break;
     case 1200: value = (Global.microLinn.drumPadMode ? 1 : 0); break;
     case 1201: value = Global.microLinn.locatorCC1 + 1; break;
     case 1202: value = Global.microLinn.locatorCC2 + 1; break;
@@ -3446,7 +3524,7 @@ void sendMicroLinnNrpnParameter(int parameter, int channel) {
     case 1254: value = Global.microLinn.anchorNote; break;
     case 1255: value = Global.microLinn.anchorCents + 60; break;
     case 1256: value = Global.microLinn.equaveSemitones; break;
-    case 1257: value = Global.microLinn.equaveStretch + 60; break;
+    case 1257: value = Global.microLinn.equaveStretch + 50; break;
     case 1258: value = Global.microLinn.sweeten; break;
     case 1259: value = Global.microLinn.largeEDO; break;
     case 1260: value = Global.microLinn.guitarTuning[0]; break;
@@ -3483,8 +3561,9 @@ void receivedMicroLinnNrpn(int parameter, int value) {
     case 1006: if (inRange(value, 0, 3))   Split[side].microLinn.pullOffVelocity = value; break;
     case 1050: if (inRange(value, 0, 55))  Split[side].microLinn.condensedBendPerPad = value; break;
     case 1051: if (inRange(value, 0, 10))  Split[side].microLinn.defaultLayout = value; break;
-    case 1052: if (inRange(value, 0, 2))   Split[side].microLinn.tuningTable = value; break;
-    case 1053: if (inRange(value, 0, 14))  Split[side].microLinn.transposeEDOsteps = value - 7; break;
+    case 1052: if (inRange(value, 0, 3))   Split[side].microLinn.tuningTable = value; break;
+    case 1053: if (inRange(value, 0, 120)) Split[side].microLinn.midiGroupCC = value - 1; break;
+    case 1054: if (inRange(value, 0, 14))  Split[side].microLinn.transposeEDOsteps = value - 7; break;
     case 1200: if (inRange(value, 0, 1))   Global.microLinn.drumPadMode = (value == 1); break;
     case 1201: if (inRange(value, 0, 120)) Global.microLinn.locatorCC1 = value - 1; break;
     case 1202: if (inRange(value, 0, 120)) Global.microLinn.locatorCC2 = value - 1; break;
@@ -3494,9 +3573,9 @@ void receivedMicroLinnNrpn(int parameter, int value) {
     case 1252: if (inRange(value, 1, 25))  Global.microLinn.anchorCol = value; break;
     case 1253: if (inRange(value, 0, 7))   Global.microLinn.anchorRow = value; break;
     case 1254: if (inRange(value, 0, 127)) Global.microLinn.anchorNote = value; break;
-    case 1255: if (inRange(value, 0, 121)) Global.microLinn.anchorCents = value - 60; break;
+    case 1255: if (inRange(value, 0, 120)) Global.microLinn.anchorCents = value - 60; break;
     case 1256: if (inRange(value, 1, 36))  Global.microLinn.equaveSemitones = value; break;
-    case 1257: if (inRange(value, 0, 121)) Global.microLinn.equaveStretch = value - 60; break;
+    case 1257: if (inRange(value, 0, 100)) Global.microLinn.equaveStretch = value - 50; break;
     case 1258: if (inRange(value, 0, 60))  Global.microLinn.sweeten = value; break;
     case 1259: if (inRange(value, 0, 53))  Global.microLinn.largeEDO = value; break;
     case 1260: if (inRange(value, 0, 2*n)) Global.microLinn.guitarTuning[0] = value; break;
@@ -3585,7 +3664,7 @@ if (exportType < 17) {        // for testing, delete this line later
       microLinnSendPolyPressure(Global.microLinn.EDO, 
                                 Global.microLinn.useRainbow ? 1 : 0);
       microLinnSendPolyPressure(Global.microLinn.equaveSemitones, 
-                                Global.microLinn.equaveStretch + 60);
+                                Global.microLinn.equaveStretch + 50);
       microLinnSendPolyPressure(Global.microLinn.sweeten, 
                                 Global.microLinn.largeEDO);
       microLinnSendPolyPressure(Global.rowOffset, 
@@ -3902,7 +3981,7 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
         if (microLinnInRange(data2, 0, 1)) Global.microLinn.useRainbow = (data2 == 1);
       } else if (i == 2) {
         if (microLinnInRange(data1, 1, 36))  Global.microLinn.equaveSemitones = data1;
-        if (microLinnInRange(data2, 0, 120)) Global.microLinn.equaveStretch = data2 - 60;
+        if (microLinnInRange(data2, 0, 100)) Global.microLinn.equaveStretch = data2 - 50;
       } else if (i == 4) {
         if (microLinnInRange(data1, 1, 60))  Global.microLinn.sweeten = data1;
         if (microLinnInRange(data2, 0, 53))  Global.microLinn.largeEDO = data2 - 60;
@@ -4231,7 +4310,7 @@ void microLinnImportGlobal(byte data1, byte data2, unsigned short i, byte preset
     if (microLinnInRange(data2,  1, 36)) g->microLinn.equaveSemitones = data2;
   } else if (i == 286) {
     signed char n = (signed char)data1;
-    if (microLinnInRange(n,    -60, 60)) g->microLinn.equaveStretch = n;
+    if (microLinnInRange(n,    -50, 50)) g->microLinn.equaveStretch = n;
     if (microLinnInRange(data2,  0, 60)) g->microLinn.sweeten = data2;
   } else if (i == 288) {
     if (microLinnInRange(data1,  0, 53)) g->microLinn.largeEDO = data1;
@@ -4375,10 +4454,12 @@ void microLinnImportSplits(byte data1, byte data2, unsigned short i,  byte prese
     if (microLinnInRange(data2, 0, 55))  spl->microLinn.condensedBendPerPad = data2;
   } else if (i == 104) {
     if (microLinnInRange(data1, 0, 10))  spl->microLinn.defaultLayout = data1;
-    if (microLinnInRange(data2, 0, 2))   spl->microLinn.tuningTable = data2;
+    if (microLinnInRange(data2, 0, 3))   spl->microLinn.tuningTable = data2;
   } else if (i == 106) {
     signed char n = (signed char)data1;
-    if (microLinnInRange(n, -7, 7))      spl->microLinn.transposeEDOsteps = n;              // ignore data2 = reserved
+    if (microLinnInRange(n, -1, 119))    spl->microLinn.midiGroupCC = n;
+    n = (signed char)data2;
+    if (microLinnInRange(n, -7, 7))      spl->microLinn.transposeEDOsteps = n;
   } else if (i <= 112) {
     // ignore bytes 108-113 = reserved for future use
   }

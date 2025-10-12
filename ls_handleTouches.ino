@@ -1426,9 +1426,10 @@ void sendNewNote() {
       note = getMicroLinnMidiNote(sensorSplit, note, sensorCell->microLinnGroup);
       if (note == -1) return;
       channel = rechannelMicroLinnGroup(sensorSplit, channel, sensorCell->microLinnGroup);
+      if (channel == -1) return;
     }
-    sendMicroLinnLocatorCC(channel);
-    if (isMicroLinnOn()) {
+    sendMicroLinnMidiGroupAndLocatorCCs(channel);
+    if (isMicroLinnOn() && Split[sensorSplit].microLinn.tuningTable == 0) {
       tuningBend = getMicroLinnTuningBend(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
       preSendPitchBend(sensorSplit, 0, channel, tuningBend);
     }
@@ -1496,6 +1497,7 @@ void sendReleasedNote() {
       note = getMicroLinnMidiNote(sensorSplit, note, sensorCell->microLinnGroup);
       if (note == -1) return;
       channel = rechannelMicroLinnGroup(sensorSplit, channel, sensorCell->microLinnGroup);
+      if (channel == -1) return;
     }
     midiSendNoteOffWithVelocity(sensorSplit, note, sensorCell->velocity, channel);
   }

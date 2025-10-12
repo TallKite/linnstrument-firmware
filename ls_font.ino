@@ -2312,13 +2312,13 @@ void condfont_draw_string(int col, int row, const char* str, byte color, boolean
 }
 
 void adaptfont_draw_string(int col, int row, const char* str, byte color) {
-  if (LINNMODEL == 200) bigfont_draw_string(col, row, str, color);
-  else                  condfont_draw_string(col, row, str, color);
+  if (isLinn200()) bigfont_draw_string(col, row, str, color);
+  else            condfont_draw_string(col, row, str, color);
 }
 
 void adaptfont_draw_string(int col, int row, const char* str, byte color, boolean erase) {
-  if (LINNMODEL == 200) bigfont_draw_string(col, row, str, color, erase);
-  else                  condfont_draw_string(col, row, str, color, erase);
+  if (isLinn200()) bigfont_draw_string(col, row, str, color, erase);
+  else            condfont_draw_string(col, row, str, color, erase);
 }
 
 // Draw a single character at col,row

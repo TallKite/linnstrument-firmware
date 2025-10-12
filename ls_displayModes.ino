@@ -948,7 +948,7 @@ void paintMicroLinnOSVersionDisplay() {
 
 // paint the current preset number for a particular side, in large block characters
 byte getPresetDisplayColumn() {
-  return LINNMODEL == 200 ? NUMCOLS-2 : NUMCOLS-1;
+  return isLinn200() ? NUMCOLS-2 : NUMCOLS-1;
 }
 
 void paintPresetDisplay(byte side) {
@@ -1340,7 +1340,7 @@ void paintGuitarTuning() {
   }
 
   byte color = getMicroLinnRowOffsetColorGuitar2(guitarTuningRowNum, false);
-  paintNoteDataDisplay(color, Global.guitarTuning[guitarTuningRowNum], LINNMODEL == 200 ? 2 : 1);
+  paintNoteDataDisplay(color, Global.guitarTuning[guitarTuningRowNum], isLinn200() ? 2 : 1);
 }
 
 void paintMIDIThrough() {
@@ -1457,8 +1457,8 @@ void paintVolumeDisplay(byte side) {
 void paintVolumeDisplayRow(byte side) {
   byte row = (side == LEFT ? 6 : 1);
   paintCCFaderDisplayRow(side, row, Split[side].colorMain, 7, 1, NUMCOLS-2);
-  // microLinn makes every Nth dot a bright dot
-  byte N = (LINNMODEL == 200 ? 5 : 4);
+  // microLinn paints every Nth dot in the accent color
+  byte N = (isLinn200() ? 5 : 4);
   int32_t fxdFaderPosition = fxdCalculateFaderPosition(ccFaderValues[side][7], 1, NUMCOLS-2);
   for (byte col = N; col <= NUMCOLS-1; col += N) {      
     if (Device.calRows[col][0].fxdReferenceX - FXD_CALX_HALF_UNIT <= fxdFaderPosition)
@@ -1741,7 +1741,7 @@ void paintGlobalSettingsDisplay() {
   }
 //#endif
 **********/
-  if (LINNMODEL == 200) setLed(17, 1, COLOR_CYAN, cellOn);        // shortcut to microLinn menus
+  if (isLinn200()) setLed(17, 1, COLOR_CYAN, cellOn);        // shortcut to microLinn menus
 
   // clearly indicate the calibration status
   setLed(16, 3, getCalibrationColor(), cellOn);
@@ -2073,6 +2073,7 @@ void showPerNoteMidiChannels(byte side) {
       setMidiChannelLed(chan, Split[side].colorMain);
     }
   }
+  showMicroLinnExtraMidiChannels(side);        // channels used when in tuning table mode, and rechannelling
 }
 
 void paintLowRowPressureBar() {

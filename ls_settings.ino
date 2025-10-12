@@ -1073,6 +1073,7 @@ void toggleChannel(byte chan) {
       else {
         Split[Global.currentPerSplit].midiChanSet[chan-1] = !Split[Global.currentPerSplit].midiChanSet[chan-1];
       }
+      calcMicroLinnNumChannels(Global.currentPerSplit);
       break;
 
     case MIDICHANNEL_PERROW:
@@ -2893,7 +2894,7 @@ void handleGlobalSettingNewTouch() {
         break;
 
       case 16:
-        //if (sensorRow == 4 && LINNMODEL == 128) toggleMicroLinnUninstall();
+        //if (sensorRow == 4 && !isLinn200()) toggleMicroLinnUninstall();
         if (sensorRow == 4) toggleMicroLinnUninstall();
         break;
 
@@ -2906,7 +2907,7 @@ void handleGlobalSettingNewTouch() {
 /***********
 #ifdef DEBUG_ENABLED
       case 16:
-        if (sensorRow == 4 && LINNMODEL == 200) toggleMicroLinnUninstall();   // use col 16 instead
+        if (sensorRow == 4 && isLinn200()) toggleMicroLinnUninstall();   // use col 16 instead
         break;
 #endif  **************/
 

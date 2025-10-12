@@ -283,8 +283,8 @@ byte sensorSplit = 0;                       // the split of the currently read t
 
 // The most-recently touched cell within each channel of each split is said to have "focus",
 // saved as the specific column and row for the focus cell.
-// If in 1Ch/PolyAT mode, continuous X and Y messages are sent only from movements within the focused cell.
-// If in 1Ch/ChanAT mode, continuous X, Y and Z messages are sent only from movements within the focused cell.
+// If in 1Ch/Poly mode, continuous X and Y messages are sent only from movements within the focused cell.
+// If in 1Ch/Chan mode, continuous X, Y and Z messages are sent only from movements within the focused cell.
 struct __attribute__ ((packed)) FocusCell {
   byte col:5;
   byte row:3;
@@ -370,8 +370,7 @@ struct __attribute__ ((packed)) TouchInfo {
   unsigned short pressureZ:10;               // the Z value with pressure sensitivity
   unsigned short previousRawZ:12;            // the previous raw Z value
   boolean didMove:1;                         // indicates whether the touch has ever moved
-  byte microLinnGroup:2;                     // group 0 = edosteps 0-127, group 1 = 128-255, group 2 = 256-383, group 3 = 384-511
-int :1;
+  byte microLinnGroup:3;                     // group 0 = edosteps 0-127, group 1 = 128-255, group 2 = 256-383... group 8 = 896-1023
   boolean phantomSet:1;                      // indicates whether phantom touch coordinates are set
   byte velocity:7;                           // velocity from 0 to 127
   boolean shouldRefreshZ:1;                  // indicate whether it's necessary to refresh Z
@@ -393,7 +392,7 @@ struct VirtualTouchInfo {
   byte split;                                // the split this virtual touch belongs to
   byte velocity;                             // velocity from 0 to 127
   signed char note;                          // note from 0 to 127
-  byte microLinnGroup;                       // group 0 = edosteps 0-127, group 1 = 128-255, group 2 = 256-383, group 3 = 384-511
+  byte microLinnGroup;                       // group 0 = edosteps 0-127, group 1 = 128-255, group 2 = 256-383... group 8 = 896-1023
   signed char channel;                       // channel from 1 to 16
 };
 VirtualTouchInfo virtualTouchInfo[MAXROWS];  // store as much touch virtual instances as there are rows, this is used for simulating strumming open strings
@@ -631,7 +630,8 @@ struct MicroLinnSplit {
   byte pullOffVelocity;                   // 0 = OFF, 1 = 2nd note's noteOff velocity, 2 = 1st noteOn veloc, 3 = 2nd noteOn veloc, 4 = average them
   byte condensedBendPerPad;               // width of a single-pad pitch bend in edosteps, 0 = OFF, 1 = VAR, 2..L+1 = 1..L (L = largest scale step),
   byte defaultLayout;                     // 0 = OFF, 1/2 = Bosanquet, 3/4 = Wicki-Hayden, 5/6 = Harmonic Table, 7/8 = Accordion, 9-10 = Array mbira
-  byte tuningTable;                       // 0..2 = OFF/ON/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
+  byte tuningTable;                       // 0..3 = OFF/ON/CC/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
+  signed char midiGroupCC;                // sent with each note-on, ranges from 0 to 119, -1 = OFF
   signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
   byte reserved1;                         // reserved for future use, 1 byte per empty menu row
   byte reserved2;                         //    "
@@ -639,7 +639,6 @@ struct MicroLinnSplit {
   byte reserved4;                         //    "
   byte reserved5;                         //    "
   byte reserved6;                         //    "
-  byte reserved7;                         //    "
 };
 
 // per-split settings
@@ -720,7 +719,7 @@ const byte MICROLINN_MAX_EDO = 55;                // the minimum edo is 5
 const short MICROLINN_ARRAY_SIZE = (MICROLINN_MAX_EDO * (MICROLINN_MAX_EDO + 1)) / 2 - 10;     // a triangular array missing rows 1-4 = 1530
 
 struct MicroLinnDevice {
-  byte MLversion;                                 // current version of the microLinn data structures, currently 0, will become 1
+  byte MLversion;                                 // current version of the microLinn data structures, currently 1
   byte padding;                                   // added to make the importing code simpler
   byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
   byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
@@ -914,8 +913,8 @@ struct StepEvent {
   // signed char pitchOffset:8;  // -50 to 50 cents
   // byte timbre:7;              // 0 to 127
   // byte row:3;                 // 1 to 7
-  // byte microLinnGroup:2       // group 0 = edosteps 0-127, group 1 = 128-255, group 2 = 256-383, group 3 = 384-511
-  // (4 unused bits per event)
+  // byte microLinnGroup:3       // group 0 = edosteps 0-127, group 1 = 128-255, group 2 = 256-383... group 8 = 896-1023
+  // (3 unused bits per event)
   byte data[6];
 };
 struct StepData {

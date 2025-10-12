@@ -232,7 +232,7 @@ void serialSendSettings() {
     confSize = sizeof(struct ConfigurationVLatest);
   } else if (uninstall == 41) {
     confSize = sizeof(Configuration);
-  } else return;
+  } else return;                              // results in "Couldn't retrieve LinnStrument's settings...""
 
   // mysterious bug: restoreNonMicroLinnConfiguration() doesn't run even when microLinnUninstall is clearly true!!!!
   // on the Global Settings screen, tap col 16 row 4 to toggle microLinnUninstall, tap col 17 row 4 to see its value

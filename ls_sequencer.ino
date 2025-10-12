@@ -1674,12 +1674,12 @@ void StepEvent::setNewEvent(short note, byte velocity, unsigned short duration, 
 }
 
 short StepEvent::getNote() {
-  return (data[0] & B11111110) >> 1 | (data[5] & B00110000) << 3;    // data[5] holds microLinnGroup
+  return (data[0] & B11111110) >> 1 | (data[5] & B00111000) << 4;    // data[5] holds microLinnGroup
 }
 
 void StepEvent::setNote(short note) {
   data[0] = (data[0] & B00000001) | (note & B01111111) << 1;
-  data[5] = (data[5] & B11001111) | ((note >> 3) & B00110000);       // data[5] holds microLinnGroup
+  data[5] = (data[5] & B11000111) | ((note >> 4) & B00111000);       // data[5] holds microLinnGroup
 }
 
 unsigned short StepEvent::getDuration() {
