@@ -621,7 +621,7 @@ enum SequencerDirection {
 };
 
 struct MicroLinnSplit {
-  byte colOffset;                         // column offset, 1 to 8, 1 = OFF
+  byte colOffset;                         // column offset, 1 to 10, 1 = OFF
   signed char rowOffset;                  // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
   byte showCustomLEDs;                    // 0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
   byte hammerOnCentsWindow;               // maximum width in tens of cents between two note-ons to make a hammer-on, 0..50, 0 = OFF
@@ -632,7 +632,7 @@ struct MicroLinnSplit {
   byte defaultLayout;                     // 0 = OFF, 1/2 = Bosanquet, 3/4 = Wicki-Hayden, 5/6 = Harmonic Table, 7/8 = Accordion, 9-10 = Array mbira
   byte tuningTable;                       // 0..3 = OFF/ON/CC/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
   signed char midiGroupCC;                // sent with each note-on, ranges from 0 to 119, -1 = OFF
-  signed char transposeEDOsteps;          // accessed via displayOctaveTranspose
+  signed char transposeEDOsteps;          // accessed via displayOctaveTranspose screen
   byte reserved1;                         // reserved for future use, 1 byte per empty menu row
   byte reserved2;                         //    "
   byte reserved3;                         //    "
@@ -720,7 +720,7 @@ const short MICROLINN_ARRAY_SIZE = (MICROLINN_MAX_EDO * (MICROLINN_MAX_EDO + 1))
 
 struct MicroLinnDevice {
   byte MLversion;                                 // current version of the microLinn data structures, currently 1
-  byte padding;                                   // added to make the importing code simpler
+  boolean uninstall;                              // used by ls_serial.ino, should be a runtime var but updating seems to re-initializes runtime vars
   byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
   byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
   byte fretboards[MICROLINN_ARRAY_SIZE];          // one byte per fret, one bit per row, transposable, lefthandedness reverses it, ignores column offsets
@@ -731,7 +731,7 @@ struct MicroLinnDevice {
 struct DeviceSettings {
   byte version;                                   // the version of the configuration format, currently 16, but the microLinn version is 16 + 56 = 72
   boolean serialMode;                             // 0 = normal MIDI I/O, 1 = Arduino serial mode for OS update and serial monitor
-//byte padding1;                                  // added by the compiler, declaring it explicitly helps with the updating and importing code
+//byte padding1;                                  // added by the compiler, declaring it explicitly helps with the updating and bulk importing code
 //byte padding2;                                  //   "
   CalibrationX calRows[MAXCOLS+1][4];             // store four rows of calibration data
   CalibrationY calCols[9][MAXROWS];               // store nine columns of calibration data
@@ -739,8 +739,7 @@ struct DeviceSettings {
   boolean calCrcCalculated;                       // indicates whether the CRC of the calibration was calculated, previous firmware versions didn't
   boolean calibrated;                             // indicates whether the calibration data actually resulted from a calibration operation
   boolean calibrationHealed;                      // indicates whether the calibration data was healed
-  byte microLinnUninstall;                        // used by ls_serial.ino, should be a runtime var but mysterious bug prevents that
-//byte padding3;                                  // see padding1, microLinnUninstall replaces this byte
+//byte padding3;                                  // see padding1
   unsigned short minUSBMIDIInterval;              // the minimum delay between MIDI bytes when sent over USB
   byte sensorSensitivityZ;                        // the scaling factor of the raw value of Z in percentage
 //byte padding4;                                  // see padding1
@@ -820,8 +819,8 @@ struct MicroLinnGlobal {
   byte sweeten;                              // in tenths of a cent, 0..60, adjust 41edo 5/4, 5/3 by this amount both top and bottom to make it closer to just
   byte largeEDO;                             // ranges 0..53, 0 = OFF, 1..52 = various edos, 53 = 1200edo = JI, user can have a 55-note subset of this edo 
 //signed char largeEDOoffset[MICROLINN_MAX_EDO];  // ranges -128..127, edosteps from nearest large-edo approximation
-  short guitarTuning[MAXROWS];               // interval in edosteps from the string below it, can be negative, [0] is DIA/CHRO, independent of Global.guitarTuning
-  byte teknico;                              // use KVR forum member teknico's channel pressure fix, 0 = OFF, 1 = only Z-data, 2 = both Z & Y data
+  short guitarTuning[MAXROWS];               // independent of Global.guitarTuning, interval in edosteps from the string below it, can be negative, [0] is DIA/CHRO
+  byte smoothing;                            // use KVR forum member teknico's channel pressure fix, 0 = OFF, 1 = only Z-data, 2 = both Z & Y data
   byte reserved1;                            // reserved for future use, 1 byte per empty menu row
   byte reserved2;                            //    "
 //byte padding;                              // added by the compiler, makes the MicroLinnGlobal struct an even number of bytes

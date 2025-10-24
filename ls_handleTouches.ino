@@ -560,6 +560,7 @@ boolean hasYExpressiveNotes() {
 }
 
 // Is this value higher than all other notes on this channel?
+// Check the max value for each note against all others, not just the last played one (focused)
 // TODO: use a sorted multimap to avoid looping
 boolean isMaxY(short valueY) {
   byte curVal = 0;
@@ -616,6 +617,7 @@ boolean hasZExpressiveNotes() {
 
 
 // Is this value higher than all other notes on this channel?
+// Check the max value for each note against all others, not just the last played one (focused)
 // TODO: isMaxY and isMaxZ could be collapsed by adding a getPressureZ method to TouchInfo
 boolean isMaxZ(unsigned short valueZHi) {
   unsigned short curVal = 0;
@@ -1169,8 +1171,7 @@ boolean handleXYZupdate() {
 
       // if Y-axis movements are enabled and it's a candidate for
       // X/Y expression based on the MIDI mode and the currently held down cells
-      // Teknico says: Check the max value for each note against all others, not just the last played one (focused)
-      boolean yes = Global.microLinn.teknico > 1 ? (hasYExpressiveNotes() || isMaxY(valueY)) : isYExpressiveCell();
+      boolean yes = Global.microLinn.smoothing > 1 ? (hasYExpressiveNotes() || isMaxY(valueY)) : isYExpressiveCell();
       if (valueY != INVALID_DATA && Split[sensorSplit].sendY && yes) {
 
         signed char note = sensorCell->note;
@@ -1203,8 +1204,7 @@ boolean handleXYZupdate() {
 
       // if sensing Z is enabled...
       // send different pressure update depending on midiMode
-      // Teknico says: Check the max value for each note against all others, not just the last played one (focused)
-      yes = Global.microLinn.teknico > 0 ? (hasZExpressiveNotes() || isMaxZ(valueZHi)) : isZExpressiveCell();
+      yes = Global.microLinn.smoothing > 0 ? (hasZExpressiveNotes() || isMaxZ(valueZHi)) : isZExpressiveCell();
       if (Split[sensorSplit].sendZ && yes) {
         signed char note = sensorCell->note;
         signed char channel = sensorCell->channel;
@@ -1442,7 +1442,7 @@ void sendNewNote() {
 
     // reset pressure to 0 before sending the note, the actually pressure value will
     // be sent right after the note on
-    boolean yes = Global.microLinn.teknico > 0 ? hasZExpressiveNotes() : isZExpressiveCell();
+    boolean yes = Global.microLinn.smoothing > 0 ? hasZExpressiveNotes() : isZExpressiveCell();
     if (Split[sensorSplit].sendZ && yes) {
       preSendLoudness(sensorSplit, 0, 0, note, channel);
     }
@@ -1943,7 +1943,7 @@ void handleTouchRelease() {
   else if (sensorCell->hasNote()) {
 
     // reset the pressure when the note is released and that setting is active
-    boolean yes = Global.microLinn.teknico > 0 ? hasZExpressiveNotes() : isZExpressiveCell();
+    boolean yes = Global.microLinn.smoothing > 0 ? hasZExpressiveNotes() : isZExpressiveCell();
     if (Split[sensorSplit].sendZ && yes) {
       signed char note = sensorCell->note;                // used *only* for sending actual midi
       signed char channel = sensorCell->channel;          // ditto

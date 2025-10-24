@@ -2301,14 +2301,16 @@ void initMicroLinnData() {
   // shouldn't be needed, but fixes a mysterious bug where the first 2 microLinn vars are both zero after updating
   // but initializeMicroLinn() explicitly sets those vars as well as others that aren't zeroed out, e.g. anchorCol
   // the bug might be using sizeof(GlobalSettings) or sizeof(MicroLinnGlobal) when there's 2 bytes of padding somewhere
-  // initializeMicroLinn() will override what things are set to here, so it must run later
+  // initializeMicroLinn() will override what things are set to here, so it seems to run after this function
+
+  byte maxRowOffset = 25;
   config.settings.global.microLinn.drumPadMode = false; 
   config.settings.global.microLinn.locatorCC1 = -1; 
   //config.settings.global.microLinn.EDO = 4; 
   //config.settings.global.microLinn.useRainbow = true;
   for (byte split = 0; split < NUMSPLITS; split++) {
     config.settings.split[split].microLinn.colOffset = 1;
-    config.settings.split[split].microLinn.rowOffset = -26;
+    config.settings.split[split].microLinn.rowOffset = -maxRowOffset - 1;
   }
 
   for (byte p = 0; p < NUMPRESETS; p++) {
@@ -2318,11 +2320,12 @@ void initMicroLinnData() {
     //config.preset[p].global.microLinn.useRainbow = true;
     for (byte split = 0; split < NUMSPLITS; split++) {
       config.preset[p].split[split].microLinn.colOffset = 1;
-      config.preset[p].split[split].microLinn.rowOffset = -26;
+      config.preset[p].split[split].microLinn.rowOffset = -maxRowOffset - 1;
     }
   }
 
-  config.device.microLinn.MLversion = 1;
+  config.device.microLinn.MLversion = 1;                               // the 1 in 72.1
+  config.device.microLinn.uninstall = false;
 }
 
 void copyConfigurationVLatest(void* target, void* source) {            // copies from V16 to microLinn 72.1
@@ -2390,7 +2393,7 @@ void migrateFromMicroLinnGlobalV72_0 (MicroLinnGlobal* t, void* source) {
   for (byte row = 0; row < MAXROWS; row++) {
     t->guitarTuning[row] = s->guitarTuning[row];
   }
-  t->teknico = 0;
+  t->smoothing = 0;
 }
 
 void migrateFromMicroLinnSplitV72_0 (MicroLinnSplit* t, void* source) {

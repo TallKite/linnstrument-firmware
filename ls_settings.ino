@@ -81,7 +81,7 @@ void switchSerialMode(boolean flag) {
     updateDisplay();
   }
 
-  if (Device.operatingLowPower == 1) {
+  if (Device.operatingLowPower == 1 && flag) {
     Device.operatingLowPower = 0;
     applyLedInterval();
     applyMidiInterval();
@@ -332,7 +332,7 @@ void loadSettingsFromPreset(byte p) {
 
   if (config.preset[p].global.microLinn.EDO > 4 || p == 4) {
     // if the preset has microLinn turned on, or if the preset is on the bottom row, load everything as usual
-    memcpy(&Global, &config.preset[p].global, sizeof(GlobalSettings));
+    memcpy(&Global,       &config.preset[p].global,       sizeof(GlobalSettings));
     memcpy(&Split[LEFT],  &config.preset[p].split[LEFT],  sizeof(SplitSettings));
     memcpy(&Split[RIGHT], &config.preset[p].split[RIGHT], sizeof(SplitSettings));
   } else {        
@@ -373,7 +373,7 @@ void storeSettingsToPreset(byte p) {
 // The first time after new code is loaded into the Linnstrument, this sets the initial defaults of all settings.
 // On subsequent startups, these values are overwritten by loading the settings stored in flash.
 void initializeDeviceSettings() {
-  Device.version = 16 + MICROLINN_VERSION_OFFSET;  // 16 is the latest non-MicroLinn version (created in 2023)
+  Device.version = 16 + MICROLINN_VERSION_OFFSET;          // 16 is the latest non-MicroLinn version (created in 2023)
   Device.serialMode = false;
   Device.sleepAnimationActive = false;
   Device.sleepActive = false;
@@ -2553,7 +2553,13 @@ void handleGlobalSettingNewTouch() {
           // handled at release
           break;
         case 3:
-          // operatingLowPower is now handled at release
+          if (!Device.serialMode) {
+            Device.operatingLowPower = (Device.operatingLowPower + 1) % 3;          // cycle 0 1 2 0
+          } else {
+            Device.operatingLowPower = (Device.operatingLowPower + 2) % 4;          // cycle 0 2 0
+          }
+          applyLedInterval();
+          applyMidiInterval();
           break;
       }
       break;
@@ -2894,22 +2900,36 @@ void handleGlobalSettingNewTouch() {
         break;
 
       case 16:
-        //if (sensorRow == 4 && !isLinn200()) toggleMicroLinnUninstall();
-        if (sensorRow == 4) toggleMicroLinnUninstall();
+        if (sensorRow == 4 && !isLinn200()) enterMicroLinnConfig();
+#ifdef DEBUG_ENABLED
+        if (sensorRow == 4 &&  isLinn200()) enterMicroLinnConfig();
+#endif
         break;
 
-//#ifndef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
-      case 17: 
-        //if (sensorRow == 2) toggleMicroLinnUninstall();
-        if (sensorRow == 1) enterMicroLinnConfig();
-        break;
-//#endif
-/***********
-#ifdef DEBUG_ENABLED
-      case 16:
-        if (sensorRow == 4 && isLinn200()) toggleMicroLinnUninstall();   // use col 16 instead
-        break;
-#endif  **************/
+    // display diagnostics for what settings the current firmware got from the updater app, part of the microLinn fork
+    case 17: 
+#ifndef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
+      if (sensorRow == 1 && isLinn200()) enterMicroLinnConfig();
+#endif
+      if (sensorRow == 7 && updaterVersion > -2) 
+        paintNumericDataDisplay(COLOR_GREEN, updaterVersion, 0, false);
+      break;
+    case 18:
+      if (sensorRow == 7 && updaterMicroLinnVersion > -2) 
+        paintNumericDataDisplay(COLOR_GREEN, updaterMicroLinnVersion, 0, false);
+      break;
+    case 19:
+      if (sensorRow == 7 && updaterSettingsSize > -2) 
+        paintNumericDataDisplay(COLOR_GREEN, updaterSettingsSize, 0, false);
+      break;
+    case 20:
+      if (sensorRow == 7 && updaterImpliedSettingsSize > -2) 
+        paintNumericDataDisplay(COLOR_GREEN, updaterImpliedSettingsSize, 0, false);
+      break;
+    case 21:
+      if (sensorRow == 7 && updaterBadBatch > -2) 
+        paintNumericDataDisplay(COLOR_GREEN, updaterBadBatch, 0, false);
+      break;
 
     }
   }
@@ -2988,9 +3008,6 @@ void handleGlobalSettingNewTouch() {
         case 2:
           setLed(sensorCol, sensorRow, getSleepColor(), cellSlowPulse);
           break;
-        case 3:
-          setLed(sensorCol, sensorRow, getLowPowerColor(), cellSlowPulse);
-          break;
       }
       break;
 
@@ -3006,28 +3023,6 @@ void handleGlobalSettingNewTouch() {
           break;
       }
       break;
-
-    // display diagnostics for what settings the current firmware got from the updater app, part of the microLinn fork
-    case 17: 
-      if (sensorRow == 7 && updaterVersion > -2) 
-        paintNumericDataDisplay(COLOR_GREEN, updaterVersion, 0, false);
-      break;
-    case 18:
-      if (sensorRow == 7 && updaterMicroLinnVersion > -2) 
-        paintNumericDataDisplay(COLOR_GREEN, updaterMicroLinnVersion, 0, false);
-      break;
-    case 19:
-      if (sensorRow == 7 && updaterSettingsSize > -2) 
-        paintNumericDataDisplay(COLOR_GREEN, updaterSettingsSize, 0, false);
-      break;
-    case 20:
-      if (sensorRow == 7 && updaterImpliedSettingsSize > -2) 
-        paintNumericDataDisplay(COLOR_GREEN, updaterImpliedSettingsSize, 0, false);
-      break;
-    case 21:
-      if (sensorRow == 7 && updaterBadBatch > -2) 
-        paintNumericDataDisplay(COLOR_GREEN, updaterBadBatch, 0, false);
-      break;      
   }
 
   if (sensorRow == 7 && sensorCol <= 16) {
@@ -3154,12 +3149,6 @@ void handleGlobalSettingHold() {
             setDisplayMode(displaySleepConfig);
             updateDisplay();
             break;
-          case 3:
-            Device.operatingLowPower = 2;
-            setLed(15, 3, globalAltColor, cellOn);
-            applyLedInterval();
-            applyMidiInterval();
-            break;
         }
         break;
 
@@ -3270,12 +3259,6 @@ void handleGlobalSettingRelease() {
         playSleepAnimation();
       }
     }
-    else if (sensorRow == 3 && ensureCellBeforeHoldWait(globalColor, Device.operatingLowPower > 0 ? cellOn : cellOff)) {
-      if (Device.operatingLowPower > 0) {Device.operatingLowPower = 0;}
-      else if (!Device.serialMode)      {Device.operatingLowPower = 1;}
-      applyLedInterval();
-      applyMidiInterval();
-    }
   }
   else if (sensorCol == 16) {
       // Toggle UPDATE OS value
@@ -3283,13 +3266,22 @@ void handleGlobalSettingRelease() {
         byte resetColor = COLOR_BLACK;
         CellDisplay resetDisplay = cellOff;
         if (Device.serialMode) {
-          resetColor = globalColor;
+          resetColor = Device.microLinn.uninstall ? COLOR_RED : globalColor;
           resetDisplay = cellOn;
         }
 
         if (ensureCellBeforeHoldWait(resetColor, resetDisplay)) {
-          switchSerialMode(!Device.serialMode);
-          storeSettings();
+          if (!Device.serialMode) {
+            Device.microLinn.uninstall = false;
+            switchSerialMode(true);
+            storeSettings();
+          } else if (!Device.microLinn.uninstall) {
+            Device.microLinn.uninstall = true;
+          } else {
+            Device.microLinn.uninstall = false;
+            switchSerialMode(false);          
+            storeSettings();
+          }
         }
       }
       // Enter calibration mode

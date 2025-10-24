@@ -216,48 +216,18 @@ void serialSendSettings() {
   const uint8_t batchsize = 96;
   byte* src = (byte*)&config;
 
-  byte uninstall = getMicroLinnUninstall();       // for debugging, delete later
-  Device.audienceMessages[0][0] = '0' + (uninstall / 10);
-  Device.audienceMessages[0][1] = '0' + (uninstall % 10);
-
   // if the user is reverting to the mainline firmware, we need to send the updater a version
   // of the configuration that's compatible with mainline
-  //if (getMicroLinnUninstall() == 12) {
-  if (uninstall == 12) {
+  if (Device.microLinn.uninstall) {
     // this does an in-place overwrite of the current configuration with a smaller one that has all the
     // MicroLinn data stripped out, so it's important that nothing ever tries to access
     // the configuration fields at their old locations between now and the next reboot
     // (the 16 sequencer projects are read directly from flash)
     restoreNonMicroLinnConfiguration(&config, &config);
     confSize = sizeof(struct ConfigurationVLatest);
-  } else if (uninstall == 41) {
+  } else {
     confSize = sizeof(Configuration);
-  } else return;                              // results in "Couldn't retrieve LinnStrument's settings...""
-
-  // mysterious bug: restoreNonMicroLinnConfiguration() doesn't run even when microLinnUninstall is clearly true!!!!
-  // on the Global Settings screen, tap col 16 row 4 to toggle microLinnUninstall, tap col 17 row 4 to see its value
-  // "if (isMicroLinnUninstallTrue())" fails
-  // "if (microLinnUninstall)" also fails
-  // moving the runtime var microLinnUninstall to linnstrument-firmware.ino also fails
-  // moving it to ls_serial.ino also fails
-  // changing it to Device.microLinn.uninstall also fails
-  // changing it to Device.microLinnUninstall also fails
-  // changing it to Global.microLinn.uninstall works sometimes
-  // changing it to a byte with 12 = yes and 41 = no and anything else = invalid also fails
-  // changing "if (isMicroLinnUninstallTrue())" to "if (true)" uninstalls fine, but forces the user to uninstall
-
-  // workaround for beta testers wanting to uninstall: have them update to a special version that has "if (true)",
-  // then have them down-date from that version to the mainstream code, their data won't be lost
-
-  /******** test, this also fails
-  confSize = sizeof(Configuration);
-  for (byte i = 0; i < 100; i++) {
-    if (isMicroLinnUninstallTrue()) {
-      restoreNonMicroLinnConfiguration(&config, &config);
-      confSize = sizeof(ConfigurationVLatest);
-      break;
-    }
-  } *********/
+  }
 
   // send the size of the settings
   Serial.write((byte*)&confSize, sizeof(int32_t));

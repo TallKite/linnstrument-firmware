@@ -602,7 +602,7 @@ void paintNormalDisplayCell(byte split, byte col, byte row) {
     if (row == 0) {
       clearLed(col, row, LED_LAYER_LOWROW);
     }
-    // custom LEDs shows up underneath the note lights, delete?
+    // custom LEDs shows up underneath the note lights
     if (lightPattern > 3 && cellDisplay == cellOff) {
       colour = Device.customLeds[lightPattern - 4][col + MAXCOLS * row] >> 3;
       cellDisplay = cellOn;
@@ -937,7 +937,7 @@ void paintOSVersionDisplay() {
 void paintOSVersionBuildDisplay() {
   clearDisplay();
 
-  byte color = COLOR_YELLOW;
+  byte color = COLOR_LIME;
   smallfont_draw_string(0, 0, OSVersionBuild, color);
 }
 
@@ -1713,35 +1713,23 @@ void paintGlobalSettingsDisplay() {
 
   // Show the low power mode
   if (Device.operatingLowPower > 0) {
-    setLed(15, 3, getLowPowerColor(), cellOn);
+    setLed(15, 3, Device.operatingLowPower == 2 ? globalAltColor : globalColor, cellOn);      // 2 = microLinn's dim-but-fast mode
   }
 
   // set light for serial mode
   if (Device.serialMode) {
-    lightLed(16, 2);
+    setLed(16, 2, Device.microLinn.uninstall ? COLOR_RED : globalColor, cellOn);
+  } else if (Device.microLinn.uninstall) {
+    setLed(16, 2, COLOR_ORANGE, cellOn);     // for debugging, delete later
   }
 
-  // set light for uninstall mode
-/**********/
-//#ifdef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
-  if (getMicroLinnUninstall() == 12) {
-    lightLed(16, 4);
-  } else if (getMicroLinnUninstall() != 41) {
-    setLed(16, 4, COLOR_RED, cellOn);                 // warn that the data is bad
-  }
-//#endif
-/**************
-//#ifndef DEBUG_ENABLED
-  byte col = (LINNMODEL == 200 ? 17 : 16);
-  byte row = (LINNMODEL == 200 ?  2 : 4);
-  if (getMicroLinnUninstall() == 12) {
-    lightLed(col, row);
-  } else if (getMicroLinnUninstall() != 41) {
-    setLed(col, row, COLOR_RED, cellOn);              // warn that the data is bad
-  }
-//#endif
-**********/
-  if (isLinn200()) setLed(17, 1, COLOR_CYAN, cellOn);        // shortcut to microLinn menus
+  // set light for shortcut to microLinn menus
+  if (!isLinn200()) setLed(16, 4, COLOR_LIME, cellOn);
+#ifdef DEBUG_ENABLED                                             // avoid conflict, column 17 also sets the debug level
+  if (isLinn200()) setLed(16, 4, COLOR_LIME, cellOn);
+#else
+  if (isLinn200()) setLed(17, 1, COLOR_LIME, cellOn);
+#endif
 
   // clearly indicate the calibration status
   setLed(16, 3, getCalibrationColor(), cellOn);
@@ -1754,7 +1742,7 @@ void paintGlobalSettingsDisplay() {
 
     if (isMicroLinnOn()) {
       lightSettings = LIGHTS_ACTIVE;
-      setLed(1, 0, globalAltColor, cellOn);
+      setLed(1, 0, COLOR_LIME, cellOn);
     }
 
     switch (lightSettings) {
@@ -1986,13 +1974,6 @@ byte getMIDIThroughColor() {
 }
 
 byte getSleepColor() {
-  return globalColor;
-}
-
-byte getLowPowerColor() {
-  if (Device.operatingLowPower == 2) {
-    return globalAltColor;
-  }
   return globalColor;
 }
 

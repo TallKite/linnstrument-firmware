@@ -25,81 +25,21 @@ MicroLinn includes KVR forum member teknico's channel pressure fix, many thanks 
 See https://www.kvraudio.com/forum/viewtopic.php?t=591770
 https://github.com/rogerlinndesign/linnstrument-firmware/compare/master...teknico:linnstrument-firmware:less-jumpy-z-and-y-axes
 
-Current beta testers: Kite, Gordon, Austin, Ira
+Device.microLinn.uninstall is never initialized to false, because no matter where we put the initializing code,
+  the updater app runs the code and re-initializes the flag to false, thus uninstalling never happens
+(However, importing allUserSettings does set it to false, as does updating to microLinn from the official firmware)
+Fortunately, the compiler automatically initializes the flag to false
+Fortunately, a setting of the flag to true does not persist over power cycles, for some mysterious reason
+
+Current beta testers: Kite, Gordon, Austin, Ira, Max
 
 ======================= TO DO ==============================
-
-add padding bytes and reserved bytes to the import/export code
-
-MUST-DO #1
-
-IMPORTANT: Later on when you update the OS to a different version, you'll be asked if you want to uninstall microLinn. 
-Say no (tap the red button in the middle, turns orange) if you're updating to a newer version of microLinn. This avoids 
-needlessly deleting your microtonal user settings. Say yes (tap the blue button on the left, turns light blue) otherwise, 
-e.g. if you're going back to an official (non-microtonal) version of the firmware. This does delete your microtonal user 
-settings, which is necessary in order to avoid deleting all your other user settings plus your calibration data. 
-Once you've decided, tap the green button on the right to continue.
 
 sample comparisons, add ".diff" to the url to get a diff file
 https://github.com/jimsnow/linnstrument-firmware-ml/compare/main...TallKite:linnstrument-firmware:main
 https://github.com/TallKite/linnstrument-firmware/compare/cf85bb7...TallKite:linnstrument-firmware:main
 https://github.com/rogerlinndesign/linnstrument-firmware/compare/master...TallKite:linnstrument-firmware:Brightness-control.patch
 
-
-Split[].microLinn.colOffset and Global.microLinn.useRainbow are both 0 after updating to microLinn
-Installing bugs, col offset = 0, EDO = 0
-  April 6 no no, april 8 no no, april 11 yes no, april 17 yes no
-  april 8 vs april 11 data structs:
-    
-struct MicroLinnSplit {
-  byte colOffset;                           byte colOffset;                         
-  signed char transposeEDOsteps;
-  signed char transposeEDOlights;
-  byte tuningTable;
-  short hammerOnWindow;                     byte hammerOnWindow;                    
-  boolean hammerOnNewNoteOn;                boolean hammerOnNewNoteOn;              
-  byte pullOffVelocity;                     byte pullOffVelocity;                   
-                                            signed char transposeEDOsteps;          
-                                            signed char transposeEDOlights;
-                                            byte tuningTable;                  (changing byte to short fixed the bug!)         
-};
-
-struct MicroLinnGlobal {
-  byte EDO;                                  byte EDO;                                  
-  signed char octaveStretch;                 
-                                             boolean useRainbow;                        
-                                             short guitarTuning[MAXROWS];               
-  byte anchorCol;                            byte anchorCol;                            
-  byte anchorRow;                            byte anchorRow;                            
-  byte anchorNote;                           byte anchorNote;                           
-  signed char anchorCents;                   signed char anchorCents;                   
-  short guitarTuning[MAXROWS];               
-  boolean useRainbow;                        
-                                             signed char octaveStretch;                 
-  boolean sweeten;                           byte sweeten;
-};
-
-check updater app, LinnStrumentSerial.cpp
-
-
-standard to microLinn 72.1
-  works now, fix is initMicroLinnData() in ls_extstorage
-
-microLinn 72.1 to standard, uninstall on
-  calibration and settings are lost without warning :(
-  also happens w 72.0 versions Apr 6, Apr 8, Apr 11
-  microLinn is sending version 72 not 16
-  works sometimes via Global.microLinn.uninstall
-  only safe way to uninstall is to update to a special version of microLinn that forces an uninstall
-
-microLinn 72.1 to standard, uninstall off
-  calibration and settings are lost, of course
-
-microLinn 72.1 to microLinn 72.1, uninstall on
-  should delete the microlinn data, doesn't
-
-microLinn 72.1 to microLinn 72.1, uninstall off
-  works
 
 stuck pads: 
 12 5, 14 5, 15 5, 
@@ -161,7 +101,18 @@ also https://www.kvraudio.com/forum/viewtopic.php?t=607214
 
 FIX/TEST/DEBUG
 
-uninstalling is broken :(
+test unninstalling more
+
+the import/export all settings code is broken until largeEDOoffsets is uncommented
+
+after importing calibration data, compute the CRC?
+
+add option to turn off same/blink carry over to the other side? in global non-xen menu
+rearrange global non-xen so locator CC #2 is last?
+
+check that microLinnCalcLowestEdostepEtc() and others take into account condensing
+
+on the note lights screen, when long-pressing a scale button to reset the scale, it should blink
 
 tuning table modes: 55ed(4/3-50c) = 440/3 notes per octave, 1024 total notes means 1024x3/440 = 384/55 = 7 octaves
 
@@ -187,20 +138,22 @@ fix bug with anchor row = 0 and guitar tuning, strings preview note are off by o
 
 ask on the forum about the unplugging bug for NRPN send/receive
 
+change microLinnOSVersion from 000 to 001
+
 colorAccent can be set to 0, if so my code should use some fixed color
 
 pack the rainbows array, 2 colors per byte = 765 bytes savings, but makes it much harder to edit
-maybe don't pack the constant array?
+so don't pack the constant array?
 
 byte microLinnGetRainbowColor(byte edo, byte edostep) {
-  byte index = microLinnTriIndex(edo, edostep);
+  short index = microLinnTriIndex(edo, edostep);
   byte twoColors = Device.microLinn.rainbows[index >> 1];
   if (index % 2 == 0) return twoColors & 15; 
   return twoColors >> 4;
 }
 
 void microLinnSetRainbowColor(byte edo, byte edostep, byte color) {
-  byte index = microLinnTriIndex(edo, edostep);
+  short index = microLinnTriIndex(edo, edostep);
   byte twoColors = Device.microLinn.rainbows[index >> 1];
   if (index % 2 == 0) {
     Device.microLinn.rainbows[index >> 1] = (twoColors & 240) | color;
@@ -219,6 +172,7 @@ test if changing splits always triggers a calctuning call, if so, just calc the 
 
 test new switch function 8VE± with transposing, also make it and toggle_quantize not latch on a long press
 
+implement showCustomLEDs via getCombinedLedData() instead?
 fix custom LED bugs: completelyRefreshLeds, startBufferedLeds, finishBufferedLeds, see paintSequencerDisplay()
   see NRPN 247
   see https://www.kvraudio.com/forum/viewtopic.php?t=519090, checkRefreshLedColumn(micros())
@@ -232,8 +186,6 @@ bug, condensing messes up the red dots
 try implementing getMicroLinnNoteNumColumn()
 
 comment out microLinnSetupKitesPersonalPrefs() call
-
-fix colors for 39, 43 & 47edo -- no pink next to the pink wall
 
 OLD WAY
 The colors use the rainbow metaphor, red-yellow-green-blue = sharp-to-flat = supermajor-to-subminor. There's a rainbow of 2nds, a rainbow of 3rds, etc.
@@ -382,8 +334,6 @@ cleanup: search for "delete", "uncomment" and "bug"
 
 TO DECIDE
 
-raise maxEDOsteps up to 1024? max numGroups becomes 8.
-
 implement namespace? search for [^a-z]microLinn[a-z], change to [^a-z]ML[a-z]
    fix sizeof(ML) by hand
 
@@ -394,11 +344,6 @@ Add the ability to set the split point to col 1? enables single-tap mode to swit
   handleControlButtonNewTouch()
     case SPLIT_ROW:  (doubleTap || Global.splitPoint == 1)
     maybe set Global.splitActive == false;
-
-should there be an option to send both CC1 and CC74 for timbre? done by pressing both pads at once.
-  same for poly pressure, channel pressure and CC11 for loudness? press 2 or 3 pads at once
-  greatly increases the volume of midi data, can choke the DAW, 
-  better to just have a reaper jsfx convert it, since it's synth-dependent anyway
 
 make system reset be a long press not a short press?
 
@@ -430,7 +375,7 @@ implement color and scale tables, to speed up cell painting? gets calced in calc
 POSSIBLE PULL REQUESTS (every non-microtonal feature that doesn't require a new user setting, test thoroughly first)
   sequencer: foot pedal fix, pattern-chaining feature, 4x4 array fix
   make SAME carry over to the other side
-  DONE (long-press low power affects brightness only)
+  DONE: long-press low power affects brightness only
   double volume faders
   add 8VE± footswitch function
   line 722 of ls_settings is "midiPreset[0] = 0;", should probably be "midiPreset[s] = 0;"
@@ -449,8 +394,8 @@ note to self: to use multi-channel output with my non-MPE s90es synth, deselect 
 
 
 // virtual edosteps needed = 7 * maxRowOffset + 24 * maxColOffset + 1 = 368 max, but up it to 512 to give the guitar tuning more leeway
-const byte MICROLINN_MAX_ROW_OFFSET = 25;
-const byte MICROLINN_MAX_COL_OFFSET = 8;
+const byte MICROLINN_MAX_ROW_OFFSET = 25;                  // if this is changed, change it in initMicroLinnData() too
+const byte MICROLINN_MAX_COL_OFFSET = 10; 
 const short MICROLINN_MAX_EDOSTEPS = 7 * 25 + 24 * 8 + 1;  // 175 + 192 + 1 = 368
 //const short MICROLINN_MAX_EDOSTEPS = 512;                // virtual edosteps run 0..511
 const short MICROLINN_MAX_GUITAR_RANGE = 196; // 320;      // 512 - 192, 192 = max row length = numCols * maxColOffset = 24 * 8
@@ -733,7 +678,7 @@ const byte MICROLINN_SCALES[MICROLINN_ARRAY_SIZE] = {
   127,64,64, 0,67,64,64,66, 0,65,64, 0,67, 0,64, 0,67, 0,64,66, 0,65,64,64,66, 0,65,64, // 28
   127, 0,64,64,64,67, 0,64,66,65,64, 0,67, 0,64,64, 0,67, 0,64,66,65,64, 0,64,66,65,64, 0, // 29
   127, 0,64,64, 0,67,64,64,66, 0,65,64,67, 0, 0,64, 0, 0,67,64,66, 0,65,64,64,66, 0,65,64, 0, // 30
-  127, 0,64,64, 0,67,64,64,66, 0,65,64, 0,67, 0,64,64, 0,67, 0,64,66, 0,65,64,64,66, 0,65,64, 0, // 31
+  127, 0,64,64, 0,67,64,64,66, 0,65,64, 0,67, 0,64,64, 0,67,64,64,66, 0,65,64,64,66, 0,65,64, 0, // 31
   127, 0,64,64, 0,67,64,64,66, 0,65,64, 0,67, 0, 0,64, 0, 0,67, 0,64,66, 0,65,64,64,66, 0,65,64, 0, // 32
   127, 0,64,64, 0,67,64, 0,64,66, 0,65,64, 0,67, 0,64,64, 0,67, 0,64,66, 0,65,64, 0,64,66, 0,65,64, 0, // 33
   127, 0,64,64, 0,67,64, 0,64,66, 0,65,64, 0,67, 0, 0,64, 0, 0,67, 0,64,66, 0,65,64, 0,64,66, 0,65,64, 0, // 34
@@ -831,13 +776,13 @@ float microLinnSemitonesPerPad[NUMSPLITS];                      // number of 12e
 short microLinnColOffsetCents[NUMSPLITS];                       // row/col offset cents are set only when user sets an offset directly...
 short microLinnRowOffsetCents[NUMSPLITS];                       // ...used to avoid the offset drifting too wide or too narrow when switching edos
 short microLinnGlobalRowOffsetCents;                            // used to adjust either Global.rowOffset or Global.customRowOffset when changing the edo
-short microLinnGuitarTuningCents[MAXROWS];                      // cents between open strings, can be negative, [0] is used as DIA/CHRO flag
+short microLinnGuitarTuningCents[MAXROWS];                      // cents between open strings, can be negative
 short microLinnGuitarTuning[MAXROWS];                           // cumulative row offsets, unlike Global.microLinn.guitarTuning, for a faster calcTuning()
 short microLinnHighestGuitarNote;                               // the highest/lowest note in the anchor column, as edosteps from the anchor cell...
 short microLinnLowestGuitarNote;                                // ...used to find lowestEdostep and numGroups, and to limit guitar range when changing edos
 short microLinnLowestEdostep[NUMSPLITS];                        // what not where, lowest edostep when the anchor cell is 0, usually negative
 byte microLinnChannelCount[NUMSPLITS];                          // used for rechannelling
-byte microLinnNumGroups[NUMSPLITS];                             // 1 if highestEdostep - lowestEdostep < 128, 2 if < 256, 3 if < 384, 4 if < 512
+byte microLinnNumGroups[NUMSPLITS];                             // 1 if highestEdostep - lowestEdostep < 128, 2 if < 256, 3 if < 384, 4 if < 512... up to 8
 short microLinnSweetener[NUMSPLITS];                            // 2¢ (or whatever) as a zero-centered midi pitch bend value
 char microLinnAnchorString[6] = "R C  ";                        // row and column of the anchor cell, e.g. "R3C12", top row is row #1
 byte microLinnHammerOnEdosteps[NUMSPLITS];                      // convert Split[side].microLinn.hammerOnCentsWindow from cents to edosteps
@@ -846,7 +791,6 @@ byte microLinnScaleLookup[MICROLINN_MAX_EDO+1];                 // look up scale
 byte microLinnNumNotes;                                         // number of notes in the condensed scale, 1..55
 byte microLinnLargestStep = 1;                                  // largest step in the condensed scale, 1..55
 boolean microLinnOctaveToggled = false;                         // used by the 8VE± footswitch
-byte microLinnUninstall = 41;                                   // 12 = uninstall back to 12edo, 41 = stay microtonal = don't uninstall
 
 // not yet used
 //struct MicroLinnPull {boolean sharp, flat;};                    // used to sweeten 41edo
@@ -988,17 +932,6 @@ boolean isMicroLinnColOffset(byte side) {
 boolean isMicroLinnNoOverlap() {                       // says whether to call calcTuning on a split point change
   return Split[LEFT].microLinn.rowOffset  > MICROLINN_MAX_ROW_OFFSET ||    
          Split[RIGHT].microLinn.rowOffset > MICROLINN_MAX_ROW_OFFSET;
-}
-
-byte getMicroLinnUninstall() {
-  return microLinnUninstall;
-}
-
-void toggleMicroLinnUninstall() {
-  //Device.microLinnUninstall = !Device.microLinnUninstall;
-  if (microLinnUninstall == 41) {           // 12 = uninstall back to 12edo, 41 = stay microtonal
-         microLinnUninstall = 12;
-  } else microLinnUninstall = 41;
 }
 
 // a cell's edostep = the distance in edosteps from the anchor cell, plus transposition
@@ -1213,8 +1146,8 @@ FocusCell microLinnFIndEdostep(byte side, short edostep) {
 
 void initializeMicroLinn() {
   // called in reset(), runs when microLinn firmware is first installed or when the user does a global reset
+  // DO NOT initialize Device.microLinn.uninstall here, because the updater app seems to re-initialize it before using it
   microLinnImportingOn = false;
-  //Device.microLinnUninstall = 41;     // 41 = don't uninstall
   Device.microLinn.MLversion = 1;     // the 1 in 72.1
   memcpy (&Device.microLinn.scales,   &MICROLINN_SCALES,   MICROLINN_ARRAY_SIZE);
   memcpy (&Device.microLinn.rainbows, &MICROLINN_RAINBOWS, MICROLINN_ARRAY_SIZE);
@@ -1244,7 +1177,7 @@ void initializeMicroLinn() {
   Global.microLinn.guitarTuning[5] = 5;
   Global.microLinn.guitarTuning[6] = 4;
   Global.microLinn.guitarTuning[7] = 5;
-  Global.microLinn.teknico = 0;
+  Global.microLinn.smoothing = 0;
 
   for (byte side = 0; side < NUMSPLITS; ++side) {
     Split[side].microLinn.colOffset = 1;
@@ -1268,72 +1201,70 @@ void initializeMicroLinn() {
   }
 
   // preset 5 (5th from the top) is 41edo Kite guitar (the presets run 3 2 1 0 5 4)
+  byte p = 5;
   for (byte side = 0; side < NUMSPLITS; ++side) {
-    config.preset[5].split[side].midiMode = channelPerNote;        // overwrite the 1-channel defaults with MPE settings
-    config.preset[5].split[side].bendRangeOption = bendRange24;
-    config.preset[5].split[side].customBendRange = 24;
-    config.preset[5].split[side].expressionForZ = loudnessChannelPressure;
-    Split[side].microLinn.hammerOnCentsWindow = 15;                // 15 = 150¢
-    Split[side].microLinn.hammerOnTimeWindow = 20;                 // 20 = 200 milliseconds
+    config.preset[p].split[side].midiMode = channelPerNote;        // overwrite the 1-channel defaults with MPE settings
+    config.preset[p].split[side].bendRangeOption = bendRange24;
+    config.preset[p].split[side].customBendRange = 24;
+    config.preset[p].split[side].expressionForZ = loudnessChannelPressure;
+    config.preset[p].split[side].playedTouchMode = playedBlink;
+    config.preset[p].split[side].microLinn.hammerOnCentsWindow = 15;                // 15 = 150¢
+    config.preset[p].split[side].microLinn.hammerOnTimeWindow = 20;                 // 20 = 200 milliseconds
   }
-  config.preset[5].split[LEFT].midiChanMain = 1;
-  config.preset[5].split[LEFT].midiChanSet[0] = false;
-  config.preset[5].split[RIGHT].midiChanMain = 16;
-  config.preset[5].split[RIGHT].midiChanSet[15] = false;
-  config.preset[5].global.microLinn.EDO = 41;
+  config.preset[p].split[LEFT].midiChanMain = 1;
+  config.preset[p].split[LEFT].midiChanSet[0] = false;
+  config.preset[p].split[RIGHT].midiChanMain = 16;
+  config.preset[p].split[RIGHT].midiChanSet[15] = false;
+  config.preset[p].global.microLinn.EDO = 41;
   short i = microLinnTriIndex(41, 0); 
-  memcpy(&config.preset[5].global.microLinn.rainbow,   &Device.microLinn.rainbows[i],   41); 
-  memcpy(&config.preset[5].global.microLinn.fretboard, &Device.microLinn.fretboards[i], 41); 
-  config.preset[5].global.microLinn.anchorRow = 3;                // 5th row from top, places the two rainbows nicely
-  config.preset[5].global.microLinn.anchorCol = 6;
-  config.preset[5].global.microLinn.anchorNote = 54;              // ^F#2, Kite guitar standard tuning with D = 0 cents
-  config.preset[5].global.microLinn.anchorCents = 39;             // ^M3 = 439c
-  config.preset[5].global.microLinn.sweeten = 20;                 // 20 = 2¢
-  config.preset[5].global.rowOffset = ROWOFFSET_OCTAVECUSTOM;
-  config.preset[5].global.customRowOffset = 13;                   // 41-equal downmajor 3rds
-  config.preset[5].split[LEFT].microLinn.colOffset = 2;
-  config.preset[5].split[RIGHT].microLinn.colOffset = 2;
-  config.preset[5].global.activeNotes = 6;                        // fit 2 rainbow zones on a 200
-  config.preset[5].split[LEFT].playedTouchMode = playedBlink;
-  config.preset[5].split[RIGHT].playedTouchMode = playedBlink;
-  config.preset[5].global.microLinn.guitarTuning[1] = 13;         // alternating downmajor and upminor 3rds
-  config.preset[5].global.microLinn.guitarTuning[2] = 11;         // row offset from the string below it
-  config.preset[5].global.microLinn.guitarTuning[3] = 13;
-  config.preset[5].global.microLinn.guitarTuning[4] = 11;
-  config.preset[5].global.microLinn.guitarTuning[5] = 13;
-  config.preset[5].global.microLinn.guitarTuning[6] = 11;
-  config.preset[5].global.microLinn.guitarTuning[7] = 13;
+  memcpy(&config.preset[p].global.microLinn.rainbow,   &Device.microLinn.rainbows[i],   41); 
+  memcpy(&config.preset[p].global.microLinn.fretboard, &Device.microLinn.fretboards[i], 41); 
+  config.preset[p].global.microLinn.anchorRow = 3;                // 5th row from top, places the two rainbows nicely
+  config.preset[p].global.microLinn.anchorCol = 6;
+  config.preset[p].global.microLinn.anchorNote = 54;              // ^F#2, Kite guitar standard tuning with D = 0 cents
+  config.preset[p].global.microLinn.anchorCents = 39;             // ^M3 = 439c
+  config.preset[p].global.microLinn.sweeten = 20;                 // 20 = 2¢
+  config.preset[p].global.rowOffset = ROWOFFSET_OCTAVECUSTOM;
+  config.preset[p].global.customRowOffset = 13;                   // 41-equal downmajor 3rds
+  config.preset[p].split[LEFT].microLinn.colOffset = 2;
+  config.preset[p].split[RIGHT].microLinn.colOffset = 2;
+  config.preset[p].global.activeNotes = 6;                        // fit 2 rainbow zones on a Linn200
+  config.preset[p].global.microLinn.guitarTuning[1] = 13;         // alternating downmajor and upminor 3rds
+  config.preset[p].global.microLinn.guitarTuning[2] = 11;         // row offset from the string below it
+  config.preset[p].global.microLinn.guitarTuning[3] = 13;
+  config.preset[p].global.microLinn.guitarTuning[4] = 11;
+  config.preset[p].global.microLinn.guitarTuning[5] = 13;
+  config.preset[p].global.microLinn.guitarTuning[6] = 11;
+  config.preset[p].global.microLinn.guitarTuning[7] = 13;
 
-  /************** uncomment once there are more presets *******************
-  // preset 5 (5th from the top) is 31edo Bosanquet
+  // preset 0 (4th from the top) is 31edo Bosanquet
+  p = 0;
   for (byte side = 0; side < NUMSPLITS; ++side) {
-    config.preset[5].split[side].midiMode = channelPerNote;        // overwrite the 1-channel defaults with MPE settings
-    config.preset[5].split[side].bendRangeOption = bendRange24;
-    config.preset[5].split[side].customBendRange = 24;
-    config.preset[5].split[side].expressionForZ = loudnessChannelPressure;
+    config.preset[p].split[side].midiMode = channelPerNote;        // overwrite the 1-channel defaults with MPE settings
+    config.preset[p].split[side].bendRangeOption = bendRange24;
+    config.preset[p].split[side].customBendRange = 24;
+    config.preset[p].split[side].expressionForZ = loudnessChannelPressure;
+    config.preset[p].split[side].playedTouchMode = playedBlink;
   }
-  config.preset[5].split[LEFT].midiChanMain = 1;
-  config.preset[5].split[LEFT].midiChanSet[0] = false;
-  config.preset[5].split[RIGHT].midiChanMain = 16;
-  config.preset[5].split[RIGHT].midiChanSet[15] = false;
-  config.preset[5].global.microLinn.EDO = 31;
-  short i = microLinnTriIndex(31, 0); 
-  memcpy(&config.preset[5].global.microLinn.rainbow,   &Device.microLinn.rainbows[i],   31);
-  memcpy(&config.preset[5].global.microLinn.fretboard, &Device.microLinn.fretboards[i], 31);
-  config.preset[5].global.activeNotes = 6;                        // partial rainbow
-  config.preset[5].global.rowOffset = 3;                          // 31-equal minor 2nd
-  config.preset[5].split[LEFT].microLinn.colOffset = 5;           // 31-equal major 2nd
-  config.preset[5].split[RIGHT].microLinn.colOffset = 5;
-  config.preset[5].split[LEFT].playedTouchMode = playedBlink;
-  config.preset[5].split[RIGHT].playedTouchMode = playedBlink;
-  config.preset[5].global.microLinn.guitarTuning[1] = 13;         // F# B E A D G B E
-  config.preset[5].global.microLinn.guitarTuning[2] = 13;
-  config.preset[5].global.microLinn.guitarTuning[3] = 13;
-  config.preset[5].global.microLinn.guitarTuning[4] = 13;
-  config.preset[5].global.microLinn.guitarTuning[5] = 13;
-  config.preset[5].global.microLinn.guitarTuning[6] = 10;
-  config.preset[5].global.microLinn.guitarTuning[7] = 13;
-  *********************************************/
+  config.preset[p].split[LEFT].midiChanMain = 1;
+  config.preset[p].split[LEFT].midiChanSet[0] = false;
+  config.preset[p].split[RIGHT].midiChanMain = 16;
+  config.preset[p].split[RIGHT].midiChanSet[15] = false;
+  config.preset[p].global.microLinn.EDO = 31;
+  i = microLinnTriIndex(31, 0); 
+  memcpy(&config.preset[p].global.microLinn.rainbow,   &Device.microLinn.rainbows[i],   31);
+  memcpy(&config.preset[p].global.microLinn.fretboard, &Device.microLinn.fretboards[i], 31);
+  config.preset[p].global.activeNotes = 6;                        // partial rainbow
+  config.preset[p].global.rowOffset = 3;                          // 31-equal minor 2nd
+  config.preset[p].split[LEFT].microLinn.colOffset = 5;           // 31-equal major 2nd
+  config.preset[p].split[RIGHT].microLinn.colOffset = 5;
+  config.preset[p].global.microLinn.guitarTuning[1] = 13;         // F# B E A D G B E
+  config.preset[p].global.microLinn.guitarTuning[2] = 13;
+  config.preset[p].global.microLinn.guitarTuning[3] = 13;
+  config.preset[p].global.microLinn.guitarTuning[4] = 13;
+  config.preset[p].global.microLinn.guitarTuning[5] = 13;
+  config.preset[p].global.microLinn.guitarTuning[6] = 10;
+  config.preset[p].global.microLinn.guitarTuning[7] = 13;
 
   microLinnSetupKitesPersonalPrefs();   // delete later
   setupMicroLinn();
@@ -1355,31 +1286,28 @@ void loadMicroLinnRainbowAndFretboard() {          // called from loadSettingsFr
   memcpy(&Device.microLinn.fretboards[i], &Global.microLinn.fretboard, rawEDO); 
 }
 
-void microLinnSetupKitesPersonalPrefs() {       // speed up debugging cycle, delete later once things are more stable
-  Split[LEFT].midiMode         = Split[RIGHT].midiMode         = channelPerNote;
-  Split[LEFT].bendRangeOption  = Split[RIGHT].bendRangeOption  = bendRange24; 
-  Split[LEFT].pitchCorrectHold = Split[RIGHT].pitchCorrectHold = pitchCorrectHoldOff;
-  Split[LEFT].expressionForZ   = Split[RIGHT].expressionForZ   = loudnessChannelPressure;
-  Split[LEFT].playedTouchMode  = Split[RIGHT].playedTouchMode  = playedSame;
-  Split[LEFT].microLinn.midiGroupCC = Split[RIGHT].microLinn.midiGroupCC = 20;
-  Split[RIGHT].colorMain = COLOR_LIME;
-  if (Global.microLinn.EDO == 4) {Global.rowOffset = 4;}              // 12edo in 3rds
-  Global.setSwitchAssignment(3, ASSIGNED_MICROLINN_EDO_UP,   false); 
-  Global.setSwitchAssignment(2, ASSIGNED_MICROLINN_EDO_DOWN, false);
-  // set up the kite guitar preset
+void microLinnSetupKitesPersonalPrefs() {          // speed up debugging cycle, delete later once things are more stable
+  // set up the kite guitar preset, 5 = 2nd from bottom
   config.preset[5].global.microLinn.anchorRow = 5;                    // 3rd row from top
   config.preset[5].global.microLinn.anchorCol = 6;
   config.preset[5].global.microLinn.anchorNote = 62;                  // D = 0 cents
   config.preset[5].global.microLinn.anchorCents = 0;
+  config.preset[5].global.activeNotes = 8;                            // 41edo fretboard
   config.preset[5].global.setSwitchAssignment(3, ASSIGNED_MICROLINN_EDO_UP,   false); 
   config.preset[5].global.setSwitchAssignment(2, ASSIGNED_MICROLINN_EDO_DOWN, false);
-  config.preset[5].global.activeNotes = 8;
-  customLedPatternActive = true;                                      // 41edo fretboard
-  config.preset[5].split[LEFT].playedTouchMode  = playedSame;
-  config.preset[5].split[RIGHT].playedTouchMode = playedSame;
-  config.preset[5].split[LEFT].microLinn.midiGroupCC  = 20;
-  config.preset[5].split[RIGHT].microLinn.midiGroupCC = 20;
+  for (byte side = 0; side < NUMSPLITS; ++side) {
+    config.preset[5].split[side].pitchCorrectHold = pitchCorrectHoldOff;
+    config.preset[5].split[side].playedTouchMode  = playedSame;
+    config.preset[5].split[side].microLinn.midiGroupCC = 20;
+  }
   config.preset[5].split[RIGHT].colorMain = COLOR_LIME;
+  // set up a 12edo preset, 4 = bottom
+  memcpy(&config.preset[4], &config.preset[5], sizeof(PresetSettings));
+  config.preset[4].global.microLinn.EDO = 4;
+  config.preset[4].global.customRowOffset = 4;                        // 12edo major 3rds
+  config.preset[4].split[LEFT].microLinn.colOffset = 1;
+  config.preset[4].split[RIGHT].microLinn.colOffset = 1;
+  config.preset[4].global.activeNotes = 0;
 };
 
 boolean microLinnIsLinked (byte leftVal, byte rightVal, byte offVal) {      // don't auto-link two OFFs
@@ -1387,7 +1315,6 @@ boolean microLinnIsLinked (byte leftVal, byte rightVal, byte offVal) {      // d
 }
 
 void setupMicroLinn() {                              // runs when the Linnstrument powers up or a preset is loaded
-  //Device.microLinnUninstall = 41;                    // 41 = don't uninstall
   edo = Global.microLinn.EDO;
   if (edo == 4) edo = 12;                            // because "OFF" is 4edo which is really 12edo
   microLinnPrevScale = Global.activeNotes;           // to disable backtracking
@@ -1424,7 +1351,7 @@ void setupMicroLinn() {                              // runs when the Linnstrume
 
 void microLinnCalcHammerOnEdosteps(byte side) {
   short equave = 100 * Global.microLinn.equaveSemitones + Global.microLinn.equaveStretch;
-  // use paretheses to ensure division happens last. edosteps are automatically floored, so 180c = 1\12
+  // use paretheses to ensure division happens last. 10 not 10.0 so that edosteps are automatically floored, so 180c = 1\12
   microLinnHammerOnEdosteps[side] = (edo * Split[side].microLinn.hammerOnCentsWindow * 10) / equave;
 }
 
@@ -1615,7 +1542,7 @@ void microLinnAdjustColAndRowOffsets() {
     if (Split[side].microLinn.defaultLayout > 0) continue;
     if (Split[side].microLinn.condensedBendPerPad > 0) continue;                      // don't adjust stepspans
     newOffset = round ((edo * microLinnColOffsetCents[side]) / 1200.0);
-    newOffset = constrain (newOffset, 1, 8);
+    newOffset = constrain (newOffset, 1, MICROLINN_MAX_COL_OFFSET);
     Split[side].microLinn.colOffset = newOffset;
   }
 
@@ -1647,7 +1574,7 @@ void microLinnAdjustColAndRowOffsets() {
     microLinnCalcGuitarTuning();
   }
   else {
-    // row = 1 because microLinnGuitarTuningCents[0] is only used for the DIA/CHRO flag
+    // row = 1 because Global.microLinn.guitarTuning[0] is only used for the DIA/CHRO flag
     for (byte row = 1; row < NUMROWS; ++row) {
       newOffset = round ((edo * microLinnGuitarTuningCents[row]) / 1200.0);
       if (newOffset == 0) {
@@ -1778,7 +1705,7 @@ void microLinnCalcLowestEdostepEtc(byte side) {
   }
   microLinnLowestEdostep[side] += microLinnTransposition(side);
 
-  // calc microLinnNumGroups for rechannelling
+  // calc microLinnNumGroups for grouping and rechannelling
   if (Split[side].microLinn.tuningTable < 2) return;
   if (Global.rowOffset == ROWOFFSET_GUITAR && Split[side].microLinn.rowOffset < -MICROLINN_MAX_ROW_OFFSET) {
     highestEdostep = microLinnHighestGuitarNote;
@@ -1789,8 +1716,10 @@ void microLinnCalcLowestEdostepEtc(byte side) {
   highestEdostep += Split[side].microLinn.colOffset * abs((NUMCOLS - lowestCol) - Global.microLinn.anchorCol);
   highestEdostep += microLinnTransposition(side);
   microLinnNumGroups[side] = ((highestEdostep - microLinnLowestEdostep[side]) >> 7) + 1;
+  microLinnNumGroups[side] = constrain(microLinnNumGroups[side], 1, 8);
 
   // calc microLinnChannelCount for rechannelling
+  if (Split[side].microLinn.tuningTable < 3) return;
   microLinnChannelCount[side] = 0;
   for (byte ch = 0; ch < 16; ++ch) {
     if (Split[side].midiChanSet[ch]) microLinnChannelCount[side] += 1;
@@ -2206,12 +2135,16 @@ byte getMicroLinnRowOffsetColorGuitar2(byte row, boolean isSideButton) {      //
   return globalColor;
 }
 
-byte getMicroLinnRowOffsetColorGuitar3(byte row, boolean isSideButton) {         // for microtonal guitar tuning display
-  if (isSideButton && row < Global.microLinn.anchorRow) row += 1;                // side buttons are in col 1
-  if (row > 0) {
-    if (getMicroLinnRowOffsetColor(Global.microLinn.guitarTuning[row]) == COLOR_RED) return COLOR_RED;
-  }
-  if (isSideButton) return COLOR_GREEN;
+byte getMicroLinnRowOffsetColorGuitar3(byte row) {                               // for microtonal guitar tuning display, col 1
+  if (row < Global.microLinn.anchorRow) row += 1;
+  if (row == 0) return COLOR_GREEN;
+  if (getMicroLinnRowOffsetColor(Global.microLinn.guitarTuning[row]) == COLOR_RED) return COLOR_RED;
+  return COLOR_GREEN;
+}
+
+byte getMicroLinnRowOffsetColorGuitar4(byte row) {                               // for microtonal guitar tuning display, numbers
+  if (row == 0) return globalColor;
+  if (getMicroLinnRowOffsetColor(Global.microLinn.guitarTuning[row]) == COLOR_RED) return COLOR_RED;
   return globalColor;
 }
 
@@ -2350,8 +2283,10 @@ void paintMicroLinnDebugDump() {     // delete later from here and from ls_displ
     if (sensorCol == 7)  paintNumericDataDisplay(Split[sp].colorMain, sizeof(SplitSettings), 0, true);
     if (sensorCol == 8)  paintNumericDataDisplay(Split[sp].colorMain, sizeof(MicroLinnSplit), 0, true);
     if (sensorCol == 9)  paintNumericDataDisplay(Split[sp].colorMain, sizeof(SplitSettings) - sizeof(MicroLinnSplit), 0, true);
-    if (sensorCol == 11) paintNumericDataDisplay(Split[sp].colorMain, microLinnUninstall, 0, false);
-    if (sensorCol == 17) paintNumericDataDisplay(Split[sp].colorMain, getMicroLinnUninstall(), 0, false);
+    if (sensorCol == 10) paintNumericDataDisplay(Split[sp].colorMain, Device.calCrcCalculated    ? 1 : 0, 0, false);
+    if (sensorCol == 11) paintNumericDataDisplay(Split[sp].colorMain, Device.calibrated          ? 1 : 0, 0, false);
+    if (sensorCol == 12) paintNumericDataDisplay(Split[sp].colorMain, Device.calibrationHealed   ? 1 : 0, 0, false);
+    if (sensorCol == 13) paintNumericDataDisplay(Split[sp].colorMain, Device.microLinn.uninstall ? 1 : 0, 0, false);
   }
 }
 
@@ -2384,13 +2319,13 @@ byte microLinnGetColor (boolean selected) {
 }
 
 void microLinnDrawString (byte col, byte row, const char* str, byte color, boolean erase) {
-  if (isLinn200()) {smallfont_draw_string(col, row, str, color, erase);}
-  else               {condfont_draw_string(col, row, str, color, erase);}
+  if (isLinn200()) smallfont_draw_string(col, row, str, color, erase);
+  else              condfont_draw_string(col, row, str, color, erase);
 }
 
 void microLinnDrawString (byte col, byte row, const char* str, const char* str2, byte color, boolean erase) {
-  if (isLinn200()) {smallfont_draw_string(col, row, str,  color, erase);}
-  else               {condfont_draw_string(col, row, str2, color, erase);}
+  if (isLinn200()) smallfont_draw_string(col, row, str,  color, erase);
+  else              condfont_draw_string(col, row, str2, color, erase);
 }
 
 void microLinnScrollSmall (String text) {
@@ -2542,7 +2477,7 @@ void microLinnPaintColOffset() {
   byte color = getMicroLinnColOffsetColor();
   microLinnPaintShowSplitSelection (microLinnColOffsetLinked);
   if (Split[side].microLinn.colOffset == 1) {
-    smallfont_draw_string(2, 1, "OFF", color, false);
+    smallfont_draw_string(1, 1, "OFF", color, false);
   } else {
     paintNumericDataDisplay(color, Split[side].microLinn.colOffset, -4, false);
   }
@@ -2568,7 +2503,7 @@ void microLinnPaintRowOffset() {
   byte side = Global.currentPerSplit;
   byte color = getMicroLinnRowOffsetColor();
   if (Split[side].microLinn.rowOffset < -MICROLINN_MAX_ROW_OFFSET) {
-    smallfont_draw_string(2, 1, "OFF", Split[side].colorMain, false);
+    smallfont_draw_string(1, 1, "OFF", Split[side].colorMain, false);
   }
   else if (Split[side].microLinn.rowOffset > MICROLINN_MAX_ROW_OFFSET) {
     microLinnDrawString(0, 1, "NOVR", color, false);
@@ -2631,13 +2566,15 @@ void microLinnPaintPerSplitSettings() {
   switch (microLinnPerSplitSettingsRowNum) {
     case 7:
       switch (Split[side].microLinn.showCustomLEDs) {    
-        case 0: smallfont_draw_string(2, 1, "OFF",  color, false); break;
-        case 1: smallfont_draw_string(2, 1, "A",    color, false); break;
-        case 2: smallfont_draw_string(2, 1, "A#",   color, false); break;
-        case 3: smallfont_draw_string(2, 1, "B",    color, false); break;
-        case 4: smallfont_draw_string(2, 1, "A'",   color, false); break;
-        case 5: smallfont_draw_string(2, 1, "A#'",  color, false); break;
-        case 6: smallfont_draw_string(2, 1, "B'",   color, false); break;
+        case 0:         smallfont_draw_string(2, 1, "OFF",  color, false); break;
+        case 1: case 4: smallfont_draw_string(2, 1, "A",    color, false); break;
+        case 2: case 5: smallfont_draw_string(2, 1, "A#",   color, false); break;
+        case 3: case 6: smallfont_draw_string(2, 1, "B",    color, false); break;
+      }
+      if (Split[side].microLinn.showCustomLEDs == 5) {
+        smallfont_draw_string(12, 1, "'", color, false);
+      } else if (Split[side].microLinn.showCustomLEDs >= 4) {
+        smallfont_draw_string( 6, 1, "'", color, false);
       }
       break;
     /***********
@@ -2719,7 +2656,8 @@ void microLinnHandlePerSplitSettingsRelease() {                                /
 
 void microLinnPaintGlobalSettingsButtons() {
   for (byte row = 3; row <= 7; ++row) {
-    byte color = (row == 6 || row == 5) ? COLOR_LIME : COLOR_GREEN;
+    if (row == 3 && !isLinn200()) continue;
+    byte color = (row <= 4) ? COLOR_LIME : COLOR_GREEN;
     if (row == microLinnGlobalSettingsRowNum) color = COLOR_CYAN;
     setLed(1, row, color, cellOn);
   }
@@ -2730,10 +2668,11 @@ void microLinnPaintGlobalSettings() {
   if (microLinnGlobalSettingsNowScrolling) {
     switch (microLinnGlobalSettingsRowNum) {
       case 7: microLinnScrollSmall("DRUM PAD MODE"); break;
-      case 6: microLinnScrollSmall("LOCATOR CC #1"); break;
-      case 5: microLinnScrollSmall("LOCATOR CC #2"); break;
-      case 4: microLinnScrollSmall("ALLOW IMPORTING"); break;
-      case 3: microLinnScrollSmall("X & Y SMOOTHING"); break;
+      case 6: microLinnScrollSmall("ALLOW IMPORTING"); break;
+      case 5: microLinnScrollSmall("Y & Z SMOOTHING"); break;
+      case 4: microLinnScrollSmall("LOCATOR CC #1"); break;
+      case 3: if (isLinn200())
+              microLinnScrollSmall("LOCATOR CC #2"); break;
     }
     microLinnPaintConfigButtons();
     microLinnPaintGlobalSettingsButtons();
@@ -2744,27 +2683,28 @@ void microLinnPaintGlobalSettings() {
       smallfont_draw_string(2, 1, Global.microLinn.drumPadMode ? "ON" : "OFF", globalColor, false); 
       break;
     case 6:
-      if (Global.microLinn.locatorCC1 == -1) {
-        smallfont_draw_string(2, 1, "OFF", globalColor, false);
-      } else {
-        paintNumericDataDisplay(globalColor, Global.microLinn.locatorCC1, 1, false);
-      }
+      smallfont_draw_string(2, 1, microLinnImportingOn ? "YES" : "NO", globalColor, false);
       break;
     case 5:
-      if (Global.microLinn.locatorCC2 == -1) {
-        smallfont_draw_string(2, 1, "OFF", globalColor, false);
-      } else {
-        paintNumericDataDisplay(globalColor, Global.microLinn.locatorCC2, 1, false);
+      switch (Global.microLinn.smoothing) {
+        case 0: smallfont_draw_string(2, 1, "OFF", globalColor, false); break;
+        case 1: smallfont_draw_string(7, 1, "Z",   globalColor, false); break;
+        case 2: smallfont_draw_string(2, 1, "Y+Z", globalColor, false); break;
       }
       break;
     case 4:
-      smallfont_draw_string(2, 1, microLinnImportingOn ? "YES" : "NO", globalColor, false);
+      if (Global.microLinn.locatorCC1 == -1) {
+        smallfont_draw_string(2, 1, "OFF", globalColor, false);
+      } else {
+        paintNumericDataDisplay(globalColor, Global.microLinn.locatorCC1, 0, false);
+      }
       break;
     case 3:
-      switch (Global.microLinn.teknico) {
-        case 0: smallfont_draw_string(2, 1, "OFF", globalColor, false); break;
-        case 1: smallfont_draw_string(2, 1, "Z",   globalColor, false); break;
-        case 2: smallfont_draw_string(2, 1, "Y+Z", globalColor, false); break;
+      if (!isLinn200()) break;
+      if (Global.microLinn.locatorCC2 == -1) {
+        smallfont_draw_string(2, 1, "OFF", globalColor, false);
+      } else {
+        paintNumericDataDisplay(globalColor, Global.microLinn.locatorCC2, 0, false);
       }
       break;
   }
@@ -2773,6 +2713,7 @@ void microLinnPaintGlobalSettings() {
 void microLinnHandleGlobalSettingsNewTouch() {
   microLinnGlobalSettingsNowScrolling = false;
   if (sensorCol == 1) {
+    if (sensorRow == 3 && !isLinn200()) return;
     if (sensorRow >= 3 || sensorRow == 0) {
       microLinnGlobalSettingsRowNum = sensorRow;
       updateDisplay(); 
@@ -2790,16 +2731,17 @@ void microLinnHandleGlobalSettingsNewTouch() {
       }  
       break;
     case 6:
-      handleNumericDataNewTouchCol(Global.microLinn.locatorCC1, -1, 119, true);           // -1 means OFF
-      break;
-    case 5:
-      handleNumericDataNewTouchCol(Global.microLinn.locatorCC2, -1, 119, true);
-      break;
-    case 4:
       handleNumericDataNewTouchCol(microLinnImportingOn);
       break;
+    case 5:
+      handleNumericDataNewTouchCol(Global.microLinn.smoothing, 0, 2, true);
+      break;
+    case 4:
+      handleNumericDataNewTouchCol(Global.microLinn.locatorCC1, -1, 119, true);           // -1 means OFF
+      break;
     case 3:
-      handleNumericDataNewTouchCol(Global.microLinn.teknico, 0, 2, true);
+      if (!isLinn200()) break;
+      handleNumericDataNewTouchCol(Global.microLinn.locatorCC2, -1, 119, true);
       break;
   }
   updateDisplay(); 
@@ -2809,12 +2751,14 @@ void microLinnHandleGlobalSettingsHold() {
   if (sensorCol == 1 && sensorRow >= 3 &&                                    // long-press col 1
       isCellPastSensorHoldWait() && 
       !microLinnGlobalSettingsNowScrolling) {     
+    if (sensorRow == 3 && !isLinn200()) return;
     microLinnGlobalSettingsNowScrolling = true;
     microLinnPaintGlobalSettings();                                          // scroll the name of the button
   }
 }
 
 void microLinnHandleGlobalSettingsRelease() {                                // short-press col 1
+  if (sensorRow == 3 && !isLinn200()) return;
   if (sensorCol == 1 && sensorRow >= 3) updateDisplay(); 
 }
 
@@ -2857,15 +2801,15 @@ void microLinnPaintNoteLights() {
       }
       col += 1; 
     }
-    col = MICROLINN_SCALEROWS[edo][0];                                                // pink borders
+    col = MICROLINN_SCALEROWS[edo][0];                                                // yellowish-orangish borders
     for (stepspan = 0; stepspan < 7; ++stepspan) {
-      setLed(col + 13, 7 - stepspan, COLOR_PINK, cellOn);
+      setLed(col + 13, 7 - stepspan, COLOR_YELLOW, cellOn);
     }
     col = MICROLINN_SCALEROWS[edo][1] - MICROLINN_SCALEROWS[edo][0];                  // 2nd - 1sn = major 2nd
     col = max (col, MICROLINN_SCALEROWS[edo][3] - MICROLINN_SCALEROWS[edo][2]);       // 4th - 3rd = minor 2nd
     col -= MICROLINN_SCALEROWS[edo][0];
     for (stepspan = 0; stepspan < 7; ++stepspan) {
-      setLed(12 - col, 7 - stepspan, COLOR_PINK, cellOn);
+      setLed(12 - col, 7 - stepspan, COLOR_YELLOW, cellOn);
     }
   } else if (currScale == 8) {
     paintMicroLinnFretboardEditor(false);                                                 // blue dots
@@ -2948,7 +2892,7 @@ void microLinnHandleNoteLightsNewTouch() {
 void microLinnHandleNoteLightsHold() {
   if (!isCellPastConfirmHoldWait()) return;                                       // long-press 800 ms
 
-  byte start = microLinnTriIndex(edo, 0);
+  short start = microLinnTriIndex(edo, 0);
   byte currScale = Global.activeNotes;
   // scale selector button, reset the scale
   if (currScale == 7 - sensorRow && sensorCol == 1 && sensorRow > 0) {
@@ -3044,21 +2988,21 @@ void microLinnPaintPerSplitXenSettings() {
   switch (microLinnPerSplitXenSettingsRowNum) {
     case 7:
       switch (Split[side].microLinn.condensedBendPerPad) {
-        case 0:  adaptfont_draw_string(2, 1, "OFF", color, false); break;
-        case 1:  adaptfont_draw_string(2, 1, "VAR", color, false); break;
+        case 0:  microLinnDrawString(2, 1, "OFF", color, false); break;
+        case 1:  microLinnDrawString(2, 1, "VAR", color, false); break;
         default: paintNumericDataDisplay(color, Split[side].microLinn.condensedBendPerPad - 1, -2, false);
       }
       break;    
     case 6:
       switch (Split[side].microLinn.defaultLayout) {
-        case 0:smallfont_draw_string(2, 1, "OFF",         color, false); break;
-        case 1:  microLinnDrawString(2, 1, "BSQ",         color, false); break;
-        case 2:  microLinnDrawString(2, 1, "BSQ2", "BS2", color, false); break; 
-        case 3:  microLinnDrawString(2, 1, "ACC",         color, false); break;
-        case 4:  microLinnDrawString(2, 1, "WH",          color, false); break;
-        case 5:  microLinnDrawString(2, 1, "WH2",         color, false); break;
-        case 6:  microLinnDrawString(2, 1, "ARR",         color, false); break;
-        case 7:  microLinnDrawString(2, 1, "ARR2", "AR2", color, false); break;
+        case 0: microLinnDrawString(2, 1, "OFF",         color, false); break;
+        case 1: microLinnDrawString(2, 1, "BSQ",         color, false); break;
+        case 2: microLinnDrawString(2, 1, "BSQ2", "BS2", color, false); break; 
+        case 3: microLinnDrawString(2, 1, "ACC",         color, false); break;
+        case 4: microLinnDrawString(2, 1, "W-H",  "WH",  color, false); break;
+        case 5: microLinnDrawString(2, 1, "W-H2", "WH2", color, false); break;      // the hyphen keeps the 2 away from the split buttons
+        case 6: microLinnDrawString(2, 1, "ARR",         color, false); break;
+        case 7: microLinnDrawString(2, 1, "ARR2", "AR2", color, false); break;
       }
       break;
     case 5:
@@ -3070,13 +3014,14 @@ void microLinnPaintPerSplitXenSettings() {
         case 0: smallfont_draw_string(2, 1, "OFF", color, false); break;
         case 1: smallfont_draw_string(2, 1, "ON",  color, false); break;
         case 2: smallfont_draw_string(2, 1, "CC",  color, false); break;
-        case 3: adaptfont_draw_string(2, 1, "RCH", color, false); break;
+        case 3:   microLinnDrawString(2, 1, "RCH", color, false); break;
       }
-      if (Split[side].microLinn.tuningTable >= 2) {                            // if CC or RCH, paint a column of dots
+      if (Split[side].microLinn.tuningTable >= 2) {                                      // if CC or RCH, paint a column or two of dots
         for (byte i = 0; i < microLinnNumGroups[side]; ++i) {
-          if (Split[side].microLinn.tuningTable == 3 && i >= 4)
-            color = microLinnWarningColor(side);
-          setLed(isLinn200() ? 18 : 16, i+2, color, cellOn);
+          byte col = i < 4 ?  15 : 16;
+          byte row = i < 4 ? i+2 : i-2;
+          if (isLinn200() && Split[side].microLinn.tuningTable == 3) col += 5;
+          setLed(col, row, color, cellOn);
         }
       }
       break;
@@ -3087,7 +3032,7 @@ void microLinnPaintPerSplitXenSettings() {
         }
         smallfont_draw_string(2, 1, "OFF", color, false);
       } else {
-        paintNumericDataDisplay(color, Split[side].microLinn.midiGroupCC, 2, !isLinn200());
+        paintNumericDataDisplay(color, Split[side].microLinn.midiGroupCC, isLinn200() ? 0 : 2, !isLinn200());
       }
       break;
   }
@@ -3113,7 +3058,6 @@ void microLinnHandlePerSplitXenSettingsNewTouch() {
     microLinnPerSplitXenSettingsLinked[microLinnPerSplitXenSettingsRowNum] = false;        // don't link if there's nothing to link
 
   byte colOffset = Split[side].microLinn.colOffset;
-  byte prevTuningTable = Split[side].microLinn.tuningTable;
   boolean canRechannel = Split[otherSide].microLinn.tuningTable != 3;                  // user can only rechannel one side at a time
   switch (microLinnPerSplitXenSettingsRowNum) {
     case 7:
@@ -3140,11 +3084,19 @@ void microLinnHandlePerSplitXenSettingsNewTouch() {
       break;
     case 5: 
       handleNumericDataNewTouchCol(Split[side].microLinn.tuningTable, 0, canRechannel ? 3 : 2, true);
-      if (Split[side].microLinn.tuningTable == 3 && prevTuningTable != 3) {
+      if (Split[side].microLinn.tuningTable == 3) {
         microLinnSetUpRechannelling(side);
         microLinnPerSplitXenSettingsLinked[5] = false;
-      } else if (microLinnPerSplitXenSettingsLinked[5]) {
-        Split[otherSide].microLinn.tuningTable = Split[side].microLinn.tuningTable;
+      } else {
+        if (microLinnPerSplitXenSettingsLinked[5]) {
+          Split[otherSide].microLinn.tuningTable = Split[side].microLinn.tuningTable;
+        }
+        if (Split[side].microLinn.tuningTable == 2) {
+          microLinnCalcLowestEdostepEtc(side);
+          if (microLinnPerSplitXenSettingsLinked[5]) {
+            microLinnCalcLowestEdostepEtc(otherSide);
+          }
+        }
       }
       break;
     case 4: 
@@ -3344,24 +3296,27 @@ void paintMicroLinnGuitarTuning() {
   byte color;
   clearDisplay();
   for (byte r = 0; r < NUMROWS; ++r) {
-    if (r == microLinnGuitarTuningRowNum) {color = COLOR_CYAN;}
-    else if (r == microLinnGuitarTuningRowNum - 1 && r >= anchor) {color = COLOR_BLUE;}
-    else if (r == microLinnGuitarTuningRowNum + 1 && r <= anchor) {color = COLOR_BLUE;}
-    else {color = getMicroLinnRowOffsetColorGuitar3(r, true);}
+    if      (r == microLinnGuitarTuningRowNum)                     color = COLOR_CYAN;    // cyan hides red because the number will be red
+    else if (getMicroLinnRowOffsetColorGuitar3(r) == COLOR_RED)    color = COLOR_RED;
+    else if (r == microLinnGuitarTuningRowNum - 1 && r >= anchor)  color = COLOR_BLUE;
+    else if (r == microLinnGuitarTuningRowNum + 1 && r <= anchor)  color = COLOR_BLUE;
+    else                                                           color = COLOR_GREEN;
     setLed(1, r, color, cellOn);
     if (r == anchor) setLed(2, r, color, cellOn);
   }
   byte r = microLinnGuitarTuningRowNum;
-  if (r >= NUMROWS) return;                      // r == NUMROWS+1 means the rownum hasn't been set yet
+  if (r >= NUMROWS) return;                                                          // r == NUMROWS+1 means the rownum hasn't been set yet
   if (r == anchor) {
     if (Split[LEFT].microLinn.condensedBendPerPad  > 0 ||
         Split[RIGHT].microLinn.condensedBendPerPad > 0) {
-      smallfont_draw_string(2, 0, Global.microLinn.guitarTuning[0] == 0 ? "DIA" : "CHRO", globalColor, false);
+      byte col = 3;
+      if (!isLinn200() && Global.microLinn.guitarTuning[0] == 1) col = 1;
+      microLinnDrawString(col, 0, Global.microLinn.guitarTuning[0] == 0 ? "DIA" : "CHRO", globalColor, false);
     }
     return;
   }
   if (r < anchor) r += 1;
-  color = getMicroLinnRowOffsetColorGuitar3(r, false);
+  color = getMicroLinnRowOffsetColorGuitar4(r);
   paintNumericDataDisplay(color, Global.microLinn.guitarTuning[r], 0, false);
 }
 
@@ -3516,7 +3471,7 @@ void sendMicroLinnNrpnParameter(int parameter, int channel) {
     case 1200: value = (Global.microLinn.drumPadMode ? 1 : 0); break;
     case 1201: value = Global.microLinn.locatorCC1 + 1; break;
     case 1202: value = Global.microLinn.locatorCC2 + 1; break;
-    case 1203: value = Global.microLinn.teknico; break;
+    case 1203: value = Global.microLinn.smoothing; break;
     case 1250: value = Global.microLinn.EDO; break;
     case 1251: value = (Global.microLinn.useRainbow ? 1 : 0); break;
     case 1252: value = Global.microLinn.anchorCol; break;
@@ -3560,14 +3515,14 @@ void receivedMicroLinnNrpn(int parameter, int value) {
     case 1005: if (inRange(value, 0, 1))   Split[side].microLinn.hammerOnNewNoteOn = (value == 1); break;
     case 1006: if (inRange(value, 0, 3))   Split[side].microLinn.pullOffVelocity = value; break;
     case 1050: if (inRange(value, 0, 55))  Split[side].microLinn.condensedBendPerPad = value; break;
-    case 1051: if (inRange(value, 0, 10))  Split[side].microLinn.defaultLayout = value; break;
+    case 1051: if (inRange(value, 0, 7))   Split[side].microLinn.defaultLayout = value; break;
     case 1052: if (inRange(value, 0, 3))   Split[side].microLinn.tuningTable = value; break;
     case 1053: if (inRange(value, 0, 120)) Split[side].microLinn.midiGroupCC = value - 1; break;
     case 1054: if (inRange(value, 0, 14))  Split[side].microLinn.transposeEDOsteps = value - 7; break;
     case 1200: if (inRange(value, 0, 1))   Global.microLinn.drumPadMode = (value == 1); break;
     case 1201: if (inRange(value, 0, 120)) Global.microLinn.locatorCC1 = value - 1; break;
     case 1202: if (inRange(value, 0, 120)) Global.microLinn.locatorCC2 = value - 1; break;
-    case 1203: if (inRange(value, 0, 2))   Global.microLinn.teknico = value; break;
+    case 1203: if (inRange(value, 0, 2))   Global.microLinn.smoothing = value; break;
     case 1250: if (inRange(value, 4, 55))  Global.microLinn.EDO = value; break;
     case 1251: if (inRange(value, 0, 1))   Global.microLinn.useRainbow = (value == 1); break;
     case 1252: if (inRange(value, 1, 25))  Global.microLinn.anchorCol = value; break;
@@ -3597,7 +3552,7 @@ void receivedMicroLinnNrpn(int parameter, int value) {
 void exportMicroLinnData(int exportType) {
   exportType -= 2048;
 //if (exportType < 1 || exportType > 16)                      {microLinnScrollSmall("INVALID EXPORT TYPE"); return;}
-// delete later
+// 17 is just for testing, delete later
   if (exportType < 1 || exportType > 17)                      {microLinnScrollSmall("INVALID EXPORT TYPE"); return;}
   if (exportType == 1 && Global.activeNotes < 9)              {microLinnScrollSmall("FIRST SELECT A LIGHT PATTERN"); return;}
   if (exportType == 3 && audienceMessageToEdit == -1)         {microLinnScrollSmall("FIRST EDIT AN AUDIENCE MESSAGE"); return;}
@@ -3607,7 +3562,7 @@ void exportMicroLinnData(int exportType) {
 if (exportType < 17) {        // for testing, delete this line later
   byte midiData = inRange(exportType, 5, 8) ? edo : 0;                   // the edo says where to load import types 5-8
   midiSendNRPN(300, (exportType << 7) + midiData, 1);
-  microLinnSendPolyPressure(Device.version, Device.microLinn.MLversion, 9);         // channel is 1-indexed
+  microLinnSendPolyPressure(Device.version, Device.microLinn.MLversion, 9);         // export header, channel is 1-indexed
 }
   
   byte* array;   // used to configure complex structs as a simple array of bytes
@@ -3735,7 +3690,7 @@ if (exportType < 17) {        // for testing, delete this line later
       }
       break;
     case 15:   // send All User Settings
-      array = (byte *) &config.device.minUSBMIDIInterval;                // skip everything before minUSBMIDIInterval
+      array = (byte *) &config.device.minUSBMIDIInterval;                // skip over version, serialMode, and all calibration data
       n = (byte *) &config.project - array;                              // stop short of the current sequencer project
       for (unsigned short i = 0; i < n; i += 2) {
         microLinnSendPolyPressure(array[i], array[i+1]);
@@ -3748,7 +3703,7 @@ if (exportType < 17) {        // for testing, delete this line later
         microLinnSendPolyPressure(array[i], array[i+1]);
       }
       break;
-    case 17:   // full dump of config, for debugging the updater, only exported never imported, delete later
+    case 17:   // full dump of config, for debugging the updater, only exported never imported, no NRPN or header, delete later
       array = (byte *) &Device.version;
       for (unsigned short i = 0; i < sizeof(config); i += 1) {
         microLinnSendPolyPressure(0, array[i]);
@@ -3831,7 +3786,7 @@ void microLinnDeduceImportSize(byte version, byte MLversion) {
         microLinnImportSize = NUMPRESETS * sizeof(PresetSettings);
       break;
     case 15:  // all user settings
-      arrayPtr = (byte *) &config.device.minUSBMIDIInterval;          // start with minUSBMIDIInterval
+      arrayPtr = (byte *) &config.device.minUSBMIDIInterval;          // skip over version, serialMode, and all calibration data
       microLinnImportSize = (byte *) &config.project - arrayPtr;      // stop short of the current sequencer project
       break;
     case 16:  // calibration data, 1803 bytes (experimental)
@@ -4181,7 +4136,8 @@ void microLinnImportDevice(byte data1, byte data2, unsigned short i) {          
     if (microLinnInRange(data1 >> 3, 0, COLOR_PINK)) Device.customLeds[2][i-934] = data1;
     if (microLinnInRange(data2 >> 3, 0, COLOR_PINK)) Device.customLeds[2][i-933] = data2;
   } else if (i == 1142) {
-    // ignore data1 = microLinn.MLversion and data2 = padding
+    // ignore data1 = microLinn.MLversion and data2 = Device.microLinn.uninstall
+    Device.microLinn.uninstall = false;
   } else if (i <= 2672) {   // MICROLINN_ARRAY_SIZE = 1530
     if (microLinnInRange(data1, 0, 127)) Device.microLinn.scales[i-1144] = data1;
     if (microLinnInRange(data2, 0, 127)) Device.microLinn.scales[i-1143] = data2;
@@ -4218,8 +4174,8 @@ void microLinnImportGlobal(byte data1, byte data2, unsigned short i, byte preset
     }
     else if (microLinnInRange(number, 0, (1 << 12) - 1)) g->accentNotes[(i-52)/4] = number;
   } else if (i == 100) {
-    if (data1 == ROWOFFSET_NOOVERLAP || data1 == 3 || data1 == 4 || data1 == 5 || data1 == 6 ||
-        data1 == 7 || data1 == ROWOFFSET_OCTAVECUSTOM || data1 == ROWOFFSET_GUITAR || data1 == ROWOFFSET_ZERO) {
+    if (inRange (data1, 3, 7) || data1 == ROWOFFSET_GUITAR || data1 == ROWOFFSET_ZERO ||
+        data1 == ROWOFFSET_NOOVERLAP || data1 == ROWOFFSET_OCTAVECUSTOM) {
       g->rowOffset = data1;
     } else microLinnCancelImport();
     signed char n = (signed char)data2;
@@ -4277,6 +4233,7 @@ void microLinnImportGlobal(byte data1, byte data2, unsigned short i, byte preset
     if (microLinnInRange(n, -1, 119))  g->microLinn.locatorCC1 = n;
   } else if (i == 168) {
     signed char n = (signed char)data1;
+    if (!isLinn200()) n = -1;
     if (microLinnInRange(n, -1, 119))  g->microLinn.locatorCC2 = n;
     if (data2 >= 5) {
       microLinnImportXen = true;
@@ -4327,7 +4284,7 @@ void microLinnImportGlobal(byte data1, byte data2, unsigned short i, byte preset
     g->microLinn.guitarTuning[(i-344)/2] = n;
     if (i == 358) microLinnCheckGuitarTuning();
   } else if (i == 360) {
-    if (microLinnInRange(data1, 0, 2)) g->microLinn.teknico = data1;                          // ignore data2 = reserved
+    if (microLinnInRange(data1, 0, 2)) g->microLinn.smoothing = data1;                        // ignore data2 = reserved
   } else if (i <= 362) {
     // ignore byte 362 = reserved and byte 363 = padding
   }
@@ -4453,7 +4410,7 @@ void microLinnImportSplits(byte data1, byte data2, unsigned short i,  byte prese
     if (!microLinnImportXen) return;
     if (microLinnInRange(data2, 0, 55))  spl->microLinn.condensedBendPerPad = data2;
   } else if (i == 104) {
-    if (microLinnInRange(data1, 0, 10))  spl->microLinn.defaultLayout = data1;
+    if (microLinnInRange(data1, 0, 7))   spl->microLinn.defaultLayout = data1;
     if (microLinnInRange(data2, 0, 3))   spl->microLinn.tuningTable = data2;
   } else if (i == 106) {
     signed char n = (signed char)data1;
@@ -4534,6 +4491,13 @@ const byte MICROLINN_RAINBOWS[MICROLINN_ARRAY_SIZE] = {
 };
 
 
+
+IMPORTANT: Later on when you update the OS to a different version, you'll be asked if you want to uninstall microLinn. 
+Say no (tap the red button in the middle, turns orange) if you're updating to a newer version of microLinn. This avoids 
+needlessly deleting your microtonal user settings. Say yes (tap the blue button on the left, turns light blue) otherwise, 
+e.g. if you're going back to an official (non-microtonal) version of the firmware. This does delete your microtonal user 
+settings, which is necessary in order to avoid deleting all your other user settings plus your calibration data. 
+Once you've decided, tap the green button on the right to continue.
 
 void enterMicroLinnUninstall() {
   setDisplayMode(displayMicroLinnUninstall);
