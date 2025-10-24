@@ -1176,7 +1176,7 @@ boolean handleXYZupdate() {
 
         signed char note = sensorCell->note;
         signed char channel = sensorCell->channel;
-        if (Global.microLinn.drumPadMode) {
+        if (Global.microLinn.drumPadMode > 0) {
           note = getMicroLinnDrumPadMidiNote();
         } 
         else if (isMicroLinnOn()) {
@@ -1208,7 +1208,7 @@ boolean handleXYZupdate() {
       if (Split[sensorSplit].sendZ && yes) {
         signed char note = sensorCell->note;
         signed char channel = sensorCell->channel;
-        if (Global.microLinn.drumPadMode) {
+        if (Global.microLinn.drumPadMode > 0) {
           note = getMicroLinnDrumPadMidiNote();
         } 
         else if (isMicroLinnOn()) {
@@ -1393,11 +1393,13 @@ void prepareNewNote(signed char notenum) {
   // highlight the touch animation if this is activated
   if (Split[sensorSplit].colorPlayed) {
     if (Split[sensorSplit].playedTouchMode == playedCell) {
-      setLed(sensorCol, sensorRow, Split[sensorSplit].colorPlayed, cellOn, LED_LAYER_PLAYED);
+      if (Global.microLinn.drumPadMode == 0) {
+        setLed(sensorCol, sensorRow, Split[sensorSplit].colorPlayed, cellOn, LED_LAYER_PLAYED);
+      }
     }
     else if (Split[sensorSplit].playedTouchMode == playedSame ||
              Split[sensorSplit].playedTouchMode == playedBlink) {
-      if (!Global.microLinn.drumPadMode) {
+      if (Global.microLinn.drumPadMode == 0) {
         // drum pad mode changes the midi notes output by each pad
         highlightPossibleNoteCells(sensorSplit, sensorCell->note);
         applySameAndMicroLinnBlinkToOtherSplit(true, sensorCell->note);
@@ -1418,7 +1420,7 @@ void sendNewNote() {
     signed char note = sensorCell->note;
     signed char channel = sensorCell->channel;
     short tuningBend = 0;
-    if (Global.microLinn.drumPadMode) {
+    if (Global.microLinn.drumPadMode > 0) {
       note = sensorCell->note = getMicroLinnDrumPadMidiNote();    // overwrite sensorCell->note so that note-offs work right
       if (note == -1) return;                                     // happens when user hits outer columns or rows
     } 
@@ -1490,7 +1492,7 @@ void sendReleasedNote() {
     // if there are no other touches down with the same note and channel, send the note off message
     signed char note = sensorCell->note;
     signed char channel = sensorCell->channel;
-    if (Global.microLinn.drumPadMode) {
+    if (Global.microLinn.drumPadMode > 0) {
       if (note == -1) return;
     } 
     else if (isMicroLinnOn()) {
@@ -1947,7 +1949,7 @@ void handleTouchRelease() {
     if (Split[sensorSplit].sendZ && yes) {
       signed char note = sensorCell->note;                // used *only* for sending actual midi
       signed char channel = sensorCell->channel;          // ditto
-      if (Global.microLinn.drumPadMode) {
+      if (Global.microLinn.drumPadMode > 0) {
         note = getMicroLinnDrumPadMidiNote();
       } 
       else if (isMicroLinnOn()) {

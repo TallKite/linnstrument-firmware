@@ -530,10 +530,11 @@ void paintNormalDisplayCell(byte split, byte col, byte row) {
   if (userFirmwareActive) return;
 
   boolean isLowRow = (row == 0 && Split[split].lowRowMode != lowRowNormal);
-  if (Global.microLinn.drumPadMode && !isLowRow) {
-    byte padNum = floor((col - 2) / 3) + floor((row - 1) / 3);     // 3x3 mega-pads
+  if (Global.microLinn.drumPadMode > 0 && !isLowRow) {
+    byte wid = Global.microLinn.drumPadMode + 1;
+    byte padNum = floor((col - 2) / wid) + floor(row / 4);     // 2x3 or 3x3 mega-pads
     byte colour = (padNum % 2 == 0 ? Split[split].colorMain : Split[split].colorAccent);
-    if (col == 1 || col > 22 || row == 0 || row == 7) colour = COLOR_BLACK;
+    if (col < 2 || col > 7*wid+1 || row < 1 || row > 6) colour = COLOR_BLACK;
     setLed(col, row, colour, cellOn, LED_LAYER_MAIN);    
     return;
   }

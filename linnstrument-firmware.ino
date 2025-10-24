@@ -803,7 +803,7 @@ enum SustainBehavior {
 };
 
 struct MicroLinnGlobal {
-  boolean drumPadMode;                       // creates a 2x5 (on the 128) or 2x7 (on the 200) array of 3x3 drum pads, 2x8 in marimba mode
+  byte drumPadMode;                          // creates an array of 2x3 (if 1) or 3x3 (if 2) drum pads, array is 2x7, but only 2x5 if 3x3 on the 128
   signed char locatorCC1;                    // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25...
   signed char locatorCC2;                    // ...ranges from 0 to 119, -1 = OFF
   byte EDO;                                  // ranges 5-55, plus 4 for OFF

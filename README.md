@@ -48,9 +48,9 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
 
   col 8) Global non-microtonal settings
 
-    row 1) Drum pad mode (OFF, ON)
+    row 1) Drum pad mode (OFF, 2x2, 3x3)
   
-    row 2) Allow Importing (NO, YES)
+    row 2) Allow Importing (OFF, IMP)
 
     row 3) Timbre/Y and Loudness/Z Smoothing (OFF, Z, Y+Z)
 
@@ -164,14 +164,15 @@ Two new functions for switches and footswitches. 8VE± flips back and forth betw
 
 DRUM PAD MODE
 
-The note lights become 14 3x3 mega-pads (or 10 on the LinnStrument 128) that play the 14 drum sounds from the sequencer. Lets you roll on one note with two or more fingers. Accessed through the microLinn menu.
+The note lights become 14 mega-pads that play the 14 drum sounds from the sequencer. The mega-pads can be either 2x3 or 3x3. Lets you roll on one note with two or more fingers. Accessed through the microLinn menu.
 
 *Details:*
 * *Set PITCH/X on, otherwise a tap that hits two pads will send two notes. The drum sounds won't be accidentally pitch-bent because drum pad mode filters out all pitch bends.*
 * *You can use the low row for pitch bending, restriking, etc.*
+* *If using 3x3 mega-pads on the LinnStrument 128, you only get 10 mega-pads.*
 * *The midi mode should usually be One Channel. (You could possibly use channelPerRow to make the 3 rows of each pad sound slightly different, for example high hat closed tightly/loosely)*
-* *The sequencer has different drum sounds for each split. If you're using both splits, set the split point in between the pads.*
-* *The two pad colors are the main/accent colors of the split, so you can adjust them if you want. If you select a custom light pattern, it will overlay the drum pads. So you can make the center of each pad a different color if you want.*
+* *The sequencer can have different drum sounds for each split. If you're using both splits, set the split point in between the pads.*
+* *The two pad colors are the main/accent colors of the current split. If you select a custom light pattern, it will overlay the drum pads. So you can make the center of each 3x3 mega-pad a different color if you want.*
 * *If you use musical sounds instead of drum sounds, and enter the appropriate pitches into the sequencer, you can make a sort of marimba.*
 * *To create your own mega-pad layout, turn off Drum Pad mode, use locator CCs instead (see below) and edit one of the custom light patterns to match.*
 

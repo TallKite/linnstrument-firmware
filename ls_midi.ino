@@ -1954,7 +1954,7 @@ void preSendPitchBend(byte split, int pitchValue, byte channel) {
 }
 
 void preSendPitchBend(byte split, int pitchValue, byte channel, short tuningBend) {
-  if (Global.microLinn.drumPadMode) return;
+  if (Global.microLinn.drumPadMode > 0) return;
   pitchValue = scalePitch(split, pitchValue) + tuningBend;      // tuning bend is from microLinn, it's already scaled
   midiSendPitchBend(pitchValue, channel);                       // Send the bend amount as a difference from bend center (8192)
 }

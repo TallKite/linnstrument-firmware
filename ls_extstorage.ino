@@ -2304,7 +2304,7 @@ void initMicroLinnData() {
   // initializeMicroLinn() will override what things are set to here, so it seems to run after this function
 
   byte maxRowOffset = 25;
-  config.settings.global.microLinn.drumPadMode = false; 
+  config.settings.global.microLinn.drumPadMode = 0; 
   config.settings.global.microLinn.locatorCC1 = -1; 
   //config.settings.global.microLinn.EDO = 4; 
   //config.settings.global.microLinn.useRainbow = true;
@@ -2314,7 +2314,7 @@ void initMicroLinnData() {
   }
 
   for (byte p = 0; p < NUMPRESETS; p++) {
-    config.preset[p].global.microLinn.drumPadMode = false; 
+    config.preset[p].global.microLinn.drumPadMode = 0; 
     config.preset[p].global.microLinn.locatorCC1 = -1; 
     //config.preset[p].global.microLinn.EDO = 4; 
     //config.preset[p].global.microLinn.useRainbow = true;
@@ -2373,7 +2373,7 @@ void copyConfigurationVLatest(void* target, void* source) {            // copies
 void migrateFromMicroLinnGlobalV72_0 (MicroLinnGlobal* t, void* source) {
   // copy what's in 72.0, initialize what isn't
   MicroLinnV72_0::MicroLinnGlobal* s = (typeof(s)) source;
-  t->drumPadMode = false;
+  t->drumPadMode = 0;
   t->locatorCC1 = -1;
   t->locatorCC2 = -1;
   t->EDO = s->EDO;
