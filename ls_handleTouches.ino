@@ -77,8 +77,9 @@ boolean potentialSlideTransferCandidate(byte col) {
     if (sensorSplit != getSplitOf(col)) return false;
     if (!isLowRow() &&                                                   // don't perform slide transfers
         (!Split[sensorSplit].sendX ||                                    // if pitch slides are disabled
-         !isFocusedCell(col, sensorRow) ||                               // if this is not a focused cell
-         countTouchesForMidiChannel(sensorSplit, col, sensorRow) > 1)) { // when there are several touches for the same MIDI channel
+         ((!isFocusedCell(col, sensorRow) ||                             // if this is not a focused cell
+           countTouchesForMidiChannel(sensorSplit, col, sensorRow) > 1)  // when there are several touches for the same MIDI channel
+          && Global.microLinn.monoMode % 2 == 0))) {                     // ...and X-data fixes are off
       return false;
     }
     if (isLowRow() && !lowRowRequiresSlideTracking()) return false;
@@ -551,63 +552,9 @@ boolean isZExpressiveCell() {
   }
 }
 
-// functions hasYExpressiveNotes(), isMaxY(), hasZExpressiveNotes() and isMaxZ() are the work of KVR forum member teknico, many thanks!
-// Individually expressive notes on the same channel
-// only when there's just one note, or using PolyAT
-boolean hasYExpressiveNotes() {
-  return ((countTouchesForMidiChannel(sensorSplit, sensorCol, sensorRow) == 1) ||
-    (Split[sensorSplit].expressionForY == timbrePolyPressure));
-}
+// functions hasZExpressiveNotes() and isMaxZ() are for microLinn's Z-smoothing
 
-// Is this value higher than all other notes on this channel?
-// Check the max value for each note against all others, not just the last played one (focused)
-// TODO: use a sorted multimap to avoid looping
-boolean isMaxY(short valueY) {
-  byte curVal = 0;
-
-  // iterate over all the rows...
-  byte beginRow = 0;
-  byte endRow = NUMROWS;
-  // ...or just this one when in ChannelPerRow mode
-  if (Split[sensorSplit].midiMode == channelPerRow) {
-    beginRow = sensorRow;
-    endRow = sensorRow + 1;
-  }
-
-  int32_t colsInRowTouched = 0;
-  for (byte row = beginRow; row < endRow; ++row) {
-    colsInRowTouched = colsInRowsTouched[row];
-
-    // exclude the current cell
-    if (row == sensorRow) {
-      colsInRowTouched = colsInRowTouched & ~(1 << sensorCol);
-    }
-
-    // continue while there are touched columns in the row
-    while (colsInRowTouched) {
-      byte touchedCol = 31 - __builtin_clz(colsInRowTouched);
-
-      // compare the Y value of the cell to the current maximum if the cell
-      // is on the same channel
-      curVal = cell(touchedCol, row).calibratedY();
-      if (cell(touchedCol, row).touched == touchedCell &&
-          cell(touchedCol, row).channel == sensorCell->channel) {
-
-        if (valueY < curVal) {
-          // Found a higher value already, no need to look at the other ones
-          return false;
-        }
-      }
-
-      // exclude the cell we just processed by flipping its bit
-      colsInRowTouched &= ~(1 << touchedCol);
-    }
-  }
-
-  // No higher value found, we're it
-  return true;
-}
-
+// they are the work of KVR forum member teknico, many thanks! 
 // Individually expressive notes on the same channel
 // only when there's just one note, or using PolyAT
 boolean hasZExpressiveNotes() {
@@ -615,10 +562,10 @@ boolean hasZExpressiveNotes() {
     (Split[sensorSplit].expressionForZ == loudnessPolyPressure));
 }
 
-
 // Is this value higher than all other notes on this channel?
 // Check the max value for each note against all others, not just the last played one (focused)
-// TODO: isMaxY and isMaxZ could be collapsed by adding a getPressureZ method to TouchInfo
+// TODO: isMaxZ could be collapsed by adding a getPressureZ method to TouchInfo
+// TODO: use a sorted multimap to avoid looping?
 boolean isMaxZ(unsigned short valueZHi) {
   unsigned short curVal = 0;
 
@@ -1105,7 +1052,7 @@ boolean handleXYZupdate() {
 
         // if there are several touches for the same MIDI channel (for instance in one channel mode)
         // we average the X values to have only one global X value for those touches
-        if (countTouchesForMidiChannel(sensorSplit, sensorCol, sensorRow) > 2) {
+        if (countTouchesForMidiChannel(sensorSplit, sensorCol, sensorRow) > 2 && Global.microLinn.monoMode % 2 == 0) {
 
           // start with the current sensor's pitch and note
           int highestNotePitch = valueX;
@@ -1171,8 +1118,8 @@ boolean handleXYZupdate() {
 
       // if Y-axis movements are enabled and it's a candidate for
       // X/Y expression based on the MIDI mode and the currently held down cells
-      boolean yes = Global.microLinn.smoothing > 1 ? (hasYExpressiveNotes() || isMaxY(valueY)) : isYExpressiveCell();
-      if (valueY != INVALID_DATA && Split[sensorSplit].sendY && yes) {
+      if (valueY != INVALID_DATA &&
+          Split[sensorSplit].sendY && isYExpressiveCell()) {
 
         signed char note = sensorCell->note;
         signed char channel = sensorCell->channel;
@@ -1204,7 +1151,7 @@ boolean handleXYZupdate() {
 
       // if sensing Z is enabled...
       // send different pressure update depending on midiMode
-      yes = Global.microLinn.smoothing > 0 ? (hasZExpressiveNotes() || isMaxZ(valueZHi)) : isZExpressiveCell();
+      boolean yes = Global.microLinn.monoMode >= 2 ? (hasZExpressiveNotes() || isMaxZ(valueZHi)) : isZExpressiveCell();
       if (Split[sensorSplit].sendZ && yes) {
         signed char note = sensorCell->note;
         signed char channel = sensorCell->channel;
@@ -1422,30 +1369,29 @@ void sendNewNote() {
     short tuningBend = 0;
     if (Global.microLinn.drumPadMode > 0) {
       note = sensorCell->note = getMicroLinnDrumPadMidiNote();    // overwrite sensorCell->note so that note-offs work right
-      if (note == -1) return;                                     // happens when user hits outer columns or rows
+      if (note == -1) return;                                     // -1 happens when user hits outer columns or rows
     } 
     else if (isMicroLinnOn()) {
       note = getMicroLinnMidiNote(sensorSplit, note, sensorCell->microLinnGroup);
       if (note == -1) return;
       channel = rechannelMicroLinnGroup(sensorSplit, channel, sensorCell->microLinnGroup);
       if (channel == -1) return;
-    }
-    sendMicroLinnMidiGroupAndLocatorCCs(channel);
-    if (isMicroLinnOn() && Split[sensorSplit].microLinn.tuningTable == 0) {
       tuningBend = getMicroLinnTuningBend(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
-      preSendPitchBend(sensorSplit, 0, channel, tuningBend);
     }
+
+    sendMicroLinnMidiGroupAndLocatorCCs(channel, sensorSplit);
 
     // if we've switched from pitch X enabled to pitch X disabled and the last
     // pitch bend value was not neutral, reset it first to prevent skewed pitches
-    if (!Split[sensorSplit].sendX && hasPreviousPitchBendValue(sensorCell->channel)) {
+    // and if microLinn is on, send the tuning bend
+    if ((!Split[sensorSplit].sendX && hasPreviousPitchBendValue(sensorCell->channel)) ||
+          isMicroLinnOn()) {
       preSendPitchBend(sensorSplit, 0, channel, tuningBend);                     // read from old channel, send to new channel
     }
 
     // reset pressure to 0 before sending the note, the actually pressure value will
     // be sent right after the note on
-    boolean yes = Global.microLinn.smoothing > 0 ? hasZExpressiveNotes() : isZExpressiveCell();
-    if (Split[sensorSplit].sendZ && yes) {
+    if (Split[sensorSplit].sendZ && isZExpressiveCell() && Global.microLinn.monoMode < 2) {    // never send 0 when Z-smoothing
       preSendLoudness(sensorSplit, 0, 0, note, channel);
     }
 
@@ -1462,6 +1408,13 @@ void sendNewNote() {
 
 void sendReleasedNote() {
   if (!isArpeggiatorEnabled(sensorSplit) && !isSwitchLegatoPressed(sensorSplit)) {
+    // when microtonal, adjacent pads have different edosteps, but often output the same midi note
+    // thus if in mono mode with X-data fixes, trilling on 2 pads sends a noteOff that mutes both notes
+    // to avoid this, we convert sensorNote and touchedNote from edosteps to actual midi notes via getMicroLinnMidiNote()
+    boolean microTrills = Global.microLinn.monoMode % 2 == 1 && isMicroLinnOn() && Split[sensorSplit].microLinn.tuningTable == 0;
+    byte sensorNote = sensorCell->note;
+    if (microTrills) sensorNote = getMicroLinnMidiNote(sensorSplit, sensorNote, sensorCell->microLinnGroup);
+
     // iterate over all the rows
     for (byte row = 0; row < NUMROWS; ++row) {
 
@@ -1475,9 +1428,11 @@ void sendReleasedNote() {
       // continue while there are touched columns in the row
       while (colsInRowTouched) {
         byte touchedCol = 31 - __builtin_clz(colsInRowTouched);
+        byte touchedNote = cell(touchedCol, row).note;
+        if (microTrills) touchedNote = getMicroLinnMidiNote(sensorSplit, touchedNote, cell(touchedCol, row).microLinnGroup);
         
         if (cell(touchedCol, row).touched == touchedCell &&
-            cell(touchedCol, row).note == sensorCell->note &&
+            touchedNote == sensorNote &&                                         // compare actual midi notes, not edosteps
             cell(touchedCol, row).channel == sensorCell->channel) {
           // if there is another touch active with the same exact note and channel,
           // don't send the note off for the released note
@@ -1489,7 +1444,7 @@ void sendReleasedNote() {
       }
     }
 
-    // if there are no other touches down with the same note and channel, send the note off message
+    // since there are no other touches down with the same note and channel, send the note off message
     signed char note = sensorCell->note;
     signed char channel = sensorCell->channel;
     if (Global.microLinn.drumPadMode > 0) {
@@ -1945,7 +1900,7 @@ void handleTouchRelease() {
   else if (sensorCell->hasNote()) {
 
     // reset the pressure when the note is released and that setting is active
-    boolean yes = Global.microLinn.smoothing > 0 ? hasZExpressiveNotes() : isZExpressiveCell();
+    boolean yes = Global.microLinn.monoMode >= 2 ? hasZExpressiveNotes() : isZExpressiveCell();
     if (Split[sensorSplit].sendZ && yes) {
       signed char note = sensorCell->note;                // used *only* for sending actual midi
       signed char channel = sensorCell->channel;          // ditto
@@ -2037,6 +1992,27 @@ void handleTouchRelease() {
     // If the released cell had focus, reassign focus to the latest touched cell
     if (isFocusedCell()) {
       setFocusCellToLatest(sensorSplit, sensorCell->channel);
+      // if in mono mode with X-data fixes, send the most recent pitch bend for the newly focused cell
+      if (Global.microLinn.monoMode % 2 == 1 &&
+          focus(sensorSplit, sensorCell->channel).col > 0) {
+          //countTouchesForMidiChannel(sensorSplit, sensorCol, sensorRow) > 1) {     // maybe > 0 ?
+        signed char channel = sensorCell->channel;
+        short tuningBend = 0;
+        //byte newCol = focusCell[sensorSplit][channel].col;
+        //byte newRow = focusCell[sensorSplit][channel].row;
+        //short newLastValueX = touchInfo[newCol][newRow].lastValueX;
+        //if (newLastValueX == INVALID_DATA) newLastValueX = 0;
+        //if (!Split[sensorSplit].sendX) newLastValueX = 0;
+        //short newEdostep = getMicroLinnVirtualEdostep(sensorSplit, newCol, newRow);
+        if (isMicroLinnOn()) {
+          channel = rechannelMicroLinnGroup(sensorSplit, sensorCell->channel, sensorCell->microLinnGroup);
+          tuningBend = getMicroLinnTuningBend(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
+          //channel   = rechannelMicroLinnGroup(sensorSplit, channel, newEdostep >> 7);
+          //tuningBend = getMicroLinnTuningBend(sensorSplit, newEdostep);
+        }
+        preSendPitchBend(sensorSplit, sensorCell->lastValueX, channel, tuningBend);  
+        //preSendPitchBend(sensorSplit, newLastValueX, channel, tuningBend);  
+      }
     }
 
     releaseChannel(sensorSplit, sensorCell->channel);

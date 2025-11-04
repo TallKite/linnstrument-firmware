@@ -1,7 +1,6 @@
 #  MICROLINN 
 
-Unfinished, still a few more features to add, plus a few features don't quite work right yet. 
-Use at your own risk. Beta testers needed!
+Unfinished, still a few more features to add, plus a few features don't quite work right yet. Use at your own risk.
 
 The  LinnStrument is an amazing instrument, very feature-rich. If it's new to you, we *strongly* reccommend waiting to install microLinn until after you've explored all the standard features.
 
@@ -11,7 +10,7 @@ For experienced linnstrumentalists, microLinn makes exploring microtonality very
 #  INSTALLATION  
 
 
-1) Go to https://www.rogerlinndesign.com/support/support-linnstrument-update-software and follow the "How to Check Your Software Version" instructions. If it's not 2.3.3, follow the "How to Update Your LinnStrument Software‍" instructions to update to 2.3.3.
+1) Go to https://www.rogerlinndesign.com/support/support-linnstrument-update-software and follow the "How to Check Your Software Version" instructions. If it's not 2.3.3, follow the "How to Update Your LinnStrument Software‍" instructions to update to 2.3.3. Linux users: use a friend's mac or windows machine to update.
 2) Download linnstrument-firmware-microLinn-234.072.001.ino.bin.zip from the LinnStrument Community wiki and unzip it. Important: if on a mac, put the .bin file on your **desktop**. 
 3) Follow the "How to Update Your LinnStrument Software‍" instructions, with one difference: after you download and unzip the updater and before running it, put it in the same folder as the .bin file from step 2. Mac users: when you run the updater, if it asks for permission to read files from the desktop, say yes.
 If you accidentally long-press the Update OS button, you'll enter user firmware mode and the display will go blank. To return to normal, just unplug your Linnstrument.
@@ -29,7 +28,7 @@ IMPORTANT: Updating to a newer version of microLinn is done normally. Put the ne
 #  MAIN MENU  
 
 
-To go to the main microLinn menu, on the Global Settings screen, long-press the lower left pad (VIEW MAIN). Once the edo (notes per octave) is set to anything other than OFF, VIEW MAIN turns yellow and you can simply tap it. On a LinnStrument 200, you can also tap the yellow button in column 17. On a LinnStrument 128, you can also tap the yellow button in column 16 row 4.
+To go to the main microLinn menu, on the Global Settings screen, long-press the lower left pad (VIEW MAIN). Once the edo (notes per octave) is set to anything other than OFF, VIEW MAIN turns yellow and you can simply tap it. You can also tap the yellow button in column 17 (on a LinnStrument 128, column 16 row 4).
 
 Main menu, *LONG-PRESS EACH BUTTON* to see its function
 
@@ -48,11 +47,11 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
 
   col 8) Global non-microtonal settings
 
-    row 1) Drum pad mode (OFF, 2x2, 3x3)
+    row 1) Drum pad mode (OFF, 2x3, 3x3)
   
     row 2) Allow Importing (OFF, IMP)
 
-    row 3) Timbre/Y and Loudness/Z Smoothing (OFF, Z, Y+Z)
+    row 3) Monophonic Mode (OFF, X, Z, X+Z)
 
     row 4) Locator CC #1 (OFF, 0 to 119) (used for the first 16 columns)
   
@@ -98,6 +97,13 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
 
     row 5) Equave cents (-50 to 50)
 
+
+# IMPORTANT TERMINOLOGY
+
+Slide: a large bend to a new pad, as opposed to a small bend that stays within one pad.
+Consistent vs inconsistent sliding
+Mismatched bend ranges
+Bend slope
 
 #  NON-MICROTONAL FEATURES  
 
@@ -149,11 +155,31 @@ Condensing can be combined with column offsets. First the scale is condensed, th
 
 There's a school of thought that says there's only 12 notes, it's not that hard to learn your way around, and removing 5 of the 12 notes doesn't make the scale all that much more compact. So is it really worth condensing if it causes bending issues? Perhaps not if one plays only in 12edo. But if playing microtonally, condensing a large edo to a smaller scale can be very useful. For example, you can condense a 31edo chain-of-5ths scale of 12 notes to get quarter-comma meantone, the dominant tuning in Western music for 200 years. Or condense 53edo to the 22 shrutis of Indian music, or to a subset of that. But even in 12edo, condensing has its uses. For example, you can create a vertical Wicki-Hayden layout. (Playing vertically means rotating the LinnStrument 90 degrees.) The range is huge, almost 8 octaves on a LinnStrument 128! See below for details.
 
-TIMBRE/Y AND LOUDNESS/Z SMOOTHING
+MONO MODE
 
-The LinnStrument normally resets pressure data at note on/off, and only sends pressure data for the most recent pad held. For non-MPE synths (or any synth played in "One Chan" or "ChPerRow" mode), playing a note causes an abrupt jump in Z-value to 0, and releasing a note causes an abrupt jump from 0 to the Z-value of whatever prior pad is still held. MicroLinn includes a fix by KVR forum member teknico that solves the problem via a "soft takeover" as opposed to a "hard takeover". Y-values (timbre) behave similarly, and can optionally be smoothed similarly. Accessed through the microLinn menu. "Z" affects only Z-values, "Y+Z" affects Y-values too.
+don't quantize X = done
+send only focused cell's X = done
+update X on noteOff of focused cell = done
+update Y on noteOff = is already done, but I can't find the code that does it!
+update Z on noteOff = ditto
+fix muted trills = done
+see line 1392
 
-*Details: The output of Z (loudness) and optionally Y (timbre) when not using Polyphonic Aftertouch is thus changed:*
+In OneChannel and ChannelPerRow modes, one midi channel can have mutiple midi notes. The LinnStrument's default behavior when this happens is designed for compatibility with non-MPE polyphonic synths. When two or more notes are played simultaneously on one channel, pitch bends are quantized to the nearest semitone. PITCH/X, TIMBRE/Y and LOUDNESS/Z data is sent for only the latest (most recently played) note. When that note is released, the most recent YZ data for the new latest note is sent. 
+
+MicroLinn adds 2 new behaviors that are designed for compatibility with non-MPE monophonic synths. PITCH/X: MicroLinn optionally allows slides (doesn't quantize bends to semitones). When the latest note is released, the most recent bend for the new latest note is sent. LOUDNESS/Z: MicroLinn also optionally smoothes the Z data via a soft takeover, see below.
+
+*Details: These new behaviors are global, not per-split. But they only affect a split that is set to One Channel mode or Channel Per Row mode. Z-smoothing can be bypassed on a split by setting LOUDNESS/Z to poly pressure.*
+
+*Some synths like SWAM use mono MPE, interpreting all midi channels as one voice. The Linn is set to ChanPerNote. All YZ data is sent for all notes touched, causing very jumpy data.*
+
+*Do not use poly pressure for TIMBRE/Y or LOUDNESS/Z. Do not use MPE. Set the note priority to latest.*
+
+LOUDNESS/Z SMOOTHING
+
+The LinnStrument normally resets pressure data at note on/off, and only sends pressure data for the most recent pad held. For non-MPE synths (or any synth played in "One Chan" or "ChPerRow" mode), playing a 2nd note causes an abrupt jump in Z-value to 0, and releasing a note causes an abrupt jump from 0 to the Z-value of whatever prior pad is still held. MicroLinn includes a fix by KVR forum member teknico that solves the problem via a "soft takeover" as opposed to a "hard takeover". Accessed through the microLinn menu. "X" affects only X-values, "Z" affects only Z-values, "X+Z" affects both.
+
+*Details: The output of Z (loudness) when not using Polyphonic Aftertouch is thus changed:*
 * *Zero-value messages before note-on and note-off are only sent for the first simultaneous note on the same channel*
 * *Only the maximum value of all simultaneous notes on the same channel is sent*
 *This allows smoother playing in One Channel and Channel Per Row modes and better compatibility with non-MPE synths, while not impacting Channel per Note (MPE) mode (except in the rare case of more that one note on the same channel). See https://www.kvraudio.com/forum/viewtopic.php?t=591770*
@@ -164,7 +190,7 @@ Two new functions for switches and footswitches. 8VE± flips back and forth betw
 
 DRUM PAD MODE
 
-The note lights become 14 mega-pads that play the 14 drum sounds from the sequencer. The mega-pads can be either 2x3 or 3x3. Lets you roll on one note with two or more fingers. Accessed through the microLinn menu.
+The note lights become 14 mega-pads that play the 14 drum sounds from the sequencer. Great for finger drumming. Lets you roll on one note with two or more fingers. The mega-pads can be either 2x3 or 3x3. Accessed through the microLinn menu.
 
 *Details:*
 * *Set PITCH/X on, otherwise a tap that hits two pads will send two notes. The drum sounds won't be accidentally pitch-bent because drum pad mode filters out all pitch bends.*
@@ -172,7 +198,7 @@ The note lights become 14 mega-pads that play the 14 drum sounds from the sequen
 * *If using 3x3 mega-pads on the LinnStrument 128, you only get 10 mega-pads.*
 * *The midi mode should usually be One Channel. (You could possibly use channelPerRow to make the 3 rows of each pad sound slightly different, for example high hat closed tightly/loosely)*
 * *The sequencer can have different drum sounds for each split. If you're using both splits, set the split point in between the pads.*
-* *The two pad colors are the main/accent colors of the current split. If you select a custom light pattern, it will overlay the drum pads. So you can make the center of each 3x3 mega-pad a different color if you want.*
+* *The two pad colors are the main/accent colors of the current split. If you select a custom light pattern, it will overlay the drum pads. Useful for making the center of each 3x3 mega-pad a different color.*
 * *If you use musical sounds instead of drum sounds, and enter the appropriate pitches into the sequencer, you can make a sort of marimba.*
 * *To create your own mega-pad layout, turn off Drum Pad mode, use locator CCs instead (see below) and edit one of the custom light patterns to match.*
 
@@ -232,9 +258,19 @@ A locator CC message can be sent immediately before every note-on, indicating th
 
 On an actual guitar, middle-C played on the 2nd string 1st fret sounds very different when played on the 6th string 20th fret. Many guitar VSTis allow you to set the playing position (higher or lower on the fretboard) through keyswitches. Depending on your VSTi, it may be possible for code on your laptop to translate a locator CC to such a keyswitch and thus directly map the Linnstrument's columns to the virtual guitar's frets, making the guitar sound much more realistic. (It may also be possible to do this without locator CCs simply by using Channel Per Row mode.)
 
-*Details: One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. The two types are selected in the microLinn menu. (On a LinnStrument 128, the 2nd type is never sent, and the menu option for it is hidden.) Beware, don't choose a CC that might be used by your synths for other purposes, such as CC 74 for timbre or CC 64 for sustain. For cols 1-16, the data value is (row - 1) + 8 * (col - 1). For cols 17-25, the data value is (row - 1) + 8 * (col - 17). Row 1 is the top row and column 1 is the leftmost column.*
+*Details: One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. The two types are selected in the microLinn menu. (On a LinnStrument 128, the 2nd type is never sent, and the menu option for it is hidden.) The two types need to be different. If they are the same, they will be displayed in red. Avoid using these CCs that the LinnStrument uses for other purposes, which will be displayed in red:*
+* *CC 1 = mod wheel (Timbre/Y = CC1 or Low Row = X)*
+* *CC 7 = volume (Volume display)*
+* *CC 11 = expression (Loudness/Z = CC11)* 
+* *CC 16-18 = general purpose (Low Row = XYZ)* 
+* *CC 64 = sustain (Low Row = Sustain or Assign Switch = Sustain)*
+* *CC 65 = portamento (Assign Switch = CC65)*
+* *CC 74 = brightness (Timbre/Y = CC74)*
+*If any of these pads (CC1, X, etc.) are light blue, a hidden setting may be allowing the use of another CC beyond these.*
 
-*Locator CCs are mainly for Channel Per Note mode. There's not much point in using them in Channel Per Row mode, since the channel serves to locate the note. In One Channel mode the locator CC can locate a note-on but it can't locate the XYZ data.*
+*For cols 1-16, the data value is (row - 1) + 8 * (col - 1). For cols 17-25, the data value is (row - 1) + 8 * (col - 17). Row 1 is the top row and column 1 is the leftmost column.*
+
+*Locator CCs are mainly for Channel Per Note mode. There's not much point in using them in Channel Per Row mode, since the channel serves to locate the note. In One Channel mode the locator CC can locate a note-on but it can't locate the subsequent XYZ data.*
 
 *If your DAW isn't programmable, download LinnStrumentLocatorCCs.jsfx from the LinnStrument Community wiki. It defines a rectangular region on the LinnStrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. It runs natively in Reaper and can run in any windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live, FL Studio MIDI scripts, and other platforms.) Thanks to KVR forum member vorp40 for the locator CC idea!*
 
@@ -423,7 +459,7 @@ The 2nd memory from the bottom emulates the [Kite guitar](https://KiteGuitar.com
 
 BEYOND EDOS: TUNING TABLE MODE 
 
-Tuning table mode is meant for non-edo tunings such as just intonation or rank-2 temperaments. Tuning table mode is also needed for a polyphonic synth that doesn't have MPE (thus pitch bends on one channel affect notes on other channels), but does allow retuning by other methods.
+Tuning table mode is meant for non-edo tunings such as just intonation or rank-2 temperaments. Tuning table mode is also needed for a polyphonic synth that doesn't have MPE (thus pitch bends on one channel affect notes on other channels), but does allow retuning by other methods. It's also needed for a synth that doesn't respond to pitch bends at all, for example certain piano and organ synths.
 
 Once an edo is selected, the LinnStrument usually outputs standard midi notes with tuning bends, and several edosteps will share the same midi note. But a split that's set to Tuning Table mode outputs edosteps instead. The lower left pad (or the lower right pad if the split is set to lefthanded) is midi note 0. The midi notes for the other pads increase from there according to the split's column and row offsets. Thus each edostep is a unique midi note. Certain synths need this format to play edos. But the main reason to use Tuninng Table mode is to retune each edostep individually, by loading a tuning table in the form of a scala file into your synth, or by using MTS/ESP, or by running microtonal software such as alt-tuner.
 
@@ -433,7 +469,7 @@ Each note of an N-note scale is somewhat sharp or flat from N-edo. The Linnstrum
 
 *Example: Suppose you want to use Harry Partch's 43-note JI tuning. Set the edo to 43 and turn on Tuning Table mode. Load the appropriate scala file into your synth. Since the anchor pad and anchor note have no effect in Tuning Table mode, you may need to load a keyboard mapping file (file type .kbm) into your synth as well. This file sets a specific midi note to a specific frequency and another specific midi note to be the first note of your tuning. For example, midi note 69 = A above middle-C might be set to 440hz. But since Harry Partch used G for 1/1, using A for our anchor midi note is not ideal. Since there are 43 notes per octave but only 128 midi notes, we can only get about 3 octaves. Let's center our 3 octaves around middle-C. Set midi note 0 to 98hz, which is the G about 1.5 octaves below middle-C. Set the starting note to midi note 0. (Setting anchor note 43 to 196hz and/or setting the starting note to 43 would work just as well.)*
 
-There are only 128 midi notes. What if your tuning spans more than 128 edosteps? (For example, 4 octaves of 41edo.) One solution is to use splits. Each split has up to 128 notes, so there can be a total of 256 pitches. But you can't slide across the split point. Also a large edo combined with large column and row offsets can actually exceed 256 edosteps. See the next two sections for two other solutions.
+There are only 128 midi notes. What if your tuning spans more than 128 notes? (For example, 4 octaves of Partch.) One solution is to use splits. Each split has up to 128 notes, so there can be a total of 256 pitches. But you can't slide across the split point. Also a large edo combined with large column and row offsets can actually exceed 256 edosteps. See the next two sections for two other solutions.
 
 *When tuning table is set to ON (no CCs or rechanneling), all notes above 127 become dead pads.*
 
@@ -443,7 +479,9 @@ When there are more than 128 notes, microLinn assigns the notes to midi groups. 
 
 Your linnstrument can send a CC message immediately before every note-on indicating the midi group. Your DAW can then use a custom midi-only effect to filter out all but one group. Your DAW would have multiple tracks, each receiving from only one group, and each with one instance of your softsynth into which you have loaded the appropriate scala and kbm files. Thus a tuning that requires N groups would also require N instances of your softsynth.
 
-*Details: To send grouping CCs, swipe the tuning table mode past "ON" to "CC". You must also select a midi grouping CC. (Until you do, "CC" will be displayed in red.) The CC value is the midi group number, 1-8. Within a group, midi notes run from 0 to 127. Thus note 128 becomes midi note 0 in group 2. The number of midi groups needed depends on how many notes your tuning uses. MicroLinn automatically calculates the number of groups and indicates it by a vertical stack of 1-8 dots after the "CC".*
+*Details: To send grouping CCs, swipe the tuning table mode past "ON" to "CC". You must also select a midi grouping CC type. (Until you do, "CC" will be displayed in red.) The two splits can send the same CC type. See Locator CCs above for which CC types to avoid. The filtering effect will filter out the grouping CC, so you needn't worry about it affecting your synth.*
+
+*The CC value is the midi group number, 1-8. Within a group, midi notes run from 0 to 127. Thus note 128 becomes midi note 0 in group 2. The number of midi groups needed depends on how many notes your tuning uses. MicroLinn automatically calculates the number of groups and indicates it by a vertical stack of 1-8 dots after the "CC".*
 
 *See the LinnStrument Community wiki for microLinnMidiGroupFilter.jsfx, a plug-in for Reaper, and microLinnMidiGroupDemo.RPP, an example Reaper project. Upon receiving a grouping CC, the filtering effect assigns a group (the CC's value) to the CC's channel. It then only passes midi data from those channels that have been assigned to a certain group.*
 
@@ -459,9 +497,9 @@ Your linnstrument can send a CC message immediately before every note-on indicat
 * *In the softsynth, load a scala file with your tuning (or use mts-esp, alt-tuner, etc.)*
 * *Optionally create a track named "effects" and into it load various audio effects such as reverb*
 * *Create a send from "group 1" to "effects", only audio, no midi*
-* *(In Reaper, you can instead position this track above the "group 1" track and make it be a folder header)*
-* *(DO NOT make the "all groups" track be a folder header, because that will mute all the synths)*
-* *This will send the output of all the softsynths into one set of effects, more efficient*
+* * *This will send the output of all the softsynths into one set of effects, more efficient*
+* * *In Reaper, you can instead position the effects track above the "group 1" track and make it be a folder header*
+* * *DO NOT make the "all groups" track be a folder header, because that will mute all the synths*
 * *Select the "group 1" track and duplicate it, and check that both sends are also duplicated*
 * *Rename the new track "group 2", and in the filter effect set the midi group number to 2*
 * *Repeat as needed, you can have up to 8 midi groups*
@@ -471,6 +509,8 @@ Your linnstrument can send a CC message immediately before every note-on indicat
 *In each synth, you must set the anchor note and frequency appropriately via a .kbm file or somesuch. For example, suppose your LinnStrument is set to 4 octaves of 53edo = 213 notes = 2 midi groups. And suppose you want the lowest note of group 1 to be A1 = midi note 33. That's 3 8ves below A-440, so in the group 1 synth, set midi note 0 (not note 33!) to 55hz. Midi note 53 will be 110hz, note 106 will be 220hz, and note 159 will be 440hz. 159 - 128 = 31, so in the group 2 synth, set midi note 31 to 440hz.*
 
 *Another example, suppose you want the lowest note of group 2 to be middle-C = midi note 60. In the group 2 synth, set midi note 0 (not note 60!) to 261.63hz. Note 0 in group 2 is really note 128 of the full 213 notes. So an octave below middle-C is 128 - 53 = 75. So in the group 1 synth, set midi note 75 to 130.815hz.*
+
+*All this assumes your synths are MPE-compatible and can handle midi channels independently. If not, each group synth must be up to 16 separate synths, each receiving only 1 midi channel.*
 
 *Midi grouping CCs are sent before locator CCs, so that locator CCs can be filtered out.*
 
@@ -491,18 +531,18 @@ Rechanneling indicates the midi group by sending certain midi notes to channels 
 * *Distributor (US$20, VST/AU) https://grumpymonkeyplugins.com/products/distributor*
 *(We have not personally tested these plugins.) As a last resort, try sending midi channels individually. For example, to send channels 1-6 to a track, create a send for channel 1, another send for channel 2, etc.*
 
-For the left split,
-* Channel 1 is the MPE main channel (the additional channel in the jsfx filter effect).
-* For up to 128 notes = 1 group, rechanneling doesn't happen ("RCH" acts the same as "ON").
-* For 129-256 notes = 2 groups, midi in group 1 is sent to channels 2-8. Midi in group 2 is sent to channels 9-15. Channel 16 is unused.
-* For 257-384 notes = 3 groups, group 1 uses channels 2-6, group 2 uses 7-11 and group 3 uses 12-16.
-* For 385-512 notes = 4 groups, group 1 uses channels 1-4 (no Main channel). Group 2 uses 5-8, group 3 uses 9-12, and group 4 uses 13-16.
+*For the left split,*
+* *Channel 1 is the MPE main channel (the additional channel in the jsfx filter effect).*
+* *For up to 128 notes = 1 group, rechanneling doesn't happen ("RCH" acts the same as "ON").*
+* *For 129-256 notes = 2 groups, midi in group 1 is sent to channels 2-8. Midi in group 2 is sent to channels 9-15. Channel 16 is unused.*
+* *For 257-384 notes = 3 groups, group 1 uses channels 2-6, group 2 uses 7-11 and group 3 uses 12-16.*
+* *For 385-512 notes = 4 groups, group 1 uses channels 1-4 (no Main channel). Group 2 uses 5-8, group 3 uses 9-12, and group 4 uses 13-16.*
 
-For the right split, 
-* Channel 16 is the MPE main channel.
-* For 2 groups, midi in group 1 is sent to channels 9-15. Midi in group 2 is sent to channels 2-8. Channel 1 is unused.
-* For 3 groups, group 1 uses channels 11-15, group 2 uses 6-10 and group 3 uses 1-5.
-* For 4 groups, group 1 uses channels 13-16 (no Main channel). Group 2 uses 9-12, group 3 uses 5-8, and group 4 uses 1-4.
+*For the right split,*
+* *Channel 16 is the MPE main channel.*
+* *For 2 groups, midi in group 1 is sent to channels 9-15. Midi in group 2 is sent to channels 2-8. Channel 1 is unused.*
+* *For 3 groups, group 1 uses channels 11-15, group 2 uses 6-10 and group 3 uses 1-5.*
+* *For 4 groups, group 1 uses channels 13-16 (no Main channel). Group 2 uses 9-12, group 3 uses 5-8, and group 4 uses 1-4.*
 
 *If the left split only uses two groups, channel 16 is free and you can use it for the right split. Furthermore, you can set the rechanneled split to use fewer channels and the blocks will change to match. The channels MUST be a contiguous block going up from 2 or down from 15. Or if there's 4 groups and no Main channel, up from 1 or down from 16. If you have N channels, the 2nd block is N channels higher (or lower for the right split) than the 1st block, the 3rd block is 2xN channels higher/lower, etc. For example, with 2 groups, setting the left split to channels 2-7 (6 channels) makes the 2nd block be 8-13, leaving 3 channels available for the right split. Don't select too many channels (e.g. 2-9), or some pads will be muted.*
 
@@ -523,7 +563,7 @@ KNOWN ISSUES:
 
 NOTES:
 
-To find all changes to the code, search for "microlinn" or "playedBlink" or "patternChain" or "control the sequencer" or "smoothing"
+To find all changes to the code, search for "microlinn" or "playedBlink" or "patternChain" or "control the sequencer" or "monoMode"
 
 "Skip-fretting" is a column offset of 2 - each subsequent pad represents every other MIDI note, so note 0 2 4 6 8 ... instead of 0 1 2 3 4. The name is in reference to the microtonal [kite guitar](https://kiteguitar.com/), which obviously uses frets and not keys, but the LinnStrument's rows and columns work just like strings and frets.
 

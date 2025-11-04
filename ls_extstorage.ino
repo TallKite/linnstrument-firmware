@@ -2393,7 +2393,7 @@ void migrateFromMicroLinnGlobalV72_0 (MicroLinnGlobal* t, void* source) {
   for (byte row = 0; row < MAXROWS; row++) {
     t->guitarTuning[row] = s->guitarTuning[row];
   }
-  t->smoothing = 0;
+  t->monoMode = 0;
 }
 
 void migrateFromMicroLinnSplitV72_0 (MicroLinnSplit* t, void* source) {
@@ -2409,6 +2409,7 @@ void migrateFromMicroLinnSplitV72_0 (MicroLinnSplit* t, void* source) {
   t->condensedBendPerPad = 0;
   t->defaultLayout = 0;
   t->tuningTable = s->tuningTable;
+  t->midiGroupCC = -1;
   t->transposeEDOsteps = s->transposeEDOsteps;
 }
 
@@ -2418,6 +2419,8 @@ void copyConfigurationMicroLinnV72_0(void* target, void* source) {   // copies f
 
   memcpy(&t->device, &s->device, sizeof(s->device));                 // Device.microLinn gets copied automatically
   t->device.version = 16 + MICROLINN_VERSION_OFFSET;                 // redundant, delete?
+  t->device.microLinn.MLversion = 1;
+  t->device.microLinn.uninstall = false;
 
   memcpy(&t->settings.global, &s->settings.global, sizeof(GlobalSettings) - sizeof(MicroLinnGlobal));
   migrateFromMicroLinnGlobalV72_0(&t->settings.global.microLinn, &s->settings.global.microLinn);

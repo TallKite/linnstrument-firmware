@@ -629,7 +629,7 @@ struct MicroLinnSplit {
   boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
   byte pullOffVelocity;                   // 0 = OFF, 1 = 2nd note's noteOff velocity, 2 = 1st noteOn veloc, 3 = 2nd noteOn veloc, 4 = average them
   byte condensedBendPerPad;               // width of a single-pad pitch bend in edosteps, 0 = OFF, 1 = VAR, 2..L+1 = 1..L (L = largest scale step),
-  byte defaultLayout;                     // 0 = OFF, 1/2 = Bosanquet, 3/4 = Wicki-Hayden, 5/6 = Harmonic Table, 7/8 = Accordion, 9-10 = Array mbira
+  byte defaultLayout;                     // 0 = OFF, 1-2 = Bosanquet, 3 = Accordion, 4-5 = Wicki-Hayden, 6-7 = Array mbira
   byte tuningTable;                       // 0..3 = OFF/ON/CC/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
   signed char midiGroupCC;                // sent with each note-on, ranges from 0 to 119, -1 = OFF
   signed char transposeEDOsteps;          // accessed via displayOctaveTranspose screen
@@ -820,7 +820,7 @@ struct MicroLinnGlobal {
   byte largeEDO;                             // ranges 0..53, 0 = OFF, 1..52 = various edos, 53 = 1200edo = JI, user can have a 55-note subset of this edo 
 //signed char largeEDOoffset[MICROLINN_MAX_EDO];  // ranges -128..127, edosteps from nearest large-edo approximation
   short guitarTuning[MAXROWS];               // independent of Global.guitarTuning, interval in edosteps from the string below it, can be negative, [0] is DIA/CHRO
-  byte smoothing;                            // use KVR forum member teknico's channel pressure fix, 0 = OFF, 1 = only Z-data, 2 = both Z & Y data
+  byte monoMode;                             // 0..3 = OFF/X/Z/X+Z, X = various pitch bend fixes, Z = KVR forum member teknico's channel pressure smoothing 
   byte reserved1;                            // reserved for future use, 1 byte per empty menu row
   byte reserved2;                            //    "
 //byte padding;                              // added by the compiler, makes the MicroLinnGlobal struct an even number of bytes

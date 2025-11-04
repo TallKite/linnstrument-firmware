@@ -341,6 +341,7 @@ void loadSettingsFromPreset(byte p) {
     Global.microLinn.drumPadMode = config.preset[p].global.microLinn.drumPadMode;
     Global.microLinn.locatorCC1  = config.preset[p].global.microLinn.locatorCC1;
     Global.microLinn.locatorCC2  = config.preset[p].global.microLinn.locatorCC2;
+    Global.microLinn.monoMode    = config.preset[p].global.microLinn.monoMode;
     // only load the column and per-split row offsets if they are not OFF (such offsets are often related to the edo)
     for (byte side = 0; side < NUMSPLITS; ++side) {
       memcpy(&Split[side], &config.preset[p].split[side], sizeof(SplitSettings) - sizeof(MicroLinnSplit));

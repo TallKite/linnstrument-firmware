@@ -1868,8 +1868,8 @@ void preResetMidiExpression(byte split) {
         if (Split[split].midiChanSet[ch]) {
           midiSendPitchBend(0, ch+1);
           byte note = 128; // this is invalid on purpose
-          preSendTimbre(split, 0, note, ch);
-          preSendLoudness(split, 0, 0, note, ch);
+          preSendTimbre(split, 0, note, ch+1);
+          preSendLoudness(split, 0, 0, note, ch+1);
         }
       }
       break;
@@ -1950,6 +1950,7 @@ void preSendPitchBend(byte split, int pitchValue) {
 
 // Called to send a Pitch Bend message. Depending on mode, sends different Bend data
 void preSendPitchBend(byte split, int pitchValue, byte channel) {
+  if (Global.microLinn.drumPadMode > 0) return;
   midiSendPitchBend(scalePitch(split, pitchValue), channel);    // Send the bend amount as a difference from bend center (8192)
 }
 
