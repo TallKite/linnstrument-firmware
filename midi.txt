@@ -1,12 +1,14 @@
 LinnStrument sends the following MIDI output
 ============================================
 
-Normal playing      New touch               Note On (microLin adds Pitch Bends for tuning bends)
-                    Release                 Note Off, possibly Pitch Bend 0
+Normal playing      New touch               Note On (microLinn adds a Pitch Bend for tuning bends)
+                    Release                 Note Off (Reset On Release adds a Pitch Bend of 0)
                     X movement              Pitch Bend
                     Y movement              Control Change (or Polyphonic Pressure or Channel Pressure)
                     Z movement              Polyphonic Pressure or Channel Pressure or Control Change
                     Low Row                 Pitch Bend or Control Change or Channel Pressure
+
+Special             CC Faders               Control Change
 
 Panel switch        Sustain or CC65         Control Change
 or footswitch       PR+ or PR-              Program Change
@@ -15,7 +17,7 @@ Per-Split display   Change the midi mode    XYZ reset messages
  
 Preset display      Change the preset       Program Change
 
-Volume display      X movement              Volume Control Change (CC7)
+Volume display      X movement              Control Change (CC7 = volume)
 
 Global display      Notes Off               All Sound Off, All Notes Off, CC64 Sustain off, multiple NoteOffs
 

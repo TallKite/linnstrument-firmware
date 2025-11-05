@@ -553,7 +553,6 @@ boolean isZExpressiveCell() {
 }
 
 // functions hasZExpressiveNotes() and isMaxZ() are for microLinn's Z-smoothing
-
 // they are the work of KVR forum member teknico, many thanks! 
 // Individually expressive notes on the same channel
 // only when there's just one note, or using PolyAT
@@ -1383,7 +1382,7 @@ void sendNewNote() {
 
     // if we've switched from pitch X enabled to pitch X disabled and the last
     // pitch bend value was not neutral, reset it first to prevent skewed pitches
-    // and if microLinn is on, send the tuning bend
+    // or if microLinn is on, send the tuning bend
     if ((!Split[sensorSplit].sendX && hasPreviousPitchBendValue(sensorCell->channel)) ||
           isMicroLinnOn()) {
       preSendPitchBend(sensorSplit, 0, channel, tuningBend);                     // read from old channel, send to new channel
@@ -1436,6 +1435,10 @@ void sendReleasedNote() {
             cell(touchedCol, row).channel == sensorCell->channel) {
           // if there is another touch active with the same exact note and channel,
           // don't send the note off for the released note
+          if (Global.microLinn.monoMode % 2 == 1) {
+            // but if in mono mode with X-data fixes, send a note-on for the old note, to retrigger the envelope, using the noteOff velocity
+            midiSendNoteOn(sensorSplit, sensorNote, sensorCell->velocity, sensorCell->channel);
+          }
           return;
         }
 
@@ -1994,24 +1997,14 @@ void handleTouchRelease() {
       setFocusCellToLatest(sensorSplit, sensorCell->channel);
       // if in mono mode with X-data fixes, send the most recent pitch bend for the newly focused cell
       if (Global.microLinn.monoMode % 2 == 1 &&
-          focus(sensorSplit, sensorCell->channel).col > 0) {
-          //countTouchesForMidiChannel(sensorSplit, sensorCol, sensorRow) > 1) {     // maybe > 0 ?
+          countTouchesForMidiChannel(sensorSplit, sensorCol, sensorRow) > 1) {
         signed char channel = sensorCell->channel;
         short tuningBend = 0;
-        //byte newCol = focusCell[sensorSplit][channel].col;
-        //byte newRow = focusCell[sensorSplit][channel].row;
-        //short newLastValueX = touchInfo[newCol][newRow].lastValueX;
-        //if (newLastValueX == INVALID_DATA) newLastValueX = 0;
-        //if (!Split[sensorSplit].sendX) newLastValueX = 0;
-        //short newEdostep = getMicroLinnVirtualEdostep(sensorSplit, newCol, newRow);
         if (isMicroLinnOn()) {
           channel = rechannelMicroLinnGroup(sensorSplit, sensorCell->channel, sensorCell->microLinnGroup);
           tuningBend = getMicroLinnTuningBend(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
-          //channel   = rechannelMicroLinnGroup(sensorSplit, channel, newEdostep >> 7);
-          //tuningBend = getMicroLinnTuningBend(sensorSplit, newEdostep);
         }
         preSendPitchBend(sensorSplit, sensorCell->lastValueX, channel, tuningBend);  
-        //preSendPitchBend(sensorSplit, newLastValueX, channel, tuningBend);  
       }
     }
 

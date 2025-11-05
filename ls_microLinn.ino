@@ -143,8 +143,6 @@ when bulk importing/exporting, clear screen and display "IMP" or "EXP"?
 
 merge hammerOnNewNoteOn into pullOffVelocity, 0 = no new note, 1 = noteOff velocity, etc.
 
-increase MICROLINN_MAX_COL_OFFSET to 10 at least (M2 of 54edo)
-
 does preset advance send note-offs?
 
 color-code the menu buttons? makes them more memorable
@@ -158,6 +156,8 @@ fix bug with anchor row = 0 and guitar tuning, strings preview note are off by o
 ask on the forum about the unplugging bug for NRPN send/receive
 
 change microLinnOSVersion from 000 to 001
+comment out microLinnSetupKitesPersonalPrefs() call
+delete CC41 send in calcTuning
 
 colorAccent can be set to 0, if so my code should use some fixed color
 
@@ -186,9 +186,6 @@ opposed to adding a new feature. If anyone prefers the old behavior, let us know
 
 test if changing splits always triggers a calctuning call, if so, just calc the displayed split(s)
 
-41edo in mono mode, play 2 pads that output the same midi note, note-on note-on note-off ends both notes
-  hammer-ons will fix this, if it's set to no new noteon
-
 test new switch function 8VE± with transposing, also make it and toggle_quantize not latch on a long press
 
 implement showCustomLEDs via getCombinedLedData() instead?
@@ -203,8 +200,6 @@ debug same/blink applying to the other side for note-offs, search for resetPossi
 bug, red playedSame dots are wrong when the number of virtual edosteps is > 128, needs the group number
 bug, condensing messes up the red dots
 try implementing getMicroLinnNoteNumColumn()
-
-comment out microLinnSetupKitesPersonalPrefs() call
 
 OLD WAY
 The colors use the rainbow metaphor, red-yellow-green-blue = sharp-to-flat = supermajor-to-subminor. There's a rainbow of 2nds, a rainbow of 3rds, etc.
@@ -414,7 +409,7 @@ note to self: to use multi-channel output with my non-MPE s90es synth, deselect 
 
 // virtual edosteps needed = 7 * maxRowOffset + 24 * maxColOffset + 1 = 368 max, but up it to 512 to give the guitar tuning more leeway
 const byte MICROLINN_MAX_ROW_OFFSET = 25;                  // if this is changed, change it in initMicroLinnData() too
-const byte MICROLINN_MAX_COL_OFFSET = 10; 
+const byte MICROLINN_MAX_COL_OFFSET = 10;                  // 10 is the M2 of 54edo, for 53 and 55 it's 9
 const short MICROLINN_MAX_EDOSTEPS = 7 * 25 + 24 * 8 + 1;  // 175 + 192 + 1 = 368
 //const short MICROLINN_MAX_EDOSTEPS = 512;                // virtual edosteps run 0..511
 const short MICROLINN_MAX_GUITAR_RANGE = 196; // 320;      // 512 - 192, 192 = max row length = numCols * maxColOffset = 24 * 8

@@ -22,7 +22,9 @@ If you see "Couldn't retrieve LinnStrument's settings, interrupting firmware upg
 #  UPDATING / UNINSTALLING  
 
 
-IMPORTANT: Updating to a newer version of microLinn is done normally. Put the new .bin file next to the updater app, etc. But if you want to go back to an official (non-microtonal) version of the firmware, there's an extra step. Just before you run the updater, on the Global Settings screen, tap (don't long-press) the "Update OS" pad *twice* so that it turns red. This tells your LinnStrument to *uninstall* microLinn. This deletes all your microtonal data, necessary in order to avoid deleting your calibration data and all your user settings. Don't uninstall when updating to a newer version of microLinn, because you'll delete your microtonal data needlessly.
+IMPORTANT: Updating to a newer version of microLinn is done normally. Put the new .bin file next to the updater app, etc. But if you want to go back to an official (non-microtonal) version of the firmware, there's an extra step. Just before you run the updater, on the Global Settings screen, tap (don't long-press) the "Update OS" pad *twice* so that it turns red. This tells your LinnStrument to *uninstall* microLinn. This deletes all your microtonal data, necessary in order to avoid deleting your calibration data and all your user settings.
+
+Don't uninstall (avoid the red pad) when updating to a newer version of microLinn, because you'll delete your microtonal data needlessly.
 
 
 #  MAIN MENU  
@@ -32,7 +34,7 @@ To go to the main microLinn menu, on the Global Settings screen, long-press the 
 
 Main menu, *LONG-PRESS EACH BUTTON* to see its function
 
-  col 2) Per-split column offset (OFF, 2 to 8)
+  col 2) Per-split column offset (OFF, 2 to 10)
   
 
   col 4) Per-split row offset (OFF, NOVR = no overlap, 0 to 25, swipe up/down for positive/negative offsets)
@@ -51,7 +53,7 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
   
     row 2) Allow Importing (OFF, IMP)
 
-    row 3) Monophonic Mode (OFF, X, Z, X+Z)
+    row 3) Monophonic Mode (OFF, X, Z, X+Z) (X = Pitch, Z = Loudness)
 
     row 4) Locator CC #1 (OFF, 0 to 119) (used for the first 16 columns)
   
@@ -101,16 +103,20 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
 # IMPORTANT TERMINOLOGY
 
 Slide: a large bend to a new pad, as opposed to a small bend that stays within one pad.
-Consistent vs inconsistent sliding
-Mismatched bend ranges
-Bend slope
 
-#  NON-MICROTONAL FEATURES  
+Consistent sliding: when you slide to a note and then play it again without sliding, the bent pitch matches the unbent pitch.
+
+Mismatched bend ranges: deliberately mismatching the ranges of your LinnStrument and your synth. Causes inconsistent slides.
+
+Bend slope: The bend slope is normally 1 semitone per pad, which is about 6¢/mm. Mismatched bend ranges change the bend slope.
+
+
+#  NON-MICROTONAL FEATURES
 
 
 COLUMN OFFSETS
 
-Ranges from 1 (OFF) to 8. For negative offsets, use the hidden lefthanded setting in Global Settings column 1. The usual LinnStrument tuning is row offset +5 and column offset +1, or (+5 +1). Each of the three most popular hexagonal-key layouts can be translated to the LinnStrument's square keys in two ways:
+Ranges from 1 (OFF) to 10. For negative offsets, use the hidden lefthanded setting in Global Settings column 1. The usual LinnStrument tuning is row offset +5 and column offset +1, or (+5 +1). Each of the three most popular hexagonal-key layouts can be translated to the LinnStrument's square keys in two ways:
 * Bosanquet or Janko layout translates to (-1 +2) or (+1 +2)
 * Wicki-Hayden layout translates to (+5 +2) or (+7 +2)
 * Harmonic Table layout translates to (+4 +3) or (+7 +3)
@@ -123,11 +129,11 @@ You can set both column offsets at once by linking them. In the upper right ther
 
 *Details: Beware, if the column offset is 2 and the row offset is an even number, you lose half the notes and only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors. If they do, both offsets will be displayed in red.*
 
-*Playing melodies with pitch bending can be tricky. A 1mm slide normally bends the pitch about 6¢. But an offset of +2 makes it 12¢, +3 makes it 18¢, etc. Thus to play in tune with a large column offset you may need both Pitch/X Quantize and Pitch/X Quantize Hold to be on. (But if your column offset is +2, setting Quantize on and Quantize Hold off lets you play the skipped notes fairly accurately by sliding into the gap between pads. In fact, you can play 24edo quartertones on a normal 12edo LinnStrument fairly easily this way.)*
+*Playing melodies with pitch bending can be tricky. An offset of +2 changes the bend slope from 6¢/mm to 12¢/mm, +3 makes it 18¢/mm, etc.  Thus to play in tune with a large column offset you may need both Pitch/X Quantize and Pitch/X Quantize Hold to be on. (But if your column offset is +2, setting Quantize on and Quantize Hold off lets you play the skipped notes fairly accurately by sliding into the gap between pads. In fact, you can easily play 24edo quartertones on a normal 12edo LinnStrument this way.)*
 
-*You can also use mismatched bend ranges. For example, set your LinnStrument to 24 semitones and your synth to 12 semitones. Now sliding by 1 pad bends by 1 semitone, as usual. Bends are easier to control, but when you slide up to a note and then play it again without sliding, the bent pitch won't match the unbent pitch. So this method works best when only small bends are used.*
+*You can also use mismatched bend ranges. With a column offset of +2, set your LinnStrument's range to twice your synth's range. Now the bend slope is the usual 1 semitone/pad. Bends are easier to control, but slides are inconsistent. So this method works best when only small bends are used.*
 
-*In the Octave/Transpose screen, "transpose lights" tranposes by columns not semitones. For example, if your column offset is 2, transposing the lights by 1 shifts everything over 1 column, changing the pitch of each pad by 2 semitones.*
+*In the Octave/Transpose screen, "Transpose Lights" tranposes by columns not semitones. If your column offset is +2, transposing the lights by 1 shifts everything over 1 column, changing the pitch of each pad by 2 semitones.*
 
 PER-SPLIT ROW OFFSETS
 
@@ -141,7 +147,7 @@ Make the unlit pads go away! Bending still works. Accessed through the microLinn
 
 *Details: Condensing uses various microtonal features (see below). Set the edo to 12 and select one of the 7 microtonal scales. If your scale is all one color (e.g. the 12edo major scale is all white notes), fix that in the note lights screen. Adjust the color of one or more notes with the rainbow editor, or simply turn off the rainbow enabler to use the usual 2 colors.*
 
-*In the Per-split Microtonal Settings menu, top row, change Condense To Scale from OFF to VAR, which stands for variable bend slope. Bends are consistent, meaning that when you slide up to a note and then play it again without sliding, the bent pitch matches the unbent pitch. The bend slope is usually a constant 1 semitone per pad, which is about 6¢ per mm. But now the slope is lower when traversing a small scale step and higher when traversing a large scale step. Over a 12edo minor 2nd it's the usual 6¢/mm, but over a 12edo major 2nd it doubles to 12¢/mm. The bend slope changes sharply at the center of the pad.*
+*In the Per-split Microtonal Settings menu, change Condense To Scale from OFF to VAR, which stands for variable bend slope. Slides are consistent. When traversing a minor 2nd the bend slope is the usual 6¢/mm, but over a major 2nd it doubles to 12¢/mm. The bend slope changes sharply at the center of the pad.*
 
 *This variable bend slope causes certain issues. (1) It makes vibrato on certain notes lopsided. For example, a normal vibrato on C of a C major scale will tend to be wider when sharpening and narrower when flattening, making the C note sound slightly sharp. So you might want to do a slightly off-center vibrato, going closer to B than to D. (2) When sliding slowly at a steady speed through a large interval, you may notice the bending becoming faster and slower. So you might want to slide through minor 2nds faster than major 2nds.*
 
@@ -157,54 +163,33 @@ There's a school of thought that says there's only 12 notes, it's not that hard 
 
 MONO MODE
 
-don't quantize X = done
-send only focused cell's X = done
-update X on noteOff of focused cell = done
-update Y on noteOff = is already done, but I can't find the code that does it!
-update Z on noteOff = ditto
-fix muted trills = done
-see line 1392
+In OneChannel and ChannelPerRow modes, one midi channel can have mutiple midi notes. The LinnStrument's default behavior when this happens is designed for compatibility with non-MPE polyphonic synths. For example, when more than one pad is played, slides are quantized to the nearest semitone. Mono mode adds 2 new behaviors that are designed for compatibility with non-MPE *monophonic* synths. 
 
-In OneChannel and ChannelPerRow modes, one midi channel can have mutiple midi notes. The LinnStrument's default behavior when this happens is designed for compatibility with non-MPE polyphonic synths. When two or more notes are played simultaneously on one channel, pitch bends are quantized to the nearest semitone. PITCH/X, TIMBRE/Y and LOUDNESS/Z data is sent for only the latest (most recently played) note. When that note is released, the most recent YZ data for the new latest note is sent. 
+PITCH/X FIXES: Selecting "X" or "X+Z" allows unquantized slides. Furthermore, you can trill on a single note by using a "twin" pad on another row. Finally, when the latest-played pad is released, the most recent bend for the new latest-played pad is sent, so you can trill while sliding.
 
-MicroLinn adds 2 new behaviors that are designed for compatibility with non-MPE monophonic synths. PITCH/X: MicroLinn optionally allows slides (doesn't quantize bends to semitones). When the latest note is released, the most recent bend for the new latest note is sent. LOUDNESS/Z: MicroLinn also optionally smoothes the Z data via a soft takeover, see below.
+LOUDNESS/Z SMOOTHING: The Z data for a single pad always starts and ends with a zero value. Thus holding one pad and playing a 2nd pad causes an abrupt jump in Z-value to 0, and releasing that pad causes an abrupt jump from 0 to the Z-value of the 1st pad. Selecting "Z" or "X+Z" smoothes the Z data via a "soft takeover" as opposed to a "hard takeover". Only the current maximum Z for all the held pads is sent. 
 
-*Details: These new behaviors are global, not per-split. But they only affect a split that is set to One Channel mode or Channel Per Row mode. Z-smoothing can be bypassed on a split by setting LOUDNESS/Z to poly pressure.*
+*Details: Set your LinnStrument to OneChannel or ChannelPerRow and set Mono Mode to X+Z. Don't use poly pressure for TIMBRE/Y or LOUDNESS/Z. Set your synth to mono. Don't use MPE. Set the non-MPE bend range to match the LinnStrument. Set the note priority to latest.*
 
-*Some synths like SWAM use mono MPE, interpreting all midi channels as one voice. The Linn is set to ChanPerNote. All YZ data is sent for all notes touched, causing very jumpy data.*
+*Mono mode doesn't affect ChannelPerNote mode, so if you never play non-MPE synths polyphonically, you can leave mono mode permanently set to X+Z.*
 
-*Do not use poly pressure for TIMBRE/Y or LOUDNESS/Z. Do not use MPE. Set the note priority to latest.*
+*Mono mode is global, not per-split. But it only affects a split that is set to OneChannel or ChannelPerRow. Z-smoothing can be bypassed on a split by setting LOUDNESS/Z to poly pressure.*
 
-LOUDNESS/Z SMOOTHING
-
-The LinnStrument normally resets pressure data at note on/off, and only sends pressure data for the most recent pad held. For non-MPE synths (or any synth played in "One Chan" or "ChPerRow" mode), playing a 2nd note causes an abrupt jump in Z-value to 0, and releasing a note causes an abrupt jump from 0 to the Z-value of whatever prior pad is still held. MicroLinn includes a fix by KVR forum member teknico that solves the problem via a "soft takeover" as opposed to a "hard takeover". Accessed through the microLinn menu. "X" affects only X-values, "Z" affects only Z-values, "X+Z" affects both.
-
-*Details: The output of Z (loudness) when not using Polyphonic Aftertouch is thus changed:*
-* *Zero-value messages before note-on and note-off are only sent for the first simultaneous note on the same channel*
-* *Only the maximum value of all simultaneous notes on the same channel is sent*
-*This allows smoother playing in One Channel and Channel Per Row modes and better compatibility with non-MPE synths, while not impacting Channel per Note (MPE) mode (except in the rare case of more that one note on the same channel). See https://www.kvraudio.com/forum/viewtopic.php?t=591770*
-
-OCTAVE TOGGLE, QUANTIZE TOGGLE
-
-Two new functions for switches and footswitches. 8VE± flips back and forth between Octave Up and normal. This lets you switch octaves while playing using only one footswitch, instead of two for Octave Up and Octave Down. QNT± toggles the Quantize option for the active split. Access them both by long-pressing TAP TEMPO and swiping.
+*Thanks to KVR forum member teknico for the Z-smoothing code! See https://www.kvraudio.com/forum/viewtopic.php?t=591770*
 
 DRUM PAD MODE
 
-The note lights become 14 mega-pads that play the 14 drum sounds from the sequencer. Great for finger drumming. Lets you roll on one note with two or more fingers. The mega-pads can be either 2x3 or 3x3. Accessed through the microLinn menu.
+The note lights become 14 mega-pads that play the 14 drum sounds from the sequencer. Great for finger drumming. Lets you roll on one note with two or more fingers. Rolls can be legato, good for cymbals. The mega-pads can be either 2x3 or 3x3. Accessed through the microLinn menu.
 
 *Details:*
 * *Set PITCH/X on, otherwise a tap that hits two pads will send two notes. The drum sounds won't be accidentally pitch-bent because drum pad mode filters out all pitch bends.*
 * *You can use the low row for pitch bending, restriking, etc.*
 * *If using 3x3 mega-pads on the LinnStrument 128, you only get 10 mega-pads.*
-* *The midi mode should usually be One Channel. (You could possibly use channelPerRow to make the 3 rows of each pad sound slightly different, for example high hat closed tightly/loosely)*
+* *The midi mode should usually be OneChannel. (You could possibly use ChannelPerRow to make the 3 rows of each pad sound slightly different, for example high hat closed tightly/loosely)*
 * *The sequencer can have different drum sounds for each split. If you're using both splits, set the split point in between the pads.*
 * *The two pad colors are the main/accent colors of the current split. If you select a custom light pattern, it will overlay the drum pads. Useful for making the center of each 3x3 mega-pad a different color.*
 * *If you use musical sounds instead of drum sounds, and enter the appropriate pitches into the sequencer, you can make a sort of marimba.*
 * *To create your own mega-pad layout, turn off Drum Pad mode, use locator CCs instead (see below) and edit one of the custom light patterns to match.*
-
-DETUNING
-
-Detune the entire LinnStrument up or down from A-440 to match a similarly detuned recording or instrument. No guarantee that detuning to A-432 will heal your chakras lol. Accessed through microLinn's anchor cents after setting the edo to 12.
 
 CHAINING SEQUENCES
 
@@ -214,7 +199,7 @@ You can select sequences and chains on the fly as the sequencer is playing. You 
 
 SEQUENCER PEDALS
 
-When playing in one split and using the other split as a sequencer, it's now no longer necessary to switch to the other split before using the following footpedals (or switches or midi NRPN messages): PLAY, PREV, NEXT and MUTE. 
+When playing in one split and using the other split as a sequencer, it's no longer necessary to switch to the other split before using the following footpedals (or switches or midi NRPN messages): PLAY, PREV, NEXT and MUTE. 
 
 *Details: From outside of a chain, the NEXT and PREV footswitches take you to the next/previous sequence as before. You can double-tap or triple-tap the NEXT and PREV footswitches to skip forward/backward multiple sequences. Thus triple-tapping NEXT is the same as single-tapping PREV, which means you only need one footswitch to go anywhere.*
 
@@ -227,6 +212,14 @@ The Volume display now has two horizontal faders, one for each split. Incidental
 You can use a splitter on your computer's stereo headphones output to send one audio channel to your amp and the other to an earbud that you use as an in-ear monitor. You can control the volume of both from the Volume screen. Good for noisy gigs, good for chaotic jam sessions where you need to discretely find the key or the chords.
 
 *Details: In your DAW, send the synth's output to two tracks, each hard-panned to opposite sides. Each track receives the LinnStrument's midi from one of the 2 main midi channels (usually 1 and 16). Each track has a gain effect which you midi-learn to the volume CC. Now one volume fader will control your amp and the other will control your earbud.*
+
+OCTAVE TOGGLE, QUANTIZE TOGGLE
+
+Two new functions for panel switches and footswitches. 8VE± flips back and forth between Octave Up and normal. This lets you switch octaves while playing using only one footswitch, instead of two for Octave Up and Octave Down. QNT± toggles the Quantize option for the active split. Access them both by long-pressing TAP TEMPO and swiping.
+
+DETUNING
+
+Detune the entire LinnStrument up or down from A-440 to match a similarly detuned recording or instrument. No guarantee that detuning to A-432 will heal your chakras lol. Accessed through microLinn's anchor cents after setting the edo to 12.
 
 MULTI-COLORED NOTE LIGHTS
 
@@ -258,14 +251,15 @@ A locator CC message can be sent immediately before every note-on, indicating th
 
 On an actual guitar, middle-C played on the 2nd string 1st fret sounds very different when played on the 6th string 20th fret. Many guitar VSTis allow you to set the playing position (higher or lower on the fretboard) through keyswitches. Depending on your VSTi, it may be possible for code on your laptop to translate a locator CC to such a keyswitch and thus directly map the Linnstrument's columns to the virtual guitar's frets, making the guitar sound much more realistic. (It may also be possible to do this without locator CCs simply by using Channel Per Row mode.)
 
-*Details: One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. The two types are selected in the microLinn menu. (On a LinnStrument 128, the 2nd type is never sent, and the menu option for it is hidden.) The two types need to be different. If they are the same, they will be displayed in red. Avoid using these CCs that the LinnStrument uses for other purposes, which will be displayed in red:*
-* *CC 1 = mod wheel (Timbre/Y = CC1 or Low Row = X)*
-* *CC 7 = volume (Volume display)*
-* *CC 11 = expression (Loudness/Z = CC11)* 
-* *CC 16-18 = general purpose (Low Row = XYZ)* 
-* *CC 64 = sustain (Low Row = Sustain or Assign Switch = Sustain)*
-* *CC 65 = portamento (Assign Switch = CC65)*
-* *CC 74 = brightness (Timbre/Y = CC74)*
+*Details: One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. The two types are selected in the microLinn menu. (On a LinnStrument 128, the 2nd type is never sent, and the menu option for it is hidden.) The two types should be different. If they are the same, they will be displayed in red. Avoid using these CCs that the LinnStrument uses for other purposes, which will be displayed in red:*
+* *CC 1 = mod wheel (when Timbre/Y = CC1 or Low Row = X)*
+* *CC 7 = volume (when swiping in the Volume display)*
+* *CC 1-8 (when Special = CC Faders)*
+* *CC 11 = expression (when Loudness/Z = CC11)* 
+* *CC 16-18 = general purpose (when Low Row = XYZ)* 
+* *CC 64 = sustain (when Low Row = Sustain or Assign Switch = Sustain)*
+* *CC 65 = portamento (when Assign Switch = CC65)*
+* *CC 74 = brightness (when Timbre/Y = CC74)*
 *If any of these pads (CC1, X, etc.) are light blue, a hidden setting may be allowing the use of another CC beyond these.*
 
 *For cols 1-16, the data value is (row - 1) + 8 * (col - 1). For cols 17-25, the data value is (row - 1) + 8 * (col - 17). Row 1 is the top row and column 1 is the leftmost column.*
@@ -332,7 +326,7 @@ The edo (stands for Equal Division of an Octave, the notes per octave) ranges fr
 
 *Details: When PITCH/X is off, the LinnStrument outputs standard midi notes (60 = middle-C, 69 = A-440, etc.) with "tuning bends". For example, in 24edo half the notes will have a 50¢ tuning bend. When PITCH/X is on, any "played bends" are automatically added on to the tuning bend. (As always, large bend ranges create a slight inaccuracy. A bend range of 96 semitones rounds all bends to the nearest 9600/8192 = 1.17¢.) See also Tuning Table mode below, which uses non-standard midi notes without tuning bends.*
 
-Once microLinn is on (i.e. once an edo is chosen), you can cycle thru the edos by setting a switch or footswitch to EDO+ or EDO- (long-press TAP TEMPO and swipe). Changing the edo automatically adjusts all row offsets so that their size in cents stays roughly the same. So your fourths tuning will remain fourths, your fifths tuning will remain fifths, and your standard guitar tuning will remain standard. If either column offset is not OFF, it will get adjusted as well. Furthermore, you can set the default layout for either split to be Bosanquet etc. and your layout will become (and remain) Bosanquet. 
+Once microLinn is on (i.e. once an edo is chosen), you can cycle thru the edos by setting a panel switch or footswitch to EDO+ or EDO- (long-press TAP TEMPO and swipe). Changing the edo automatically adjusts all row offsets so that their size in cents stays roughly the same. So your fourths tuning will remain fourths, your fifths tuning will remain fifths, and your standard guitar tuning will remain standard. If either column offset is not OFF, it will get adjusted as well. Furthermore, you can set the default layout for either split to be Bosanquet etc. and your layout will become (and remain) Bosanquet. 
 
 *Details: A default layout is stored in the per-split row/col offsets, so it overrides the Global row offset. Bosanquet = A1/M2, Bosanquet 2 = m2/M2, Accordion = m3/M2, Wicki-Hayden = P4/M2, Wicki-Hayden 2 = P5/M2. Array Mbira 1 = P4/P5, Array Mbira 2 = P8/P5. But this may vary in certain edos, to ensure coprime row/col offsets. For example, 24edo Bosanquet is not 10/4 but 5/4. See also Guitar Tuning below.*
 
@@ -340,7 +334,7 @@ The actual pitches of each pad are set via the anchor pad and the anchor note.
 
 *Details: The anchor pad is a specific pad that doesn't change pitch when you change the edo. The anchor pad chooser displays the row and column of the current anchor pad. For example, "R4C11" (or "4 11" on the LinnStrument 128) means row 4 (from the top) and column 11. Tap the blue "R4C11" anywhere and you'll see the normal display with the anchor pad blinking. Tap any pad to set it as the new anchor pad. This pad beomes the new tonic, and all the note lights will shift accordingly.*
 
-*Changing the anchor pad shifts the note lights much like transpose lights does, only you can shift by rows as well as columns. Changing the anchor note transposes by 12edo semitones. Changing the anchor cents detunes the entire LinnStrument. Like the guitar tuning screen, a midi note is sent when you change either one.* 
+*Changing the anchor pad shifts the note lights much like Transpose Lights does, only you can shift by rows as well as columns. Changing the anchor note transposes by 12edo semitones. Changing the anchor cents detunes the entire LinnStrument. Like the guitar tuning screen, a midi note is sent when you change either one.* 
 
 Besides transposing via the anchor note, each split can be transposed by edosteps via the Octave/Transpose screen. 
 
@@ -362,7 +356,7 @@ SUGGESTIONS FOR EXPLORING EDOS
 * You can cycle through the edos by setting switch 1 to EDO+ and switch 2 to EDO- (won't work until you select an edo)
 * Set the default layout to e.g. Bosanquet to stay in Bosanquet while you cycle
 * The first few edos are pretty strange, so you may want to start with 15, 17, 19 or 22
-* For nice-sounding chords, try the Bosanquet layout for 31edo and the Kite guitar layout for 41edo (memory #5)
+* For nice-sounding chords, try the Bosanquet layout for 31edo (memory #4) and the Kite guitar layout for 41edo (memory #5)
 * To avoid a touched pad turning red (or whatever) and obscuring the pad's usual color, set the played color to blank
 * If the full rainbow scale seems overwhelming, try setting the played mode to blinking (BLNK)
 * Once you know an edo and its layout well, you might want to switch to the fretboard dots display
@@ -391,9 +385,9 @@ Guitar tunings can be condensed either diatonically or chromatically.
 
 NOTE LIGHTS
 
-The 9 scales in Global Settings columns 2-4 are now microtonal and change for each edo. You can still select a scale using columns 2-4, but you can no longer edit a scale there, because for larger edos there are too many notes to fit into the 3x4 box. As a result, when microLinn is on, the VIEW MAIN and VIEW ACCENT buttons do not work, and the SCALE SELECT button is always on. To edit a scale and its colors, instead go to the microLinn menu and go to the note lights screen. Shortcut: you can long-press the scale's pad in cols 2-4 in the Global Settings screen to go directly to that scale.
+The 9 scales in Global Settings columns 2-4 are now microtonal and change for each edo. You can still select a scale using columns 2-4, but you can no longer edit a scale there, because for larger edos there are too many notes to fit into the 3x4 box. As a result, when microLinn is on, the VIEW MAIN and VIEW ACCENT buttons do not work, and the SCALE SELECT button is always on. To edit a scale and its colors, instead go to the microLinn menu and go to the note lights screen. Shortcut: you can long-press the scale's pad in Global Settings columns 2-4 to go directly to that scale.
 
-*Details: The note lights screen has 7 scale buttons plus the rainbow editor, the fretboard selector and the yellow rainbow-enabler button. Excluding the rainbow enabler, there are 9 buttons, corresponding to the 9 scales in cols 2-4 in the Global Settings screen. Tap any of these 9 buttons to select it. Tap any already-selected button to backtrack to the previous button. Repeatedly tap a button to quickly switch back and forth between two scales.*
+*Details: The note lights screen has 7 scale buttons plus the rainbow editor, the fretboard selector and the yellow rainbow-enabler button. Excluding the rainbow enabler, there are 9 buttons, corresponding to the 9 scales in Global Settings cols 2-4. Tap any of these 9 buttons to select it. Tap any already-selected button to backtrack to the previous button. Repeatedly tap a button to quickly switch back and forth between two scales.*
 
 *There are 7 rows of colored lights on the screen, which from top to bottom are for unisons, 2nds, 3rds, 4ths, 5ths, 6ths and 7ths. Tap a note in a scale to toggle it on or off. Like the guitar tuning screen, a midi note is sent when you tap. The 8th scale is the rainbow editor, in which all notes are always on. Tap a note to cycle it thru the rainbow. The 9th scale (guitar-like fretboard dots) isn't really a scale. It's a full-screen display like the custom light patterns. Tapping the fretboard selector makes the dots appear in dark blue mid-screen. Tapping the dots will toggle them on or off. The fretboard repeats at the octave. To change the color of the dots, after editing go to Per-Split Settings and in column 11 change the main color. Long-press the scale buttons or the rainbow editor button or the fretboard selector button to reset the note lights to the default. Tap the yellow rainbow enabler button to turn off the rainbow and limit the note lights to the usual two colors.*
 
@@ -418,7 +412,7 @@ There are usually 7 white notes, corresponding to CDEFGAB. In a bosanquet layout
 * In perfect edos (7, 14, 21, 28 and 35) and pentatonic edos (5, 10, 15, 20, 25 and 30) the tonic is pink, to help it stand out
 * In pentatonic edos and in supersharp edos (8, 13 and 18), there are only 5 white notes
 * In superflat edos, green Bb is higher in pitch than white B
-* Yellow is sometimes called lime, and yellow/orange is sometimes called yellow
+* Yellow is officially called lime, and orangish-yellow is officially called yellow
 
 The dot patterns tend to follow the conventional m3 P4 P5 M6 P8 guitar fret markers. Some edos add M2 and m7. Edos above 24 approximate 12edo, in other words there are dots about every 100 cents. 41edo is an exception. It has kites like a Kite guitar.
 
@@ -456,6 +450,8 @@ All of microLinn's settings are stored in the 6 memories. If you load (or import
 The memory on the bottom row is an exception to this. It *will* alter microtonal data even if it has microLinn turned OFF. You can load this memory to quickly return to 12edo.
 
 The 2nd memory from the bottom emulates the [Kite guitar](https://KiteGuitar.com/). It's 41edo with a row/col offset of (+13 +2), with an alternating-3rds guitar tuning. This layout is both very playable and very well-tuned.
+
+The 3rd memory from the bottom is a 31edo Bosanquet layout, row/col offset of (+3 +5). The guitar tuning is the standard one.
 
 BEYOND EDOS: TUNING TABLE MODE 
 
