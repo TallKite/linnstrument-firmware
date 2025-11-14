@@ -10,7 +10,7 @@ For experienced linnstrumentalists, microLinn makes exploring microtonality very
 #  INSTALLATION  
 
 
-1) Go to https://www.rogerlinndesign.com/support/support-linnstrument-update-software and follow the "How to Check Your Software Version" instructions. If it's not 2.3.3, follow the "How to Update Your LinnStrument Software‍" instructions to update to 2.3.3. Linux users: use a friend's mac or windows machine to update.
+1) Go to https://www.rogerlinndesign.com/support/support-linnstrument-update-software and follow the "How to Check Your Software Version" instructions. If it's not 2.3.3, follow the "How to Update Your LinnStrument Software‍" instructions to update to 2.3.3. Linux users: use a friend's mac or Windows machine to update.
 2) Download linnstrument-firmware-microLinn-234.072.001.ino.bin.zip from the LinnStrument Community wiki and unzip it. Important: if on a mac, put the .bin file on your **desktop**. 
 3) Follow the "How to Update Your LinnStrument Software‍" instructions, with one difference: after you download and unzip the updater and before running it, put it in the same folder as the .bin file from step 2. Mac users: when you run the updater, if it asks for permission to read files from the desktop, say yes.
 If you accidentally long-press the Update OS button, you'll enter user firmware mode and the display will go blank. To return to normal, just unplug your Linnstrument.
@@ -30,7 +30,7 @@ Don't uninstall (avoid the red pad) when updating to a newer version of microLin
 #  MAIN MENU  
 
 
-To go to the main microLinn menu, on the Global Settings screen, long-press the lower left pad (VIEW MAIN). Once the edo (notes per octave) is set to anything other than OFF, VIEW MAIN turns yellow and you can simply tap it. You can also tap the yellow button in column 17 (on a LinnStrument 128, column 16 row 4).
+To go to the main microLinn menu, on the Global Settings screen, long-press the lower left pad (VIEW MAIN). Once the edo (notes per octave) is set to anything other than OFF, VIEW MAIN turns yellow and you can simply tap it. You can also tap the yellow button in column 17 (column 16 on a LinnStrument 128).
 
 Main menu, *LONG-PRESS EACH BUTTON* to see its function
 
@@ -41,19 +41,25 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
   
 
   col 6) Per-split non-microtonal settings
+ 
+    row 1) Monophonic mode (OFF, X, Z, X+Z) (X = Pitch, Z = Loudness)
 
-    row 1) Show custom light pattern (OFF, A, A#, B, A', A#', B')
+    row 2) Hammer-on mode (OFF, R, L, R+L) (R = right, L = left)
 
-    rows 2-4) (reserved for future use)
+    row 3) Hammer-on zone in semitones (1, 2... 24) or tenths of a semitone (0.1, 0.2... 24.0)
+  
+    row 4) Hammer-on wait in tens of milliseconds (0, 10, 20... 500)
+
+    row 5) Show custom light pattern (OFF, A, A#, B, A', A#', B')
 
 
   col 8) Global non-microtonal settings
 
     row 1) Drum pad mode (OFF, 2x3, 3x3)
   
-    row 2) Allow Importing (OFF, IMP)
+    row 2) Allow importing (OFF, IMP)
 
-    row 3) Monophonic Mode (OFF, X, Z, X+Z) (X = Pitch, Z = Loudness)
+    row 3) SAME/BLINK dots carry over to the other split (OFF, ON)
 
     row 4) Locator CC #1 (OFF, 0 to 119) (used for the first 16 columns)
   
@@ -127,6 +133,8 @@ You can set both column offsets at once by linking them. In the upper right ther
 
 ----->  All microLinn per-split settings can be linked this way.  <------
 
+When you power up your LinnStrument, if the two offsets are identical and are not OFF, microLinn automatically links them.
+
 *Details: Beware, if the column offset is 2 and the row offset is an even number, you lose half the notes and only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors. If they do, both offsets will be displayed in red.*
 
 *Playing melodies with pitch bending can be tricky. An offset of +2 changes the bend slope from 6¢/mm to 12¢/mm, +3 makes it 18¢/mm, etc.  Thus to play in tune with a large column offset you may need both Pitch/X Quantize and Pitch/X Quantize Hold to be on. (But if your column offset is +2, setting Quantize on and Quantize Hold off lets you play the skipped notes fairly accurately by sliding into the gap between pads. In fact, you can easily play 24edo quartertones on a normal 12edo LinnStrument this way.)*
@@ -165,17 +173,23 @@ MONO MODE
 
 In OneChannel and ChannelPerRow modes, one midi channel can have mutiple midi notes. The LinnStrument's default behavior when this happens is designed for compatibility with non-MPE polyphonic synths. For example, when more than one pad is played, slides are quantized to the nearest semitone. Mono mode adds 2 new behaviors that are designed for compatibility with non-MPE *monophonic* synths. 
 
-PITCH/X FIXES: Selecting "X" or "X+Z" allows unquantized slides. Furthermore, you can trill on a single note by using a "twin" pad on another row. Finally, when the latest-played pad is released, the most recent bend for the new latest-played pad is sent, so you can trill while sliding.
+PITCH/X FIXES: Selecting "X" or "X+Z" allows unquantized slides. Furthermore, you can trill on a single note by using a pad on another row that plays the same note. Finally, when the latest-played pad is released, the most recent bend for the new latest-played pad is sent, so you can trill while sliding.
 
-LOUDNESS/Z SMOOTHING: The Z data for a single pad always starts and ends with a zero value. Thus holding one pad and playing a 2nd pad causes an abrupt jump in Z-value to 0, and releasing that pad causes an abrupt jump from 0 to the Z-value of the 1st pad. Selecting "Z" or "X+Z" smoothes the Z data via a "soft takeover" as opposed to a "hard takeover". Only the current maximum Z for all the held pads is sent. 
+MAXIMIZE LOUDNESS/Z: The Z data for a single pad always starts and ends with a zero value. Thus holding one pad and playing a 2nd pad causes an abrupt jump in loudness to 0, and releasing that pad causes an abrupt jump from 0 to the Z-value of the 1st pad. Selecting "Z" or "X+Z" maximizes the Z data via a "soft takeover" as opposed to a "hard takeover". Z data is sent only from whichever pad is currently being pressed the hardest.
 
-*Details: Set your LinnStrument to OneChannel or ChannelPerRow and set Mono Mode to X+Z. Don't use poly pressure for TIMBRE/Y or LOUDNESS/Z. Set your synth to mono. Don't use MPE. Set the non-MPE bend range to match the LinnStrument. Set the note priority to latest.*
+*Details: Set your LinnStrument to OneChannel or ChannelPerRow and set Mono Mode to X+Z. Don't use poly pressure for TIMBRE/Y or LOUDNESS/Z. Set your synth to mono and to either retrigger or single-trigger. Don't use MPE. Set the non-MPE bend range to match the LinnStrument. Set the note priority to latest. If you never play non-MPE synths polyphonically, you can leave mono mode permanently set to X+Z.*
 
-*Mono mode doesn't affect ChannelPerNote mode, so if you never play non-MPE synths polyphonically, you can leave mono mode permanently set to X+Z.*
+*Thanks to KVR forum member teknico for the maximize-Z code! See https://www.kvraudio.com/forum/viewtopic.php?t=591770*
 
-*Mono mode is global, not per-split. But it only affects a split that is set to OneChannel or ChannelPerRow. Z-smoothing can be bypassed on a split by setting LOUDNESS/Z to poly pressure.*
+HAMMER-ONS AND PULL-OFFS
 
-*Thanks to KVR forum member teknico for the Z-smoothing code! See https://www.kvraudio.com/forum/viewtopic.php?t=591770*
+Just like a guitar, except you can hammer-on both up and down. Hammer-ons happen with any nearby pad on the same row. Works well with Mono Mode. Accessed through the microLinn menu.
+
+*Details: Set the hammer-on zone to perhaps 2 semitones. Play a note and play another one within 2 pads on the same row. The 2nd note will mute the 1st note. When you release it, a pull-off sounds the 1st note using the 2nd note's note-off velocity. If you want to play 2 notes a 2nd apart simultaneously, play them on 2 different rows. Requires ChanPerNote or ChanPerRow mode.*
+
+*A note can be hammered on only after the waiting period. Set the wait to perhaps 100ms and you can play a simultaneous 2nd on one row by playing both notes at once.*
+
+*After choosing an edo, you can set the zone to tenths of a semitone.*
 
 DRUM PAD MODE
 
@@ -243,7 +257,7 @@ Like the SAME mode, BLNK shows you other occurences of the currently played note
 
 SAME/BLINK CARRY OVER
 
-If both splits are set to SAME or BLNK, playing in one split now shows matching notes in the other split too.
+If both splits are set to SAME or BLNK, playing in one split optionally shows matching notes in the other split too. Accessed through the microLinn menu.
 
 LOCATOR CCs
 
@@ -261,12 +275,13 @@ On an actual guitar, middle-C played on the 2nd string 1st fret sounds very diff
 * *CC 65 = portamento (when Assign Switch = CC65)*
 * *CC 74 = brightness (when Timbre/Y = CC74)*
 *If any of these pads (CC1, X, etc.) are light blue, a hidden setting may be allowing the use of another CC beyond these.*
+*Also avoid CCs used for NRPNs: 6, 38, and 98-101.*
 
 *For cols 1-16, the data value is (row - 1) + 8 * (col - 1). For cols 17-25, the data value is (row - 1) + 8 * (col - 17). Row 1 is the top row and column 1 is the leftmost column.*
 
 *Locator CCs are mainly for Channel Per Note mode. There's not much point in using them in Channel Per Row mode, since the channel serves to locate the note. In One Channel mode the locator CC can locate a note-on but it can't locate the subsequent XYZ data.*
 
-*If your DAW isn't programmable, download LinnStrumentLocatorCCs.jsfx from the LinnStrument Community wiki. It defines a rectangular region on the LinnStrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. It runs natively in Reaper and can run in any windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live, FL Studio MIDI scripts, and other platforms.) Thanks to KVR forum member vorp40 for the locator CC idea!*
+*If your DAW isn't programmable, download LinnStrumentLocatorCCs.jsfx from the LinnStrument Community wiki. It defines a rectangular region on the LinnStrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. It runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live, FL Studio MIDI scripts, and other platforms.) Thanks to KVR forum member vorp40 for the locator CC idea!*
 
 IMPORTING/EXPORTING
 
@@ -275,6 +290,8 @@ You can back up various settings and/or share them with others via midi files. T
 *Details: Importing: Download a settings file from the wiki. On your LinnStrument, set Allow Importing to YES. In your DAW, set the output of a midi track to your LinnStrument. Load the settings file into that track and press play. Your LinnStrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #9 below.*
 
 *To import a custom light pattern, before you press play, you must first display the one you want to overwrite. To import an audience message, before you press play, you must first load for editing the one you want to overwrite. (You needn't actually edit it.)*
+
+*If the EDO is OFF, Scales for Current EDO imports/exports the 9 scales in the Global Settings display.*
 
 *All Settings for Current EDO imports/exports not only the scales, rainbow and fretboard, but also the equave semitones, the equave cents, the guitar tuning, and all row and column offsets. It does not import/export the anchor pad, note or cents.*
 
@@ -481,7 +498,7 @@ Your linnstrument can send a CC message immediately before every note-on indicat
 
 *See the LinnStrument Community wiki for microLinnMidiGroupFilter.jsfx, a plug-in for Reaper, and microLinnMidiGroupDemo.RPP, an example Reaper project. Upon receiving a grouping CC, the filtering effect assigns a group (the CC's value) to the CC's channel. It then only passes midi data from those channels that have been assigned to a certain group.*
 
-*The jsfx filter effect runs natively in Reaper and can run in any windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live, FL Studio MIDI scripts, and other platforms.)*
+*The jsfx filter effect runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live, FL Studio MIDI scripts, and other platforms.)*
 
 *If you can't open the reaper project microLinnMidiGroupDemo.RPP, follow these steps:*
 * *In your DAW, create a track named "all groups" that receives midi from the LinnStrument*
@@ -506,7 +523,7 @@ Your linnstrument can send a CC message immediately before every note-on indicat
 
 *Another example, suppose you want the lowest note of group 2 to be middle-C = midi note 60. In the group 2 synth, set midi note 0 (not note 60!) to 261.63hz. Note 0 in group 2 is really note 128 of the full 213 notes. So an octave below middle-C is 128 - 53 = 75. So in the group 1 synth, set midi note 75 to 130.815hz.*
 
-*All this assumes your synths are MPE-compatible and can handle midi channels independently. If not, each group synth must be up to 16 separate synths, each receiving only 1 midi channel.*
+*All this assumes your synths are MPE-compatible and can handle midi channels independently. If not, each group synth must be replaced by up to 16 separate synths, each receiving only 1 midi channel.*
 
 *Midi grouping CCs are sent before locator CCs, so that locator CCs can be filtered out.*
 
@@ -520,7 +537,7 @@ Rechanneling indicates the midi group by sending certain midi notes to channels 
 
 *If you can't open the reaper project microLinnRechannelingDemo.RPP, follow the steps above for microLinnMidiGroupDemo.RPP. But use midiChannelFilter instead of microLinnMidiGroupFilter, and don't go past group 4.*
 
-*The jsfx filter effect runs natively in Reaper and can run in any windows DAW using ReaJS, a free jsfx-to-VST wrapper. If you can't use it, try one of these plug-ins:*
+*The jsfx filter effect runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. If you can't use it, try one of these plug-ins:*
 * *MIDIChFilter (free, Windows VST) https://www.codefn42.com/midichfilter/index.html*
 * *MIDI Channel Filter (free, Mac/Windows/Linux LV2) https://x42-plugins.com/x42/x42-midifilter*
 * *MIDI Polysher (free, Windows/Mac VST) https://www.pluginboutique.com/product/3-Studio-Tools/67-Virtual-Patchbay/909-MIDI-Polysher*
@@ -559,7 +576,7 @@ KNOWN ISSUES:
 
 NOTES:
 
-To find all changes to the code, search for "microlinn" or "playedBlink" or "patternChain" or "control the sequencer" or "monoMode"
+To find all changes to the code, search for "microlinn" or "playedBlink" or "patternChain" or "control the sequencer" or "monoFixes"
 
 "Skip-fretting" is a column offset of 2 - each subsequent pad represents every other MIDI note, so note 0 2 4 6 8 ... instead of 0 1 2 3 4. The name is in reference to the microtonal [kite guitar](https://kiteguitar.com/), which obviously uses frets and not keys, but the LinnStrument's rows and columns work just like strings and frets.
 

@@ -271,7 +271,7 @@ void serialRestoreSettings() {
   updaterMicroLinnVersion = 0;
   updaterSettingsSize = 0;
   updaterImpliedSettingsSize = 0;
-  updaterBadBatch = -1;
+  updaterBadBatchNum = -1;
 
   clearDisplayImmediately();
   delayUsec(1000);
@@ -307,7 +307,7 @@ void serialRestoreSettings() {
 
     int crc = negotiateIncomingCRC(buff2, actual);
     if (crc == -1) {
-      updaterBadBatch = (projectOffset - SETTINGS_OFFSET) / batchsize;       // the batch number that flunked
+      updaterBadBatchNum = (projectOffset - SETTINGS_OFFSET) / batchsize;       // the number of the batch that flunked
       return;
     }
     else if (crc == 0)  continue;

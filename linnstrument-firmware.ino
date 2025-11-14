@@ -620,19 +620,67 @@ enum SequencerDirection {
   sequencerPingPong
 };
 
+struct __attribute__ ((packed)) MicroLinn2nybbles {   // packed byte
+  byte get (byte index);
+  void set (byte index, byte data);
+  byte nybble1:4;
+  byte nybble2:4;
+};
+
+struct __attribute__ ((packed)) MicroLinn2signedNybbles {   // packed byte
+  signed char get (byte index);
+  void set (byte index, signed char data);
+  signed char nybble1:4;
+  signed char nybble2:4;
+};
+
+struct __attribute__ ((packed)) MicroLinn8bits {     // packed byte
+  boolean get (byte index);
+  void set (byte index, boolean data);
+  boolean bit0:1;
+  boolean bit1:1;
+  boolean bit2:1;
+  boolean bit3:1;
+  boolean bit4:1;
+  boolean bit5:1;
+  boolean bit6:1;
+  boolean bit7:1;
+};
+
+struct __attribute__ ((packed)) MicroLinn16bits {    // packed short
+  boolean get (byte index);
+  void set (byte index, boolean data);
+  boolean bit0:1;
+  boolean bit1:1;
+  boolean bit2:1;
+  boolean bit3:1;
+  boolean bit4:1;
+  boolean bit5:1;
+  boolean bit6:1;
+  boolean bit7:1;
+  boolean bit8:1;
+  boolean bit9:1;
+  boolean bit10:1;
+  boolean bit11:1;
+  boolean bit12:1;
+  boolean bit13:1;
+  boolean bit14:1;
+  boolean bit15:1;
+};
+
 struct MicroLinnSplit {
   byte colOffset;                         // column offset, 1 to 10, 1 = OFF
   signed char rowOffset;                  // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
+  byte monoFixes;                         // 0..3 = OFF/X/Z/X+Z, X = various pitch bend fixes, Z = KVR forum member teknico's channel pressure maximizing 
+  byte hammerOnMode;                      // 0..3 = OFF/R/L/R+L, was no new noteOn, 1 = pullOff is 2nd note's noteOff velocity, 2 = 1st noteOn veloc, 3 = 2nd noteOn veloc, 4 = average them
+  byte hammerOnZone;                      // maximum interval in tens of cents between two note-ons to make a hammer-on, 1..240
+  byte hammerOnWait;                      // minimum time in tens of milliseconds between two note-ons to make a hammer-on, 0..50
   byte showCustomLEDs;                    // 0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
-  byte hammerOnCentsWindow;               // maximum width in tens of cents between two note-ons to make a hammer-on, 0..50, 0 = OFF
-  byte hammerOnTimeWindow;                // minimum time in tens of milliseconds between two note-ons to make a hammer-on, 0..50
-  boolean hammerOnNewNoteOn;              // do hammer-ons send a new midi note or bend the old one? (guitar = yes, flute = no)
-  byte pullOffVelocity;                   // 0 = OFF, 1 = 2nd note's noteOff velocity, 2 = 1st noteOn veloc, 3 = 2nd noteOn veloc, 4 = average them
   byte condensedBendPerPad;               // width of a single-pad pitch bend in edosteps, 0 = OFF, 1 = VAR, 2..L+1 = 1..L (L = largest scale step),
   byte defaultLayout;                     // 0 = OFF, 1-2 = Bosanquet, 3 = Accordion, 4-5 = Wicki-Hayden, 6-7 = Array mbira
   byte tuningTable;                       // 0..3 = OFF/ON/CC/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
   signed char midiGroupCC;                // sent with each note-on, ranges from 0 to 119, -1 = OFF
-  signed char transposeEDOsteps;          // accessed via displayOctaveTranspose screen
+  signed char transposeEDOsteps;          // accessed via displayOctaveTranspose screen, -7..7
   byte reserved1;                         // reserved for future use, 1 byte per empty menu row
   byte reserved2;                         //    "
   byte reserved3;                         //    "
@@ -815,12 +863,12 @@ struct MicroLinnGlobal {
   byte anchorNote;                           // any midi note 0-127, refers to a standard pitch of 12edo calibrated to A-440
   signed char anchorCents;                   // ranges -60 to +60 cents, even though 50 would do, for convenience
   byte equaveSemitones;                      // for non-octave tunings such as bohlen-pierce, 1..36, 1 semitone = 100 cents
-  signed char equaveStretch;                 // cents, -60..+60
+  signed char equaveStretch;                 // cents, -50..+50
   byte sweeten;                              // in tenths of a cent, 0..60, adjust 41edo 5/4, 5/3 by this amount both top and bottom to make it closer to just
   byte largeEDO;                             // ranges 0..53, 0 = OFF, 1..52 = various edos, 53 = 1200edo = JI, user can have a 55-note subset of this edo 
 //signed char largeEDOoffset[MICROLINN_MAX_EDO];  // ranges -128..127, edosteps from nearest large-edo approximation
   short guitarTuning[MAXROWS];               // independent of Global.guitarTuning, interval in edosteps from the string below it, can be negative, [0] is DIA/CHRO
-  byte monoMode;                             // 0..3 = OFF/X/Z/X+Z, X = various pitch bend fixes, Z = KVR forum member teknico's channel pressure smoothing 
+  boolean dotsCarryOver;                     // red SAME or BLNK dots carry over to the other split
   byte reserved1;                            // reserved for future use, 1 byte per empty menu row
   byte reserved2;                            //    "
 //byte padding;                              // added by the compiler, makes the MicroLinnGlobal struct an even number of bytes
@@ -1172,7 +1220,7 @@ signed char updaterVersion = -2;                    // the 2 version numbers con
 signed char updaterMicroLinnVersion = -2;
 short updaterSettingsSize = -2;                     // the incoming settings size as reported by the updater
 short updaterImpliedSettingsSize = -2;              // size of the incoming settings implied by the 2 versions, should match
-short updaterBadBatch = -2;                         // the number of the 96-byte batch that flunked crc, -1 means all good
+short updaterBadBatchNum = -2;                      // the number of the 96-byte batch that flunked crc, -1 means all good
 
 /************************* FUNCTION DECLARATIONS TO WORK AROUND COMPILER *************************/
 

@@ -961,7 +961,6 @@ void receivedNrpn(int parameter, int value, int channel) {
     case 202:
       if (inRange(value, 2, 25)) {
         Global.splitPoint = value;
-        if (isMicroLinnNoOverlap()) calcMicroLinnTuning();
       }
       break;
     // Global Main Note Lights
@@ -1849,7 +1848,7 @@ int scalePitch(byte split, int pitchValue) {
       pitchValue = FXD_TO_INT(FXD_MUL(FXD_FROM_INT(pitchValue), FXD_DIV(FXD_FROM_INT(48), FXD_FROM_INT(bendRange))));
       break;
   }
-  if (isMicroLinnOn() || isMicroLinnColOffset(split)) {
+  if (isMicroLinnOn() || isMicroLinnColOffsetOn(split)) {
     pitchValue *= getMicroLinnSemitonesPerPad(split, pitchValue);
   }
 

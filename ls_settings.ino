@@ -338,10 +338,10 @@ void loadSettingsFromPreset(byte p) {
   } else {        
     // if the preset has microLinn turned off, don't alter any microtonal settings, but load everything else
     memcpy(&Global, &config.preset[p].global, sizeof(GlobalSettings) - sizeof(MicroLinnGlobal)); 
-    Global.microLinn.drumPadMode = config.preset[p].global.microLinn.drumPadMode;
-    Global.microLinn.locatorCC1  = config.preset[p].global.microLinn.locatorCC1;
-    Global.microLinn.locatorCC2  = config.preset[p].global.microLinn.locatorCC2;
-    Global.microLinn.monoMode    = config.preset[p].global.microLinn.monoMode;
+    Global.microLinn.drumPadMode   = config.preset[p].global.microLinn.drumPadMode;
+    Global.microLinn.dotsCarryOver = config.preset[p].global.microLinn.dotsCarryOver;
+    Global.microLinn.locatorCC1    = config.preset[p].global.microLinn.locatorCC1;
+    Global.microLinn.locatorCC2    = config.preset[p].global.microLinn.locatorCC2;
     // only load the column and per-split row offsets if they are not OFF (such offsets are often related to the edo)
     for (byte side = 0; side < NUMSPLITS; ++side) {
       memcpy(&Split[side], &config.preset[p].split[side], sizeof(SplitSettings) - sizeof(MicroLinnSplit));
@@ -351,11 +351,11 @@ void loadSettingsFromPreset(byte p) {
       if (config.preset[p].split[side].microLinn.rowOffset >= -MICROLINN_MAX_ROW_OFFSET) {
         Split[side].microLinn.rowOffset = config.preset[p].split[side].microLinn.rowOffset;
       }
-      Split[side].microLinn.showCustomLEDs      = config.preset[p].split[side].microLinn.showCustomLEDs;
-      Split[side].microLinn.hammerOnCentsWindow = config.preset[p].split[side].microLinn.hammerOnCentsWindow;
-      Split[side].microLinn.hammerOnTimeWindow  = config.preset[p].split[side].microLinn.hammerOnTimeWindow;
-      Split[side].microLinn.hammerOnNewNoteOn   = config.preset[p].split[side].microLinn.hammerOnNewNoteOn;
-      Split[side].microLinn.pullOffVelocity     = config.preset[p].split[side].microLinn.pullOffVelocity;
+      Split[side].microLinn.monoFixes      = config.preset[p].split[side].microLinn.monoFixes;
+      Split[side].microLinn.hammerOnMode   = config.preset[p].split[side].microLinn.hammerOnMode;
+      Split[side].microLinn.hammerOnZone   = config.preset[p].split[side].microLinn.hammerOnZone;
+      Split[side].microLinn.hammerOnWait   = config.preset[p].split[side].microLinn.hammerOnWait;
+      Split[side].microLinn.showCustomLEDs = config.preset[p].split[side].microLinn.showCustomLEDs;
     }
   }
 
@@ -746,7 +746,7 @@ void initializePresetSettings() {
     }
     ccFaderValues[s][7] = 63;
     currentEditedCCFader[s] = 0;
-    midiPreset[0] = 0;
+    midiPreset[s] = 0;
     arpTempoDelta[s] = 0;
     splitChannels[s].clear();
   }
@@ -1010,7 +1010,7 @@ void handleControlButtonRelease() {
       break;
 
     case SPLIT_ROW:                                          // SPLIT button released
-      if ((Split[LEFT].sequencer || Split[RIGHT].sequencer) && !sequencerIsRunning()) calcMicroLinnTuning();
+      if (!sequencerIsRunning()) calcMicroLinnTuning();
       if (Split[otherSplit(Global.currentPerSplit)].sequencer) {
         Global.currentPerSplit = otherSplit(Global.currentPerSplit);
         setLed(0, SPLIT_ROW, globalColor, Global.splitActive ? cellOn : cellOff);
@@ -2389,7 +2389,6 @@ void handleSplitPointNewTouch() {
   if (sensorCol < 2) return;
   changedSplitPoint = true;
   Global.splitPoint = sensorCol;
-  if (isMicroLinnNoOverlap()) calcMicroLinnTuning();
   updateDisplay();
 }
 
@@ -2907,30 +2906,11 @@ void handleGlobalSettingNewTouch() {
 #endif
         break;
 
-    // display diagnostics for what settings the current firmware got from the updater app, part of the microLinn fork
-    case 17: 
+      case 17: 
 #ifndef DEBUG_ENABLED                                  // avoid conflict, column 17 also sets the debug level
-      if (sensorRow == 1 && isLinn200()) enterMicroLinnConfig();
+        if (sensorRow == 1 && isLinn200()) enterMicroLinnConfig();
 #endif
-      if (sensorRow == 7 && updaterVersion > -2) 
-        paintNumericDataDisplay(COLOR_GREEN, updaterVersion, 0, false);
-      break;
-    case 18:
-      if (sensorRow == 7 && updaterMicroLinnVersion > -2) 
-        paintNumericDataDisplay(COLOR_GREEN, updaterMicroLinnVersion, 0, false);
-      break;
-    case 19:
-      if (sensorRow == 7 && updaterSettingsSize > -2) 
-        paintNumericDataDisplay(COLOR_GREEN, updaterSettingsSize, 0, false);
-      break;
-    case 20:
-      if (sensorRow == 7 && updaterImpliedSettingsSize > -2) 
-        paintNumericDataDisplay(COLOR_GREEN, updaterImpliedSettingsSize, 0, false);
-      break;
-    case 21:
-      if (sensorRow == 7 && updaterBadBatch > -2) 
-        paintNumericDataDisplay(COLOR_GREEN, updaterBadBatch, 0, false);
-      break;
+        break;
 
     }
   }
