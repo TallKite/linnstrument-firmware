@@ -70,7 +70,9 @@ boolean isStatefulSwitchAssignment(byte assignment) {
          assignment == ASSIGNED_LEGATO ||
          assignment == ASSIGNED_LATCH ||
          assignment == ASSIGNED_REVERSE_PITCH_X ||
-         assignment == ASSIGNED_STANDALONE_MIDI_CLOCK;
+         assignment == ASSIGNED_STANDALONE_MIDI_CLOCK ||
+         assignment == ASSIGNED_MICROLINN_8VE_UP ||
+         assignment == ASSIGNED_MICROLINN_8VE_DOWN;
 }
 
 void doSwitchPressed(byte whichSwitch) {
@@ -236,9 +238,9 @@ void changeSwitchState(byte whichSwitch, byte assignment, byte split, boolean en
 
 void switchTransposeOctave(byte split, int interval) {
   Split[split].transposeOctave = constrain(Split[split].transposeOctave + interval, -60, 60);
-  calcMicroLinnTuning();
   displayModeStart = millis();
   blinkMiddleRootNote = true;
+  calcMicroLinnTuning();
   updateDisplay();
 }
 
@@ -315,20 +317,20 @@ void performSwitchAssignmentOn(byte whichSwitch, byte assignment, byte split) {
       sequencerToggleMute(split);
       break;
 
+    case ASSIGNED_MICROLINN_8VE_UP:
+      switchTransposeOctave(split, switchState[whichSwitch][split] ? -12 : 12);
+      break;
+
+    case ASSIGNED_MICROLINN_8VE_DOWN:
+      switchTransposeOctave(split, switchState[whichSwitch][split] ? 12 : -12);
+      break;
+
     case ASSIGNED_MICROLINN_EDO_UP:
       changeMicroLinnEDO(1);
       break;
 
     case ASSIGNED_MICROLINN_EDO_DOWN:
       changeMicroLinnEDO(-1);
-      break;
-
-    case ASSIGNED_MICROLINN_TOGGLE_QUANTIZE:
-      Split[split].pitchCorrectQuantize = !Split[split].pitchCorrectQuantize;
-      break;
-
-    case ASSIGNED_MICROLINN_TOGGLE_8VE:
-      performMicroLinnOctaveToggle(split);
       break;
   }
 }
@@ -355,7 +357,20 @@ void performArpeggiatorToggle() {
 }
 
 void performReverseSendXToggle() {
-  Split[Global.currentPerSplit].sendX = !Split[Global.currentPerSplit].sendX;
+  // microLinn: PCH now toggles between the current and previous settings of all 5 cells in the PITCH/X column
+  byte side = Global.currentPerSplit;
+  boolean swap = Split[side].sendX;
+  Split[side].sendX = Split[side].microLinn.prevPitchSend();
+  Split[side].microLinn.setPrevPitchSend(swap);
+  swap = Split[side].pitchCorrectQuantize;
+  Split[side].pitchCorrectQuantize = Split[side].microLinn.prevPitchCorrectQuantize();
+  Split[side].microLinn.setPrevPitchCorrectQuantize(swap);
+  byte swap2 = Split[side].pitchCorrectHold;
+  Split[side].pitchCorrectHold = Split[side].microLinn.prevPitchCorrectHold();
+  Split[side].microLinn.setPrevPitchCorrectHold(swap2);
+  swap = Split[side].pitchResetOnRelease;
+  Split[side].pitchResetOnRelease = Split[side].microLinn.prevPitchResetOnRelease();
+  Split[side].microLinn.setPrevPitchResetOnRelease(swap);  
   if (displayMode == displayPerSplit) {
     updateDisplay();
   }
@@ -385,6 +400,8 @@ void performSwitchAssignmentHoldOff(byte whichSwitch, byte assignment, byte spli
     case ASSIGNED_LATCH:
     case ASSIGNED_REVERSE_PITCH_X:
     case ASSIGNED_STANDALONE_MIDI_CLOCK:
+    case ASSIGNED_MICROLINN_8VE_UP:
+    case ASSIGNED_MICROLINN_8VE_DOWN:
       performSwitchAssignmentOff(whichSwitch, assignment, split);
       break;
 
@@ -420,6 +437,14 @@ void performSwitchAssignmentOff(byte whichSwitch, byte assignment, byte split) {
 
     case ASSIGNED_STANDALONE_MIDI_CLOCK:
       standaloneMidiClockStop();
+      break;
+
+    case ASSIGNED_MICROLINN_8VE_UP:
+      switchTransposeOctave(split, switchState[whichSwitch][split] ? -12 : 12);
+      break;
+
+    case ASSIGNED_MICROLINN_8VE_DOWN:
+      switchTransposeOctave(split, switchState[whichSwitch][split] ? 12 : -12);
       break;
   }
 }

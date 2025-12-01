@@ -57,6 +57,7 @@ void initializeLowRowState() {
     lowRowCCXActive[split] = false;
     lowRowCCXYZActive[split] = false;
     lowRowInitialColumn[split] = -1;
+    lowRowJoystickLatched[split] = false;
   }
 }
 
@@ -152,7 +153,29 @@ void handleLowRowState(boolean newVelocity, short pitchBend, short timbre, byte 
           byte lowCol, highCol;
           getSplitBoundaries(sensorSplit, lowCol, highCol);
 
-          short xDelta = constrain((sensorCell->calibratedX() - sensorCell->initialX) >> 3, 0, 127);
+          short xDelta;
+          // bug, xDelta's zero point should be the center of the pad, not the initial touch point
+          // current formula is based on the 54th line of handleXExpression(), but it's off
+          DEBUGPRINT((0,"handleLowRowState")); 
+          DEBUGPRINT((0,"  fxdInitialReferenceX = ")); 
+          DEBUGPRINT((0,(int)FXD_TO_INT(sensorCell->fxdInitialReferenceX())));
+          DEBUGPRINT((0,"       calibratedX = ")); 
+          DEBUGPRINT((0,(int)sensorCell->calibratedX())); 
+          DEBUGPRINT((0,"  = ")); 
+          DEBUGPRINT((0,(int)(sensorCell->calibratedX() - FXD_TO_INT(sensorCell->fxdInitialReferenceX())) ));
+          DEBUGPRINT((0,"       rawX = ")); 
+          DEBUGPRINT((0,(int)(sensorCell->rawX()) ));
+          DEBUGPRINT((0,"  = ")); 
+          DEBUGPRINT((0,(int)(sensorCell->rawX() - FXD_TO_INT(sensorCell->fxdInitialReferenceX())) ));
+          DEBUGPRINT((0,"\n"));
+          if (Split[sensorSplit].lowRowMode == lowRowCCXYZ &&
+              Split[sensorSplit].lowRowCCXYZBehavior == lowRowJoystick) {
+            xDelta = 1.5*(sensorCell->calibratedX() - FXD_TO_INT(sensorCell->fxdInitialReferenceX()));  // cell center is 0, cell sides are ±127
+          //xDelta = constrain((sensorCell->calibratedX() - FXD_TO_INT(sensorCell->fxdInitialReferenceX())), 0, 127);  // range is 1 cell, zero-point is center
+          //xDelta = constrain((sensorCell->calibratedX() - FXD_TO_INT(sensorCell->fxdInitialReferenceX()) + 85), 0, 127);  // range is 1 cell, zero-point is left edge
+          } else {
+            xDelta = constrain((sensorCell->calibratedX() - sensorCell->initialX) >> 3, 0, 127);        // range is 7 cells, zero-point is initial touch
+          }
           short xPosition = calculateFaderValue(sensorCell->calibratedX(), faderLeft, faderLength);
 
           switch (Split[sensorSplit].lowRowMode)
@@ -249,23 +272,41 @@ void sendLowRowCCX(unsigned short x) {
   preSendControlChange(sensorSplit, Split[sensorSplit].ccForLowRow, x, false);
 }
 
-void sendLowRowCCXYZ(unsigned short x, short y, short z) {
+void sendLowRowCCXYZ(short x, short y, short z) {
   if (Split[sensorSplit].lowRowCCXYZBehavior == lowRowCCFader) {
-    ccFaderValues[sensorSplit][Split[sensorSplit].ccForLowRowX] = x;
-
+    ccFaderValues[sensorSplit][Split[sensorSplit].ccForLowRowX] = constrain(x, 0, 127);
     byte faderLeft, faderLength;
     determineFaderBoundaries(sensorSplit, faderLeft, faderLength);
     paintCCFaderDisplayRow(sensorSplit, sensorRow, Split[sensorSplit].colorLowRow, Split[sensorSplit].ccForLowRowX, faderLeft, faderLength, LED_LAYER_LOWROW);
   }
 
+  if (lowRowJoystickLatched[sensorSplit]) return;
+  if (Split[sensorSplit].lowRowCCXYZBehavior == lowRowJoystick) {
+    // if there's two X CCs or two Y CCs, set the zero point to the center of the pad
+    if (Split[sensorSplit].microLinn.ccForLowRowX != 255 && x != INVALID_DATA) x = x/2.0 + 64;
+    if (Split[sensorSplit].microLinn.ccForLowRowY != 255 && y != INVALID_DATA) y = 2*y - 127;
+    // if the two CCs are identical, only send it once, set it positive so the first preSend does it
+    if (Split[sensorSplit].microLinn.ccForLowRowX == Split[sensorSplit].ccForLowRowX) x = abs(x);
+    if (Split[sensorSplit].microLinn.ccForLowRowY == Split[sensorSplit].ccForLowRowY) y = abs(y);
+  }
+
   // send out the MIDI CCs
-  preSendControlChange(sensorSplit, Split[sensorSplit].ccForLowRowX, x, false);
+  preSendControlChange(sensorSplit, Split[sensorSplit].ccForLowRowX, max(x, 0), false);
 
   if (y != SHRT_MAX) {
-    preSendControlChange(sensorSplit, Split[sensorSplit].ccForLowRowY, y, false);
+    preSendControlChange(sensorSplit, Split[sensorSplit].ccForLowRowY, max(y, 0), false);
   }
 
   preSendControlChange(sensorSplit, Split[sensorSplit].ccForLowRowZ, z, false);
+
+  if (Split[sensorSplit].lowRowCCXYZBehavior == lowRowJoystick) {
+    if (Split[sensorSplit].microLinn.ccForLowRowX != 255 && x != INVALID_DATA &&
+        Split[sensorSplit].microLinn.ccForLowRowX != Split[sensorSplit].ccForLowRowX)
+      preSendControlChange(sensorSplit, Split[sensorSplit].microLinn.ccForLowRowX, max(-x, 0), false);
+    if (Split[sensorSplit].microLinn.ccForLowRowY != 255 && y != INVALID_DATA &&
+        Split[sensorSplit].microLinn.ccForLowRowY != Split[sensorSplit].ccForLowRowY)
+      preSendControlChange(sensorSplit, Split[sensorSplit].microLinn.ccForLowRowY, max(-y, 0), false);
+  }
 }
 
 void handleLowRowRestrike() {
@@ -334,9 +375,35 @@ void lowRowStart() {
       break;
     case lowRowCCXYZ:
       lowRowCCXYZActive[sensorSplit] = true;
+      if (Split[sensorSplit].lowRowCCXYZBehavior == lowRowJoystick) {
+        byte loCol, hiCol, numTouches = 0;
+        getSplitBoundaries(sensorSplit, loCol, hiCol);
+        for (byte c = loCol; c < hiCol; ++c) {
+          if (cell(c, 0).touched == touchedCell) ++numTouches;
+        }
+        lowRowJoystickLatched[sensorSplit] = numTouches >= 2;
+        byte color = lowRowJoystickLatched[sensorSplit] ? Split[sensorSplit].colorPlayed : Split[sensorSplit].colorLowRow;
+        for (byte col = loCol; col < hiCol; ++col) {
+          setLed(col, 0, color, cellOn, LED_LAYER_LOWROW);
+        }
+        if (lowRowJoystickLatched[sensorSplit]) break;
+        // a latched low row is an active low row, so that it can block TIMBRE/Y and LOUDNESS/Z CCs if they match any low row CCs 
+      } 
       preResetLastMidiCC(sensorSplit, Split[sensorSplit].ccForLowRowX);
       preResetLastMidiCC(sensorSplit, Split[sensorSplit].ccForLowRowY);
       preResetLastMidiCC(sensorSplit, Split[sensorSplit].ccForLowRowZ);
+      if (Split[sensorSplit].lowRowCCXYZBehavior == lowRowJoystick) {
+        if (Split[sensorSplit].microLinn.ccForLowRowW != 255) {
+          preResetLastMidiCC(sensorSplit, Split[sensorSplit].microLinn.ccForLowRowW);
+          preSendControlChange(sensorSplit, Split[sensorSplit].microLinn.ccForLowRowW, sensorCell->velocity, true);
+        }
+        if (Split[sensorSplit].microLinn.ccForLowRowX != 255) {
+          preResetLastMidiCC(sensorSplit, Split[sensorSplit].microLinn.ccForLowRowX);
+        }
+        if (Split[sensorSplit].microLinn.ccForLowRowY != 255) {
+          preResetLastMidiCC(sensorSplit, Split[sensorSplit].microLinn.ccForLowRowY);
+        }
+      }
       startLowRowContinuousExpression();
       break;
   }
@@ -417,12 +484,29 @@ void lowRowStop() {
               }
               break;
             case lowRowCCXYZ:
-              lowRowCCXYZActive[sensorSplit] = false;
-              if (Split[sensorSplit].lowRowCCXYZBehavior == lowRowCCHold) {
+              lowRowCCXYZActive[sensorSplit] = lowRowJoystickLatched[sensorSplit];
+              if (Split[sensorSplit].lowRowCCXYZBehavior != lowRowCCFader &&
+                  !lowRowJoystickLatched[sensorSplit]) {
                 // reset CCs for lowRowXYZ since no low row touch is active anymore
-                preSendControlChange(sensorSplit, Split[sensorSplit].ccForLowRowX, 0, false);
-                preSendControlChange(sensorSplit, Split[sensorSplit].ccForLowRowY, 0, false);
+                byte resetVal = Split[sensorSplit].microLinn.XccCentered() ? 64 : 0;
+                preSendControlChange(sensorSplit, Split[sensorSplit].ccForLowRowX, resetVal, false);
+                     resetVal = Split[sensorSplit].microLinn.YccCentered() ? 64 : 0;
+                preSendControlChange(sensorSplit, Split[sensorSplit].ccForLowRowY, resetVal, false);
                 preSendControlChange(sensorSplit, Split[sensorSplit].ccForLowRowZ, 0, false);
+                if (Split[sensorSplit].lowRowCCXYZBehavior == lowRowJoystick) {
+                  if (Split[sensorSplit].microLinn.ccForLowRowW != 255) {
+                    resetVal = Split[sensorSplit].microLinn.WccCentered() ? 64 : 0;
+                    preSendControlChange(sensorSplit, Split[sensorSplit].microLinn.ccForLowRowW, resetVal, false);
+                  }
+                  if (Split[sensorSplit].microLinn.ccForLowRowX != 255 &&
+                      Split[sensorSplit].microLinn.ccForLowRowX != Split[sensorSplit].ccForLowRowX) {
+                    preSendControlChange(sensorSplit, Split[sensorSplit].microLinn.ccForLowRowX, 0, false);
+                  }
+                  if (Split[sensorSplit].microLinn.ccForLowRowY != 255 &&
+                      Split[sensorSplit].microLinn.ccForLowRowY != Split[sensorSplit].ccForLowRowY) {
+                    preSendControlChange(sensorSplit, Split[sensorSplit].microLinn.ccForLowRowY, 0, false);
+                  }
+                }
               }
               break;
           }

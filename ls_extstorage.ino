@@ -2454,7 +2454,7 @@ void restoreNonMicroLinnConfiguration(void* target, void* source) {
   memcpy(&t->settings.global, &s->settings.global, sizeof(t->settings.global));
   t->settings.global.customRowOffset = constrain(t->settings.global.customRowOffset, -16, 16);
   for (byte i = 0; i < 5; i++) {
-    if (t->settings.global.customSwitchAssignment[i] > MAX_ASSIGNED - 4) {           // no EDO_UP, EDO_DOWN, TOGGLE_QUANTIZE or TOGGLE_8VE
+    if (t->settings.global.customSwitchAssignment[i] > MAX_ASSIGNED - 4) {           // no 8VE_UP, 8VE_DOWN, EDO_UP or EDO_DOWN
         t->settings.global.customSwitchAssignment[i] = ASSIGNED_TAP_TEMPO;
         if (i == 4) t->settings.global.switchAssignment[i] = ASSIGNED_DISABLED;      // disable virtual 3rd footswitch
     }

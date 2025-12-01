@@ -618,7 +618,7 @@ byte takeChannel(byte split, byte row) {
     case channelPerNote:
     {
       if (isMicroLinnHammeringOn()) {
-        signed char channel = getMicroLinnHammerOnChannel(split, row);         // also mutes the old note being hammered on
+        signed char channel = prepareMicroLinnHammerOn(split, row);
         if (channel > -1) return channel;
       }
       return splitChannels[split].take();
@@ -627,7 +627,7 @@ byte takeChannel(byte split, byte row) {
     case channelPerRow:
     {
       if (isMicroLinnHammeringOn()) {
-        getMicroLinnHammerOnChannel(split, row);            // this is called only to mute the old note, the channel is ignored
+        prepareMicroLinnHammerOn(split, row);
       }
       byte channel = Split[split].midiChanPerRow;
       if (Split[split].midiChanPerRowReversed) {

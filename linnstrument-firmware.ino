@@ -198,11 +198,11 @@ byte NUMROWS = 8;                    // number of touch sensor rows
 #define ASSIGNED_SEQUENCER_NEXT         15
 #define ASSIGNED_STANDALONE_MIDI_CLOCK  16
 #define ASSIGNED_SEQUENCER_MUTE         17
-#define ASSIGNED_MICROLINN_EDO_UP       18
-#define ASSIGNED_MICROLINN_EDO_DOWN     19
-#define ASSIGNED_MICROLINN_TOGGLE_QUANTIZE  20
-#define ASSIGNED_MICROLINN_TOGGLE_8VE   21
-#define MAX_ASSIGNED                    ASSIGNED_MICROLINN_TOGGLE_8VE
+#define ASSIGNED_MICROLINN_8VE_UP       18
+#define ASSIGNED_MICROLINN_8VE_DOWN     19
+#define ASSIGNED_MICROLINN_EDO_UP       20
+#define ASSIGNED_MICROLINN_EDO_DOWN     21
+#define MAX_ASSIGNED                    ASSIGNED_MICROLINN_EDO_DOWN
 #define ASSIGNED_DISABLED               255
 
 #define GLOBAL_SETTINGS_ROW  0
@@ -572,7 +572,8 @@ enum LowRowMode {
 
 enum LowRowCCBehavior {
   lowRowCCHold = 0,
-  lowRowCCFader = 1
+  lowRowCCFader = 1,
+  lowRowJoystick = 2   // microLinn
 };
 
 enum MidiMode {
@@ -620,60 +621,28 @@ enum SequencerDirection {
   sequencerPingPong
 };
 
-struct __attribute__ ((packed)) MicroLinn2nybbles {   // packed byte
-  byte get (byte index);
-  void set (byte index, byte data);
-  byte nybble1:4;
-  byte nybble2:4;
-};
-
-struct __attribute__ ((packed)) MicroLinn2signedNybbles {   // packed byte
-  signed char get (byte index);
-  void set (byte index, signed char data);
-  signed char nybble1:4;
-  signed char nybble2:4;
-};
-
-struct __attribute__ ((packed)) MicroLinn8bits {     // packed byte
-  boolean get (byte index);
-  void set (byte index, boolean data);
-  boolean bit0:1;
-  boolean bit1:1;
-  boolean bit2:1;
-  boolean bit3:1;
-  boolean bit4:1;
-  boolean bit5:1;
-  boolean bit6:1;
-  boolean bit7:1;
-};
-
-struct __attribute__ ((packed)) MicroLinn16bits {    // packed short
-  boolean get (byte index);
-  void set (byte index, boolean data);
-  boolean bit0:1;
-  boolean bit1:1;
-  boolean bit2:1;
-  boolean bit3:1;
-  boolean bit4:1;
-  boolean bit5:1;
-  boolean bit6:1;
-  boolean bit7:1;
-  boolean bit8:1;
-  boolean bit9:1;
-  boolean bit10:1;
-  boolean bit11:1;
-  boolean bit12:1;
-  boolean bit13:1;
-  boolean bit14:1;
-  boolean bit15:1;
-};
-
 struct MicroLinnSplit {
+  // used for PCH footswitch
+  inline boolean prevPitchSend()                  {return bitRead(flags, 0);}
+  inline boolean prevPitchCorrectQuantize()       {return bitRead(flags, 1);}
+  inline byte    prevPitchCorrectHold()           {return (flags & B1100) >> 2;}      
+  inline boolean prevPitchResetOnRelease()        {return bitRead(flags, 4);}
+  inline void setPrevPitchSend(boolean b)         {bitWrite(flags, 0, b);}
+  inline void setPrevPitchCorrectQuantize(bool b) {bitWrite(flags, 1, b);}
+  inline void setPrevPitchCorrectHold(byte b)     {flags = (flags & B11110011) | (b << 2);} 
+  inline void setPrevPitchResetOnRelease(bool b)  {bitWrite(flags, 4, b);}
+  // used in low row XYZ mode with joystick behavior, reset W, X and Y CCs to either 64 or 0
+  inline boolean WccCentered()    {return bitRead(flags, 5);}
+  inline boolean XccCentered()    {return bitRead(flags, 6);}
+  inline boolean YccCentered()    {return bitRead(flags, 7);}
+  inline void setWccCentered(boolean b) {bitWrite(flags, 5, b);}
+  inline void setXccCentered(boolean b) {bitWrite(flags, 6, b);}
+  inline void setYccCentered(boolean b) {bitWrite(flags, 7, b);}
   byte colOffset;                         // column offset, 1 to 10, 1 = OFF
   signed char rowOffset;                  // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
-  byte monoFixes;                         // 0..3 = OFF/X/Z/X+Z, X = various pitch bend fixes, Z = KVR forum member teknico's channel pressure maximizing 
+  byte monoFixes;                         // 0..3 = OFF/X/Z/X+Z, X = various pitch bend fixes, Z = KVR forum member teknico's Z-maximizing 
   byte hammerOnMode;                      // 0..3 = OFF/R/L/R+L, was no new noteOn, 1 = pullOff is 2nd note's noteOff velocity, 2 = 1st noteOn veloc, 3 = 2nd noteOn veloc, 4 = average them
-  byte hammerOnZone;                      // maximum interval in tens of cents between two note-ons to make a hammer-on, 1..240
+  byte hammerOnZone;                      // maximum interval in tens of cents between two note-ons to make a hammer-on, 1..120 plus 121 = ALL
   byte hammerOnWait;                      // minimum time in tens of milliseconds between two note-ons to make a hammer-on, 0..50
   byte showCustomLEDs;                    // 0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
   byte condensedBendPerPad;               // width of a single-pad pitch bend in edosteps, 0 = OFF, 1 = VAR, 2..L+1 = 1..L (L = largest scale step),
@@ -681,12 +650,12 @@ struct MicroLinnSplit {
   byte tuningTable;                       // 0..3 = OFF/ON/CC/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
   signed char midiGroupCC;                // sent with each note-on, ranges from 0 to 119, -1 = OFF
   signed char transposeEDOsteps;          // accessed via displayOctaveTranspose screen, -7..7
+  byte ccForLowRowW;                      // the note-on CC in XYZ joystick mode, 128 = Channel Pressure, 255 = OFF
+  byte ccForLowRowX;                      // the X' CC in XYZ joystick mode, 128 = Channel Pressure, 255 = OFF
+  byte ccForLowRowY;                      // the Y' CC
+  byte flags;                             // yxwrhhqp, yxw = joystick WXY CCs, r = release, h = quantize hold, q = quantize pitch, p = sendX
   byte reserved1;                         // reserved for future use, 1 byte per empty menu row
   byte reserved2;                         //    "
-  byte reserved3;                         //    "
-  byte reserved4;                         //    "
-  byte reserved5;                         //    "
-  byte reserved6;                         //    "
 };
 
 // per-split settings
@@ -769,7 +738,7 @@ const short MICROLINN_ARRAY_SIZE = (MICROLINN_MAX_EDO * (MICROLINN_MAX_EDO + 1))
 struct MicroLinnDevice {
   byte MLversion;                                 // current version of the microLinn data structures, currently 1
   boolean uninstall;                              // used by ls_serial.ino, should be a runtime var but updating seems to re-initializes runtime vars
-  byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 8 scales, except bit 8 is unused
+  byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 7 scales (8th bit is zero)
   byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
   byte fretboards[MICROLINN_ARRAY_SIZE];          // one byte per fret, one bit per row, transposable, lefthandedness reverses it, ignores column offsets
 //byte padding1;                                  // added by the compiler, declaring it explicitly helps with the updating and importing code
@@ -1141,7 +1110,8 @@ boolean customLedPatternActive = false;                  // was a custom led pat
 unsigned long tempoLedOn = 0;                       // indicates when the tempo clock led was turned on
 
 ChannelBucket splitChannels[NUMSPLITS];             // the MIDI channels that are being handed out
-unsigned short midiPreset[NUMSPLITS];               // preset number 0-127
+byte midiPreset[NUMSPLITS];                         // preset number 0-127, for semding Program Change messages
+byte midiBank[NUMSPLITS];                           // bank number 0-127, for semding Bank Select messages (CC0)
 byte ccFaderValues[NUMSPLITS][129];                 // the current values of the CC faders
 byte currentEditedCCFader[NUMSPLITS];               // the current CC fader number that is being edited
 signed char arpTempoDelta[NUMSPLITS];               // ranges from -24 to 24 to apply a speed difference to the selected arpeggiator speed
@@ -1192,7 +1162,8 @@ byte limitsForYConfigState = 1;                     // the last state of the Y v
 byte limitsForZConfigState = 2;                     // the last state of the Z value limit configuration, this counts down to go to further pages
 byte limitsForVelocityConfigState = 1;              // the last state of the velocity value limit configuration, this counts down to go to further pages
 byte lowRowCCXConfigState = 1;                      // the last state of the advanced low row CCX configuration, this counts down to go to further pages
-byte lowRowCCXYZConfigState = 3;                    // the last state of the advanced low row CCXYZ configuration, this counts down to go to further pages
+byte lowRowCCXYZConfigState = 9;                    // the last state of the advanced low row CCXYZ configuration, this counts down to go to further pages
+boolean lowRowJoystickLatched[NUMSPLITS];           // for microLinn's joystick mode of low row XYZ mode, always false unless in joystick mode
 byte sleepConfigState = 1;                          // the last state of the sleep configuration, this counts down to go to further pages
 
 unsigned long presetBlinkStart[NUMPRESETS];         // the moments at which the preset LEDs started blinking
