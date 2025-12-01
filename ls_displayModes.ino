@@ -462,7 +462,7 @@ void paintNormalDisplaySplit(byte split, byte leftEdge, byte rightEdge) {
           paintCCFaderDisplayRow(split, 0, Split[split].colorLowRow, Split[split].ccForLowRow, faderLeft, faderLength, LED_LAYER_LOWROW);
         }
         if (Split[split].lowRowMode == lowRowCCXYZ && Split[split].lowRowCCXYZBehavior == lowRowCCFader) {
-          paintCCFaderDisplayRow(split, 0, Split[split].colorLowRow, Split[split].ccForLowRowX, faderLeft, faderLength, LED_LAYER_LOWROW);
+          paintCCFaderDisplayRow(split, 0, Split[split].colorLowRow, Split[split].ccForLowRowX & 0x7F, faderLeft, faderLength, LED_LAYER_LOWROW);
         }
       }
     }
@@ -472,7 +472,8 @@ void paintNormalDisplaySplit(byte split, byte leftEdge, byte rightEdge) {
 }
 
 void paintCCFaderDisplayRow(byte split, byte row, byte faderLeft, byte faderLength) {
-  paintCCFaderDisplayRow(split, row, Split[split].colorMain, Split[split].ccForFader[row], faderLeft, faderLength);
+  // microLinn uses alternating colors for the faders
+  paintCCFaderDisplayRow(split, row, row % 2 == 0 ? Split[split].colorMain : Split[split].colorAccent, Split[split].ccForFader[row], faderLeft, faderLength);
 }
 
 void paintCCFaderDisplayRow(byte split, byte row, byte color, unsigned short ccForFader, byte faderLeft, byte faderLength) {
@@ -592,7 +593,7 @@ void paintNormalDisplayCell(byte split, byte col, byte row) {
       cellDisplay = cellOff;
     }
     else {
-      colour = Split[split].colorLowRow;
+      colour = lowRowJoystickLatched[split] ? Split[split].colorPlayed : Split[split].colorLowRow;
       cellDisplay = cellOn;
     }
     // actually set the cell's color
@@ -860,17 +861,13 @@ byte getLowRowCCXColor(byte side) {
 }
 
 byte getLowRowCCXYZColor(byte side) {
-  byte color = Split[side].colorMain;
-  if (Split[side].ccForLowRowX != 16) {
-    color = Split[side].colorAccent;
-  }
-  if (Split[side].ccForLowRowY != 17) {
-    color = Split[side].colorAccent;
-  }
-  if (Split[side].ccForLowRowZ != 18) {
-    color = Split[side].colorAccent;
-  }
-  return color;
+  if (Split[side].ccForLowRowX != 16) return Split[side].colorAccent;
+  if (Split[side].ccForLowRowY != 17) return Split[side].colorAccent;
+  if (Split[side].ccForLowRowZ != 18) return Split[side].colorAccent;
+  if (Split[sensorSplit].lowRowCCXYZBehavior != lowRowJoystick) return Split[side].colorMain;
+  if (Split[side].microLinn.ccForLowRowX != -1) return Split[side].colorAccent;
+  if (Split[side].microLinn.ccForLowRowY != -1) return Split[side].colorAccent;
+  return Split[side].colorMain;
 }
 
 byte getCCFadersColor(byte side) {
@@ -956,6 +953,7 @@ void paintPresetDisplay(byte side) {
   clearDisplay();
   setLed(1, 7, COLOR_GREEN, cellOn);
   setLed(1, 6, COLOR_RED, cellOn);
+  setLed(1, 0, COLOR_BLUE, cellOn);         // microLinn, blue dot = Bank Select message
   for (byte p = 0; p < NUMPRESETS; ++p) {
     int color = globalColor;
     if (p == Device.lastLoadedPreset) {
@@ -965,7 +963,12 @@ void paintPresetDisplay(byte side) {
     if (row >= 6) row -= 6;
     setLed(getPresetDisplayColumn(), row, color, cellOn);
   }
-  paintSplitNumericDataDisplay(side, midiPreset[side]+1, 0, false);
+  if (touchInfo[1][0].touched != touchedCell) {
+    paintSplitNumericDataDisplay(side, midiPreset[side]+1, 0, false);
+  } else {
+    paintShowSplitSelection(side);
+    paintNumericDataDisplay(Split[side].colorAccent, midiPreset[side]+1, 0, false);
+  }
 }
 
 void paintBendRangeDisplay(byte side) {
@@ -1146,7 +1149,7 @@ void paintLowRowCCXConfigDisplay(byte side) {
 void paintLowRowCCXYZConfigDisplay(byte side) {
   clearDisplay();
   switch (lowRowCCXYZConfigState) {
-    case 3:
+    case 7:
       switch (Split[Global.currentPerSplit].lowRowCCXYZBehavior) {
         case lowRowCCHold:
           adaptfont_draw_string(0, 0, "HLD", Split[side].colorMain, true);
@@ -1154,31 +1157,34 @@ void paintLowRowCCXYZConfigDisplay(byte side) {
         case lowRowCCFader:
           adaptfont_draw_string(0, 0, "FDR", Split[side].colorMain, true);
           break;
+        case lowRowJoystick:
+          adaptfont_draw_string(0, 0, "JOY", Split[side].colorMain, true);
+          break;
       }
       paintShowSplitSelection(side);
       break;
-    case 2:
-      if (Split[side].ccForLowRowX == 128) {
+    case 6:
+      if ((Split[side].ccForLowRowX & 0x7F) == 120) {
         condfont_draw_string(0, 0, "XCHPR", Split[side].colorMain, false);
         paintShowSplitSelection(side);
       }
       else {
         condfont_draw_string(0, 0, "X", Split[side].colorMain, true);
-        paintSplitNumericDataDisplay(side, Split[side].ccForLowRowX, 4, true);
+        paintSplitNumericDataDisplay(side, Split[side].ccForLowRowX & 0x7F, 4, true);
       }
       break;
-    case 1:
-      if (Split[side].ccForLowRowY == 128) {
+    case 5:
+      if ((Split[side].ccForLowRowY & 0x7F) == 120) {
         condfont_draw_string(0, 0, "YCHPR", Split[side].colorMain, false);
         paintShowSplitSelection(side);
       }
       else {
         condfont_draw_string(0, 0, "Y", Split[side].colorMain, true);
-        paintSplitNumericDataDisplay(side, Split[side].ccForLowRowY, 4, true);
+        paintSplitNumericDataDisplay(side, Split[side].ccForLowRowY & 0x7F, 4, true);
       }
       break;
-    case 0:
-      if (Split[side].ccForLowRowZ == 128) {
+    case 4:
+      if (Split[side].ccForLowRowZ == 120) {
         condfont_draw_string(0, 0, "ZCHPR", Split[side].colorMain, false);
         paintShowSplitSelection(side);
       }
@@ -1186,6 +1192,46 @@ void paintLowRowCCXYZConfigDisplay(byte side) {
         condfont_draw_string(0, 0, "Z", Split[side].colorMain, true);
         paintSplitNumericDataDisplay(side, Split[side].ccForLowRowZ, 4, true);
       }
+      break;
+    case 3:
+      condfont_draw_string (0, 0, "X", Split[side].colorMain, true);
+      smallfont_draw_string(2, 2, "'", Split[side].colorMain, false);
+      if (Split[side].microLinn.ccForLowRowX == -1) {
+        condfont_draw_string(5, 0, "OFF", Split[side].colorMain, true);
+        paintShowSplitSelection(side);
+      } else if (Split[side].microLinn.ccForLowRowX == 120) {
+        condfont_draw_string(5, 0, "CHPR", Split[side].colorMain, false);
+        paintShowSplitSelection(side);
+      } else {
+        byte offset = Split[side].microLinn.ccForLowRowX < 100 ? 4 : 6;
+        paintSplitNumericDataDisplay(side, Split[side].microLinn.ccForLowRowX, offset, true);
+      }
+      break;
+    case 2:
+      condfont_draw_string (0, 0, "Y", Split[side].colorMain, true);
+      smallfont_draw_string(2, 2, "'", Split[side].colorMain, false);
+      if (Split[side].microLinn.ccForLowRowY == -1) {
+        condfont_draw_string(5, 0, "OFF", Split[side].colorMain, true);
+        paintShowSplitSelection(side);
+      } else if (Split[side].microLinn.ccForLowRowY == 120) {
+        condfont_draw_string(5, 0, "CHPR", Split[side].colorMain, false);
+        paintShowSplitSelection(side);
+      } else {
+        byte offset = Split[side].microLinn.ccForLowRowY < 100 ? 4 : 6;
+        paintSplitNumericDataDisplay(side, Split[side].microLinn.ccForLowRowY, offset, true);
+      }
+      break;
+    case 1:
+      condfont_draw_string (0, 0, "X", Split[side].colorMain, true);
+      smallfont_draw_string(4, 0, "=", Split[side].colorMain, true);
+      condfont_draw_string (8, 0, Split[side].ccForLowRowX < 128 ? "0" : "64", Split[side].colorMain, true);
+      paintShowSplitSelection(side);
+      break;
+    case 0:
+      condfont_draw_string (0, 0, "Y", Split[side].colorMain, true);
+      smallfont_draw_string(4, 0, "=", Split[side].colorMain, true);
+      condfont_draw_string (8, 0, Split[side].ccForLowRowY < 128 ? "0" : "64", Split[side].colorMain, true);
+      paintShowSplitSelection(side);
       break;
   }
 }
@@ -1236,12 +1282,6 @@ void paintCustomSwitchAssignmentConfigDisplay() {
     case ASSIGNED_SEQUENCER_MUTE:
       adaptfont_draw_string(0, 0, "MUTE", globalColor, true);
       break;
-    case ASSIGNED_MICROLINN_EDO_UP:
-      adaptfont_draw_string(0, 0, "EDO+", globalColor, true);
-      break;
-    case ASSIGNED_MICROLINN_EDO_DOWN:
-      adaptfont_draw_string(0, 0, "EDO-", globalColor, true);
-      break;
     case ASSIGNED_MICROLINN_TOGGLE_QUANTIZE:
       adaptfont_draw_string(0, 0, "QNT", globalColor, true);
       paintMicroLinnPlusMinus();
@@ -1249,6 +1289,12 @@ void paintCustomSwitchAssignmentConfigDisplay() {
     case ASSIGNED_MICROLINN_TOGGLE_8VE:
       adaptfont_draw_string(0, 0, "8VE", globalColor, true);
       paintMicroLinnPlusMinus();
+      break;
+    case ASSIGNED_MICROLINN_EDO_UP:
+      adaptfont_draw_string(0, 0, "EDO+", globalColor, true);
+      break;
+    case ASSIGNED_MICROLINN_EDO_DOWN:
+      adaptfont_draw_string(0, 0, "EDO-", globalColor, true);
       break;
   }
 }
@@ -1610,10 +1656,10 @@ void paintSwitchAssignment(byte mode) {
     case ASSIGNED_SEQUENCER_NEXT:
     case ASSIGNED_STANDALONE_MIDI_CLOCK:
     case ASSIGNED_SEQUENCER_MUTE:
-    case ASSIGNED_MICROLINN_EDO_UP:
-    case ASSIGNED_MICROLINN_EDO_DOWN:
     case ASSIGNED_MICROLINN_TOGGLE_QUANTIZE:
     case ASSIGNED_MICROLINN_TOGGLE_8VE:
+    case ASSIGNED_MICROLINN_EDO_UP:
+    case ASSIGNED_MICROLINN_EDO_DOWN:
       setLed(9, 3, getSwitchTapTempoColor(), cellOn);
       break;
     case ASSIGNED_AUTO_OCTAVE:
@@ -2026,6 +2072,7 @@ void setMidiChannelLed(byte chan, byte color) {
     }
     byte row = 7 - (chan - 1) / 4;
     byte col = 3 + (chan - 1) % 4;
+    if (isMicroLinnDupeChannel(chan)) color = COLOR_RED;
     setLed(col, row, color, cellOn);
 }
 
@@ -2055,7 +2102,7 @@ void showPerNoteMidiChannels(byte side) {
       setMidiChannelLed(chan, Split[side].colorMain);
     }
   }
-  showMicroLinnExtraMidiChannels(side);        // channels used when in tuning table mode, and rechannelling
+  showMicroLinnExtraMidiChannels(side);     // use colorAccent for the extra channels used when in tuning table mode with rechannelling
 }
 
 void paintLowRowPressureBar() {

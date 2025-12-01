@@ -847,13 +847,13 @@ void receivedNrpn(int parameter, int value, int channel) {
       break;
     // Split MIDI CC For LowRow XYZ X
     case 51:
-      if (inRange(value, 0, 128)) {
+      if (inRange(value & 0x7F, 0, 120)) {
         Split[split].ccForLowRowX = value;
       }
       break;
     // Split MIDI CC For LowRow XYZ Y
     case 52:
-      if (inRange(value, 0, 128)) {
+      if (inRange(value & 0x7F, 0, 120)) {
         Split[split].ccForLowRowY = value;
       }
       break;
@@ -1056,7 +1056,7 @@ void receivedNrpn(int parameter, int value, int channel) {
       break;
     // Global Arp Tempo Note Value
     case 236:
-      if (inRange(value, 1, 7)) {
+      if (inRange(value, 0, 7)) {
         Global.arpTempo = (ArpeggiatorStepTempo)value;
       }
       break;
@@ -2002,6 +2002,20 @@ void preResetLastTimbre(byte split, byte note, byte channel) {
   }
 }
 
+boolean isLowRowSendingCC(byte side, byte CC) {
+  // check whether a CC is being sent by the low row, if so temporarily disable sending it via normal play
+  if (isLowRowCCXActive(side) && CC == Split[side].ccForLowRow) return true;
+  if (!isLowRowCCXYZActive(side)) return false;
+  boolean isBeingSent;
+  isBeingSent  = CC == Split[side].microLinn.ccForLowRowX ||
+                 CC == Split[side].microLinn.ccForLowRowY;
+  isBeingSent &= Split[side].lowRowCCXYZBehavior == lowRowJoystick;
+  isBeingSent |= CC == (Split[side].ccForLowRowX & 0x7F) ||
+                 CC == (Split[side].ccForLowRowY & 0x7F) ||
+                 CC ==  Split[side].ccForLowRowZ;
+  return isBeingSent;
+}
+
 // Called to send Y-axis movements
 void preSendTimbre(byte split, byte yValue, byte note, byte channel) {
   yValue = applyLimits(yValue, Split[split].minForY, Split[split].maxForY, fxdLimitsForYRatio[split]);
@@ -2026,12 +2040,13 @@ void preSendTimbre(byte split, byte yValue, byte note, byte channel) {
         ccForY = Split[split].customCCForY;
       }
       // if the low row is down, only send the CC for Y if it's not being sent by the low row already
-      if ((!isLowRowCCXActive(split) ||
-            ccForY != Split[split].ccForLowRow) &&
-          (!isLowRowCCXYZActive(split) ||
-            (ccForY != Split[split].ccForLowRowX &&
-             ccForY != Split[split].ccForLowRowY &&
-             ccForY != Split[split].ccForLowRowZ))) {
+      //if ((!isLowRowCCXActive(split) ||
+      //      ccForY != Split[split].ccForLowRow) &&      // delete this code block later
+      //    (!isLowRowCCXYZActive(split) ||
+      //      (ccForY != Split[split].ccForLowRowX &&
+      //       ccForY != Split[split].ccForLowRowY &&
+      //       ccForY != Split[split].ccForLowRowZ))) {
+      if (!isLowRowSendingCC(split, ccForY)) {
           midiSendControlChange(ccForY, yValue, channel);
       }
       break;
@@ -2075,12 +2090,13 @@ void preSendLoudness(byte split, byte pressureValueLo, short pressureValueHi, by
 
     case loudnessCC11:
       // if the low row is down, only send the CC for Z if it's not being sent by the low row already
-      if ((!isLowRowCCXActive(split) ||
-            Split[split].customCCForZ != Split[split].ccForLowRow) &&
-          (!isLowRowCCXYZActive(split) ||
-            (Split[split].customCCForZ != Split[split].ccForLowRowX &&
-             Split[split].customCCForZ != Split[split].ccForLowRowY &&
-             Split[split].customCCForZ != Split[split].ccForLowRowZ))) {
+      //if ((!isLowRowCCXActive(split) ||
+      //      Split[split].customCCForZ != Split[split].ccForLowRow) &&      // delete this code block later
+      //    (!isLowRowCCXYZActive(split) ||
+      //      (Split[split].customCCForZ != (Split[split].ccForLowRowX) &&
+      //       Split[split].customCCForZ != (Split[split].ccForLowRowY) &&
+      //       Split[split].customCCForZ != Split[split].ccForLowRowZ))) {
+      if (!isLowRowSendingCC(split, Split[split].customCCForZ)) {
         if (Split[split].customCCForZ < 32 && Split[split].ccForZ14Bit) {
           midiSendControlChange14BitMIDISpec(Split[split].customCCForZ, Split[split].customCCForZ+32, pressureValueHi, channel);
         }
@@ -2382,6 +2398,7 @@ void preSendSwitchCC65(byte whichSwitch, byte split, byte v) {
 }
 
 void preSendControlChange(byte split, byte controlnum, byte v, boolean always) {
+  if (isLowRowCCXYZActive(split) && controlnum == 120) controlnum = 128;
   switch (Split[split].midiMode) {
     case channelPerNote:
     {

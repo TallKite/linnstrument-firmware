@@ -1427,6 +1427,7 @@ void handlePerSplitSettingNewTouch() {
           Split[Global.currentPerSplit].lowRowMode = lowRowArpeggiator;
           break;
       }
+      lowRowJoystickLatched[Global.currentPerSplit] = false;
       break;
 
     // Low-row settings 2/2
@@ -1445,6 +1446,7 @@ void handlePerSplitSettingNewTouch() {
           // handled in release
           break;
       }
+      lowRowJoystickLatched[Global.currentPerSplit] &= Split[Global.currentPerSplit].lowRowMode == lowRowCCXYZ;
       break;
 
     // Special settings
@@ -1653,7 +1655,7 @@ void handlePerSplitSettingHold() {
             updateDisplay();
             break;
           case 4:
-            lowRowCCXYZConfigState = 3;
+            lowRowCCXYZConfigState = 7;
             resetNumericDataChange();
             setDisplayMode(displayLowRowCCXYZConfig);
             updateDisplay();
@@ -1761,6 +1763,7 @@ void handlePerSplitSettingRelease() {
           if (ensureCellBeforeHoldWait(getLowRowCCXColor(Global.currentPerSplit),
                                        Split[Global.currentPerSplit].lowRowMode == lowRowCCX ? cellOn : cellOff)) {
             Split[Global.currentPerSplit].lowRowMode = lowRowCCX;
+            lowRowJoystickLatched[Global.currentPerSplit] = false;
           }
           break;
         case 4:
@@ -1842,11 +1845,12 @@ boolean handleShowSplit() {
 }
 
 void handlePresetNewTouch() {
+  // microLinn sends a program change message on release not on new touch, to avoid sending multiple messages per swipe
+  // it also sends a bank select message instead of a PC message if the blue dot is held when releasing
   if ((sensorCol == 1 && sensorRow == 7 && midiPreset[Global.currentPerSplit] < 127) ||
       (sensorCol == 1 && sensorRow == 6 && midiPreset[Global.currentPerSplit] > 0)) {
     midiPreset[Global.currentPerSplit] += (sensorRow == 7 ? 1 : -1);
     lastControlPress[PRESET_ROW] = millis() - SWITCH_HOLD_DELAY;
-    applyMidiPreset();
     updateDisplay();
   }
 
@@ -1864,9 +1868,14 @@ void handlePresetNewTouch() {
     }
   }
   else if (sensorCol < getPresetDisplayColumn()) {
-    if (handleNumericDataNewTouchCol(midiPreset[Global.currentPerSplit], 0, 127, true)) {
-      applyMidiPreset();
+    // if the blue dot is newly touched, or if it's held while there's a single new touch elsewhere (a slide makes 2 touches),
+    // call resetNumericDataChangeCol() so that the blue dot touch won't be interpreted as part of a swipe 
+    if ((sensorCol == 1 && sensorRow == 0) ||                                                   
+        (touchInfo[1][0].touched == touchedCell && cellsTouched == 2)) {
+      resetNumericDataChangeCol();
     }
+    handleNumericDataNewTouchCol(midiPreset[Global.currentPerSplit], 0, 127, true);
+    updateDisplay();
   }
 }
 
@@ -1909,6 +1918,19 @@ void handlePresetRelease() {
   if (sensorCol < getPresetDisplayColumn() ||
      (sensorCol == getPresetDisplayColumn() && sensorRow == 7)) {
     handleNumericDataReleaseCol(true);
+    // microLinn sends the program change msg on release, not on new touch
+    if (cellsTouched == 0) {
+      // if releasing the blue dot, update the number's color from colorAccent to colorMain
+      if (sensorCol == 1 && sensorRow == 0) updateDisplay();
+      // if releasing anywhere else, send the PC message
+      else applyMidiPreset();
+    }
+    // if holding the blue dot while releasing another touch, send the Bank Select message
+    if (cellsTouched == 1 && touchInfo[1][0].touched == touchedCell) {
+      midiSendControlChange (0, midiPreset[Global.currentPerSplit], Split[Global.currentPerSplit].midiChanMain, true);
+    }
+    // if releasing the blue dot while holding another touch, update the number's color from colorAccent to colorMain
+    if (cellsTouched == 1 && sensorCol == 1 && sensorRow == 0) updateDisplay();
   }
   else if (sensorCol == getPresetDisplayColumn()) {
     if (sensorRow < NUMPRESETS &&
@@ -2054,21 +2076,51 @@ void handleLowRowCCXConfigRelease() {
 }
 
 void handleLowRowCCXYZConfigNewTouch() {
+  // prevent the user from sending CCs 120-127, necessary to free up the 8th bit for the reset value flag,
+  // but also a good idea because channel mode messages are so powerful
+  byte CCnum, resetValFlag;
   switch (lowRowCCXYZConfigState) {
-    case 3:
-      handleNumericDataNewTouchCol(Split[Global.currentPerSplit].lowRowCCXYZBehavior, 0, 1, false);
+    case 7:
+      handleNumericDataNewTouchCol(Split[Global.currentPerSplit].lowRowCCXYZBehavior, 0, 2, false);
+      if (Split[Global.currentPerSplit].lowRowCCXYZBehavior != lowRowJoystick) 
+        lowRowJoystickLatched[Global.currentPerSplit] = false;
       break;
-    case 2:
-      handleNumericDataNewTouchCol(Split[Global.currentPerSplit].ccForLowRowX, 0, 128, false);
+    case 6:
+      CCnum = Split[Global.currentPerSplit].ccForLowRowX & 0x7F;
+      resetValFlag = Split[Global.currentPerSplit].ccForLowRowX >> 7;
+      handleNumericDataNewTouchCol(CCnum, 0, 120, false);
+      Split[Global.currentPerSplit].ccForLowRowX = CCnum + (resetValFlag << 7);
+      break;
+    case 5:
+      CCnum = Split[Global.currentPerSplit].ccForLowRowY & 0x7F;
+      resetValFlag = Split[Global.currentPerSplit].ccForLowRowY >> 7;
+      handleNumericDataNewTouchCol(CCnum, 0, 120, false);
+      Split[Global.currentPerSplit].ccForLowRowY = CCnum + (resetValFlag << 7);
+      break;
+    case 4:
+      handleNumericDataNewTouchCol(Split[Global.currentPerSplit].ccForLowRowZ, 0, 120, false);
+      break;
+    case 3: 
+      handleNumericDataNewTouchCol(Split[Global.currentPerSplit].microLinn.ccForLowRowX, -1, 120, true);
+      break;
+    case 2: 
+      handleNumericDataNewTouchCol(Split[Global.currentPerSplit].microLinn.ccForLowRowY, -1, 120, true);
       break;
     case 1:
-      handleNumericDataNewTouchCol(Split[Global.currentPerSplit].ccForLowRowY, 0, 128, false);
+      resetValFlag = Split[Global.currentPerSplit].ccForLowRowX >> 7;
+      handleNumericDataNewTouchCol(resetValFlag, 0, 1, false);
+      bitWrite (Split[Global.currentPerSplit].ccForLowRowX, 7, resetValFlag);
+      updateDisplay();                             // update the display to show the newly recalculated ccForLowRowX
       break;
     case 0:
-      handleNumericDataNewTouchCol(Split[Global.currentPerSplit].ccForLowRowZ, 0, 128, false);
+      resetValFlag = Split[Global.currentPerSplit].ccForLowRowY >> 7;
+      handleNumericDataNewTouchCol(resetValFlag, 0, 1, false);
+      bitWrite (Split[Global.currentPerSplit].ccForLowRowY, 7, resetValFlag);
+      updateDisplay();
       break;
   }
-  handleNumericDataNewTouchRow(lowRowCCXYZConfigState, 0, 3);
+  boolean isLowRowJoystick = Split[sensorSplit].lowRowCCXYZBehavior == lowRowJoystick;
+  handleNumericDataNewTouchRow(lowRowCCXYZConfigState, isLowRowJoystick ? 0 : 4, 7);
 }
 
 void handleLowRowCCXYZConfigRelease() {
@@ -2195,7 +2247,7 @@ void handleGuitarTuningNewTouch() {
 }
 
 void handleGuitarTuningRelease() {
-  handleNumericDataReleaseCol(false);              // false because guitar tuning editor does not do splits, fixes microLinn issue #5
+  handleNumericDataReleaseCol(false);
   if (cellsTouched == 0) {
     ensureGuitarTuningPreviewNoteRelease();
   }

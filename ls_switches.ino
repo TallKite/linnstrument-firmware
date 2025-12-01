@@ -315,20 +315,20 @@ void performSwitchAssignmentOn(byte whichSwitch, byte assignment, byte split) {
       sequencerToggleMute(split);
       break;
 
-    case ASSIGNED_MICROLINN_EDO_UP:
-      changeMicroLinnEDO(1);
-      break;
-
-    case ASSIGNED_MICROLINN_EDO_DOWN:
-      changeMicroLinnEDO(-1);
-      break;
-
     case ASSIGNED_MICROLINN_TOGGLE_QUANTIZE:
       Split[split].pitchCorrectQuantize = !Split[split].pitchCorrectQuantize;
       break;
 
     case ASSIGNED_MICROLINN_TOGGLE_8VE:
       performMicroLinnOctaveToggle(split);
+      break;
+
+    case ASSIGNED_MICROLINN_EDO_UP:
+      changeMicroLinnEDO(1);
+      break;
+
+    case ASSIGNED_MICROLINN_EDO_DOWN:
+      changeMicroLinnEDO(-1);
       break;
   }
 }
