@@ -58,7 +58,6 @@ void initializeLowRowState() {
     lowRowCCXYZActive[split] = false;
     lowRowInitialColumn[split] = -1;
     lowRowJoystickLatched[split] = false;
-    lowRowJoystickLatched[split] = false;
   }
 }
 
@@ -129,7 +128,7 @@ void handleLowRowState(boolean newVelocity, short pitchBend, short timbre, byte 
           {
             // determine the X value based on the fader behavior, also update the fader position if that's needed
             if (Split[sensorSplit].lowRowCCXYZBehavior == lowRowCCFader) {
-              if (ccFaderValues[sensorSplit][Split[sensorSplit].ccForLowRowX & 0x7F] > 0) {
+              if (ccFaderValues[sensorSplit][Split[sensorSplit].ccForLowRowX] > 0) {
                 sendLowRowCCXYZ(0, timbre, pressure);
               }
               else {
@@ -273,7 +272,6 @@ void sendLowRowCCX(unsigned short x) {
   preSendControlChange(sensorSplit, Split[sensorSplit].ccForLowRow, x, false);
 }
 
-void sendLowRowCCXYZ(short x, short y, short z) {
 void sendLowRowCCXYZ(short x, short y, short z) {
   if (Split[sensorSplit].lowRowCCXYZBehavior == lowRowCCFader) {
     ccFaderValues[sensorSplit][Split[sensorSplit].ccForLowRowX] = constrain(x, 0, 127);

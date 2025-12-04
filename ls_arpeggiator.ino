@@ -55,16 +55,14 @@ short getArpeggiatorNote(byte split, byte notenum) {
 }
 
 byte getOctaveNote(byte split, byte octave, short notenum) {
-  // return byte not short since it's a midi note not an edostep
-  if (isMicroLinnOn()) {
-    notenum += Global.microLinn.equaveSemitones * octave;
-    notenum = getMicroLinnMidiNote(split, notenum);
-    playingArpChannel[split] = rechannelMicroLinnGroup(split, playingArpChannel[split], notenum >> 7);
-    //microLinnTuningBend[split] = getMicroLinnTuningBend(split, notenum);
-    // send tuning bend here
-    return notenum;
-  }
-  return notenum + (octave * 12);
+  // return byte not short because it's a midi note not an edostep
+  if (!isMicroLinnOn()) return notenum + (octave * 12);
+  notenum += Global.microLinn.equaveSemitones * octave;
+  notenum = getMicroLinnMidiNote(split, notenum);
+  playingArpChannel[split] = rechannelMicroLinnGroup(split, playingArpChannel[split], notenum >> 7);
+  //microLinnTuningBend[split] = getMicroLinnTuningBend(split, notenum);
+  // send tuning bend here
+  return notenum;
 }
 
 void temporarilyEnableArpeggiator() {

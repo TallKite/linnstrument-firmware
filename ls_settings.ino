@@ -1433,7 +1433,6 @@ void handlePerSplitSettingNewTouch() {
           break;
       }
       lowRowJoystickLatched[Global.currentPerSplit] = false;
-      lowRowJoystickLatched[Global.currentPerSplit] = false;
       break;
 
     // Low-row settings 2/2
@@ -1452,7 +1451,6 @@ void handlePerSplitSettingNewTouch() {
           // handled in release
           break;
       }
-      lowRowJoystickLatched[Global.currentPerSplit] &= Split[Global.currentPerSplit].lowRowMode == lowRowCCXYZ;
       lowRowJoystickLatched[Global.currentPerSplit] &= Split[Global.currentPerSplit].lowRowMode == lowRowCCXYZ;
       break;
 
@@ -1769,7 +1767,6 @@ void handlePerSplitSettingRelease() {
           if (ensureCellBeforeHoldWait(getLowRowCCXColor(Global.currentPerSplit),
                                        Split[Global.currentPerSplit].lowRowMode == lowRowCCX ? cellOn : cellOff)) {
             Split[Global.currentPerSplit].lowRowMode = lowRowCCX;
-            lowRowJoystickLatched[Global.currentPerSplit] = false;
             lowRowJoystickLatched[Global.currentPerSplit] = false;
           }
           break;
@@ -2272,7 +2269,6 @@ void handleGuitarTuningNewTouch() {
 }
 
 void handleGuitarTuningRelease() {
-  handleNumericDataReleaseCol(false);
   handleNumericDataReleaseCol(false);
   if (cellsTouched == 0) {
     ensureGuitarTuningPreviewNoteRelease();
