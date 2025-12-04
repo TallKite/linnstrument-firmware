@@ -8,6 +8,7 @@ Normal playing      New touch               Note On (microLinn adds a Pitch Bend
                     Z movement              Polyphonic Pressure or Channel Pressure or Control Change
 
 Low Row playing     LowRow = Sustain        X movement = Control Change (CC64 = Sustain)   
+Low Row playing     LowRow = Sustain        X movement = Control Change (CC64 = Sustain)   
                     LowRow = Bend           X movement = Pitch Bend
                     LowRow = X=CC1          X movement = Control Change (or Channel Pressure)
                     LowRow = XYZ=16-18      XYZ movement = Control Change (or Channel Pressure)
@@ -20,7 +21,9 @@ or footswitch       PR+ or PR-              Program Change
 Per-Split display   Change the midi mode    XYZ reset messages
  
 Preset display      Change the preset       Program Change (microLinn adds CC0 = Bank Select)
+Preset display      Change the preset       Program Change (microLinn adds CC0 = Bank Select)
 
+Volume display      X movement              Control Change (CC7 = Volume)
 Volume display      X movement              Control Change (CC7 = Volume)
 
 Global display      Notes Off               All Sound Off, All Notes Off, CC64 Sustain off, multiple NoteOffs
@@ -267,6 +270,7 @@ NRPN   Value   Description
 234    0-1     Device MIDI I/O (0: MIDI Jacks, 1: USB)
 235    0-4     Global Arp Direction (0: Up, 1: Down, 2: Up Down, 3: Random, 4: Replay All)
 236    0-7     Global Arp Tempo Note Value (0:4, 1: 8, 2: 8 Tri, 3: 16, 4: 16 Swing, 5: 16 Tri, 6: 32, 7: 32 Tri)
+236    0-7     Global Arp Tempo Note Value (0:4, 1: 8, 2: 8 Tri, 3: 16, 4: 16 Swing, 5: 16 Tri, 6: 32, 7: 32 Tri)
 237    0-2     Global Arp Octave Extension (0: None, 1: +1, 2: +2)
 238    1-360   Global Clock BPM (applies when receiving no MIDI clock)
 239    0-1     Global Switch 1 Both Splits (0: Off, 1: On)
@@ -312,6 +316,7 @@ NRPN   Value   Description
 1000 *  1-8     Split Left Column Offset 
 1001 *  0-52    Split Left Row Offset, ranges -26..26 (-26 = OFF, 26 = NOVR), so add/subtract 26 to convert it
 1002    0-3     Split Left mono fixes, X = fix bends, Z = maximize channel pressure, 0 = OFF, 1 = X, 2 = Z, 3 = X and Z
+1002    0-3     Split Left mono fixes, X = fix bends, Z = maximize channel pressure, 0 = OFF, 1 = X, 2 = Z, 3 = X and Z
 1003    0-3     Split Left hammerOnMode, 0 = OFF, 1 = R, 2 = L, 3 = R and L
 1004    0-240   Split Left hammerOnZone, maximum width in tens of cents of a hammer-on, 0 = OFF, 240 = two octaves
 1005    0-50    Split Left hammerOnWait, minimum time in tens of milliseconds between two note-ons to make a hammer-on
@@ -326,6 +331,7 @@ NRPN   Value   Description
 1051 *  0-6     Split Left defaultLayout, 0..7, OFF, Bosanquet 1 & 2, Accordion, Wicki-Hayden 1 & 2, Array Mbira 1 & 2
 1052 *  0-3     Split Left tuningTable, 0..3 = OFF/ON/CC/RCH
 1053    0-120   Split Left midiGroupCC, 0 = OFF, 1..120 = CC 0-119, so add/subtract 1 to convert it
+1054 *  0-14    Split Left transposeEDOsteps, ranges -7..7, so add/subtract 7 to convert it
 1054 *  0-14    Split Left transposeEDOsteps, ranges -7..7, so add/subtract 7 to convert it
 
 1100-1199       ===== same as 1000-1099, but for Split Right =====

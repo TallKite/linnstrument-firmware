@@ -641,6 +641,7 @@ struct MicroLinnSplit {
   byte colOffset;                         // column offset, 1 to 10, 1 = OFF
   signed char rowOffset;                  // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
   byte monoFixes;                         // 0..3 = OFF/X/Z/X+Z, X = various pitch bend fixes, Z = KVR forum member teknico's Z-maximizing 
+  byte monoFixes;                         // 0..3 = OFF/X/Z/X+Z, X = various pitch bend fixes, Z = KVR forum member teknico's Z-maximizing 
   byte hammerOnMode;                      // 0..3 = OFF/R/L/R+L, was no new noteOn, 1 = pullOff is 2nd note's noteOff velocity, 2 = 1st noteOn veloc, 3 = 2nd noteOn veloc, 4 = average them
   byte hammerOnZone;                      // maximum interval in tens of cents between two note-ons to make a hammer-on, 1..120 plus 121 = ALL
   byte hammerOnWait;                      // minimum time in tens of milliseconds between two note-ons to make a hammer-on, 0..50
@@ -738,6 +739,7 @@ const short MICROLINN_ARRAY_SIZE = (MICROLINN_MAX_EDO * (MICROLINN_MAX_EDO + 1))
 struct MicroLinnDevice {
   byte MLversion;                                 // current version of the microLinn data structures, currently 1
   boolean uninstall;                              // used by ls_serial.ino, should be a runtime var but updating seems to re-initializes runtime vars
+  byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 7 scales (8th bit is zero)
   byte scales[MICROLINN_ARRAY_SIZE];              // each byte is a bitmask for one note of the 7 scales (8th bit is zero)
   byte rainbows[MICROLINN_ARRAY_SIZE];            // choose among the 10 colors
   byte fretboards[MICROLINN_ARRAY_SIZE];          // one byte per fret, one bit per row, transposable, lefthandedness reverses it, ignores column offsets

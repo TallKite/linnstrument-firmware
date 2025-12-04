@@ -847,13 +847,13 @@ void receivedNrpn(int parameter, int value, int channel) {
       break;
     // Split MIDI CC For LowRow XYZ X
     case 51:
-      if (inRange(value, 0, 128)) {
+      if (inRange(value & 0x7F, 0, 120)) {
         Split[split].ccForLowRowX = value;
       }
       break;
     // Split MIDI CC For LowRow XYZ Y
     case 52:
-      if (inRange(value, 0, 128)) {
+      if (inRange(value & 0x7F, 0, 120)) {
         Split[split].ccForLowRowY = value;
       }
       break;
@@ -1056,6 +1056,7 @@ void receivedNrpn(int parameter, int value, int channel) {
       break;
     // Global Arp Tempo Note Value
     case 236:
+      if (inRange(value, 0, 7)) {
       if (inRange(value, 0, 7)) {
         Global.arpTempo = (ArpeggiatorStepTempo)value;
       }
@@ -2387,6 +2388,7 @@ void preSendSwitchCC65(byte whichSwitch, byte split, byte v) {
 }
 
 void preSendControlChange(byte split, byte controlnum, byte v, boolean always) {
+  if (isLowRowCCXYZActive(split) && controlnum == 120) controlnum = 128;
   switch (Split[split].midiMode) {
     case channelPerNote:
     {
