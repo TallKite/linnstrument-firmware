@@ -19,9 +19,9 @@ the actual cell that was pressed, allowing velocity to be continuously varied du
 sequence.
 ***************************************************************************************************/
      
-short playingArpNote[NUMSPLITS];                      // the last note played by the arpeggiator or -1 if no note is still playing
+signed char playingArpNote[NUMSPLITS];                // the last note played by the arpeggiator or -1 if no note is still playing
 signed char playingArpChannel[NUMSPLITS];             // the last channel played by the arpeggiator or -1 if no note is still playing
-short stepArpNote[NUMSPLITS];                         // the current step note of the arpeggiator or -1 if it should be starting from scratch
+signed char stepArpNote[NUMSPLITS];                   // the current step note of the arpeggiator or -1 if it should be starting from scratch
 signed char stepArpChannel[NUMSPLITS];                // the current step channel of the arpeggiator or -1 if it should be starting from scratch
 boolean lastArpStepOdd[NUMSPLITS];                    // indicates whether the last arpeggiator step was odd (1-based : 1, 3, 5)
 ArpeggiatorDirection arpUpDownState[NUMSPLITS];       // the state in the alternating up/down pattern
@@ -50,12 +50,19 @@ void resetArpeggiatorState(byte split) {
   arpOctaveState[split] = 0;
 }
 
-short getArpeggiatorNote(byte split, byte notenum) {
-  return getOctaveNote(split, arpOctaveState[split], notenum);
+byte getArpeggiatorNote(byte split, byte notenum) {
+  return getOctaveNote(arpOctaveState[split], notenum);
 }
 
+byte getOctaveNote(byte octave, byte notenum) {
+  if (Global.microLinn.drumPadMode) return getMicroLinnDrumPadMidiNote();
+  return notenum + (octave * 12);
+}
+
+/******************* microLinn version, doesn't work, breaks arp even for non-microLinn settings
 byte getOctaveNote(byte split, byte octave, short notenum) {
   // return byte not short because it's a midi note not an edostep
+  if (Global.microLinn.drumPadMode) return getMicroLinnDrumPadMidiNote();
   if (!isMicroLinnOn()) return notenum + (octave * 12);
   notenum += Global.microLinn.equaveSemitones * octave;
   notenum = getMicroLinnMidiNote(split, notenum);
@@ -64,6 +71,7 @@ byte getOctaveNote(byte split, byte octave, short notenum) {
   // send tuning bend here
   return notenum;
 }
+*********************/
 
 void temporarilyEnableArpeggiator() {
   arpTempoDelta[sensorSplit] = 0;
@@ -75,19 +83,19 @@ void disableTemporaryArpeggiator() {
   turnArpeggiatorOff(sensorSplit);
 }
 
-void handleArpeggiatorNoteOff(byte split, short notenum, byte channel) {
+void handleArpeggiatorNoteOff(byte split, byte notenum, byte channel) {
   // handle replay all differently since it plays multiple notes simultaneously
   if (Global.arpDirection == ArpReplayAll) {
     if (playingArpNote[split] != -1) {
       for (byte octave = 0; octave <= Global.arpOctave; ++octave) {
-        midiSendNoteOff(split, getOctaveNote(split, octave, notenum), channel);
+        midiSendNoteOff(split, getOctaveNote(octave, notenum), channel);
       }
     }
   }
   // if this is a strummed note, always turn all octave notes off
   else if (isStrummedSplit(split)) {
     for (byte octave = 0; octave <= Global.arpOctave; ++octave) {
-      midiSendNoteOff(split, getOctaveNote(split, octave, notenum), channel);
+      midiSendNoteOff(split, getOctaveNote(octave, notenum), channel);
     }
   }
   // handle single note sequences, send the note off and reset the arpeggiator state if the note off was the last played
@@ -110,12 +118,12 @@ void sendArpeggiatorStepMidiOff(byte split) {
   if (playingArpNote[split] != -1) {
     if (Global.arpDirection == ArpReplayAll) {
       if (noteTouchMapping[split].noteCount > 0) {
-        short arpNote = noteTouchMapping[split].firstNote;
+        signed char arpNote = noteTouchMapping[split].firstNote;
         signed char arpChannel = noteTouchMapping[split].firstChannel;
 
         while (arpNote != -1) {
           for (byte octave = 0; octave <= Global.arpOctave; ++octave) {
-            midiSendNoteOff(split, getOctaveNote(split, octave, arpNote), arpChannel);
+            midiSendNoteOff(split, getOctaveNote(octave, arpNote), arpChannel);
           }
 
           NoteEntry* entry = noteTouchMapping[split].getNoteEntry(arpNote, arpChannel);
@@ -166,7 +174,7 @@ inline void checkAdvanceArpeggiatorForSplit(byte split) {
 }
 
 void advanceArpeggiatorForSplit(byte split) {
-  short arpNote = -1;
+  signed char arpNote = -1;
   signed char arpChannel = -1;
 
   sendArpeggiatorStepMidiOff(split);
@@ -193,7 +201,7 @@ void advanceArpeggiatorForSplit(byte split) {
             if (entry_cell->touched == touchedCell) {
               entry_cell->velocity = calcPreferredVelocity(entry_cell->velocityZ);      
             }
-            midiSendNoteOn(split, getOctaveNote(split, octave, arpNote), entry_cell->velocity, arpChannel);
+            midiSendNoteOn(split, getOctaveNote(octave, arpNote), entry_cell->velocity, arpChannel);
           }
 
           arpNote = entry->getNextNote();

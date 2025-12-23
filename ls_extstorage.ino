@@ -2306,7 +2306,7 @@ void initMicroLinnData() {
   byte maxRowOffset = 25;
   config.settings.global.microLinn.drumPadMode = 0; 
   config.settings.global.microLinn.dotsCarryOver = false; 
-  config.settings.global.microLinn.locatorCC1 = -1; 
+  config.settings.global.microLinn.locatingCC1 = 255; 
   //config.settings.global.microLinn.EDO = 4; 
   //config.settings.global.microLinn.useRainbow = true;
   for (byte split = 0; split < NUMSPLITS; split++) {
@@ -2317,7 +2317,7 @@ void initMicroLinnData() {
   for (byte p = 0; p < NUMPRESETS; p++) {
     config.preset[p].global.microLinn.drumPadMode = 0; 
     config.preset[p].global.microLinn.dotsCarryOver = false; 
-    config.preset[p].global.microLinn.locatorCC1 = -1; 
+    config.preset[p].global.microLinn.locatingCC1 = 255; 
     //config.preset[p].global.microLinn.EDO = 4; 
     //config.preset[p].global.microLinn.useRainbow = true;
     for (byte split = 0; split < NUMSPLITS; split++) {
@@ -2377,8 +2377,8 @@ void migrateFromMicroLinnGlobalV72_0 (MicroLinnGlobal* t, void* source) {
   MicroLinnV72_0::MicroLinnGlobal* s = (typeof(s)) source;
   t->drumPadMode = 0;
   t->dotsCarryOver = false;
-  t->locatorCC1 = -1;
-  t->locatorCC2 = -1;
+  t->locatingCC1 = 255;
+  t->locatingCC2 = 255;
   t->EDO = s->EDO;
   short i = microLinnTriIndex(s->EDO, 0);
   memcpy (t->rainbow,   &Device.microLinn.rainbows[i],   s->EDO);
@@ -2404,14 +2404,14 @@ void migrateFromMicroLinnSplitV72_0 (MicroLinnSplit* t, void* source) {
   t->colOffset = s->colOffset;
   t->rowOffset = -26;
   t->monoFixes = 0;
-  t->hammerOnMode = 0;
+  t->hammerOnModes = 0;
   t->hammerOnZone = 10;
   t->hammerOnWait = 0;
   t->showCustomLEDs = 0;
   t->condensedBendPerPad = 0;
   t->defaultLayout = 0;
   t->tuningTable = s->tuningTable;
-  t->midiGroupCC = -1;
+  t->groupingCC = 255;
   t->transposeEDOsteps = s->transposeEDOsteps;
 }
 

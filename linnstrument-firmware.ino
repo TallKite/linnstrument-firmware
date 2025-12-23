@@ -404,6 +404,7 @@ struct NoteEntry {
   byte colRow;
   signed char nextNote;
   signed char previousNote;
+  //byte nextPrevMicroLinnGroup;      // uses up 2K of RAM
   byte nextPreviousChannel;
 
   inline boolean hasColRow(byte, byte);
@@ -622,7 +623,12 @@ enum SequencerDirection {
 };
 
 struct MicroLinnSplit {
-  // used for PCH footswitch
+  // pullOfMode: 0 = velocity is 2nd note's noteOff velocity, 1 = 1st noteOn veloc, 2 = 2nd noteOn veloc, 3 = average them
+  inline byte hammerOnMode()          {return (hammerOnModes & B00000011);}
+  inline byte pullOffMode()           {return (hammerOnModes & B00001100) >> 2;}
+  inline void setHammerOnMode(byte b) {hammerOnModes = (hammerOnModes & B11111100) | b;} 
+  inline void setPullOffMode(byte b)  {hammerOnModes = (hammerOnModes & B11110011) | (b << 2);} 
+  // used for PCH footswitch, store the previous pitch quantization settings
   inline boolean prevPitchSend()                  {return bitRead(flags, 0);}
   inline boolean prevPitchCorrectQuantize()       {return bitRead(flags, 1);}
   inline byte    prevPitchCorrectHold()           {return (flags & B1100) >> 2;}      
@@ -631,7 +637,7 @@ struct MicroLinnSplit {
   inline void setPrevPitchCorrectQuantize(bool b) {bitWrite(flags, 1, b);}
   inline void setPrevPitchCorrectHold(byte b)     {flags = (flags & B11110011) | (b << 2);} 
   inline void setPrevPitchResetOnRelease(bool b)  {bitWrite(flags, 4, b);}
-  // used in low row XYZ mode with joystick behavior, reset W, X and Y CCs to either 64 or 0
+  // used in low row XYZ mode with joystick behavior, reset W, X and Y CCs to either 64 (true) or 0 (false)
   inline boolean WccCentered()    {return bitRead(flags, 5);}
   inline boolean XccCentered()    {return bitRead(flags, 6);}
   inline boolean YccCentered()    {return bitRead(flags, 7);}
@@ -641,19 +647,19 @@ struct MicroLinnSplit {
   byte colOffset;                         // column offset, 1 to 10, 1 = OFF
   signed char rowOffset;                  // overrides the global row offset, range is ±25 plus -26 = OFF and +26 = NOVR (no overlap)
   byte monoFixes;                         // 0..3 = OFF/X/Z/X+Z, X = various pitch bend fixes, Z = KVR forum member teknico's Z-maximizing 
-  byte hammerOnMode;                      // 0..3 = OFF/R/L/R+L, was no new noteOn, 1 = pullOff is 2nd note's noteOff velocity, 2 = 1st noteOn veloc, 3 = 2nd noteOn veloc, 4 = average them
+  byte hammerOnModes;                     // 0..3 = OFF/R/L/R+L = off/highest/lowest/latest priority 
   byte hammerOnZone;                      // maximum interval in tens of cents between two note-ons to make a hammer-on, 1..120 plus 121 = ALL
   byte hammerOnWait;                      // minimum time in tens of milliseconds between two note-ons to make a hammer-on, 0..50
   byte showCustomLEDs;                    // 0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
   byte condensedBendPerPad;               // width of a single-pad pitch bend in edosteps, 0 = OFF, 1 = VAR, 2..L+1 = 1..L (L = largest scale step),
   byte defaultLayout;                     // 0 = OFF, 1-2 = Bosanquet, 3 = Accordion, 4-5 = Wicki-Hayden, 6-7 = Array mbira
   byte tuningTable;                       // 0..3 = OFF/ON/CC/RCH, output in edostep format (1 midi note = 1 edostep), lowest note is always note 0
-  signed char midiGroupCC;                // sent with each note-on, ranges from 0 to 119, -1 = OFF
+  byte groupingCC;                        // sent with each note-on, ranges from 0 to 127, 255 = OFF
   signed char transposeEDOsteps;          // accessed via displayOctaveTranspose screen, -7..7
   byte ccForLowRowW;                      // the note-on CC in XYZ joystick mode, 128 = Channel Pressure, 255 = OFF
   byte ccForLowRowX;                      // the X' CC in XYZ joystick mode, 128 = Channel Pressure, 255 = OFF
-  byte ccForLowRowY;                      // the Y' CC
-  byte flags;                             // yxwrhhqp, yxw = joystick WXY CCs, r = release, h = quantize hold, q = quantize pitch, p = sendX
+  byte ccForLowRowY;                      // the Y' CC in XYZ
+  byte flags;                             // Byxwrhhqs, s = sendX, q = quantize, hh = quantize hold, r = pitch reset, yxw = joystick WXY CCs
   byte reserved1;                         // reserved for future use, 1 byte per empty menu row
   byte reserved2;                         //    "
 };
@@ -820,9 +826,25 @@ enum SustainBehavior {
 };
 
 struct MicroLinnGlobal {
+  /********************
+  inline byte drumPadMode()          {return (packedByte1 & B00000011);}
+  inline byte EDO()                  {return (packedByte1 & B11111100) >> 2;}
+  inline void setDrumPadMode(byte b) {packedByte1 = (packedByte1 & B11111100) | b;} 
+  inline void setEDO(byte b)         {packedByte1 = (packedByte1 & B00000011) | (b << 2);} 
+  inline byte anchorCol()            {return anchorColRow & B111;}
+  inline byte anchorRow()            {return (anchorColRow & B11111000) >> 3;}
+  inline void setAnchorCol(byte b)   {anchorColRow = (anchorColRow & B11111000) | b;} 
+  inline void setAnchorRow(byte b)   {anchorColRow = (anchorColRow & B00000111) | (b << 3);} 
+  inline byte sweeten()              {return (packedByte2 & B00111111);}
+  inline bool useRainbow()           {return bitRead(packedByte2, 6);}
+  inline bool dotsCarryOver()        {return bitRead(packedByte2, 7);}
+  inline byte setSweeten()           {packedByte2 = (flags2 & B11000000) | b;}
+  inline void setUseRainbow(bool b)  {bitWrite(packedByte2, 6, b);}
+  inline void setDotsCarryOver()     {bitWrite(packedByte2, 7, b);}
+  ***********************/
   byte drumPadMode;                          // creates an array of 2x3 (if 1) or 3x3 (if 2) drum pads, array is 2x7, but only 2x5 if 3x3 on the 128
-  signed char locatorCC1;                    // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25...
-  signed char locatorCC2;                    // ...ranges from 0 to 119, -1 = OFF
+  byte locatingCC1;                          // CC to send with row/column location for each note-on in cols 1-16 or cols 17-25...
+  byte locatingCC2;                          // ...ranges from 0 to 127, 255 = OFF
   byte EDO;                                  // ranges 5-55, plus 4 for OFF
   byte rainbow[MICROLINN_MAX_EDO];           // one row of Device.microLinn.rainbows, used only when loading/saving presets and rawEDO isn't 4
   byte fretboard[MICROLINN_MAX_EDO];         // ditto for Device.microLinn.fretboards
@@ -834,6 +856,7 @@ struct MicroLinnGlobal {
   byte equaveSemitones;                      // for non-octave tunings such as bohlen-pierce, 1..36, 1 semitone = 100 cents
   signed char equaveStretch;                 // cents, -50..+50
   byte sweeten;                              // in tenths of a cent, 0..60, adjust 41edo 5/4, 5/3 by this amount both top and bottom to make it closer to just
+//signed char launcherCC;                    // CC to send on presets display last column, ranges from 0 to 119, -1 = OFF
   byte largeEDO;                             // ranges 0..53, 0 = OFF, 1..52 = various edos, 53 = 1200edo = JI, user can have a 55-note subset of this edo 
 //signed char largeEDOoffset[MICROLINN_MAX_EDO];  // ranges -128..127, edosteps from nearest large-edo approximation
   short guitarTuning[MAXROWS];               // independent of Global.guitarTuning, interval in edosteps from the string below it, can be negative, [0] is DIA/CHRO

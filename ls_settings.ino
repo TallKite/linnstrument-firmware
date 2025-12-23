@@ -340,8 +340,8 @@ void loadSettingsFromPreset(byte p) {
     memcpy(&Global, &config.preset[p].global, sizeof(GlobalSettings) - sizeof(MicroLinnGlobal)); 
     Global.microLinn.drumPadMode   = config.preset[p].global.microLinn.drumPadMode;
     Global.microLinn.dotsCarryOver = config.preset[p].global.microLinn.dotsCarryOver;
-    Global.microLinn.locatorCC1    = config.preset[p].global.microLinn.locatorCC1;
-    Global.microLinn.locatorCC2    = config.preset[p].global.microLinn.locatorCC2;
+    Global.microLinn.locatingCC1   = config.preset[p].global.microLinn.locatingCC1;
+    Global.microLinn.locatingCC2   = config.preset[p].global.microLinn.locatingCC2;
     for (byte side = 0; side < NUMSPLITS; ++side) {
       memcpy(&Split[side], &config.preset[p].split[side], sizeof(SplitSettings) - sizeof(MicroLinnSplit));
       // only load the column and per-split row offsets if they are not OFF (such offsets are often related to the edo)
@@ -352,7 +352,7 @@ void loadSettingsFromPreset(byte p) {
         Split[side].microLinn.rowOffset = config.preset[p].split[side].microLinn.rowOffset;
       }
       Split[side].microLinn.monoFixes      = config.preset[p].split[side].microLinn.monoFixes;
-      Split[side].microLinn.hammerOnMode   = config.preset[p].split[side].microLinn.hammerOnMode;
+      Split[side].microLinn.hammerOnModes  = config.preset[p].split[side].microLinn.hammerOnModes;
       Split[side].microLinn.hammerOnZone   = config.preset[p].split[side].microLinn.hammerOnZone;
       Split[side].microLinn.hammerOnWait   = config.preset[p].split[side].microLinn.hammerOnWait;
       Split[side].microLinn.showCustomLEDs = config.preset[p].split[side].microLinn.showCustomLEDs;

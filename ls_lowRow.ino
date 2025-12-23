@@ -156,27 +156,28 @@ void handleLowRowState(boolean newVelocity, short pitchBend, short timbre, byte 
           short xDelta;
           // bug, xDelta's zero point should be the center of the pad, not the initial touch point
           // current formula is based on the 54th line of handleXExpression(), but it's off
-          DEBUGPRINT((0,"handleLowRowState")); 
-          DEBUGPRINT((0,"  fxdInitialReferenceX = ")); 
+          DEBUGPRINT((0,"handleLowRowState   ")); 
+          DEBUGPRINT((0,"ReferenceX = ")); 
           DEBUGPRINT((0,(int)FXD_TO_INT(sensorCell->fxdInitialReferenceX())));
-          DEBUGPRINT((0,"       calibratedX = ")); 
+          DEBUGPRINT((0,"    calibratedX = ")); 
           DEBUGPRINT((0,(int)sensorCell->calibratedX())); 
-          DEBUGPRINT((0,"  = ")); 
+          DEBUGPRINT((0," = ")); 
           DEBUGPRINT((0,(int)(sensorCell->calibratedX() - FXD_TO_INT(sensorCell->fxdInitialReferenceX())) ));
-          DEBUGPRINT((0,"       rawX = ")); 
-          DEBUGPRINT((0,(int)(sensorCell->rawX()) ));
-          DEBUGPRINT((0,"  = ")); 
-          DEBUGPRINT((0,(int)(sensorCell->rawX() - FXD_TO_INT(sensorCell->fxdInitialReferenceX())) ));
-          DEBUGPRINT((0,"\n"));
           if (Split[sensorSplit].lowRowMode == lowRowCCXYZ &&
               Split[sensorSplit].lowRowCCXYZBehavior == lowRowJoystick) {
-            xDelta = 1.5*(sensorCell->calibratedX() - FXD_TO_INT(sensorCell->fxdInitialReferenceX()));  // cell center is 0, cell sides are ±127
+          //xDelta = calculateFaderValue(sensorCell->calibratedX(), sensorCell->initialColumn, 1);
+            xDelta = (sensorCell->calibratedX() - FXD_TO_INT(sensorCell->fxdInitialReferenceX()) + 85);  // left edge = 0, right edge = 171
           //xDelta = constrain((sensorCell->calibratedX() - FXD_TO_INT(sensorCell->fxdInitialReferenceX())), 0, 127);  // range is 1 cell, zero-point is center
           //xDelta = constrain((sensorCell->calibratedX() - FXD_TO_INT(sensorCell->fxdInitialReferenceX()) + 85), 0, 127);  // range is 1 cell, zero-point is left edge
           } else {
             xDelta = constrain((sensorCell->calibratedX() - sensorCell->initialX) >> 3, 0, 127);        // range is 7 cells, zero-point is initial touch
           }
           short xPosition = calculateFaderValue(sensorCell->calibratedX(), faderLeft, faderLength);
+          DEBUGPRINT((0,"    xDelta = ")); 
+          DEBUGPRINT((0,(int)(xDelta) ));
+          DEBUGPRINT((0,"          calibratedY = ")); 
+          DEBUGPRINT((0,(int)sensorCell->calibratedY())); 
+          DEBUGPRINT((0,"\n"));
 
           switch (Split[sensorSplit].lowRowMode)
           {
@@ -283,8 +284,8 @@ void sendLowRowCCXYZ(short x, short y, short z) {
   if (lowRowJoystickLatched[sensorSplit]) return;
   if (Split[sensorSplit].lowRowCCXYZBehavior == lowRowJoystick) {
     // if there's two X CCs or two Y CCs, set the zero point to the center of the pad
-    if (Split[sensorSplit].microLinn.ccForLowRowX != 255 && x != INVALID_DATA) x = x/2.0 + 64;
-    if (Split[sensorSplit].microLinn.ccForLowRowY != 255 && y != INVALID_DATA) y = 2*y - 127;
+    if (Split[sensorSplit].microLinn.ccForLowRowX != 255 && x != INVALID_DATA) x = 1.5*x - 127;     // 1.5*171 = 256
+    if (Split[sensorSplit].microLinn.ccForLowRowY != 255 && y != INVALID_DATA) y = 2.0*y - 127;
     // if the two CCs are identical, only send it once, set it positive so the first preSend does it
     if (Split[sensorSplit].microLinn.ccForLowRowX == Split[sensorSplit].ccForLowRowX) x = abs(x);
     if (Split[sensorSplit].microLinn.ccForLowRowY == Split[sensorSplit].ccForLowRowY) y = abs(y);

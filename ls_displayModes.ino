@@ -1955,8 +1955,8 @@ void paintGlobalSettingsDisplay() {
     char str[4];
     const char* format = "%3d";
     snprintf(str, sizeof(str), format, FXD4_TO_INT(fxd4CurrentTempo));
-    paintMicroLinnDebugDump();   // temporary, delete later and uncomment following line later
-    //tinyfont_draw_string(0, 4, str, color);
+    //paintMicroLinnDebugDump();   // temporary, delete later and uncomment following line later
+    tinyfont_draw_string(0, 4, str, color);
   }
 
 #ifdef DEBUG_ENABLED

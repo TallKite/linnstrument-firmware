@@ -1,7 +1,7 @@
 LinnStrument sends the following MIDI output
 ============================================
 
-Normal playing      New touch               Note On (microLinn adds a Pitch Bend for tuning bends)
+Normal playing      New touch               Note On, XYZ data (microLinn adds an optional locating and/or grouping CC)
                     Release                 Note Off (Reset On Release adds a Pitch Bend of 0)
                     X movement              Pitch Bend
                     Y movement              Control Change (or Polyphonic Pressure or Channel Pressure)
@@ -10,7 +10,7 @@ Normal playing      New touch               Note On (microLinn adds a Pitch Bend
 Low Row playing     LowRow = Sustain        X movement = Control Change (CC64 = Sustain)   
                     LowRow = Bend           X movement = Pitch Bend
                     LowRow = X=CC1          X movement = Control Change (or Channel Pressure)
-                    LowRow = XYZ=16-18      XYZ movement = Control Change (or Channel Pressure)
+                    LowRow = XYZ=16-18      XYZ movement = 3 types of Control Change (or Channel Pressure) (microLinn adds up to 3 more)
 
 Special playing     Special = CC Faders     X movement = Control Change
 
@@ -97,7 +97,7 @@ The following table lists all the NRPN input values that LinnStrument understand
 NRPN   Value   Description
 -------------------------------------------------------------------------------------------------------------
 0      0-2     Split Left MIDI Mode (0: One Channel, 1: Channel Per Note, 2: Channel Per Row)
-1      1-16    Split Left MIDI Main Channel
+1      0-16    Split Left MIDI Main Channel (0 = disable main channel)
 2      0-1     Split Left MIDI Per Note Channel 1 (0: Off, 1: On)
 3      0-1     Split Left MIDI Per Note Channel 2 (0: Off, 1: On)
 4      0-1     Split Left MIDI Per Note Channel 3 (0: Off, 1: On)
@@ -164,7 +164,7 @@ NRPN   Value   Description
 65     0-3     Split Left Sequencer Select Pattern Number
 66     1       Split Left Sequencer Toggle Mute
 100    0-2     Split Right MIDI Mode (0: One Channel, 1: Channel Per Note, 2: Channel Per Row)
-101    1-16    Split Right MIDI Main Channel
+101    0-16    Split Right MIDI Main Channel (0 = disable main channel)
 102    0-1     Split Right MIDI Per Note Channel 1 (0: Off, 1: On)
 103    0-1     Split Right MIDI Per Note Channel 2 (0: Off, 1: On)
 104    0-1     Split Right MIDI Per Note Channel 3 (0: Off, 1: On)
@@ -309,49 +309,49 @@ Additional NRPN messages for microLinn (nn00-nn49 = non-microtonal, nn50-nn99 = 
 
 NRPN   Value   Description
 -------------------------------------------------------------------------------------------------------------
-1000 *  1-8     Split Left Column Offset 
-1001 *  0-52    Split Left Row Offset, ranges -26..26 (-26 = OFF, 26 = NOVR), so add/subtract 26 to convert it
-1002    0-3     Split Left mono fixes, X = fix bends, Z = maximize channel pressure, 0 = OFF, 1 = X, 2 = Z, 3 = X and Z
-1003    0-3     Split Left hammerOnMode, 0 = OFF, 1 = R, 2 = L, 3 = R and L
-1004    0-240   Split Left hammerOnZone, maximum width in tens of cents of a hammer-on, 0 = OFF, 240 = two octaves
-1005    0-50    Split Left hammerOnWait, minimum time in tens of milliseconds between two note-ons to make a hammer-on
-1006    0-6     Split Left showCustomLEDs, 0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
-1007    0-128   Split Left ccForLowRowW, used in low row XYZ joystick mode, 128 = Channel Pressure
-1008    0-128   Split Left ccForLowRowX, used in low row XYZ joystick mode, 128 = Channel Pressure
-1009    0-128   Split Left ccForLowRowY, used in low row XYZ joystick mode, 128 = Channel Pressure
-1010    0-1     Split Left WccCentered, used in low row XYZ joystick mode, 1 = reset to 64, 0 = reset to 0
-1011    0-1     Split Left XccCentered, used in low row XYZ joystick mode, 1 = reset to 64, 0 = reset to 0
-1012    0-1     Split Left YccCentered, used in low row XYZ joystick mode, 1 = reset to 64, 0 = reset to 0
-1050 *  0-56    Split Left condensedBendPerPad, 0 = OFF, 1 = VAR, 2..L+1 = 1..L (L = largest scale step)
-1051 *  0-6     Split Left defaultLayout, 0..7, OFF, Bosanquet 1 & 2, Accordion, Wicki-Hayden 1 & 2, Array Mbira 1 & 2
-1052 *  0-3     Split Left tuningTable, 0..3 = OFF/ON/CC/RCH
-1053    0-120   Split Left midiGroupCC, 0 = OFF, 1..120 = CC 0-119, so add/subtract 1 to convert it
-1054 *  0-14    Split Left transposeEDOsteps, ranges -7..7, so add/subtract 7 to convert it
+1000 *  1-10        Split Left Column Offset 
+1001 *  0-52        Split Left Row Offset, ranges -26..26 (-26 = OFF, 26 = NOVR), so add/subtract 26 to convert it
+1002    0-3         Split Left mono fixes, X = fix bends, Z = maximize channel pressure, 0 = OFF, 1 = X, 2 = Z, 3 = X plus Z
+1003    0-3         Split Left hammerOnMode, 0 = OFF, 1 = R, 2 = L, 3 = R and L
+1004    0-121       Split Left hammerOnZone, maximum width in tens of cents of a hammer-on, 0 = OFF, 120 = 1 octave, 121 = ALL
+1005    0-50        Split Left hammerOnWait, minimum time in tens of milliseconds between two note-ons to make a hammer-on, 50 = 1/2 second
+1006    0-6         Split Left showCustomLEDs, 0 = OFF, 1-3 = the three patterns, 4-6 = the three patterns plus note lights on top
+1007    0-128, 255  Split Left ccForLowRowW, used in low row XYZ joystick mode for note-on velocity, 128 = Channel Pressure, 255 = OFF
+1008    0-128, 255  Split Left ccForLowRowX, used in low row XYZ joystick mode for X', 128 = Channel Pressure, 255 = OFF
+1009    0-128, 255  Split Left ccForLowRowY, used in low row XYZ joystick mode for Y', 128 = Channel Pressure, 255 = OFF
+1010    0-1         Split Left WccCentered, used in low row XYZ joystick mode, 1 = reset to 64, 0 = reset to 0
+1011    0-1         Split Left XccCentered, used in low row XYZ joystick mode, 1 = reset to 64, 0 = reset to 0
+1012    0-1         Split Left YccCentered, used in low row XYZ joystick mode, 1 = reset to 64, 0 = reset to 0
+1050 *  0-56        Split Left condensedBendPerPad, 0 = OFF, 1 = VAR, 2..L+1 = 1..L (L = largest scale step)
+1051 *  0-7         Split Left defaultLayout, 0..7, OFF, Bosanquet 1 & 2, Accordion, Wicki-Hayden 1 & 2, Array Mbira 1 & 2
+1052 *  0-3         Split Left tuningTable, 0..3 = OFF/ON/CC/RCH
+1053    0-127, 255  Split Left groupingCC, 0..127 = CC number, 255 = OFF
+1054 *  0-14        Split Left transposeEDOsteps, ranges -7..7, so add/subtract 7 to convert it
 
 1100-1199       ===== same as 1000-1099, but for Split Right =====
 
-1200 *  0-2     Global drumPadMode, 0 = OFF, 1 = 2x3 pads, 2 = 3x3 pads
-1201    0-1     Global dotsCarryOver, 1 = yes, 0 = no
-1202    0-120   Global locatorCC1, 0 = OFF, 1..120 = CC 0-119, so add/subtract 1 to convert it
-1203    0-120   Global locatorCC2, always 0 for the Linn128
-1250 *  4-55    Global EDO, ranges 5-55, plus 4 for OFF
-1251    0-1     Global useRainbow, 1 = yes, 0 = no
-1252 *  1-25    Global anchorCol
-1253 *  0-7     Global anchorRow, 0 = bottom row, 7 = top row
-1254 *  0-127   Global anchorNote (any midi note)
-1255 *  0-120   Global anchorCents ranges -60..60, so add/subtract 60 to convert it
-1256 *  5-36    Global equaveSemitones
-1257 *  0-100   Global equaveStretch ranges -50..50, so add/subtract 50 to convert it
-1258 *  0-60    Global sweeten (in tenths of a cent)
-1259 *  0-53    Global largeEDO, 0 = OFF, 53 = 1200edo
-1260 *  0-1     Global microtonal guitarTuning[0] (diatonic/chromatic flag for condensed guitar tunings)
-1261 *  0-640   Global microtonal guitarTuning[1] ranges -320..320, so add/subtract 320 to convert it
-1262 *  0-640   Global microtonal guitarTuning[2]   "
-1263 *  0-640   Global microtonal guitarTuning[3]   "
-1264 *  0-640   Global microtonal guitarTuning[4]   "
-1265 *  0-640   Global microtonal guitarTuning[5]   "
-1266 *  0-640   Global microtonal guitarTuning[6]   "
-1267 *  0-640   Global microtonal guitarTuning[7]   "
+1200 *  0-2         Global drumPadMode, 0 = OFF, 1 = 2x3 pads, 2 = 3x3 pads
+1201    0-1         Global dotsCarryOver, 1 = yes, 0 = no
+1202    0-127, 255  Global locatingCC1, 0..127 = CC number, 255 = OFF
+1203    0-127, 255  Global locatingCC2, 0..127 = CC number, 255 = OFF, always 255 for the Linn128
+1250 *  4-55        Global EDO, ranges 5-55, plus 4 for OFF
+1251    0-1         Global useRainbow, 1 = yes, 0 = no
+1252 *  1-25        Global anchorCol
+1253 *  0-7         Global anchorRow, 0 = bottom row, 7 = top row
+1254 *  0-127       Global anchorNote (any midi note)
+1255 *  0-120       Global anchorCents ranges -60..60, so add/subtract 60 to convert it
+1256 *  5-36        Global equaveSemitones
+1257 *  0-100       Global equaveStretch ranges -50..50, so add/subtract 50 to convert it
+1258 *  0-60        Global sweeten (in tenths of a cent)
+1259 *  0-53        Global largeEDO, 0 = OFF, 53 = 1200edo
+1260 *  0-1         Global microtonal guitarTuning[0] (diatonic/chromatic flag for condensed guitar tunings)
+1261 *  0-640       Global microtonal guitarTuning[1] ranges -320..320, so add/subtract 320 to convert it
+1262 *  0-640       Global microtonal guitarTuning[2]   "
+1263 *  0-640       Global microtonal guitarTuning[3]   "
+1264 *  0-640       Global microtonal guitarTuning[4]   "
+1265 *  0-640       Global microtonal guitarTuning[5]   "
+1266 *  0-640       Global microtonal guitarTuning[6]   "
+1267 *  0-640       Global microtonal guitarTuning[7]   "
 
 1300    N/A     setup microLinn, do this after changing any user settings with an asterisk
 
@@ -376,6 +376,7 @@ NRPN 300 = (MSB 2, LSB 44), channel 0, value: MSB = export type = 1-15, LSB = cu
 Polypressure header, channel 8, value: LSB = Device.version, MSB = Device.microLinn.MLversion
 (multiple polypressure data messages on channels 0..3)
 Polypressure footer, channel 12, value: MSB = export type = 1-15, LSB = 0
+In each polypressure message, the MSB appears as the note number and the LSB appears as the velocity
 
 For the polypressure data messages, channels 1-3 are used to store the 8th bit of each byte:
 channel 1 or 3 = add 128 to LSB when importing 

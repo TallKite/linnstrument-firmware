@@ -27,6 +27,7 @@
         "tuple": "cpp",
         "type_traits": "cpp",
         "__tuple": "cpp",
-        "complex": "cpp"
+        "complex": "cpp",
+        "ios": "cpp"
     }
 }

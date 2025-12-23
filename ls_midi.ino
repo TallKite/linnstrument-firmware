@@ -576,7 +576,12 @@ void receivedNrpn(int parameter, int value, int channel) {
       break;
     // Split MIDI Main Channel
     case 1:
-      if (inRange(value, 1, 16)) {
+      if (value == 0 && Split[split].midiMode != oneChannel) {
+        // microLinn permits disabling the main channel via NRPN
+        Split[split].midiChanMainEnabled = false;
+      }
+      else if (inRange(value, 1, 16)) {
+        Split[split].midiChanMainEnabled = true;
         preResetMidiExpression(split);
         Split[split].midiChanMain = value;
         // ensure MPE is turned off

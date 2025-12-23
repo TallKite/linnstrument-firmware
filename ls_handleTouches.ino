@@ -1385,7 +1385,7 @@ void sendNewNote() {
       tuningBend = getMicroLinnTuningBend(sensorSplit, sensorCell->note, sensorCell->microLinnGroup);
     }
 
-    sendMicroLinnMidiGroupAndLocatorCCs(channel, sensorSplit);
+    sendMicroLinnGroupingAndLocatingCCs(channel, sensorSplit);
 
     // if we've switched from pitch X enabled to pitch X disabled and the last
     // pitch bend value was not neutral, reset it first to prevent skewed pitches

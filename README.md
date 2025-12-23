@@ -61,9 +61,9 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
   
     row 3) Allow importing (OFF, IMP)
 
-    row 4) Locator CC #1 (OFF, 0 to 119) (used for the first 16 columns)
+    row 4) Locating CC #1 (OFF, 0 to 127) (used for the first 16 columns)
   
-    row 5) Locator CC #2 (OFF, 0 to 119) (used for the last 9 columns, hidden on the Linn128)
+    row 5) Locating CC #2 (OFF, 0 to 127) (used for the last 9 columns, hidden on the Linn128)
   
 
   col 10) EDO (notes per octave) (OFF, 5 to 55)
@@ -131,9 +131,9 @@ The column offset can be set for each split independently. You can have one of t
 
 You can set both column offsets at once by linking them. In the upper right there are two split buttons. Hold the right one and tap the left one. You'll be switched to the left split, and the left offset will change to match the right offset. Both split buttons remain lit up, and any change affects both offsets. To unlink them, tap either split button. 
 
------>  All microLinn per-split settings can be linked this way.  <------
-
 When you power up your LinnStrument, if the two offsets are identical and are not OFF, microLinn automatically links them.
+
+----->  All microLinn per-split settings can be linked this way, and they are also auto-linked this way.  <------
 
   *Details: Beware, if the column offset is 2 and the row offset is an even number, you lose half the notes and only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors. If they do, both offsets will be displayed in red.*
 
@@ -177,15 +177,15 @@ In OneChannel and ChannelPerRow modes, one midi channel can have mutiple midi no
 
   PITCH/X FIXES: Selecting "X" or "X+Z" allows unquantized glides. Furthermore, you can trill on a single note by using a pad on another row that plays the same note. Finally, when the latest-played pad is released, the most recent bend for the new latest-played pad is sent, so you can trill while gliding.
 
-  MAXIMIZE LOUDNESS/Z: By necessity, a pad's Z data must start and end with a zero value. Thus holding one pad and playing a 2nd pad causes an abrupt jump in loudness to 0, and releasing that pad causes an abrupt jump from 0 to the Z-value of the 1st pad. Selecting "Z" or "X+Z" maximizes the Z data via a "soft takeover" as opposed to a "hard takeover". Z data is sent only from whichever pad is currently being pressed the hardest.
+  MAXIMIZE LOUDNESS/Z: The LinnStrument's default behavior is to send Z data from the latest note only. By necessity, a pad's Z data must start and end with a zero value. Thus holding one pad and playing a 2nd pad causes an abrupt jump in loudness to 0, and releasing that pad causes an abrupt jump from 0 to the Z-value of the 1st pad. Selecting "Z" or "X+Z" maximizes the Z data via a "soft takeover" as opposed to a "hard takeover". Z data is sent only from whichever pad is currently being pressed the hardest.
 
-    *Details: Set your LinnStrument to OneChannel or ChannelPerRow and set Mono Mode to X+Z. Don't use poly pressure for TIMBRE/Y or LOUDNESS/Z. Set your synth to mono and to either retrigger or single-trigger. Don't use MPE. Set the non-MPE bend range to match the LinnStrument. Set the note priority to latest. If you never play non-MPE synths polyphonically, you can leave mono mode permanently set to X+Z.*
+  *Details: Set your LinnStrument to OneChannel or ChannelPerRow and set Mono Mode to X+Z. Don't use poly pressure for TIMBRE/Y or LOUDNESS/Z. Set your synth to mono and to either retrigger or single-trigger. Don't use MPE. Set the non-MPE bend range to match the LinnStrument. (add pic of Surge XT's non-MPE bend range) Set the note priority to latest. If you never play non-MPE synths polyphonically, you can leave mono mode permanently set to X+Z.*
 
-    *Thanks to KVR forum member teknico for the maximize-Z code! See https://www.kvraudio.com/forum/viewtopic.php?t=591770.*
+  *Thanks to KVR forum member teknico for the maximize-Z code! See https://www.kvraudio.com/forum/viewtopic.php?t=591770.*
 
 HAMMER-ONS AND PULL-OFFS
 
-Just like a guitar, except you can hammer-on to either the right or the left, or both. Hammer-ons happen with any nearby pad on the same row. Works well with Mono Mode Z-maximizing. Accessed through the microLinn menu.
+Just like a guitar, except you can hammer-on to either the right or the left, or both (highest, lowest or latest priority). Hammer-ons happen with any nearby pad on the same row. Works well with Mono Mode Z-maximizing. Accessed through the microLinn menu.
 
   *Details: Set the hammer-on zone to perhaps 2 semitones. Play two notes 1 or 2 pads apart on the same row. The later note will mute the earlier note. When you release it, a pull-off retriggers (unmutes) the earlier note, using the later note's note-off velocity. So lift your finger off quickly for a loud pull-off, slowly for a soft one.*
 
@@ -193,7 +193,7 @@ Just like a guitar, except you can hammer-on to either the right or the left, or
 
   *What happens when you play 3 or more notes within the zone and release one of them? Releasing a muted note doesn't do anything. In Right+Left mode, releasing the latest note (the sounding note) retriggers the latest muted note. But in Right-only or Left-only modes, it's the nearest muted note.*
 
-  *The zone size goes up to 12 semitones, plus ALL which includes the entire row. After choosing an edo, you can set the zone size in tenths of a semitone.*
+  *The zone size ranges from 1 to 12 semitones, plus ALL which includes the entire row. After choosing an edo, you can set the zone size in tenths of a semitone, 0.1 to 12.0 plus ALL.*
 
   *Hammer-ons require ChanPerNote or ChanPerRow mode. The note-on that sounds the hammer-on note is sent immediately after the note-off that mutes the earlier note. (The opposite is true during a OneChan trill in "X" or "X+Z" mode, to allow single-trigger).*
 
@@ -207,13 +207,13 @@ All CCs are reset to 0 or 64 upon releasing the low row, unless you latch the CC
 
   *Scroll down below X' and Y' to find "W=0". This indicates that the W CC resets to 0 when the low row is untouched and unlatched. Swipe right to change it to "W=64" for reset-to-center.  Below "W=0" is "X=0" and "Y=0", which work similarly. (X', Y' and Z always reset to 0.) X=64 makes the most sense when X'=OFF, because the reset value will correspond to the center of the pad, analogous to a physical joystick. Likewise Y=64 works well with Y'=OFF. X=64 and Y=64 also apply to the HLD mode.*
 
-  *X and X' can be set to match, e.g. both CC16. Likewise the Y and Y' CCs can match. But it's best if no other low row CCs match. Otherwise a single touch will send two values for one CC, and the CC value will jump wildly. As always, if any CC is sent by the low row and also by normal play (i.e. TIMBRE/Y or LOUDNESS/Z), the low row takes priority. Thus touching or latching the low row temporarily stops normal play from sending that CC.*
+  *X and X' can be set to match, e.g. both CC16. Likewise the Y and Y' CCs can match. But no other low row CCs should match. Otherwise a single touch will send two values for one CC, and the CC value will jump wildly. As always, if any CC is sent by the low row and also by normal play via TIMBRE/Y or LOUDNESS/Z, the low row takes priority. Thus touching or latching the low row temporarily stops normal play from sending that CC.*
 
   *You might want to use a low row pad with a braille dot, to feel the center of the pad. These pads are the 7th from the left, and on a LinnStrument 200, the 7th from the right.*
 
 DRUM PAD MODE
 
-The note lights become 14 mega-pads that play the 14 drum sounds from the sequencer. Not for stick drumming! Lets you roll on one note with two or more fingers. Rolls can be legato, good for cymbals. The mega-pads can be either 2x3 or 3x3. Accessed through the microLinn menu.
+The note lights become 14 mega-pads that play the 14 drum sounds from the sequencer. Not for stick drumming! Good for tabla/dumbek-style finger drumming because you can roll on one note with two or three fingers. Rolls can be legato, good for cymbals. The mega-pads can be either 2x3 or 3x3. Accessed through the microLinn menu.
 
   *Details:*
   * *Set PITCH/X on, otherwise a tap that hits two pads will send two notes. The drum sounds won't be accidentally pitch-bent because drum pad mode filters out all pitch bends.*
@@ -223,7 +223,7 @@ The note lights become 14 mega-pads that play the 14 drum sounds from the sequen
   * *The sequencer can have different drum sounds for each split. If you're using both splits, set the split point in between the pads.*
   * *The two pad colors are the main/accent colors of the current split. If you select a custom light pattern, it will overlay the drum pads. Useful for making the center of each 3x3 mega-pad a different color.*
   * *If you use musical sounds instead of drum sounds, and enter the appropriate pitches into the sequencer, you can make a sort of marimba.*
-  * *To create your own mega-pad layout, turn off Drum Pad mode, use locator CCs instead (see below) and edit one of the custom light patterns to match.*
+  * *To create your own mega-pad layout, turn off Drum Pad mode, use locating CCs instead (see below) and edit one of the custom light patterns to match.*
 
 CHAINING SEQUENCES
 
@@ -245,7 +245,7 @@ FOOTSWITCH / PANEL SWITCH: PCH (pitch)
 
   *Details: Set the pads in the PITCH/X column as desired. The previous PCH setting defaults to everything off, so when used the very first time, PCH turns off all the pads. Change this all-off setting to something new. Press PCH again to return to your old setting. Press again to return to your new setting.*
   
-  *PCH affects the active split only. PCH also affects the hidden setting Pitch Release. The previous setting is stored in the 6 memories. If the PCH switch seems to stop working, check that you aren't simply switching between two identical settings. As before, long-pressing PCH makes it momentary (non-latching). As before, the panel switch light helps you keep track of which setting is in use.*
+  *PCH affects the active split only, unless Global Both Splits is selected. PCH also controls the hidden setting Pitch Reset On Release. The previous setting is stored in the 6 memories. If the PCH switch seems to stop working, check that you aren't simply switching between two identical settings. As before, long-pressing PCH makes it momentary (non-latching). As before, the panel switch light helps you keep track of which setting is in use.*
 
 FOOTSWITCH / PANEL SWITCH: OCTAVE TOGGLE
 
@@ -263,11 +263,11 @@ DETUNING
 
 Detune the entire LinnStrument up or down from A-440 to match a similarly detuned recording or instrument. No guarantee that detuning to A-432 will heal your chakras lol. Accessed through microLinn's anchor cents after setting the edo to 12.
 
-MISCELLANEOUS GRAPHICAL INTERFACE IMPROVEMENTS
+MISCELLANEOUS GRAPHICS IMPROVEMENTS
 
   DOUBLE VOLUME FADERS: The Volume display always has two horizontal faders, one for each split. Incidentally, the volume faders are and always have been more accurate than their appearance suggests. Move sideways within a pad for fine adjustments. They also do and always have done something similar to hammer-ons and pull-offs.
 
-  You can use a splitter on your computer's stereo headphones output to send one audio channel to your amp and the other to an earbud that you use as an in-ear monitor. You can control the volume of both from the Volume screen. Good for  noisy gigs, good for chaotic jam sessions where you need to discretely find the key or the chords.
+  You can use a splitter on your computer's stereo headphones output to send one audio channel to your amp and the other to an earbud that you use as an in-ear monitor. You can control the volume of both from the Volume screen. Good for noisy gigs, good for chaotic jam sessions where you need to discretely find the key or the chords.
 
     *Details: In your DAW, send the synth's output to two tracks, each hard-panned to opposite sides. Each track receives the LinnStrument's midi from one of the 2 main midi channels (usually 1 and 16). Each track has a gain effect which you midi-learn to the volume CC. Now one volume fader will control your amp and the other will control  your earbud.*
 
@@ -287,13 +287,21 @@ MISCELLANEOUS GRAPHICAL INTERFACE IMPROVEMENTS
 
   SAME/BLINK CARRY OVER: If both splits are set to SAME or BLNK, playing in one split optionally shows matching notes in the other split too. Accessed through the microLinn menu.
 
-  WARNING FOR A DOUBLY-USED MIDI CHANNEL: If a channel is used by both splits, in the Per-Split display it's always shown in red.
+  WARNING FOR A DOUBLY-USED MIDI CHANNEL: If a channel is used by both splits, in the Per-Split display it's shown in red.
 
-LOCATOR CCs
+DISABLE MAIN MIDI CHANNEL VIA NRPN
 
-A locator CC message can be sent immediately before every note-on, indicating the row and column. Code on your laptop can then assign a specific function to a specific pad, e.g. upper lefthand corner is All Sound Off, or each pad in the last column is a specific Bank Select message. Or use this feature plus a custom light pattern to create large drum pads for more easily playing drum midi. Or create a third split, perhaps a column of on/off buttons, or a vertical fader or two, or even a horizontal split. Accessed through the microLinn menu.
+Send NRPN 1 or 101 with a value of 0. Must be in ChannelPerNote or ChannelPerRow mode. See midi.txt and https://www.kvraudio.com/forum/viewtopic.php?p=8322723#p8322723.
 
-On an actual guitar, middle-C played on the 2nd string 1st fret sounds very different when played on the 6th string 20th fret. Many guitar VSTis allow you to set the playing position (higher or lower on the fretboard) through keyswitches. Depending on your VSTi, it may be possible for code on your laptop to translate a locator CC to such a keyswitch and thus directly map the Linnstrument's columns to the virtual guitar's frets, making the guitar sound much more realistic. (It may also be possible to do this without locator CCs simply by using Channel Per Row mode.)
+SET ARPEGGIATOR TO QUARTER-NOTE TEMPO VIA NRPN
+
+Send NRPN 236 with a value of 0. See midi.txt and https://www.kvraudio.com/forum/viewtopic.php?p=6809095#p6809095.
+
+LOCATING CCs
+
+A locating CC message can be sent immediately before every note-on, indicating the row and column. Code in your DAW can then assign a specific function to a specific pad, e.g. upper lefthand corner is All Sound Off, or each pad in the last column is a specific Bank Select message. Or use this feature plus a custom light pattern to create large drum pads for more easily playing drum midi. Or create a third split, perhaps a column of on/off buttons, or a vertical fader or two, or even a horizontal split. Accessed through the microLinn menu.
+
+On an actual guitar, middle-C played on the 2nd string 1st fret sounds very different when played on the 6th string 20th fret. Many guitar VSTis allow you to set the playing position (higher or lower on the fretboard) through keyswitches. Depending on your VSTi, it may be possible for code on your laptop to translate a locating CC to such a keyswitch and thus directly map the Linnstrument's columns to the virtual guitar's frets, making the guitar sound much more realistic. (It may also be possible to do this without locating CCs simply by using Channel Per Row mode.)
 
   *Details: One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. The two types are selected in the microLinn menu. (On a LinnStrument 128, the 2nd type is never sent, and the menu option for it is hidden.) The two types should be different. If they are the same, they will be displayed in red. Avoid using these CCs that the LinnStrument uses for other purposes, which will be displayed in red:*
   * *CC 0 = bank select (when swiping in the Preset display)*
@@ -306,12 +314,13 @@ On an actual guitar, middle-C played on the 2nd string 1st fret sounds very diff
   * *CC 65 = portamento (when Assign Switch = CC65)*
   * *CC 74 = brightness (when Timbre/Y = CC74)*
   *If any of these pads (CC1, X, etc.) are light blue, a hidden setting may be allowing the use of another CC beyond these.*
+  *Also beware of the very powerful channel mode messages (CCs 120-127). Only use them if your DAW code reliably intercepts every single locating CC before it can reach your synth.*
 
   *For cols 1-16, the data value is (row - 1) + 8 * (col - 1). For cols 17-25, the data value is (row - 1) + 8 * (col - 17). Row 1 is the top row and column 1 is the leftmost column.*
 
-  *Locator CCs are mainly for Channel Per Note mode. There's not much point in using them in Channel Per Row mode, since the channel serves to locate the note. In One Channel mode the locator CC can locate a note-on but it can't locate the subsequent XYZ data.*
+  *Locating CCs are mainly for Channel Per Note mode. There's not much point in using them in Channel Per Row mode, since the channel serves to locate the note. In One Channel mode the locating CC can locate a note-on but it can't locate the subsequent XYZ data.*
 
-  *If your DAW isn't programmable, download LinnStrumentLocatorCCs.jsfx from the LinnStrument Community wiki. It defines a rectangular region on the LinnStrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. It runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live, FL Studio MIDI scripts, and other platforms.) Thanks to KVR forum member vorp40 for the locator CC idea!*
+  *If your DAW isn't programmable, download LinnStrumentLocatingCCs.jsfx from the LinnStrument Community wiki. It defines a rectangular region on the LinnStrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. It runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live, FL Studio MIDI scripts, and other platforms.) Thanks to KVR forum member vorp40 for the locating CC idea!*
 
 IMPORTING/EXPORTING
 
@@ -369,7 +378,7 @@ Import request files available on the LinnStrument Community Wiki:
 
 EDOS
 
-The edo (stands for Equal Division of an Octave, the notes per octave) ranges from 5edo to 55edo, plus "OFF" which makes the LinnStrument run normally. Change the edo by swiping sideways. You don't need to do anything to your synth to make it microtonal because all the microtonal fine-tuning is done via pitch bends. True "plug-and-play" microtonality!
+The edo (stands for Equal Division of an Octave, the notes per octave) ranges from 5edo to 55edo, plus "OFF" which makes the LinnStrument run normally. Change the edo by swiping sideways. You don't need to do anything to your MPE synth to make it microtonal because all the microtonal fine-tuning is done via pitch bends. True "plug-and-play" microtonality!
 
   *Details: When PITCH/X is off, the LinnStrument outputs standard midi notes (60 = middle-C, 69 = A-440, etc.) with "tuning bends". For example, in 24edo half the notes will have a 50¢ tuning bend. When PITCH/X is on, any "played bends" are automatically added on to the tuning bend. (As always, large bend ranges create a slight inaccuracy. A bend range of 96 semitones rounds all bends to the nearest 9600/8192 = 1.17¢.) See also Tuning Table mode below, which uses non-standard midi notes without tuning bends.*
 
@@ -559,9 +568,9 @@ When there are more than 128 notes, microLinn assigns the notes to midi groups. 
 
 Your linnstrument can send a CC message immediately before every note-on indicating the midi group. Your DAW can then use a custom midi-only effect to filter out all but one group. Your DAW would have multiple tracks, each receiving from only one group, and each with one instance of your softsynth into which you have loaded the appropriate scala and kbm files. Thus a tuning that requires N groups would also require N instances of your softsynth.
 
-  *Details: To send grouping CCs, swipe the tuning table mode past "ON" to "CC". You must also select a midi grouping CC type. (Until you do, "CC" will be displayed in red.) The two splits can send the same CC type. See Locator CCs above for which CC types to avoid. The filtering effect will filter out the grouping CC, so you needn't worry about it affecting your synth.*
+  *Details: To send grouping CCs, swipe the tuning table mode past "ON" to "CC". You must also select a grouping CC type. (Until you do, "CC" will be displayed in red.) The two splits can send the same CC type. See Locating CCs above for which CC types to avoid. The filtering effect will filter out the grouping CC, so you needn't worry about it affecting your synth.*
 
-  *The CC value is the midi group number, 1-8. Within a group, midi notes run from 0 to 127. Thus note 128 becomes midi note 0 in group 2. The number of midi groups needed depends on how many notes your tuning uses. MicroLinn automatically calculates the number of groups and indicates it by a vertical stack of 1-8 dots after the "CC".*
+  *The CC value is the midi group number, 1-8. Within a group, midi notes run from 0 to 127. Thus note 128 becomes midi note 0 in group 2. The number of groups needed depends on how many notes your tuning uses. MicroLinn automatically calculates the number of groups and indicates it by a vertical stack of 1-8 dots after the "CC".*
 
   *See the LinnStrument Community wiki for microLinnMidiGroupFilter.jsfx, a plug-in for Reaper, and microLinnMidiGroupDemo.RPP, an example Reaper project. Upon receiving a grouping CC, the filtering effect assigns a group (the CC's value) to the CC's channel. It then only passes midi data from those channels that have been assigned to a certain group.*
 
@@ -592,7 +601,7 @@ Your linnstrument can send a CC message immediately before every note-on indicat
 
   *All this assumes your synths are MPE-compatible and can handle midi channels independently. If not, each group synth must be replaced by up to 16 separate synths, each receiving only 1 midi channel.*
 
-  *Midi grouping CCs are sent before locator CCs, so that locator CCs can be filtered out.*
+  *Grouping CCs are sent before locating CCs, so that locating CCs can be filtered out.*
 
 TUNING TABLE MODE WITH RECHANNELING
 
@@ -634,6 +643,7 @@ KNOWN ISSUES:
 
 * Uninstalling involves first updating to a special version of microLinn (for now, fix coming soon)
 * Low row: Restrike, strum and arpegiate are not yet microtonal
+* Low row: arpegiate doesn't work with drum pad mode
 * Special: arpegiate and strum are not yet microtonal
 * Same/blink carry-over leaves extra lights on
 * Condensing to a scale makes the red playedSame dots appear in the wrong places
