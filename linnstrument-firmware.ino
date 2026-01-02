@@ -629,11 +629,11 @@ struct MicroLinnSplit {
   inline void setHammerOnMode(byte b) {hammerOnModes = (hammerOnModes & B11111100) | b;} 
   inline void setPullOffMode(byte b)  {hammerOnModes = (hammerOnModes & B11110011) | (b << 2);} 
   // used for PCH footswitch, store the previous pitch quantization settings
-  inline boolean prevPitchSend()                  {return bitRead(flags, 0);}
+  inline boolean prevSendX()                      {return bitRead(flags, 0);}
   inline boolean prevPitchCorrectQuantize()       {return bitRead(flags, 1);}
   inline byte    prevPitchCorrectHold()           {return (flags & B1100) >> 2;}      
   inline boolean prevPitchResetOnRelease()        {return bitRead(flags, 4);}
-  inline void setPrevPitchSend(boolean b)         {bitWrite(flags, 0, b);}
+  inline void setPrevSendX(boolean b)             {bitWrite(flags, 0, b);}
   inline void setPrevPitchCorrectQuantize(bool b) {bitWrite(flags, 1, b);}
   inline void setPrevPitchCorrectHold(byte b)     {flags = (flags & B11110011) | (b << 2);} 
   inline void setPrevPitchResetOnRelease(bool b)  {bitWrite(flags, 4, b);}
@@ -658,7 +658,7 @@ struct MicroLinnSplit {
   signed char transposeEDOsteps;          // accessed via displayOctaveTranspose screen, -7..7
   byte ccForLowRowW;                      // the note-on CC in XYZ joystick mode, 128 = Channel Pressure, 255 = OFF
   byte ccForLowRowX;                      // the X' CC in XYZ joystick mode, 128 = Channel Pressure, 255 = OFF
-  byte ccForLowRowY;                      // the Y' CC in XYZ
+  byte ccForLowRowY;                      // the Y' CC in XYZ (don't confuse Split.microLinn.ccForLowRowY = Y' with Split.ccForLowRowY = Y)
   byte flags;                             // Byxwrhhqs, s = sendX, q = quantize, hh = quantize hold, r = pitch reset, yxw = joystick WXY CCs
   byte reserved1;                         // reserved for future use, 1 byte per empty menu row
   byte reserved2;                         //    "
@@ -856,7 +856,6 @@ struct MicroLinnGlobal {
   byte equaveSemitones;                      // for non-octave tunings such as bohlen-pierce, 1..36, 1 semitone = 100 cents
   signed char equaveStretch;                 // cents, -50..+50
   byte sweeten;                              // in tenths of a cent, 0..60, adjust 41edo 5/4, 5/3 by this amount both top and bottom to make it closer to just
-//signed char launcherCC;                    // CC to send on presets display last column, ranges from 0 to 119, -1 = OFF
   byte largeEDO;                             // ranges 0..53, 0 = OFF, 1..52 = various edos, 53 = 1200edo = JI, user can have a 55-note subset of this edo 
 //signed char largeEDOoffset[MICROLINN_MAX_EDO];  // ranges -128..127, edosteps from nearest large-edo approximation
   short guitarTuning[MAXROWS];               // independent of Global.guitarTuning, interval in edosteps from the string below it, can be negative, [0] is DIA/CHRO
@@ -1133,8 +1132,8 @@ boolean customLedPatternActive = false;                  // was a custom led pat
 unsigned long tempoLedOn = 0;                       // indicates when the tempo clock led was turned on
 
 ChannelBucket splitChannels[NUMSPLITS];             // the MIDI channels that are being handed out
-byte midiPreset[NUMSPLITS];                         // preset number 0-127, for semding Program Change messages
-byte midiBank[NUMSPLITS];                           // bank number 0-127, for semding Bank Select messages (CC0)
+byte midiPreset[NUMSPLITS];                         // preset number 0-127, for sending Program Change messages
+byte midiBank[NUMSPLITS];                           // bank number 0-127, for sending Bank Select messages (CC0)
 byte ccFaderValues[NUMSPLITS][129];                 // the current values of the CC faders
 byte currentEditedCCFader[NUMSPLITS];               // the current CC fader number that is being edited
 signed char arpTempoDelta[NUMSPLITS];               // ranges from -24 to 24 to apply a speed difference to the selected arpeggiator speed
@@ -1206,15 +1205,17 @@ short guitarTuningPreviewChannel = -1;              // active channel that is pr
 
 byte customLedColor = COLOR_GREEN;                  // color is used for drawing in the custom LED editor
 
-// these vars report on the user settings the current firmware received from the updater app, for troubleshooting
-// part of the microLinn fork, display them by tapping row 7 cols 17-21 on the Global Settings screen
-// these are lost upon power down, so they must be examined immediately after updating
-// -2 means a power down has already happened, so no valid data to display
-signed char updaterVersion = -2;                    // the 2 version numbers contained in the incoming settings
-signed char updaterMicroLinnVersion = -2;
-short updaterSettingsSize = -2;                     // the incoming settings size as reported by the updater
-short updaterImpliedSettingsSize = -2;              // size of the incoming settings implied by the 2 versions, should match
-short updaterBadBatchNum = -2;                      // the number of the 96-byte batch that flunked crc, -1 means all good
+#ifdef DEBUG_ENABLED
+  // these vars report the user settings the current firmware received from the updater app, for troubleshooting
+  // part of the microLinn fork, display them by tapping row 7 cols 17-21 on the Global Settings screen
+  // these are lost upon power down, so they must be examined immediately after updating
+  // -2 means a power down has already happened, so no valid data to display
+  signed char updaterVersion = -2;                    // the 2 version numbers contained in the incoming settings
+  signed char updaterMicroLinnVersion = -2;
+  short updaterSettingsSize = -2;                     // the incoming settings size as reported by the updater
+  short updaterImpliedSettingsSize = -2;              // size of the incoming settings implied by the 2 versions, should match
+  short updaterBadBatchNum = -2;                      // the number of the 96-byte batch that flunked crc, -1 means all good
+#endif
 
 /************************* FUNCTION DECLARATIONS TO WORK AROUND COMPILER *************************/
 

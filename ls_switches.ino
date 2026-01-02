@@ -294,7 +294,7 @@ void performSwitchAssignmentOn(byte whichSwitch, byte assignment, byte split) {
       break;
 
     case ASSIGNED_REVERSE_PITCH_X:
-      performReverseSendXToggle();
+      performReverseSendXToggle(split);
       break;
 
     case ASSIGNED_SEQUENCER_PLAY:
@@ -356,21 +356,24 @@ void performArpeggiatorToggle() {
   }
 }
 
-void performReverseSendXToggle() {
+void performReverseSendXToggle(byte side) {
   // microLinn: PCH now toggles between the current and previous settings of all 5 cells in the PITCH/X column
-  byte side = Global.currentPerSplit;
   boolean swap = Split[side].sendX;
-  Split[side].sendX = Split[side].microLinn.prevPitchSend();
-  Split[side].microLinn.setPrevPitchSend(swap);
+  Split[side].sendX = Split[side].microLinn.prevSendX();
+  Split[side].microLinn.setPrevSendX(swap);
+
   swap = Split[side].pitchCorrectQuantize;
   Split[side].pitchCorrectQuantize = Split[side].microLinn.prevPitchCorrectQuantize();
   Split[side].microLinn.setPrevPitchCorrectQuantize(swap);
+
   byte swap2 = Split[side].pitchCorrectHold;
   Split[side].pitchCorrectHold = Split[side].microLinn.prevPitchCorrectHold();
   Split[side].microLinn.setPrevPitchCorrectHold(swap2);
+
   swap = Split[side].pitchResetOnRelease;
   Split[side].pitchResetOnRelease = Split[side].microLinn.prevPitchResetOnRelease();
-  Split[side].microLinn.setPrevPitchResetOnRelease(swap);  
+  Split[side].microLinn.setPrevPitchResetOnRelease(swap);
+
   if (displayMode == displayPerSplit) {
     updateDisplay();
   }
@@ -432,7 +435,7 @@ void performSwitchAssignmentOff(byte whichSwitch, byte assignment, byte split) {
       break;
 
     case ASSIGNED_REVERSE_PITCH_X:
-      performReverseSendXToggle();
+      performReverseSendXToggle(split);
       break;
 
     case ASSIGNED_STANDALONE_MIDI_CLOCK:

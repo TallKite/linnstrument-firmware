@@ -20,6 +20,7 @@ or footswitch       PR+ or PR-              Program Change
 Per-Split display   Change the midi mode    XYZ reset messages
  
 Preset display      Change the preset       Program Change (microLinn adds CC0 = Bank Select)
+                    Launch a clip           Control Change
 
 Volume display      X movement              Control Change (CC7 = Volume)
 
@@ -97,7 +98,7 @@ The following table lists all the NRPN input values that LinnStrument understand
 NRPN   Value   Description
 -------------------------------------------------------------------------------------------------------------
 0      0-2     Split Left MIDI Mode (0: One Channel, 1: Channel Per Note, 2: Channel Per Row)
-1      0-16    Split Left MIDI Main Channel (0 = disable main channel)
+1      0-16    Split Left MIDI Main Channel (0 = disable main channel / report main channel is disabled)
 2      0-1     Split Left MIDI Per Note Channel 1 (0: Off, 1: On)
 3      0-1     Split Left MIDI Per Note Channel 2 (0: Off, 1: On)
 4      0-1     Split Left MIDI Per Note Channel 3 (0: Off, 1: On)
@@ -164,7 +165,7 @@ NRPN   Value   Description
 65     0-3     Split Left Sequencer Select Pattern Number
 66     1       Split Left Sequencer Toggle Mute
 100    0-2     Split Right MIDI Mode (0: One Channel, 1: Channel Per Note, 2: Channel Per Row)
-101    0-16    Split Right MIDI Main Channel (0 = disable main channel)
+101    0-16    Split Right MIDI Main Channel (0 = disable main channel / report main channel is disabled)
 102    0-1     Split Right MIDI Per Note Channel 1 (0: Off, 1: On)
 103    0-1     Split Right MIDI Per Note Channel 2 (0: Off, 1: On)
 104    0-1     Split Right MIDI Per Note Channel 3 (0: Off, 1: On)
@@ -258,10 +259,10 @@ NRPN   Value   Description
 225    0-1     Global Accent Note Light A# (0: Off, 1: On)
 226    0-1     Global Accent Note Light B (0: Off, 1: On)
 227 *  0-13    Global Row Offset (only supports, 0: No overlap, 3 4 5 6 7 12: Intervals, 13: Guitar, 127: 0 offset)
-228    0-17    Global Switch 1 Assignment (0: Oct Down, 1: Oct Up, 2: Sustain, 3: CC65, 4: Arp, 5: Alt Split, 6: Auto Octave, 7: Tap Tempo, 8: Legato, 9: Latch, 10: Preset Up, 11: Preset Down, 12: Reverse Pitch X, 13: Sequencer Play, 14: Sequencer Previous, 15: Sequencer Next, 16: Send MIDI Clock, 17: Sequencer Mute)
-229    0-17    Global Switch 2 Assignment (0: Oct Down, 1: Oct Up, 2: Sustain, 3: CC65, 4: Arp, 5: Alt Split, 6: Auto Octave, 7: Tap Tempo, 8: Legato, 9: Latch, 10: Preset Up, 11: Preset Down, 12: Reverse Pitch X, 13: Sequencer Play, 14: Sequencer Previous, 15: Sequencer Next, 16: Send MIDI Clock, 17: Sequencer Mute)
-230    0-17    Global Foot Left Assignment (0: Oct Down, 1: Oct Up, 2: Sustain, 3: CC65, 4: Arp, 5: Alt Split, 6: Auto Octave, 7: Tap Tempo, 8: Legato, 9: Latch, 10: Preset Up, 11: Preset Down, 12: Reverse Pitch X, 13: Sequencer Play, 14: Sequencer Previous, 15: Sequencer Next, 16: Send MIDI Clock, 17: Sequencer Mute)
-231    0-17    Global Foot Right Assignment (0: Oct Down, 1: Oct Up, 2: Sustain, 3: CC65, 4: Arp, 5: Alt Split, 6: Auto Octave, 7: Tap Tempo, 8: Legato, 9: Latch, 10: Preset Up, 11: Preset Down, 12: Reverse Pitch X, 13: Sequencer Play, 14: Sequencer Previous, 15: Sequencer Next, 16: Send MIDI Clock, 17: Sequencer Mute)
+228    0-21    Global Switch 1 Assignment   (0: 8ve Down, 1: 8ve Up, 2: Sustain, 3: CC65, 4: Arp, 5: Alt Split, 6: Auto Octave, 7: Tap Tempo...)
+229    0-21    Global Switch 2 Assignment   (...8: Legato, 9: Latch, 10: Preset Up, 11: Preset Down, 12: Reverse Pitch X, 13: Sequencer Play...)
+230    0-21    Global Foot Left Assignment  (...14: Sequencer Previous, 15: Sequencer Next, 16: Send MIDI Clock, 17: Sequencer Mute...)
+231    0-21    Global Foot Right Assignment (...18: MicroLinn 8ve Up, 19: MicroLinn 8ve Down, 20: MicroLinn EDO Up, 21: MicroLinn EDO Down)
 232    0-3     Global Velocity Sensitivity (0: Low, 1: Medium, 2: High, 3: Fixed)
 233    0-2     Global Pressure Sensitivity (0: Low, 1: Medium, 2: High)
 234    0-1     Device MIDI I/O (0: MIDI Jacks, 1: USB)
@@ -310,7 +311,7 @@ Additional NRPN messages for microLinn (nn00-nn49 = non-microtonal, nn50-nn99 = 
 NRPN   Value   Description
 -------------------------------------------------------------------------------------------------------------
 1000 *  1-10        Split Left Column Offset 
-1001 *  0-52        Split Left Row Offset, ranges -26..26 (-26 = OFF, 26 = NOVR), so add/subtract 26 to convert it
+1001 *  0-52        Split Left Row Offset, which ranges -26..26 (-26 = OFF, 26 = NOVR), so add/subtract 26 to convert it
 1002    0-3         Split Left mono fixes, X = fix bends, Z = maximize channel pressure, 0 = OFF, 1 = X, 2 = Z, 3 = X plus Z
 1003    0-3         Split Left hammerOnMode, 0 = OFF, 1 = R, 2 = L, 3 = R and L
 1004    0-121       Split Left hammerOnZone, maximum width in tens of cents of a hammer-on, 0 = OFF, 120 = 1 octave, 121 = ALL

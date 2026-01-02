@@ -949,7 +949,7 @@ void paintMicroLinnOSVersionDisplay() {
 
 // paint the current preset number for a particular side, in large block characters
 byte getPresetDisplayColumn() {
-  return LINNMODEL == 200 ? NUMCOLS-2 : NUMCOLS-1;
+  return isLinn200() ? NUMCOLS-2 : 16;
 }
 
 void paintPresetDisplay(byte side) {
@@ -972,6 +972,7 @@ void paintPresetDisplay(byte side) {
     paintShowSplitSelection(side);
     paintNumericDataDisplay(Split[side].colorAccent, midiBank[side]+1, 0, false);
   }
+  paintMicroLinnClipLauncher();
 }
 
 void paintBendRangeDisplay(byte side) {

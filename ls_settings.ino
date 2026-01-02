@@ -1849,6 +1849,8 @@ boolean handleShowSplit() {
 }
 
 void handlePresetNewTouch() {
+  if (handleMicroLinnClipLauncher(127)) return;
+
   // microLinn sends a program change message on release not on new touch, to avoid sending multiple messages per swipe
   // it also sends a bank select message instead of a PC message if the blue dot is held when releasing
   boolean isBank = touchInfo[1][0].touched == touchedCell;
@@ -1875,13 +1877,13 @@ void handlePresetNewTouch() {
       setLed(sensorCol, sensorRow, globalColor, cellSlowPulse);
     }
   }
-  else if (sensorCol < getPresetDisplayColumn()) {
+  else if (sensorCol <= 15) {
     // if the blue dot is newly touched, or if it's held while there's a single new touch elsewhere (a slide makes 2 touches),
     // call resetNumericDataChangeCol() so that the blue dot touch won't be interpreted as part of a swipe 
     if ((sensorCol == 1 && sensorRow == 0) || (isBank && cellsTouched == 2)) {
       resetNumericDataChangeCol();
     }
-    if (isBank) handleNumericDataNewTouchCol(midiBank[side], 0, 127, true);
+    if (isBank) handleNumericDataNewTouchCol(midiBank[side],   0, 127, true);
     else        handleNumericDataNewTouchCol(midiPreset[side], 0, 127, true);
     updateDisplay();
   }
@@ -1919,19 +1921,20 @@ void applyMidiPreset() {
 }
 
 void handlePresetRelease() {
+  //if (handleMicroLinnClipLauncher(0)) return;        // screws up Reaper, but other DAWs might need it, delete?
+
   if (sensorCol > getPresetDisplayColumn()) {
     return;
   }
 
-  if (sensorCol < getPresetDisplayColumn() ||
-     (sensorCol == getPresetDisplayColumn() && sensorRow == 7)) {
+  if (sensorCol <= 15 || (sensorCol == 16 && sensorRow == 7)) {
     handleNumericDataReleaseCol(true);
     // microLinn sends the program change msg on release, not on new touch
     if (cellsTouched == 0) {
       // if releasing the blue dot, update the number and its color
       if (sensorCol == 1 && sensorRow == 0) updateDisplay();
-      // if releasing anywhere else, send the PC message
-      else applyMidiPreset();
+      // if releasing anywhere else besides the split selector, send the PC message
+      else if (!(inRange(sensorCol, 15, 16) && sensorRow == 7)) applyMidiPreset();
     }
     // if holding the blue dot while releasing another touch, send the Bank Select message
     if (cellsTouched == 1 && touchInfo[1][0].touched == touchedCell)

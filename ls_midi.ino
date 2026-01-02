@@ -444,16 +444,15 @@ void handleMidiInput(unsigned long nowMicros) {
             }
             break;
           case 38:
-            if (lastRpnMsb != 127 || lastRpnLsb != 127) {
-              lastDataLsb = midiData2;
-              receivedRpn(midiChannel, (lastRpnMsb<<7)+lastRpnLsb, (lastDataMsb<<7)+lastDataLsb);
-              break;
-            }
+            // microLinn does NRPNs first and RPNs last, seems to help with bulk importing
             if (lastNrpnMsb != 127 || lastNrpnLsb != 127) {
               lastDataLsb = midiData2;
               receivedNrpn((lastNrpnMsb<<7)+lastNrpnLsb, (lastDataMsb<<7)+lastDataLsb, midiChannel);
-              break;
+            } else if (lastRpnMsb != 127 || lastRpnLsb != 127) {
+              lastDataLsb = midiData2;
+              receivedRpn(midiChannel, (lastRpnMsb<<7)+lastRpnLsb, (lastDataMsb<<7)+lastDataLsb);
             }
+            break;
           case 98:
             lastNrpnLsb = midiData2;
             break;
@@ -470,6 +469,10 @@ void handleMidiInput(unsigned long nowMicros) {
             break;
           case 101:
             lastRpnMsb = midiData2;
+            if (lastRpnLsb == 127 && lastRpnMsb == 127) {
+              lastNrpnLsb = 127;
+              lastNrpnMsb = 127;
+            }
             break;
         }
         break;
@@ -577,7 +580,7 @@ void receivedNrpn(int parameter, int value, int channel) {
     // Split MIDI Main Channel
     case 1:
       if (value == 0 && Split[split].midiMode != oneChannel) {
-        // microLinn permits disabling the main channel via NRPN
+        // microLinn permits disabling the main channel by sending a value of 0
         Split[split].midiChanMainEnabled = false;
       }
       else if (inRange(value, 1, 16)) {
@@ -1304,7 +1307,7 @@ void receivedNrpn(int parameter, int value, int channel) {
 
 void sendNrpnParameter(int parameter, int channel) {
   if (parameter >= 2048) {
-    // bulk export microLinn and/or non-microLinn user settings
+    // bulk export multiple microLinn and/or non-microLinn user settings
     exportMicroLinnData(parameter);
     return;
   }  
@@ -1326,7 +1329,8 @@ void sendNrpnParameter(int parameter, int channel) {
       value = Split[split].midiMode;
       break;
     case 1:
-      value = Split[split].midiChanMain;
+      // microLinn reports a disabled main channel as channel 0
+      value = Split[split].midiChanMainEnabled ? Split[split].midiChanMain : 0;
       break;
     case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9:
     case 10: case 11: case 12: case 13: case 14: case 15: case 16: case 17:

@@ -27,12 +27,13 @@ IMPORTANT: Updating to a newer version of microLinn is done normally. Put the ne
 Don't uninstall (avoid the red pad) when updating to a newer version of microLinn, because you'll delete your microtonal data needlessly.
 
 
-#  MAIN MENU  
+#  MICROLINN MENUS
 
 
 To go to the main microLinn menu, on the Global Settings screen, long-press the lower left pad (VIEW MAIN). Once the edo (notes per octave) is set to anything other than OFF, VIEW MAIN turns yellow and you can simply tap it. You can also tap the yellow button in column 17 (column 16 on a LinnStrument 128).
 
-Main menu, *LONG-PRESS EACH BUTTON* to see its function
+Main MicroLinn menu, *LONG-PRESS EACH BUTTON* to see its function
+
 
   col 2) Per-split column offset (OFF, 2 to 10)
   
@@ -106,6 +107,14 @@ Main menu, *LONG-PRESS EACH BUTTON* to see its function
     row 5) Equave cents (-50 to 50)
 
 
+Additions to other menus:
+* PerSplit display: long-press Low Row XYZ, additional option JOY with additional options for W, X' and Y' CCs
+* Preset display: blue Bank Select button in lower left, 16 clip launching buttons on the right (top/bottom on Linn128)
+* Volume display: upper fader for the left split, lower fader for the right split
+* Octave/Transpose display: when microtonal, additional option for transposing by major 2nds
+* Global display: yellow MicroLinn menu button on the far right, long-press Tap Tempo and swipe for new options, double-tap Low Power
+
+
 # IMPORTANT TERMINOLOGY
 
 Glide: a large bend to a new pad, as opposed to a small bend that stays within one pad.
@@ -175,7 +184,10 @@ MONO MODE
 
 In OneChannel and ChannelPerRow modes, one midi channel can have mutiple midi notes. The LinnStrument's default behavior when this happens is designed for compatibility with non-MPE polyphonic synths. For example, when more than one pad is played, glides are quantized to the nearest semitone. Mono mode adds 2 new behaviors that are designed for compatibility with non-MPE *monophonic* synths. 
 
-  PITCH/X FIXES: Selecting "X" or "X+Z" allows unquantized glides. Furthermore, you can trill on a single note by using a pad on another row that plays the same note. Finally, when the latest-played pad is released, the most recent bend for the new latest-played pad is sent, so you can trill while gliding.
+  PITCH/X FIXES: 
+  * Selecting "X" or "X+Z" allows unquantized glides.
+  * You can trill on a single note by using a pad on another row that plays the same note.
+  * When the latest-played pad is released, the most recent bend for the new latest-played pad is sent, so you can trill while gliding.
 
   MAXIMIZE LOUDNESS/Z: The LinnStrument's default behavior is to send Z data from the latest note only. By necessity, a pad's Z data must start and end with a zero value. Thus holding one pad and playing a 2nd pad causes an abrupt jump in loudness to 0, and releasing that pad causes an abrupt jump from 0 to the Z-value of the 1st pad. Selecting "Z" or "X+Z" maximizes the Z data via a "soft takeover" as opposed to a "hard takeover". Z data is sent only from whichever pad is currently being pressed the hardest.
 
@@ -203,13 +215,13 @@ Joystick mode lets you shape your sound as you're playing, much as the Touche SE
 
 All CCs are reset to 0 or 64 upon releasing the low row, unless you latch the CCs via a 2nd touch anywhere in the low row. Latching lets you play the new sound with both hands. The low row turns color to indicate the latching. Once the low row is completely untouched, the next touch un-latches.
 
-  *Details: On Per-Split Settings, long-press the XYZ pad. Scroll past HLD (hold) and FDR (fader) to JOY (joystick). JOY is like HLD, but it reduces the range of X from 7 pads to 1, and moves the zero point from the center of the pad to the left edge. Scrolling down past X, Y and Z reveals the W, X' and Y' CCs which default to OFF. Setting X' to a CC moves the zero point back to the center of the pad. Roll to the right to send the X CC, and roll to the left to send the X' CC. The Y' CC works similarly, roll up for Y and down for Y'.*
+  *Details: On Per-Split Settings, long-press the Low Row XYZ pad. Scroll past HLD (hold) and FDR (fader) to JOY (joystick). JOY is like HLD, but it reduces the range of X from 7 pads to 1, and moves the zero point from the center of the pad to the left edge. Scrolling down past X, Y and Z reveals the W, X' and Y' CCs which default to OFF. Setting X' to a CC moves the zero point back to the center of the pad. Roll to the right to send the X CC, and roll to the left to send the X' CC. The Y' CC works similarly, roll up for Y and down for Y'.*
 
   *Scroll down below X' and Y' to find "W=0". This indicates that the W CC resets to 0 when the low row is untouched and unlatched. Swipe right to change it to "W=64" for reset-to-center.  Below "W=0" is "X=0" and "Y=0", which work similarly. (X', Y' and Z always reset to 0.) X=64 makes the most sense when X'=OFF, because the reset value will correspond to the center of the pad, analogous to a physical joystick. Likewise Y=64 works well with Y'=OFF. X=64 and Y=64 also apply to the HLD mode.*
 
-  *X and X' can be set to match, e.g. both CC16. Likewise the Y and Y' CCs can match. But no other low row CCs should match. Otherwise a single touch will send two values for one CC, and the CC value will jump wildly. As always, if any CC is sent by the low row and also by normal play via TIMBRE/Y or LOUDNESS/Z, the low row takes priority. Thus touching or latching the low row temporarily stops normal play from sending that CC.*
+  *See CC SUGGESTIONS below for which CCs to avoid. X and X' can be set to match, e.g. both CC16. Likewise the Y and Y' CCs can match. But no other low row CCs should match. Otherwise a single touch will send two values for one CC, and the CC value will jump wildly. As always, if any CC is sent by the low row and also by normal play via TIMBRE/Y or LOUDNESS/Z, the low row takes priority. Thus touching or latching the low row temporarily stops normal play from sending that CC.*
 
-  *You might want to use a low row pad with a braille dot, to feel the center of the pad. These pads are the 7th from the left, and on a LinnStrument 200, the 7th from the right.*
+  *You might want to use a low row pad with a braille dot, to feel the center of the pad.*
 
 DRUM PAD MODE
 
@@ -245,7 +257,7 @@ FOOTSWITCH / PANEL SWITCH: PCH (pitch)
 
   *Details: Set the pads in the PITCH/X column as desired. The previous PCH setting defaults to everything off, so when used the very first time, PCH turns off all the pads. Change this all-off setting to something new. Press PCH again to return to your old setting. Press again to return to your new setting.*
   
-  *PCH affects the active split only, unless Global Both Splits is selected. PCH also controls the hidden setting Pitch Reset On Release. The previous setting is stored in the 6 memories. If the PCH switch seems to stop working, check that you aren't simply switching between two identical settings. As before, long-pressing PCH makes it momentary (non-latching). As before, the panel switch light helps you keep track of which setting is in use.*
+  *PCH affects the active split only, unless Both Splits is selected and both splits are visible. PCH also controls the hidden setting Pitch Reset On Release. Both the current and previous settings are stored in the 6 memories. If the PCH switch seems to stop working, check that you aren't simply switching between two identical settings. As before, long-pressing PCH makes it momentary (non-latching). As before, the panel switch light helps you keep track of which setting is in use.*
 
 FOOTSWITCH / PANEL SWITCH: OCTAVE TOGGLE
 
@@ -253,7 +265,7 @@ Two new functions for footswitches and panel switches. 8VE± toggles between Oct
 
 PRESET DISPLAY: PROGRAM CHANGE AND BANK SELECT
 
-To send a Bank Select message instead of a Program Change message, hold the blue dot in the lower left corner and swipe (or tap the green/red buttons) as usual. When swiping, the message is sent on touch release, not new touch. This prevents a single swipe sending multiple messages and overwhelming your synth.
+To send a Bank Select message instead of a Program Change message, hold the blue dot in the lower left corner and swipe (or tap the green/red buttons) as usual. When swiping, the message is sent on touch release, not new touch. This prevents a single swipe sending multiple messages and overwhelming your synth. See https://www.kvraudio.com/forum/viewtopic.php?t=570851.
 
 PITCH YIP GONE
 
@@ -291,11 +303,11 @@ MISCELLANEOUS GRAPHICS IMPROVEMENTS
 
 DISABLE MAIN MIDI CHANNEL VIA NRPN
 
-Send NRPN 1 or 101 with a value of 0. Must be in ChannelPerNote or ChannelPerRow mode. See midi.txt and https://www.kvraudio.com/forum/viewtopic.php?p=8322723#p8322723.
+Disable it by sending NRPN 1 or 101 with a value of 0. Must be in ChannelPerNote or ChannelPerRow mode. Using NRPN 299 to read the main midi channel reports a disabled main channel as channel 0. See midi.txt and https://www.kvraudio.com/forum/viewtopic.php?p=8322723#p8322723.
 
 SET ARPEGGIATOR TO QUARTER-NOTE TEMPO VIA NRPN
 
-Send NRPN 236 with a value of 0. See midi.txt and https://www.kvraudio.com/forum/viewtopic.php?p=6809095#p6809095.
+Send NRPN 236 with a value of 0. See midi.txt and https://www.kvraudio.com/forum/viewtopic.php?p=6809095#p6809095. Can also be done via low row by sliding all the way to the left.
 
 LOCATING CCs
 
@@ -303,40 +315,33 @@ A locating CC message can be sent immediately before every note-on, indicating t
 
 On an actual guitar, middle-C played on the 2nd string 1st fret sounds very different when played on the 6th string 20th fret. Many guitar VSTis allow you to set the playing position (higher or lower on the fretboard) through keyswitches. Depending on your VSTi, it may be possible for code on your laptop to translate a locating CC to such a keyswitch and thus directly map the Linnstrument's columns to the virtual guitar's frets, making the guitar sound much more realistic. (It may also be possible to do this without locating CCs simply by using Channel Per Row mode.)
 
-  *Details: One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. The two types are selected in the microLinn menu. (On a LinnStrument 128, the 2nd type is never sent, and the menu option for it is hidden.) The two types should be different. If they are the same, they will be displayed in red. Avoid using these CCs that the LinnStrument uses for other purposes, which will be displayed in red:*
-  * *CC 0 = bank select (when swiping in the Preset display)*
-  * *CC 1 = mod wheel (when Timbre/Y = CC1 or Low Row = X)*
-  * *CC 7 = volume (when swiping in the Volume display)*
-  * *CC 1-8 (when Special = CC Faders)*
-  * *CC 11 = expression (when Loudness/Z = CC11)* 
-  * *CC 16-18 = general purpose (when Low Row = XYZ)* 
-  * *CC 64 = sustain (when Low Row = Sustain or Assign Switch = Sustain)*
-  * *CC 65 = portamento (when Assign Switch = CC65)*
-  * *CC 74 = brightness (when Timbre/Y = CC74)*
-  *If any of these pads (CC1, X, etc.) are light blue, a hidden setting may be allowing the use of another CC beyond these.*
-  *Also beware of the very powerful channel mode messages (CCs 120-127). Only use them if your DAW code reliably intercepts every single locating CC before it can reach your synth.*
+  *Details: One type of CC is sent for note-ons in cols 1-16 and another type of CC is sent for note-ons in cols 17-25. The two types are selected in the microLinn menu. (On a LinnStrument 128, the 2nd type is never sent, and the menu option for it is hidden.) The two types should be different. If they are the same, they will be displayed in red. See CC SUGGESTIONS below for which CCs to avoid.*
 
-  *For cols 1-16, the data value is (row - 1) + 8 * (col - 1). For cols 17-25, the data value is (row - 1) + 8 * (col - 17). Row 1 is the top row and column 1 is the leftmost column.*
+  *Locating CCs are mainly for ChannelPerNote mode. In OneChannel mode the locating CC can locate a note-on but it can't locate the subsequent XYZ data. There's not much point in using them in ChannelPerRow mode, since the channel serves to locate the note. But locating via CCs has two advantages over locating via ChannelPerRow. One, ChannelPerRow forces you to give up full MPE, because two notes on the same row can't be bent independently. Two, locating by CC is unaffected by transposition, col/row offsets, etc. thus one can assign a function to a specific pad, like the upper left one.*
 
-  *Locating CCs are mainly for Channel Per Note mode. There's not much point in using them in Channel Per Row mode, since the channel serves to locate the note. In One Channel mode the locating CC can locate a note-on but it can't locate the subsequent XYZ data.*
+  *For cols 1-16, the CC's data value is (row - 1) + 8 * (col - 1). For cols 17-25, the data value is (row - 1) + 8 * (col - 17). Row 1 is the top row and column 1 is the leftmost column.*
 
-  *If your DAW isn't programmable, download LinnStrumentLocatingCCs.jsfx from the LinnStrument Community wiki. It defines a rectangular region on the LinnStrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. It runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live, FL Studio MIDI scripts, and other platforms.) Thanks to KVR forum member vorp40 for the locating CC idea!*
+  *If your DAW isn't programmable, download LinnStrumentLocatingCCs.jsfx from the LinnStrument Community Wiki. It defines a rectangular region on the LinnStrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. It runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live, FL Studio MIDI scripts, and other platforms.)*
+  
+  *Thanks to KVR forum member vorp40 for the locating CC idea!*
 
 IMPORTING/EXPORTING
 
-You can back up various settings and/or share them with others via midi files. The 6 memories, the 3 custom light patterns, the 16 audience messages, microtonal data, and all settings combined. A memory or light pattern loads in about 1 second, doable on stage in between songs. If you can launch midi clips, you can have an unlimited amount of memories, one for each song on the set list! Check the LinnStrument Community Wiki for export-request files and importable settings files.
+You can back up various settings and/or share them with others via midi files. The 6 memories, the 3 custom light patterns, the 16 audience messages, microtonal data, and all settings combined. A memory or light pattern imports in about 1 second, doable on stage in between songs. You can use the clip launcher (see below) to trigger an import on stage, giving you dozens of memories, one for each song on the set list! Check the LinnStrument Community Wiki for export-request files and importable settings files.
 
-  *Details: Importing: Download a settings file from the wiki. On your LinnStrument, set Allow Importing to YES. In your DAW, set the output of a midi track to your LinnStrument. Load the settings file into that track and press play. Your LinnStrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #9 below.*
+  *Details: To import, download a settings file from the wiki. On your LinnStrument, set Allow Importing to YES. In your DAW, set the output of a midi track to your LinnStrument. Load the settings file into that track and press play. Your LinnStrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #9 below.*
 
   *To import a custom light pattern, before you press play, you must first display the one you want to overwrite. To import an audience message, before you press play, you must first load for editing the one you want to overwrite. (You needn't actually edit it.)*
 
-  *If the EDO is OFF, Scales for Current EDO imports/exports the 9 scales in the Global Settings display.*
+  *If the EDO is OFF, ScalesCurrentEDO imports/exports the 9 scales in the Global Settings display. If the EDO is on, it imports/exports the 7 scales in the Microtonal Note Ligts display.*
 
-  *All Settings for Current EDO imports/exports not only the scales, rainbow and fretboard, but also the equave semitones, the equave cents, the guitar tuning, and all row and column offsets. It does not import/export the anchor pad, note or cents.*
-
+  *AllSettingsCurrentEDO imports/exports not only the scales, rainbow and fretboard, but also the equave semitones, the equave cents, the guitar tuning, and all row and column offsets. It does not import/export the anchor pad, note or cents.*
+  
   *Exporting: Download an export-request file from the wiki. In your DAW, set the input of midi track A and the output of midi track B to your LinnStrument. Put the export-request midi file at the start of track B. Then start recording on track A. When your LinnStrument stops sending midi, stop recording. Save the midi on track A to a midi file (i.e. export it from your DAW), preferably as format 0. Name it something informative such as "lightPattern31edoFretboard.mid" or "22edoScales.mid". Later on you can import this file to restore your settings. Or share it on the wiki.*
 
-  *Exporting multiple requests: 1st method: Send the first request and see in your DAW where the LinnStrument stops sending midi. Position the next request file in track B about 1/10 of a second after that. Add additional request files similarly. Record all requests at once, and save the midi to a file as before. 2nd method: Record each export individually. Then position those midi clips next to each other in your DAW, and save them all as one file.*
+  *A single NRPN will import/export one setting, and you can change multiple settings with a midi file containing multiple NRPNs. For an example of this, see below setCCfadersTo21-28.mid for clip launching. Bulk exports consist of a single NRPN followed by multiple polypressure messages. A midi file can contain multiple NRPNs and/or multiple bulk exports. See midi.txt for the details.*
+
+  *Exporting multiple requests: 1st method: Record each export individually. Then position those midi clips next to each other in your DAW, and save them all as one file. 2nd method: Send the first request and see in your DAW where the LinnStrument stops sending midi. Position the next request file in track B about 1/10 of a second after that. Position additional request files similarly. Record all requests at once, and save the midi to a file as before.*
 
   *Troubleshooting:*
   * *(1) While importing or exporting, don't play your LinnStrument.*
@@ -345,17 +350,17 @@ You can back up various settings and/or share them with others via midi files. T
   * *(4) For security, unplugging the LinnStrument turns Allow Importing off, so you must turn it on each time you import.*
   * *(5) When importing, first exit all web browsers in case a webmidi page sends rouge NRPN or polypressure messages.*
   * *(6) When importing, slowing down your DAW's playback speed sometimes helps. Likewise, when exporting, speeding up your DAW's recording speed can help.*
-  * *(7) The All User Settings export is meant for migrating from an old LinnStrument to a new one. It can import from a Linn128 to a Linn200 and vice versa. But it will only import if the OS version on the old LinnStrument matches the OS version on the new one. (Or more precisely, if the data structure versions match. The current version is 72.1.)*
+  * *(7) The AllUserSettings export is meant for migrating from an old LinnStrument to a new one. It can import from a Linn128 to a Linn200 and vice versa. But it will only import if the OS version on the old LinnStrument matches the OS version on the new one. (Or more precisely, if the data structure versions match. The current version is 72.1.)*
   * *(8) If you get "IMPORT FAILURE" followed by 2 numbers, the 2nd number says which midi message in the import file caused the failure. For example, 7 means the 7th midi message.*
   * *(9) MicroLinn imports data via polyphonic pressure messages. If you have connected something else to your LinnStrument that also sends polypressure messages, there is a small possibility of confusion. If after importing there is no sucess or failure scrolling message, to avoid confusion either set Allow Importing to OFF, or just unplug the LinnStrument.*
 
-  *The 16 sequencer projects can be imported and exported as usual via the updater app as *.lpr files. When you export, the filename of microtonal projects should probably contain the edo, since it won't sound right in the wrong edo. The AllUserSettings export does not export the current sequencer project, so to export it save it as one of the 16 projects.*
+  *The 16 sequencer projects can be imported and exported as usual via the updater app as *.lpr files. When you export, the filename of microtonal projects should contain the edo, since it won't sound right in the wrong edo. The AllUserSettings export does not export the current sequencer project, so to export it save it as one of the 16 projects.*
 
-Import request files available on the LinnStrument Community Wiki:
+Export request files available on the LinnStrument Community Wiki:
 
-* requestCurrentLightPattern.mid
+* requestCurrentLightPattern.mid (exports the currently-displayed light pattern, importing overwrites same)
 * requestAllLightPatterns.mid
-* requestCurrentAudienceMsg.mid
+* requestCurrentAudienceMsg.mid (exports the most recently edited message, importing overwrites same)
 * requestAllAudienceMsgs.mid
 
 * requestScalesCurrentEDO.mid
@@ -368,9 +373,62 @@ Import request files available on the LinnStrument Community Wiki:
 * requestFretboardsAllEDOs.mid
 * requestScalesRainbowsFretboardsAllEDOs.mid
 
-* requestCurrentMemory.mid
+* requestCurrentSettings.mid (exports the current Global and Split settings, importing overwrites same)
 * requestAllMemories.mid
 * requestAllUserSettings.mid
+
+CLIP LAUNCHING
+
+The Preset display has 16 new buttons. Tapping a button sends a midi CC message to your DAW that can trigger launching a midi or audio clip. A midi clip can be sent to the LinnStrument that imports certain settings. This lets you quickly access more than 6 memories and more than 3 light patterns. You could even use each launching button to bulk import 3 custom light patterns at once, giving you up to 3 x 16 = 48 patterns. Or bulk import 6 memories, giving you up to 6 x 16 = 96 memories.
+
+You can import multiple settings after loading a memory, allowing combo setups e.g. memory A plus import B plus import C. For example, the 6 memories might correspond to various synths, the first 8 clips to various light patterns, and the last 8 clips to various microtonal tunings. Or the last 8 CCs could be used as CC faders in the right split.
+
+  *Details: the 16 CCs are the same ones sent when a split is in the Special CC Faders mode. The upper 8 buttons on the Preset display send the left split's fader CCs on channel 1, and the lower 8 send the right split's fader CCs on channel 16. You can send a left-split CC while in the right split and vice versa.*
+  
+  *Each launching button sends a CC with value 127 when touched and 0 when released (this may change). This works well for clip launching, and differs from a split 1 column wide used as CC faders, which when touched sends a value alternating between 127 and 0, and when released sends nothing.*
+
+  *The CC types default to 1-8 (in reverse order) for both splits. Beware, CC1 is also sent by the low row and CC7 is also sent by the Volume display. We wouldn't want to accidentally launch a clip when we adjust the volume, or vice versa! Better to use one set of CCs to control your synths and another set of CCs to control your DAW. A good choice for the latter is CCs 21-28 (see CC SUGGESTIONS below). To select these CCs, long-press the CC Faders button. Or download setCCfadersTo21-28.mid from the LinnWiki and import it into your LinnStrument.*
+
+  *Beware: loading a memory (or importing one) overwrites the launcher/fader CC choices. If your DAW responds to CCs 21-28 and the newly-loaded memory uses CCs 1-8, the clip launchers stop working. So immediately after loading/importing an older memory, import setCCfadersTo21-28.mid and save/export the updated memory.*
+  
+  *You can use one split's CCs for launching and the other split's CCs as usual for faders. Thus in addition to setCCfadersTo21-28.mid there is setLeftCCfadersTo21-28.mid and setRightCCfadersTo21-28.mid.*
+
+  *To set up Reaper to launch midi clips:*
+  * *Download clipLaunchingActions.ReaperKeyMap to create 16 custom actions triggered by CCs 21-28*
+  * * *Or download clipLaunchingActionsLeft or clipLaunchingActionsRight to create 8 custom actions*
+  * * *Import it into Reaper using actions/showActionList/keyMap*
+  * *Either set the fader CCs on your LinnStrument to 21-28, or else edit the shortcuts of the custom actions to match your LinnStrument*
+  * *In Reaper options/preferences/midiInputs, enable your LinnStrument's input for control messages*
+  * *Download clipLauncher.rpp from the LinnWiki, open it, and put a midi clip (or clips) on each track*
+  * *Open your usual performance reaper project (or projects) in a new tab and move clipLauncher.rpp to the last tab*
+  * *Tapping the launching buttons will launch the clips in tracks 1-16 of the last tab's project*
+  * * *You can create clipLauncher2.rpp loaded with different clips and use it instead by simply moving it to the last tab*
+
+  possible modes: 
+  * touch sends 127, release sends nothing (current mode)
+  * touch sends 127, release sends 0 
+  * touch sends 127, then 0, release sends nothing (what a fader split 1 column wide does)
+
+CC SUGGESTIONS
+
+  * Low row joystick: W=CC15, X=CC16, Y=CC17, Z=CC18, X'=CC19 or CC16, Y'=CC20 or CC17
+  * Clip launching: CCs 21-28
+  * Locating: CC29 and CC30 (Linn128: CC29 only)
+  * Grouping: CC31 for both splits (microtonal, see below)
+  
+  *Avoid locating or grouping with these CCs that the LinnStrument uses for other purposes, which will be displayed in red:*
+
+  * *CC 0 = bank select (when swiping in the Preset display)*
+  * *CC 1 = mod wheel (when Timbre/Y = CC1 or Low Row = X)*
+  * *CC 7 = volume (when swiping in the Volume display)*
+  * *CC 1-8 (when Special = CC Faders)*
+  * *CC 11 = expression (when Loudness/Z = CC11)* 
+  * *CC 16-18 = general purpose (when Low Row = XYZ)* 
+  * *CC 64 = sustain (when Low Row = Sustain or Assign Switch = Sustain)*
+  * *CC 65 = portamento (when Assign Switch = CC65)*
+  * *CC 74 = brightness (when Timbre/Y = CC74)*
+
+  *If any of these pads (CC1, X, etc.) are light blue, a hidden setting may be allowing the use of another CC beyond these. Also beware of the very powerful channel mode messages (CCs 120-127). Only use them if your DAW reliably intercepts every single such CC before it can reach your synth.*
 
 
 #  MICROTONAL FEATURES  
@@ -383,15 +441,13 @@ The edo (stands for Equal Division of an Octave, the notes per octave) ranges fr
   *Details: When PITCH/X is off, the LinnStrument outputs standard midi notes (60 = middle-C, 69 = A-440, etc.) with "tuning bends". For example, in 24edo half the notes will have a 50¢ tuning bend. When PITCH/X is on, any "played bends" are automatically added on to the tuning bend. (As always, large bend ranges create a slight inaccuracy. A bend range of 96 semitones rounds all bends to the nearest 9600/8192 = 1.17¢.) See also Tuning Table mode below, which uses non-standard midi notes without tuning bends.*
 
 MicroLinn can be set to 12edo. MicroLinn's 12edo has a few advantages over the standard, non-microLinn 12edo.
-* It can be stretched and/or detuned.
-* It can be condensed to the scale notes.
-* You can have multi-colored note lights.
+* It can be stretched and/or detuned
+* It can be condensed to the scale notes
+* You can have multi-colored note lights
 
-Once microLinn is on (i.e. once an edo is chosen), you can cycle thru the edos by setting a panel switch or footswitch to EDO+ or EDO- (long-press TAP TEMPO and swipe). Changing the edo automatically adjusts all row offsets so that their size in cents stays roughly the same. So your fourths tuning will remain fourths, your fifths tuning will remain fifths, and your standard guitar tuning will remain standard. If either column offset is not OFF, it will get adjusted as well. Furthermore, you can set the default layout for either split to be Bosanquet etc. and your layout will become (and remain) Bosanquet. 
+FINE-TUNING, TRANSPOSING AND STRETCHING
 
-  *Details: A default layout is stored in the per-split row/col offsets, so it overrides the Global row offset. Bosanquet = A1/M2, Bosanquet 2 = m2/M2, Accordion = m3/M2, Wicki-Hayden = P4/M2, Wicki-Hayden 2 = P5/M2. Array Mbira 1 = P4/P5, Array Mbira 2 = P8/P5. But this may vary in certain edos, to ensure coprime row/col offsets. For example, 24edo Bosanquet is not 10/4 but 5/4. See also Guitar Tuning below.*
-
-The actual pitches of each pad are set via the anchor pad and the anchor note.
+The actual pitches of each pad are set via the anchor pad and the anchor note, and are fine-tuned by the anchor cents.
 
   *Details: The anchor pad is a specific pad that doesn't change pitch when you change the edo. The anchor pad chooser displays the row and column of the current anchor pad. For example, "R4C11" (or "4 11" on the LinnStrument 128) means row 4 (from the top) and column 11. Tap the blue "R4C11" anywhere and you'll see the normal display with the anchor pad blinking. Tap any pad to set it as the new anchor pad. This pad beomes the new tonic, and all the note lights will shift accordingly.*
 
@@ -410,11 +466,15 @@ It's possible to stretch the octave or even create non-octave scales like Bohlen
 
   *Details: The octave is really the equave, the interval of equivalence. It's defined as twelve 12edo semitones plus zero cents. Redefine it by swiping on Equave Semitones (5 to 36) and/or Equave Stretch (-60 to 60).*
 
+CYCLING THROUGH THE EDOS - DEFAULT LAYOUT
+
+Once microLinn is on (i.e. once an edo is chosen), you can cycle thru the edos by setting a panel switch or footswitch to EDO+ or EDO- (long-press TAP TEMPO and swipe). Changing the edo automatically adjusts all row offsets so that their size in cents stays roughly the same. So your fourths tuning will remain fourths, your fifths tuning will remain fifths, and your standard guitar tuning will remain standard. If either column offset is not OFF, it will get adjusted as well. Furthermore, you can set the default layout for either split to be Bosanquet etc. and your layout will become (and remain) Bosanquet. 
+
+  *Details: A default layout is stored in the per-split row/col offsets, so it overrides the Global row offset. Bosanquet = A1/M2, Bosanquet 2 = m2/M2, Accordion = m3/M2, Wicki-Hayden = P4/M2, Wicki-Hayden 2 = P5/M2. Array Mbira 1 = P4/P5, Array Mbira 2 = P8/P5. But this may vary in certain edos, to ensure coprime row/col offsets. For example, 24edo Bosanquet is not 10/4 but 5/4. See also Guitar Tuning below.*
+
 SUGGESTIONS FOR EXPLORING EDOS
 
-* You can cycle through the edos by setting switch 1 to EDO+ and switch 2 to EDO- (you must select an edo first)
-* Set the default layout to e.g. Bosanquet to stay in Bosanquet while you cycle
-* The first few edos are pretty strange, so you may want to start with 19 or 22 (or possibly 15 or 17). Or 24 for middle easternn music.
+* The first few edos are pretty strange, so you may want to start with 19 or 22 (or possibly 15 or 17). Or 24 for middle eastern music.
 * For nice-sounding chords, try the Bosanquet layout for 31edo (memory #4) and the Kite guitar layout for 41edo (memory #5)
 * To avoid a touched pad turning red (or whatever) and obscuring the pad's usual color, set the played color to blank
 * If the full rainbow scale seems overwhelming, try setting the played mode to blinking (BLNK)
@@ -422,7 +482,7 @@ SUGGESTIONS FOR EXPLORING EDOS
 
 GUITAR TUNING
 
-MicroLinn's guitar tuning is completely independent of the usual one. Changing one doesn't affect the other. MicroLinn's guitar tuning screen doesn't set the pitch of each "string". Instead it sets 7 independent row offsets. 
+MicroLinn's guitar tuning is completely independent of the usual one. Changing one doesn't change the other. MicroLinn's guitar tuning screen doesn't set the pitch of each "string". Instead it sets 7 independent row offsets. 
 
   *Details: On the far left, there are 8 green buttons, one for each string. The "anchor string" is the row that the anchor pad is on. Its pitch is determined solely by the anchor pad, note and cents. The anchor string has a double button. Tap any button to select a string. The button turns light blue and sounds that open string. Assuming it's not the anchor string, one of the neighboring buttons, whichever one is closest to the anchor, turns dark blue. You won't see a note name with an octave number as before. Instead you'll see a row offset as a number, which can be negative. This is the interval between the two blue strings. Swipe right or left on it as before to increase or decrease it.*
 
@@ -476,7 +536,7 @@ The 9 scales in Global Settings columns 2-4 are now microtonal and change for ea
   *The 12edo scales are an exception. Had they been chosen similarly, they would have been minor pentatonic, whole tone, lydian, whole step/half-step diminished octotonic and Tcherepnin enneatonic. Instead it's the major and minor diatonic (5L2s) and pentatonic (2L3s) scales. Note that the major scale is simply a vertical column of white notes in the Note Lights screen. This applies to all but a few of the smaller edos. Since the 5L2s scale is built into the coloring scheme and is so easy to find, it's rarely listed. Precedence has been given to MOS scales that are harder to find.*
 
   *Scales can be interesting melodically (MOS), smooth harmonically, or just useful markers. 14edo 7L good markers, poor for condensing*
-  *Edos 15 and above often have a 12-note scale that can be condensed to a familiar 12-note layout.*
+  *Edos 15-22 and above often have a 12-note scale that can be condensed to a familiar 12-note layout.*
 
   *The 4 default scales for each edo, along with some interesting possibilities:*
   * *5edo:  1L1s(3:2), 2L1s(2:1)*
@@ -494,15 +554,14 @@ The 9 scales in Global Settings columns 2-4 are now microtonal and change for ea
   * *17edo: 5L1s(3:2), 3L4s(3:2), 1L7s(3:2), 5L7s(2:1), also try 4L5s(3:1) and 7L3s(2:1)*
   * *18edo: 3L2s(4:3), 4L3s(3:2), 2L6s(3:2), 6L6s(2:1), also try 5L3s(3:1) and 7L4s(2:1)*
   * *19edo: 1L5s(4:3), 3L5s(3:2), 1L8s(3:2), 7L5s(2:1), also try 4L1s(4:3) and 5L4s(3:1)*
-
-  * *20edo: 2L4s(4:3), 6L1s(3:2), 4L4s(3:2), 2L7s(3:2), also try Ls(2:1) and Ls(2:1)*
+  * *20edo: 2L4s(4:3), 6L1s(3:2), 4L4s(3:2), 8L4s(2:1), also try 2L7s(3:2) and 9L2s(2:1)*
+  * *21edo: 5L3s(3:2), 3L6s(3:2), 1L9s(3:2), 9L3s(2:1), also try 1L4s(5:4) and 3L3s(4:3)*
+  * *22edo: 1L6s(4:3), 6L2s(3:2), 4L5s(3:2),10L2s(2:1), also try 5L2s(3:1) and 2L8s(3:2)*
+  * *23edo: 5L1s(4:3), 7L1s(3:2), 5L4s(3:2), 3L7s(3:2), also try 3L2s(5:4) and 11L1s(2:1)*
+  * *24edo: 3L4s(4:3), 6L3s(3:2), 4L6s(3:2), 2L9s(3:2), also try 4L1s(5:4) and 7L3s(3:1)*
   * *, also try Ls(2:1) and Ls(2:1)*
   * *, also try Ls(2:1) and Ls(2:1)*
-  * *, also try Ls(2:1) and Ls(2:1)*
-  * *, also try Ls(2:1) and Ls(2:1)*
-  * *, also try Ls(2:1) and Ls(2:1)*
-  * *, also try Ls(2:1) and Ls(2:1)*
-  * *, also try Ls(2:1) and Ls(2:1)*
+  * *41edo: 5L7s(4:3), also try Ls(2:1) and Ls(2:1)*
 
   *Default fretboards: The dot patterns tend to follow the conventional m3 P4 P5 M6 P8 guitar fret markers. Some edos add M2 and m7. Edos above 24 approximate 12edo, in other words there are dots about every 100 cents. 41edo is an exception. It has kites like a Kite guitar.*
 
@@ -568,7 +627,7 @@ When there are more than 128 notes, microLinn assigns the notes to midi groups. 
 
 Your linnstrument can send a CC message immediately before every note-on indicating the midi group. Your DAW can then use a custom midi-only effect to filter out all but one group. Your DAW would have multiple tracks, each receiving from only one group, and each with one instance of your softsynth into which you have loaded the appropriate scala and kbm files. Thus a tuning that requires N groups would also require N instances of your softsynth.
 
-  *Details: To send grouping CCs, swipe the tuning table mode past "ON" to "CC". You must also select a grouping CC type. (Until you do, "CC" will be displayed in red.) The two splits can send the same CC type. See Locating CCs above for which CC types to avoid. The filtering effect will filter out the grouping CC, so you needn't worry about it affecting your synth.*
+  *Details: To send grouping CCs, swipe the tuning table mode past "ON" to "CC". You must also select a grouping CC type. (Until you do, "CC" will be displayed in red.) The two splits can send the same CC. See CC SUGGESTIONS above for which CCs to avoid. The filtering effect will filter out the grouping CC, so you needn't worry about it affecting your synth.*
 
   *The CC value is the midi group number, 1-8. Within a group, midi notes run from 0 to 127. Thus note 128 becomes midi note 0 in group 2. The number of groups needed depends on how many notes your tuning uses. MicroLinn automatically calculates the number of groups and indicates it by a vertical stack of 1-8 dots after the "CC".*
 
@@ -601,7 +660,7 @@ Your linnstrument can send a CC message immediately before every note-on indicat
 
   *All this assumes your synths are MPE-compatible and can handle midi channels independently. If not, each group synth must be replaced by up to 16 separate synths, each receiving only 1 midi channel.*
 
-  *Grouping CCs are sent before locating CCs, so that locating CCs can be filtered out.*
+  *Grouping CCs are sent before locating CCs, so that locating CCs can be filtered out. Assuming the default 235 milliseconds between USB MIDI bytes, sending both grouping and locating CCs delays note-ons by 1.4 milliseconds.*
 
 TUNING TABLE MODE WITH RECHANNELING
 
@@ -617,8 +676,9 @@ Rechanneling indicates the midi group by sending certain midi notes to channels 
   * *MIDIChFilter (free, Windows VST) https://www.codefn42.com/midichfilter/index.html*
   * *MIDI Channel Filter (free, Mac/Windows/Linux LV2) https://x42-plugins.com/x42/x42-midifilter*
   * *MIDI Polysher (free, Windows/Mac VST) https://www.pluginboutique.com/product/3-Studio-Tools/67-Virtual-Patchbay/909-MIDI-Polysher*
+  * *MidiFlow Channels ($2, iOS) https://www.midiflow.com/audiobus/channels/*
   * *Distributor (US$20, VST/AU) https://grumpymonkeyplugins.com/products/distributor*
-  *(We have not personally tested these plugins.) In addition, microLinnMidiGroupFilter.jsfx (and any ports of it to other platforms) also serves as a channel filter. As a last resort, try sending midi channels individually. For example, to send channels 1-6 to a track, create a send for channel 1, another send for channel 2, etc.*
+  *(We have not personally tested these plugins.) Your DAW may also include a native channel filter plugin. In addition, microLinnMidiGroupFilter.jsfx (and any ports of it to other platforms) also serves as a channel filter. As a last resort, try sending midi channels individually. For example, to send channels 1-6 to a track, create a send for channel 1, another send for channel 2, etc.*
 
   *For the left split,*
   * *Channel 1 is the MPE main channel (the additional channel in the jsfx filter effect).*
