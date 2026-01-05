@@ -27,7 +27,7 @@ Volume display      X movement              Control Change (CC7 = Volume)
 Global display      Notes Off               All Sound Off, All Notes Off, CC64 Sustain off, multiple NoteOffs
 
 receive NRPN 299    NRPN value < 2048       export a 14-bit value via a NRPN 
-                    NRPN value > 2048       bulk export via a NRPN 300 header and multiple PolyPressure messages
+                    NRPN value > 2048       microLinn: bulk export via a NRPN 300 header and multiple PolyPressure messages
 
 
 LinnStrument responds to the following MIDI input
@@ -53,7 +53,7 @@ Status     Data       Message                 Used for
                                               The split is determined by its active MIDI mode channels
                                               c is the channel, p is the preset number
 11111110              Active Sensing          During manufacturing test, show green led at col 25 row 2
-1010cccc   0nnnnnnn   Polyphonic Pressure     When preceeded by a NRPN 300 header, do a microLinn bulk import, see below
+1010cccc   0nnnnnnn   Polyphonic Pressure     microLinn: when preceeded by a NRPN 300 header, do a bulk import, see below
            0vvvvvvv                           c is the channel, n and v are data bytes, the 8th bit is encoded in the channel
 
 MIDI Control Change input
@@ -147,7 +147,7 @@ NRPN   Value   Description
 47     0-128   Split Left MIDI CC For Fader 8 (0-127: CC, 128: Channel Aftertouch) 
 48     0-1     Split Left LowRow X Behavior (0: Hold, 1: Fader)
 49     0-128   Split Left MIDI CC For LowRow X (0-127: CC, 128: Channel Aftertouch) 
-50     0-1     Split Left LowRow XYZ Behavior (0: Hold, 1: Fader)
+50     0-2     Split Left LowRow XYZ Behavior (0: Hold, 1: Fader, 2: Joystick)
 51     0-128   Split Left MIDI CC For LowRow XYZ X (0-127: CC, 128: Channel Aftertouch) 
 52     0-128   Split Left MIDI CC For LowRow XYZ Y (0-127: CC, 128: Channel Aftertouch) 
 53     0-128   Split Left MIDI CC For LowRow XYZ Z (0-127: CC, 128: Channel Aftertouch) 
@@ -214,7 +214,7 @@ NRPN   Value   Description
 147    0-128   Split Right MIDI CC For Fader 8 (0-127: CC, 128: Channel Aftertouch) 
 148    0-1     Split Right LowRow X Behavior (0: Hold, 1: Fader)
 149    0-128   Split Right MIDI CC For LowRow X (0-127: CC, 128: Channel Aftertouch) 
-150    0-1     Split Right LowRow XYZ Behavior (0: Hold, 1: Fader)
+150    0-2     Split Right LowRow XYZ Behavior (0: Hold, 1: Fader, 2: Joystick)
 151    0-128   Split Right MIDI CC For LowRow XYZ X (0-127: CC, 128: Channel Aftertouch) 
 152    0-128   Split Right MIDI CC For LowRow XYZ Y (0-127: CC, 128: Channel Aftertouch) 
 153    0-128   Split Right MIDI CC For LowRow XYZ Z (0-127: CC, 128: Channel Aftertouch) 
@@ -344,7 +344,7 @@ NRPN   Value   Description
 1256 *  5-36        Global equaveSemitones
 1257 *  0-100       Global equaveStretch ranges -50..50, so add/subtract 50 to convert it
 1258 *  0-60        Global sweeten (in tenths of a cent)
-1259 *  0-53        Global largeEDO, 0 = OFF, 53 = 1200edo
+1259                (not yet used)    
 1260 *  0-1         Global microtonal guitarTuning[0] (diatonic/chromatic flag for condensed guitar tunings)
 1261 *  0-640       Global microtonal guitarTuning[1] ranges -320..320, so add/subtract 320 to convert it
 1262 *  0-640       Global microtonal guitarTuning[2]   "
@@ -387,7 +387,7 @@ Type        # of data bytes     Settings exported                    Notes
 -------------------------------------------------------------------------------------------------------
  1          208                 Currently-displayed light pattern    imports into the currently-displayed pattern
  2          624                 All 3 light patterns                 
- 3          30                  Last-edited audience message         imports into the last-edited message
+ 3          30                  Last-edited audience message         imports into the currently last-edited message
  4          480                 All 16 audience messages             
 
  5          edo                 Current edo's 7 scales               for odd edos, add 1 byte of padding to the size
@@ -400,8 +400,8 @@ Type        # of data bytes     Settings exported                    Notes
 11          1530                Fretboards for all 51 edos                   
 12          3825                All 3 arrays for all 51 edos         no equave, equaveStretch, useRainbow, col/row offsets, guitarTuning
 
-13          592                 Last-loaded preset                   imports into the current Global & Split settings
-14          3552                All 6 presets                        imports into the 6 presets
+13          592                 Global & Split settings              
+14          3552                All 6 presets                        
 15          9880                All user settings                    no calibration data or sequencer projects
 
 The overall size of the midi file in bytes will be 1.5 * (# of data bytes) + 24
@@ -414,7 +414,7 @@ DATA VERSION MISMATCH = incompatible (past or future) data structure version (al
 NOT ENOUGH DATA = too few data bytes
 EXCESS DATA = too many data bytes
 FOOTER MISMATCH = import type mismatch between NRPN 300 MSB and polypressure footer MSB
-M N = M is microLinnImportCounter, Nth midi message was invalid, N is 1-indexed, includes the NRPN's 6 CCs
+IMPORT FAILURE M N = M is microLinnImportCounter, Nth midi message was invalid, N is 1-indexed, includes the NRPN's 6 CCs
 lack of "SUCCESS" message = no footer
 
 

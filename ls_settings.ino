@@ -1921,7 +1921,7 @@ void applyMidiPreset() {
 }
 
 void handlePresetRelease() {
-  //if (handleMicroLinnClipLauncher(0)) return;        // screws up Reaper, but other DAWs might need it, delete?
+  if (handleMicroLinnClipLauncher(0)) return;
 
   if (sensorCol > getPresetDisplayColumn()) {
     return;

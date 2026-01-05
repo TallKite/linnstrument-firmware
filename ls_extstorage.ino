@@ -2376,7 +2376,6 @@ void migrateFromMicroLinnGlobalV72_0 (MicroLinnGlobal* t, void* source) {
   // copy what's in 72.0, initialize what isn't
   MicroLinnV72_0::MicroLinnGlobal* s = (typeof(s)) source;
   t->drumPadMode = 0;
-  t->dotsCarryOver = false;
   t->locatingCC1 = 255;
   t->locatingCC2 = 255;
   t->EDO = s->EDO;
@@ -2391,10 +2390,11 @@ void migrateFromMicroLinnGlobalV72_0 (MicroLinnGlobal* t, void* source) {
   t->equaveSemitones = 12;
   t->equaveStretch = s->octaveStretch;    // octaveStretch was renamed
   t->sweeten = s->sweeten;
-  t->largeEDO = 0;
+//t->largeEDO = 0;
 //memset(t->largeEDOoffset, 0, sizeof(t->largeEDOoffset));   uncomment later
   for (byte row = 0; row < MAXROWS; row++) {
     t->guitarTuning[row] = s->guitarTuning[row];
+  t->dotsCarryOver = false;
   }
 }
 

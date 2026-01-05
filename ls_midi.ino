@@ -444,13 +444,11 @@ void handleMidiInput(unsigned long nowMicros) {
             }
             break;
           case 38:
-            // microLinn does NRPNs first and RPNs last, seems to help with bulk importing
+            // microLinn does NRPNs first and RPNs last, otherwise the 2nd bulk export request is ignored
             if (lastNrpnMsb != 127 || lastNrpnLsb != 127) {
-              lastDataLsb = midiData2;
-              receivedNrpn((lastNrpnMsb<<7)+lastNrpnLsb, (lastDataMsb<<7)+lastDataLsb, midiChannel);
+              receivedNrpn((lastNrpnMsb<<7)+lastNrpnLsb, (lastDataMsb<<7)+midiData2, midiChannel);
             } else if (lastRpnMsb != 127 || lastRpnLsb != 127) {
-              lastDataLsb = midiData2;
-              receivedRpn(midiChannel, (lastRpnMsb<<7)+lastRpnLsb, (lastDataMsb<<7)+lastDataLsb);
+              receivedRpn(midiChannel, (lastRpnMsb<<7)+lastRpnLsb, (lastDataMsb<<7)+midiData2);
             }
             break;
           case 98:

@@ -856,12 +856,13 @@ struct MicroLinnGlobal {
   byte equaveSemitones;                      // for non-octave tunings such as bohlen-pierce, 1..36, 1 semitone = 100 cents
   signed char equaveStretch;                 // cents, -50..+50
   byte sweeten;                              // in tenths of a cent, 0..60, adjust 41edo 5/4, 5/3 by this amount both top and bottom to make it closer to just
-  byte largeEDO;                             // ranges 0..53, 0 = OFF, 1..52 = various edos, 53 = 1200edo = JI, user can have a 55-note subset of this edo 
+//byte largeEDO;                             // ranges 0..53, 0 = OFF, 1..52 = various edos, 53 = 1200edo = JI, user can have a 55-note subset of this edo 
 //signed char largeEDOoffset[MICROLINN_MAX_EDO];  // ranges -128..127, edosteps from nearest large-edo approximation
   short guitarTuning[MAXROWS];               // independent of Global.guitarTuning, interval in edosteps from the string below it, can be negative, [0] is DIA/CHRO
   boolean dotsCarryOver;                     // red SAME or BLNK dots carry over to the other split
   byte reserved1;                            // reserved for future use, 1 byte per empty menu row
   byte reserved2;                            //    "
+  byte reserved3;                            //    "
 //byte padding;                              // added by the compiler, makes the MicroLinnGlobal struct an even number of bytes
 };
 
@@ -1205,17 +1206,15 @@ short guitarTuningPreviewChannel = -1;              // active channel that is pr
 
 byte customLedColor = COLOR_GREEN;                  // color is used for drawing in the custom LED editor
 
-#ifdef DEBUG_ENABLED
-  // these vars report the user settings the current firmware received from the updater app, for troubleshooting
-  // part of the microLinn fork, display them by tapping row 7 cols 17-21 on the Global Settings screen
-  // these are lost upon power down, so they must be examined immediately after updating
-  // -2 means a power down has already happened, so no valid data to display
-  signed char updaterVersion = -2;                    // the 2 version numbers contained in the incoming settings
-  signed char updaterMicroLinnVersion = -2;
-  short updaterSettingsSize = -2;                     // the incoming settings size as reported by the updater
-  short updaterImpliedSettingsSize = -2;              // size of the incoming settings implied by the 2 versions, should match
-  short updaterBadBatchNum = -2;                      // the number of the 96-byte batch that flunked crc, -1 means all good
-#endif
+// these vars report the user settings the current firmware received from the updater app, for troubleshooting
+// part of the microLinn fork, display them by tapping row 7 cols 17-21 on the Global Settings screen
+// these are lost upon power down, so they must be examined immediately after updating
+// -2 means a power down has already happened, so no valid data to display
+signed char updaterVersion = -2;                    // the 2 version numbers contained in the incoming settings
+signed char updaterMicroLinnVersion = -2;
+short updaterSettingsSize = -2;                     // the incoming settings size as reported by the updater
+short updaterImpliedSettingsSize = -2;              // size of the incoming settings implied by the 2 versions, should match
+short updaterBadBatchNum = -2;                      // the number of the 96-byte batch that flunked crc, -1 means all good
 
 /************************* FUNCTION DECLARATIONS TO WORK AROUND COMPILER *************************/
 

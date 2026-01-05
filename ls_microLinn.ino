@@ -3,8 +3,8 @@
 Depending on the context, "microLinn" sometimes refers to the entire fork, and sometimes only the microtonal part of it
 
 This fork mostly augments the official code and does not replace it. It mostly only runs if a microLinn feature is turned on
-  Exceptions: sequencer next/prev/play/mute, program change messages sent on release not new touch, PCH footswitch, double volume faders
-  CC faders use 2 colors, doubly-used midi channels warning, per-split midi channel view follows per-split midi mode
+  Exceptions: sequencer next/prev/play/mute, program change messages sent on release not new touch, 16 launching buttons, PCH footswitch, 
+  double volume faders, CC faders use 2 colors, doubly-used midi channels warning, per-split midi channel view follows per-split midi mode
 The code that actually handles playing in real time is mostly unchanged, so there should be no increases in latency
   Exceptions: condense to scale with variable pitch bend, mono mode, hammer-ons, sweetening
 
@@ -52,20 +52,6 @@ Misc small bug fixes, not in the readme file, line numbers are for the official 
 
 Current beta testers: Kite, Gordon, Austin, Max, (Ira)
 
-Zach says: There were a few guitar solos I was practicing that involve combinations of extremely slow pitch bends combined with 
-repeated picking of the note during the bend. I found that setting the low row Bend option in per-split settings was a perfect 
-alternative to these situations. You can bend much slower and more smoothly across a smaller interval using the pitch bend row. 
-And as long as you continue to hold the pitch bend row, you can release and re-strike your note to sound it at the current bend level.
-Also, the restrike feature imitates repeatedly picking a string.
-
-mijiti says: On the SWAM wind instruments, I use the low-row Z for expression and Y for growl, and Y within the note-pads for Formant. 
-With the SWAM strings, I use the low row Y for bow position (along the string, towards or away from the bridge) and Z for expression. 
-I also use 2 controllers on the left hand split, only 3 cells wide, to control real-time bow pressure and switch "playing mode" 
-(pizzicato/bow). I also have harmonics and bow lift mode mapped there but I haven't yet found myself using them.
-
-John Savage says: I use X-axis to modify the sound a number of different ways, but my favourite is to introduce overtones or feedback 
-and a little high-pass filtering on long slides. Gives it an electric guitar feel.
-
 ======================= TO DO ==============================
 
 sample comparisons, add ".diff" to the url to get a diff file
@@ -75,17 +61,17 @@ https://github.com/rogerlinndesign/linnstrument-firmware/compare/master...TallKi
 
 
   16    72.1
-11692          sizeof(config)
-       11692   sizeof(ConfigurationVLatest)
- 2956   7548   sizeof(Device)
-        4592   sizeof(MicroLinnDevice)
-        2956   sizeof(Device) - sizeof(MicroLinnDevice)
-  168    364   sizeof(GlobalSettings)
-         198   sizeof(MicroLinnGlobal)
-         166   sizeof(GlobalSettings) - sizeof(MicroLinnGlobal)      <--------- 166 != 168
-   96    114   sizeof(SplitSettings)  (one side only)
-          18   sizeof(MicroLinnSplit)
-          96   sizeof(SplitSettings) - sizeof(MicroLinnSplit)
+11692              sizeof(config)
+       11692       sizeof(ConfigurationVLatest)
+ 2956   7548       sizeof(Device)
+        4592       sizeof(MicroLinnDevice)
+        2956       sizeof(Device) - sizeof(MicroLinnDevice)
+  168    364  332  sizeof(GlobalSettings)
+         198       sizeof(MicroLinnGlobal)
+         166       sizeof(GlobalSettings) - sizeof(MicroLinnGlobal)      <--------- 166 != 168
+   96    114  132  sizeof(SplitSettings)  (one side only)
+          18       sizeof(MicroLinnSplit)
+          96       sizeof(SplitSettings) - sizeof(MicroLinnSplit)
 
 export type 17 on microLinn 72.1 with no explicit padding:
   Device = 1 (not 0, reaper's midi editor counts bytes 1-based)
@@ -99,6 +85,7 @@ export type 17 on microLinn 72.1 with no explicit padding:
   4487 = Device.microLinn.rainbows
   6017 = Device.microLinn.fretboards
   7549 = Global
+  7649 = Global.rowOffset
   7715 = Global.microLinn
   7913 = Split[LEFT]
   8008 = Split[LEFT].microLinn
@@ -218,12 +205,17 @@ https://www.kvraudio.com/forum/viewtopic.php?t=567742 arpeggiator "order played"
 https://www.kvraudio.com/forum/viewtopic.php?t=539410 switch 1 & 2 bug -- fix it?
 https://www.kvraudio.com/forum/viewtopic.php?t=587851 volume up/down options (like preset +/-) switches, Roger approves
     would need to store the previous volumes, needs 1 byte per side x 2 sides x 7 memories = 14 bytes
+https://www.kvraudio.com/forum/viewtopic.php?t=533095 2nd to last post, send low row notes to the other split -- meh
 https://www.kvraudio.com/forum/viewtopic.php?t=555407 Reaper Lua script to configure and trigger chords
+https://www.kvraudio.com/forum/viewtopic.php?t=529266 hammer-ons zone
+https://www.kvraudio.com/forum/viewtopic.php?t=528597 cubic Y curves vs laggy Y
+https://www.kvraudio.com/forum/viewtopic.php?t=527141 foot pedal option to advance the main channel -- meh
+https://www.kvraudio.com/forum/viewtopic.php?t=523104 Sequencer workarounds or feature requests
+https://www.kvraudio.com/forum/viewtopic.php?t=520315 weird bug when playing 5 notes in 2 columns (+6 D1 B1 D2 F3 D3)
+https://www.kvraudio.com/forum/viewtopic.php?t=520863 clip launching
 
 
 test unninstalling more
-
-the import/export all settings code is broken until largeEDOoffsets is uncommented
 
 CC faders special mode: make vertical faders, slightly glitchy because of the horizontal separator strips
   scale the Y data down from 0..127 to 16*row..16*row+15
@@ -248,14 +240,10 @@ Punch -- avoid a sluggish attack, scale the first 50 ms of Z to the velocity, st
   https://www.kvraudio.com/forum/viewtopic.php?t=522304&hilit=vcv 
   https://www.kvraudio.com/forum/viewtopic.php?t=512436
 
-Global.microLinn.launcherCC, used to launch midi clips including importing memories and custom light patterns
-  if not OFF, 8 buttons appear next to the 6 memories (column 15 or column 22), sends the CC with values 1-8 on channel 1
-  the 8 buttons are colored alternating main colors of both splits, last loaded gets the accent color
-  for the Linn 128, move the program change number one pad to the left to make room for the new buttons
 
 Global.microLinn.fineTune[27]?? is a packed array of nybbles, -8..+7 cents/edosteps, fine-tunes all but the tonic
 
-swap my 8ve up/down footswitch with roger's? ask the users after release?
+swap my 8ve up/down footswitch with roger's? ask the users after release? mine works better as a footswitch, his as panel switches
 
 test CC faders bug: https://www.kvraudio.com/forum/viewtopic.php?t=450198
   faders should respond to input from the DAW, even when not set to CCs 1-8
@@ -281,8 +269,6 @@ import types 9-11: warning excess data
 import type 14, 15: various data failures
 
 fix bug with anchor row = 0 and guitar tuning, strings preview note are off by one
-
-ask on the forum about the unplugging bug for NRPN send/receive
 
 colorAccent can be set to 0, if so my code should use some fixed color
 
@@ -455,9 +441,23 @@ POSSIBLE PULL REQUESTS (every non-microtonal feature that doesn't require a new 
   add 8VE± footswitch function
 
 note to self: user can enter/exit microLinn only by going to microLinnConfig and changing the edo from 4 
-or by loading a preset (directly or via NRPN), the EDO+ and EDO- switches/pedals don't let you enter or exit
+or by loading a preset (directly or via NRPN or by bulk import), the EDO+ and EDO- switches/pedals don't let you enter or exit
 
 note to self: to use multi-channel output with my non-MPE s90es synth, deselect the main channel
+
+Zach says: There were a few guitar solos I was practicing that involve combinations of extremely slow pitch bends combined with 
+repeated picking of the note during the bend. I found that setting the low row Bend option in per-split settings was a perfect 
+alternative to these situations. You can bend much slower and more smoothly across a smaller interval using the pitch bend row. 
+And as long as you continue to hold the pitch bend row, you can release and re-strike your note to sound it at the current bend level.
+Also, the restrike feature imitates repeatedly picking a string.
+
+mijiti says: On the SWAM wind instruments, I use the low-row Z for expression and Y for growl, and Y within the note-pads for Formant. 
+With the SWAM strings, I use the low row Y for bow position (along the string, towards or away from the bridge) and Z for expression. 
+I also use 2 controllers on the left hand split, only 3 cells wide, to control real-time bow pressure and switch "playing mode" 
+(pizzicato/bow). I also have harmonics and bow lift mode mapped there but I haven't yet found myself using them.
+
+John Savage says: I use X-axis to modify the sound a number of different ways, but my favourite is to introduce overtones or feedback 
+and a little high-pass filtering on long slides. Gives it an electric guitar feel.
 
 WHEN DONE:
 change microLinnOSVersion from 000 to 001
@@ -482,6 +482,7 @@ const short MICROLINN_MAX_EDOSTEPS = 200;                  // for testing. delet
 //const short MICROLINN_MAX_EDOSTEPS = 1024;               // virtual edosteps use 8 midi groups and run 0..1023
 const short MICROLINN_MAX_GUITAR_RANGE = 196; // 320;      // 512 - 192, 192 = max row length = numCols * maxColOffset = 24 * 8
 
+/**************** not yet used
 const byte MICROLINN_NUM_LARGE_EDOS = 54;
 const short MICROLINN_LARGE_EDO[MICROLINN_NUM_LARGE_EDOS] = {
   0,  56,  58,  60,  63,    65,  68,  72,  77,  80,        // extended list of absolute zeta peak edos, for Global.microLinn.largeEDO
@@ -491,6 +492,7 @@ const short MICROLINN_LARGE_EDO[MICROLINN_NUM_LARGE_EDOS] = {
 217, 224, 229, 239, 243,   248, 255, 270, 277, 282,   
 289, 301, 311, 1200
 };
+***********************************/
 
 const byte MICROLINN_MIN_2ND[MICROLINN_MAX_EDO+1] = {      // used for Bosanquet 2 layout
   0,  0,  0,  0,  1,   0,  0,  0,  1,  2,    // 0-9        // to ensure coprime-ness, divide by GCD(M2,m2)
@@ -2014,7 +2016,7 @@ void initializeMicroLinn() {
   Global.microLinn.equaveSemitones = 12;
   Global.microLinn.equaveStretch = 0;
   Global.microLinn.sweeten = 0; 
-  Global.microLinn.largeEDO = 0;
+//Global.microLinn.largeEDO = 0;
 //memset(&Global.microLinn.largeEDOoffset, 0, sizeof(Global.microLinn.largeEDOoffset)); uncomment later
   Global.microLinn.guitarTuning[0] = 0;           // default to DIA not CHRO
   Global.microLinn.guitarTuning[1] = 5;           // 12edo F# B E A D G B E
@@ -2141,7 +2143,7 @@ void loadMicroLinnRainbowAndFretboard() {          // called from loadSettingsFr
 
 void microLinnSetupKitesPersonalPrefs() {          // speed up debugging cycle, delete later once things are more stable
   microLinnImportingOn = true;
-  
+
   // the 2nd from bottom preset (#5) is the kite guitar preset
   config.preset[5].global.activeNotes = 8;                            // 41edo fretboard
   config.preset[5].global.microLinn.anchorRow = 5;                    // 3rd row from top
@@ -4432,12 +4434,12 @@ boolean handleMicroLinnClipLauncher(byte CCval) {
     } else if (inRange(sensorRow, 1, 2)) {
       CCpointer = (21 - sensorCol) + 4 * (sensorRow - 1);
       side = RIGHT;
-    } else return true;
+    } else return true;                               // don't handle blank rows between launching buttons
   } else {  // if Linn128
-    if (inRange(sensorRow, 1, 6)) return false;
+    if (inRange(sensorRow, 1, 6)) return false;       // do handle main swiping area and memory chooser
     switch(sensorCol) {
       case 1:                 return false;           // do handle green PC increment button or blue bank select button
-      case 2: case 3: case 8: return true;            // don't handle blank cells
+      case 2: case 3: case 8: return true;            // don't handle blank cells between launching buttons
       case 13: case 14:       return true;            //   "
       case 15:                return sensorRow != 7;  // do handle left spilt select button
       case 16:                return false;           // do handle right spilt select button or lowest preset button
@@ -4529,7 +4531,7 @@ void sendMicroLinnNrpnParameter(int parameter, int channel) {
     case 1256: value = Global.microLinn.equaveSemitones; break;
     case 1257: value = Global.microLinn.equaveStretch + 50; break;
     case 1258: value = Global.microLinn.sweeten; break;
-    case 1259: value = Global.microLinn.largeEDO; break;
+  //case 1259: value = Global.microLinn.largeEDO; break;
     case 1260: value = Global.microLinn.guitarTuning[0]; break;
     case 1261: value = Global.microLinn.guitarTuning[1] + n; break;
     case 1262: value = Global.microLinn.guitarTuning[2] + n; break;
@@ -4586,7 +4588,7 @@ void receivedMicroLinnNrpn(int parameter, int value) {
     case 1256: if (inRange(value, 5, 36))  Global.microLinn.equaveSemitones = value; break;
     case 1257: if (inRange(value, 0, 100)) Global.microLinn.equaveStretch = value - 50; break;
     case 1258: if (inRange(value, 0, 60))  Global.microLinn.sweeten = value; break;
-    case 1259: if (inRange(value, 0, 53))  Global.microLinn.largeEDO = value; break;
+  //case 1259: if (inRange(value, 0, 53))  Global.microLinn.largeEDO = value; break;
     case 1260: if (inRange(value, 0, 2*n)) Global.microLinn.guitarTuning[0] = value; break;
     case 1261: if (inRange(value, 0, 2*n)) Global.microLinn.guitarTuning[1] = value - n; break;
     case 1262: if (inRange(value, 0, 2*n)) Global.microLinn.guitarTuning[2] = value - n; break;
@@ -4671,13 +4673,11 @@ void exportMicroLinnData(int exportType) {
                                   Device.microLinn.fretboards[n+i+1]);
       }
       break;
-    case 8:   // export all edo data for the current edo only  (large EDO offsets is not yet included)
+    case 8:   // export all edo data for the current edo only
       microLinnSendPolyPressure(Global.microLinn.EDO, 
                                 Global.microLinn.useRainbow ? 1 : 0);
       microLinnSendPolyPressure(Global.microLinn.equaveSemitones, 
                                 Global.microLinn.equaveStretch + 50);
-      microLinnSendPolyPressure(Global.microLinn.sweeten, 
-                                Global.microLinn.largeEDO);
       microLinnSendPolyPressure(Global.rowOffset, 
                                 Global.customRowOffset + MICROLINN_MAX_ROW_OFFSET);
       for (byte side = 0; side < NUMSPLITS; ++side) {
@@ -4699,6 +4699,8 @@ void exportMicroLinnData(int exportType) {
       for (byte i = 0; i < edo; i += 2) {
         microLinnSendPolyPressure(Device.microLinn.fretboards[n+i], 
                                   Device.microLinn.fretboards[n+i+1]);
+      microLinnSendPolyPressure(Global.microLinn.sweeten, 
+                                0);
       }
       break;
     case 9: 
@@ -4759,12 +4761,12 @@ void exportMicroLinnData(int exportType) {
         microLinnSendPolyPressure(array[i], array[i+1]);
       }
       break;
-    case 17:   // full dump of config, for debugging the updater, only exported never imported, delete later
-      array = (byte *) &Device.version;
-      for (unsigned short i = 0; i < sizeof(config); i += 1) {           // no NRPN 300 or header
+    case 17:   // full dump of config, for debugging updating/importing, only exported never imported, no NRPN 300 or header
+      array = (byte *) &Device;
+      for (unsigned short i = 1; i < sizeof(config); i += 1) {           // start at 1 to align with Reaper's 1-indexed numbering
         microLinnSendPolyPressure(0, array[i]);                          // only 1 byte per midi message, for easy readability
       }
-      return;                                                            // no footer
+      break;
   }
   microLinnSendPolyPressure(exportType, 0, 13);                          // footer
 }
@@ -5005,45 +5007,45 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
         if (microLinnInRange(data1, 1, 36))  Global.microLinn.equaveSemitones = data1;
         if (microLinnInRange(data2, 0, 100)) Global.microLinn.equaveStretch = data2 - 50;
       } else if (i == 4) {
-        if (microLinnInRange(data1, 1, 60))  Global.microLinn.sweeten = data1;
-        if (microLinnInRange(data2, 0, 53))  Global.microLinn.largeEDO = data2 - 60;
-      } else if (i == 6) {
         if (data1 == ROWOFFSET_NOOVERLAP || data1 == 3 || data1 == 4 || data1 == 5 || data1 == 6 ||
             data1 == 7 || data1 == ROWOFFSET_OCTAVECUSTOM || data1 == ROWOFFSET_GUITAR || data1 == ROWOFFSET_ZERO) {
           Global.rowOffset = data1;
         } else microLinnCancelImport();
         n = MICROLINN_MAX_ROW_OFFSET;
         if (microLinnInRange(data2, 0, 2*n))   Global.customRowOffset = data2 - n;
-      } else if (i == 8) {
+      } else if (i == 6) {
         n = MICROLINN_MAX_COL_OFFSET;
         if (microLinnInRange(data1, 1, n))     Split[LEFT].microLinn.colOffset = data1;
         n = MICROLINN_MAX_ROW_OFFSET;
         if (microLinnInRange(data2, 0, 2*n+2)) Split[LEFT].microLinn.rowOffset = data2 - n - 1;
-      } else if (i == 10) {
+      } else if (i == 8) {
         n = MICROLINN_MAX_COL_OFFSET;
         if (microLinnInRange(data1, 1, n))     Split[RIGHT].microLinn.colOffset = data1;
         n = MICROLINN_MAX_ROW_OFFSET;
         if (microLinnInRange(data2, 0, 2*n+2)) Split[RIGHT].microLinn.rowOffset = data2 - n - 1;
-      } else if (i == 12) {
+      } else if (i == 10) {
         n = data1 | (data2 << 8);
         if (microLinnInRange(n, 0, 1)) Global.microLinn.guitarTuning[0] = n;
-      } else if (i <= 26) {
+      } else if (i <= 24) {
         n = data1 | (data2 << 8);
         if (n > 2 * MICROLINN_MAX_GUITAR_RANGE) microLinnCancelImport();
         Global.microLinn.guitarTuning[(i - 12) >> 1] = n - MICROLINN_MAX_GUITAR_RANGE;
-        if (i == 26) microLinnCheckGuitarTuning();
-      } else if (i < 28 + m) {
-        if (microLinnInRange(data1, 0, 127)) Device.microLinn.scales[n + i - 28] = data1;
-        if (i - 27 >= edo) break;
-        if (microLinnInRange(data2, 0, 127)) Device.microLinn.scales[n + i - 27] = data2;
-      } else if (i < 28 + 2 * m) {
-        if (microLinnInRange(data1, 0, COLOR_PINK)) Device.microLinn.rainbows[n + i - 28 - m] = data1;
-        if (i - 27 - m >= edo) break;
-        if (microLinnInRange(data2, 0, COLOR_PINK)) Device.microLinn.rainbows[n + i - 27 - m] = data2;
+        if (i == 24) microLinnCheckGuitarTuning();
+      } else if (i < 26 + m) {
+        if (microLinnInRange(data1, 0, 127)) Device.microLinn.scales[n + i - 26] = data1;
+        if (i - 25 >= edo) break;
+        if (microLinnInRange(data2, 0, 127)) Device.microLinn.scales[n + i - 25] = data2;
+      } else if (i < 26 + 2 * m) {
+        if (microLinnInRange(data1, 0, COLOR_PINK)) Device.microLinn.rainbows[n + i - 26 - m] = data1;
+        if (i - 25 - m >= edo) break;
+        if (microLinnInRange(data2, 0, COLOR_PINK)) Device.microLinn.rainbows[n + i - 25 - m] = data2;
+      } else if (i < 26 + 3 * m) {
+        Device.microLinn.fretboards[n + i - 26 - 2 * m] = data1;
+        if (i - 25 - 2 * m >= edo) break;
+        Device.microLinn.fretboards[n + i - 25 - 2 * m] = data2;
       } else {
-        Device.microLinn.fretboards[n + i - 28 - 2 * m] = data1;
-        if (i - 27 - 2 * m >= edo) break;
-        Device.microLinn.fretboards[n + i - 27 - 2 * m] = data2;
+        if (microLinnInRange(data1, 1, 60))  Global.microLinn.sweeten = data1;
+        //if (microLinnInRange(data2, 0, 53))  Global.microLinn.largeEDO = data2 - 60;
       }
       break;
 
@@ -5077,7 +5079,7 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
       }
       break;
 
-    case 13:   // 1 preset = 396 bytes for version 72.0
+    case 13:   // 1 preset = 596 bytes for version 72.1
       if (i == 0) microLinnImportXen = true;
       if (i < sizeof(GlobalSettings)) {
         microLinnImportGlobal(data1, data2, i, 0);               // import into Global and Split
@@ -5086,7 +5088,7 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
       }
       break;
 
-    case 14:   // all 6 presets = 2376 bytes
+    case 14:   // all 6 presets = 3576 bytes for version 72.1
       m = i % sizeof(PresetSettings);                            // m = index into the preset
       n = (i - m) / NUMPRESETS;                                  // n = which preset
       if (m == 0) microLinnImportXen = true;                     // reset the flag for each new preset
@@ -5098,7 +5100,7 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
       break;
 
     case 15:   // all user settings = 8508 bytes for version 72.0
-      ptrStart = (byte *) &Device.minUSBMIDIInterval;            // start at Device.minUSBMIDIInterval
+      ptrStart = (byte *) &Device.minUSBMIDIInterval;            // start at Device.minUSBMIDIInterval, after calibration data
       ptrEnd = (byte *) &Global;                                 // stop short of Global
       m = ptrEnd - ptrStart;                                     // m = size of Device settings in the import
       if (i < m) {
@@ -5143,7 +5145,7 @@ boolean microLinnInRange (short data, short lo, short hi) {
 }
 
 void microLinnImportDevice(byte data1, byte data2, unsigned short i) {               // don't import calibration data
-  if (i >= 5736) return;                                                             // version 72.1 size is 5736 bytes
+  if (i >= 5736) return;                                                             // version 72.1 size is 5736 bytes without calibration
   unsigned short number = data1 | (data2 << 8);                                      // LSB first (little-endian)
 
   if (i == 0) {
@@ -5219,7 +5221,7 @@ void microLinnImportDevice(byte data1, byte data2, unsigned short i) {          
   }
 }
 
-void microLinnImportGlobal(byte data1, byte data2, unsigned short i, byte presetNum) {     // version 72.1 size is 364 bytes
+void microLinnImportGlobal(byte data1, byte data2, unsigned short i, byte presetNum) {     // version 72.1 size is 307 + 1 byte padding
   if (i < 0 || i >= sizeof(GlobalSettings)) return;
   GlobalSettings *g = (presetNum == 0 ? &Global : &config.preset[presetNum - 1].global);
   if (i >= 170 && !microLinnImportXen) return;
@@ -5311,7 +5313,7 @@ void microLinnImportGlobal(byte data1, byte data2, unsigned short i, byte preset
       microLinnImportXen = (presetNum == 0 || presetNum == 5);         // 0 = global, 5 is really 4 = bottom row preset
       if (!microLinnImportXen) return;
     }
-    if (microLinnInRange(data2, 4, 55)) g->microLinn.EDO = data1;
+    if (microLinnInRange(data2, 4, 55)) g->microLinn.EDO = data2;
   } else if (i <= 222) {
     if (microLinnInRange(data1, 0, COLOR_PINK)) g->microLinn.rainbow[i-170] = data1;
     if (microLinnInRange(data2, 0, COLOR_PINK)) g->microLinn.rainbow[i-169] = data2;
@@ -5336,31 +5338,25 @@ void microLinnImportGlobal(byte data1, byte data2, unsigned short i, byte preset
     if (microLinnInRange(n,    -50, 50)) g->microLinn.equaveStretch = n;
     if (microLinnInRange(data2,  0, 60)) g->microLinn.sweeten = data2;
   } else if (i == 288) {
-    if (microLinnInRange(data1,  0, 53)) g->microLinn.largeEDO = data1;
-    //g->microLinn.largeEDOoffset[0] = data2;  uncomment later
-  } else if (i <= 342) {
-    //g->microLinn.largeEDOoffset[i-289] = data1;  uncomment later
-    //g->microLinn.largeEDOoffset[i-288] = data2;
-  } else if (i == 344) {
     short n = data1 | (data2 << 8);
-    if (microLinnInRange(n, 0, 1)) g->microLinn.guitarTuning[0] = n;
-  } else if (i <= 358) {
+    if (microLinnInRange(n, 0, 1))       g->microLinn.guitarTuning[0] = n;
+  } else if (i <= 302) {
     short n = data1 | (data2 << 8);
     if (abs(n) > MICROLINN_MAX_GUITAR_RANGE) microLinnCancelImport();
-    g->microLinn.guitarTuning[(i-344)/2] = n;
-    if (i == 358) microLinnCheckGuitarTuning();
-  } else if (i == 360) {
-    if (microLinnInRange(data1, 0, 1)) g->microLinn.dotsCarryOver = (data1 == 1);
-    // ignore bytes 361-362 = reserved and byte 363 = padding
+    g->microLinn.guitarTuning[(i-288)/2] = n;
+    if (i == 302) microLinnCheckGuitarTuning();
+  } else if (i == 304) {
+    if (microLinnInRange(data1, 0, 1))   g->microLinn.dotsCarryOver = (data1 == 1);
+    // ignore bytes 305-307 = reserved and byte 308 = padding
   }
 }
 
-void microLinnImportSplits(byte data1, byte data2, unsigned short i,  byte presetNum) {       // version 72.1 size is 114 bytes per side
+void microLinnImportSplits(byte data1, byte data2, unsigned short i,  byte presetNum) {       // version 72.1 size is 113 bytes per side
   if (i < 0 || i >= 2 * sizeof(SplitSettings)) return;
   byte side = (i < sizeof(SplitSettings) ? LEFT : RIGHT);
   if (side == RIGHT) i -= sizeof(SplitSettings);
   SplitSettings *spl = (presetNum == 0 ? &Split[side] : &config.preset[presetNum - 1].split[side]);
-  if (i > 102 && !microLinnImportXen) return;
+  if (i >= 102 && !microLinnImportXen) return;
   unsigned short number = data1 | (data2 << 8);
 
   if (i == 0) {
@@ -5430,7 +5426,7 @@ void microLinnImportSplits(byte data1, byte data2, unsigned short i,  byte prese
   } else if (i == 76) {
     if (microLinnInRange(number, 0, 128)) spl->ccForLowRow = number;
   } else if (i == 78) {
-    if (microLinnInRange(data1,  0, 1))   spl->lowRowCCXYZBehavior = data1;      // ignore data2 = padding
+    if (microLinnInRange(data1,  0, 2))   spl->lowRowCCXYZBehavior = data1;      // ignore data2 = padding
   } else if (i == 80) {
     if (microLinnInRange(number, 0, 128)) spl->ccForLowRowX = number;
   } else if (i == 82) {
@@ -5454,42 +5450,44 @@ void microLinnImportSplits(byte data1, byte data2, unsigned short i,  byte prese
     if (microLinnInRange(data1, 0, 1))   spl->mpe = (data1 == 1);
     if (microLinnInRange(data2, 0, 1))   spl->sequencer = (data2 == 1);
   } else if (i == 94) {
-    if (microLinnInRange(data1, 0, 2))   spl->sequencerView = (SequencerView)data1;   // ignore data2 = padding
-  } else if (i == 96) {
+    if (microLinnInRange(data1, 0, 2))   spl->sequencerView = (SequencerView)data1;
     byte c = MICROLINN_MAX_COL_OFFSET;
-    if (microLinnImportXen || data1 > 1) {
-      if (microLinnInRange(data1, 1, c)) spl->microLinn.colOffset = data1;
+    if (microLinnImportXen || data2 > 1) {
+      if (microLinnInRange(data2, 1, c)) spl->microLinn.colOffset = data2;
     }
-    signed char n = (signed char)data2;
+  } else if (i == 96) {
+    signed char n = (signed char)data1;
     byte r = MICROLINN_MAX_ROW_OFFSET + 1;
-    if (!microLinnImportXen && n == -r)  return;
-    if (microLinnInRange(n, -r, r))      spl->microLinn.rowOffset = n;
+    if (microLinnImportXen || n > -r) {
+      if (microLinnInRange(n, -r, r))    spl->microLinn.rowOffset = n;
+    }
+    if (microLinnInRange(data2, 0, 3))   spl->microLinn.monoFixes = data2;    
   } else if (i == 98) {
-    if (microLinnInRange(data1, 0, 3))   spl->microLinn.monoFixes = data1;    
-    if (microLinnInRange(data2, 0, 15))  spl->microLinn.hammerOnModes = data2;
+    if (microLinnInRange(data1, 0, 15))  spl->microLinn.hammerOnModes = data1;
+    if (microLinnInRange(data2, 1, 121)) spl->microLinn.hammerOnZone = data2;
   } else if (i == 100) {
-    if (microLinnInRange(data1, 1, 121)) spl->microLinn.hammerOnZone = data1;
-    if (microLinnInRange(data2, 0, 50))  spl->microLinn.hammerOnWait = data2;
+    if (microLinnInRange(data1, 0, 50))  spl->microLinn.hammerOnWait = data1;
+    if (microLinnInRange(data2, 0, 6))   spl->microLinn.showCustomLEDs = data2;
   } else if (i == 102) {
-    if (microLinnInRange(data1, 0, 6))   spl->microLinn.showCustomLEDs = data1;
-    if (!microLinnImportXen) return;
-    if (microLinnInRange(data2, 0, 55))  spl->microLinn.condensedBendPerPad = data2;
+    if (microLinnInRange(data1, 0, 55))  spl->microLinn.condensedBendPerPad = data1;
+    if (microLinnInRange(data2, 0, 7))   spl->microLinn.defaultLayout = data2;
   } else if (i == 104) {
-    if (microLinnInRange(data1, 0, 7))   spl->microLinn.defaultLayout = data1;
-    if (microLinnInRange(data2, 0, 3))   spl->microLinn.tuningTable = data2;
+    if (microLinnInRange(data1, 0, 3))   spl->microLinn.tuningTable = data1;
+    signed char n = (signed char)data2;
+    if (microLinnInRange(n, -1, 127))    spl->microLinn.groupingCC = data2;
   } else if (i == 106) {
     signed char n = (signed char)data1;
-    if (microLinnInRange(n, -1, 127))    spl->microLinn.groupingCC = data1;
-    n = (signed char)data2;
     if (microLinnInRange(n, -7, 7))      spl->microLinn.transposeEDOsteps = n;
+    n = (signed char)data2;
+    if (microLinnInRange(n, -1, 127))    spl->microLinn.ccForLowRowW = data2;
   } else if (i == 108) {
-    if (microLinnInRange(data1, 0, 128)) spl->microLinn.ccForLowRowW = data1;
-    if (microLinnInRange(data2, 0, 128)) spl->microLinn.ccForLowRowX = data2;
+    signed char n = (signed char)data1;
+    if (microLinnInRange(n, -1, 127))    spl->microLinn.ccForLowRowX = data1;
+    n = (signed char)data2;
+    if (microLinnInRange(n, -1, 127))    spl->microLinn.ccForLowRowY = data2;
   } else if (i == 110) {
-    if (microLinnInRange(data1, 0, 128)) spl->microLinn.ccForLowRowY = data1;
-    if (microLinnInRange(data2, 0, 255)) spl->microLinn.flags = data2;
-  } else if (i == 112) {
-    // ignore bytes 112-113 = reserved for future use
+    if (microLinnInRange(data1, 0, 255)) spl->microLinn.flags = data1;
+    // ignore bytes 111-112 = reserved for future use and 113 = padding
   }
 }
 

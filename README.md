@@ -11,7 +11,7 @@ For experienced linnstrumentalists, microLinn makes exploring microtonality very
 
 
 1) Go to https://www.rogerlinndesign.com/support/support-linnstrument-update-software and follow the "How to Check Your Software Version" instructions. If it's not 2.3.3, follow the "How to Update Your LinnStrument Software‍" instructions to update to 2.3.3. Linux users: use a friend's mac or Windows machine to update.
-2) Download linnstrument-firmware-microLinn-234.072.001.ino.bin.zip from the LinnStrument Community wiki and unzip it. Important: if on a mac, put the .bin file on your **desktop**. 
+2) Download linnstrument-firmware-microLinn-234.072.001.ino.bin.zip from the LinnWIki (the LinnStrument Community wiki) and unzip it. Important: if on a mac, put the .bin file on your **desktop**. 
 3) Follow the "How to Update Your LinnStrument Software‍" instructions, with one difference: after you download and unzip the updater and before running it, put it in the same folder as the .bin file from step 2. Mac users: when you run the updater, if it asks for permission to read files from the desktop, say yes.
 If you accidentally long-press the Update OS button, you'll enter user firmware mode and the display will go blank. To return to normal, just unplug your Linnstrument.
 If you see "Couldn't retrieve LinnStrument's settings, interrupting firmware upgrade. Go ahead with default settings?", **STOP**, because "go ahead" means "delete all user settings and calibration data". Quit the updater app, unplug the Linnstrument and start over.
@@ -112,7 +112,7 @@ Additions to other menus:
 * Preset display: blue Bank Select button in lower left, 16 clip launching buttons on the right (top/bottom on Linn128)
 * Volume display: upper fader for the left split, lower fader for the right split
 * Octave/Transpose display: when microtonal, additional option for transposing by major 2nds
-* Global display: yellow MicroLinn menu button on the far right, long-press Tap Tempo and swipe for new options, double-tap Low Power
+* Global display: yellow MicroLinn menu buttons, long-press Tap Tempo and swipe for new options, double-tap Low Power
 
 
 # IMPORTANT TERMINOLOGY
@@ -140,9 +140,11 @@ The column offset can be set for each split independently. You can have one of t
 
 You can set both column offsets at once by linking them. In the upper right there are two split buttons. Hold the right one and tap the left one. You'll be switched to the left split, and the left offset will change to match the right offset. Both split buttons remain lit up, and any change affects both offsets. To unlink them, tap either split button. 
 
+----->  All microLinn per-split settings can be linked this way.  <------
+
 When you power up your LinnStrument, if the two offsets are identical and are not OFF, microLinn automatically links them.
 
------>  All microLinn per-split settings can be linked this way, and they are also auto-linked this way.  <------
+----->  All microLinn per-split settings are auto-linked this way.  <------
 
   *Details: Beware, if the column offset is 2 and the row offset is an even number, you lose half the notes and only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors. If they do, both offsets will be displayed in red.*
 
@@ -321,13 +323,13 @@ On an actual guitar, middle-C played on the 2nd string 1st fret sounds very diff
 
   *For cols 1-16, the CC's data value is (row - 1) + 8 * (col - 1). For cols 17-25, the data value is (row - 1) + 8 * (col - 17). Row 1 is the top row and column 1 is the leftmost column.*
 
-  *If your DAW isn't programmable, download LinnStrumentLocatingCCs.jsfx from the LinnStrument Community Wiki. It defines a rectangular region on the LinnStrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. It runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live, FL Studio MIDI scripts, and other platforms.)*
+  *If your DAW isn't programmable, download microLinnLocatingCCs.jsfx from the LinnWiki. It defines a rectangular region on the LinnStrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. It runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live, FL Studio MIDI scripts, and other platforms.)*
   
   *Thanks to KVR forum member vorp40 for the locating CC idea!*
 
 IMPORTING/EXPORTING
 
-You can back up various settings and/or share them with others via midi files. The 6 memories, the 3 custom light patterns, the 16 audience messages, microtonal data, and all settings combined. A memory or light pattern imports in about 1 second, doable on stage in between songs. You can use the clip launcher (see below) to trigger an import on stage, giving you dozens of memories, one for each song on the set list! Check the LinnStrument Community Wiki for export-request files and importable settings files.
+You can back up various settings and/or share them with others via midi files. The 6 memories, the 3 custom light patterns, the 16 audience messages, microtonal data, and all settings combined. A memory or light pattern imports in about 1 second, doable on stage in between songs. You can use the clip launcher (see below) to trigger an import on stage, giving you dozens of memories, one for each song on the set list! Check the LinnWiki for export-request files and importable settings files.
 
   *Details: To import, download a settings file from the wiki. On your LinnStrument, set Allow Importing to YES. In your DAW, set the output of a midi track to your LinnStrument. Load the settings file into that track and press play. Your LinnStrument should scroll "IMPORT SUCCESS". If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #9 below.*
 
@@ -356,58 +358,52 @@ You can back up various settings and/or share them with others via midi files. T
 
   *The 16 sequencer projects can be imported and exported as usual via the updater app as *.lpr files. When you export, the filename of microtonal projects should contain the edo, since it won't sound right in the wrong edo. The AllUserSettings export does not export the current sequencer project, so to export it save it as one of the 16 projects.*
 
-Export request files available on the LinnStrument Community Wiki:
+Export request files available on the LinnWiki:
 
-* requestCurrentLightPattern.mid (exports the currently-displayed light pattern, importing overwrites same)
-* requestAllLightPatterns.mid
-* requestCurrentAudienceMsg.mid (exports the most recently edited message, importing overwrites same)
-* requestAllAudienceMsgs.mid
+* 1-requestCurrentLightPattern.mid (exports the currently-displayed light pattern, importing overwrites same)
+* 2-requestAllLightPatterns.mid
+* 3-requestCurrentAudienceMsg.mid (exports the most recently edited message, importing overwrites same)
+* 4-requestAllAudienceMsgs.mid
 
-* requestScalesCurrentEDO.mid
-* requestRainbowCurrentEDO.mid
-* requestFretboardCurrentEDO.mid
-* requestAllSettingsCurrentEDO.mid
+* 5-requestScalesCurrentEDO.mid
+* 6-requestRainbowCurrentEDO.mid
+* 7-requestFretboardCurrentEDO.mid
+* 8-requestAllSettingsCurrentEDO.mid
 
-* requestScalesAllEDOs.mid
-* requestRainbowsAllEDOs.mid
-* requestFretboardsAllEDOs.mid
-* requestScalesRainbowsFretboardsAllEDOs.mid
+* 9-requestScalesAllEDOs.mid
+* 10-requestRainbowsAllEDOs.mid
+* 11-requestFretboardsAllEDOs.mid
+* 12-requestScalesRainbowsFretboardsAllEDOs.mid
 
-* requestCurrentSettings.mid (exports the current Global and Split settings, importing overwrites same)
-* requestAllMemories.mid
-* requestAllUserSettings.mid
+* 13-requestCurrentSettings.mid (exports the Global and Split settings, importing overwrites same)
+* 14-requestAllMemories.mid
+* 15-requestAllUserSettings.mid
 
-CLIP LAUNCHING
+MINI CLIP-LAUNCHER
 
-The Preset display has 16 new buttons. Tapping a button sends a midi CC message to your DAW that can trigger launching a midi or audio clip. A midi clip can be sent to the LinnStrument that imports certain settings. This lets you quickly access more than 6 memories and more than 3 light patterns. You could even use each launching button to bulk import 3 custom light patterns at once, giving you up to 3 x 16 = 48 patterns. Or bulk import 6 memories, giving you up to 6 x 16 = 96 memories.
+The Preset display has 16 new buttons that use the 16 CCs from the Per-Split Special mode CC Faders. Tapping a button sends a simple on/off pair of CC messages to your DAW. Whereas the faders give you precise control for mixing, these new buttons let you quickly launch a midi or audio clip. 
 
-You can import multiple settings after loading a memory, allowing combo setups e.g. memory A plus import B plus import C. For example, the 6 memories might correspond to various synths, the first 8 clips to various light patterns, and the last 8 clips to various microtonal tunings. Or the last 8 CCs could be used as CC faders in the right split.
+Besides the obvious musical usages such as playing backing tracks, your DAW can send a midi clip to the LinnStrument that bulk imports settings, perhaps between songs while on stage. This lets you access more than 6 memories and more than 3 light patterns.
 
-  *Details: the 16 CCs are the same ones sent when a split is in the Special CC Faders mode. The upper 8 buttons on the Preset display send the left split's fader CCs on channel 1, and the lower 8 send the right split's fader CCs on channel 16. You can send a left-split CC while in the right split and vice versa.*
+You can import multiple settings after loading a memory, allowing combo setups e.g. memory A plus import B plus import C. (This is why the launching buttons are next to the 6 memory buttons.) For example, the 6 memories might correspond to various synths, the first 8 clips to various microtonal tunings, and the last 8 CCs can be used as mixing faders. You could even use each launching button to bulk import 6 memories, giving you 96 memories!
+
+  *Details: The upper 8 buttons on the Preset display send the left split's fader CCs on channel 1, and the lower 8 send the right split's fader CCs on channel 16. You can send a left-split CC while in the right split and vice versa. The most-recently tapped button is accented.*
   
-  *Each launching button sends a CC with value 127 when touched and 0 when released (this may change). This works well for clip launching, and differs from a split 1 column wide used as CC faders, which when touched sends a value alternating between 127 and 0, and when released sends nothing.*
+  *Each launching button sends a CC with value 127 when touched and 0 when released. Whereas a CC Faders split 1 column wide acts as a toggle: when touched it sends a value alternating between 0 and 127, and when released it sends nothing. Clips can be launched from a CC Faders split by double-tapping. Best to double-tap from on to off to on, so that the identifying colors are shown.*
 
-  *The CC types default to 1-8 (in reverse order) for both splits. Beware, CC1 is also sent by the low row and CC7 is also sent by the Volume display. We wouldn't want to accidentally launch a clip when we adjust the volume, or vice versa! Better to use one set of CCs to control your synths and another set of CCs to control your DAW. A good choice for the latter is CCs 21-28 (see CC SUGGESTIONS below). To select these CCs, long-press the CC Faders button. Or download setCCfadersTo21-28.mid from the LinnWiki and import it into your LinnStrument.*
+  *The CC types default to 1-8 (in reverse order) for both splits. Beware, CC1 is also sent by the low row and CC7 is also sent by the Volume display. We wouldn't want to accidentally launch a clip when we adjust the volume, or vice versa! Better to use one set of CCs to control your synths and another set of CCs to control your DAW. A good choice for the latter is CCs 21-28 (see CC SUGGESTIONS below). To select these CCs, long-press the CC Faders button and swipe. Or download setFaderCCsTo21-28.mid from the LinnWiki and import it into your LinnStrument. If you want to use only one split's CCs for launching, import setLeftFaderCCsTo21-28.mid or setRightFaderCCsTo21-28.mid. setFaderCCsTo1-8.mid sets the CCs to 1-8, and setFaderCCsTo8-1.mid sets them to the default.* 
 
-  *Beware: loading a memory (or importing one) overwrites the launcher/fader CC choices. If your DAW responds to CCs 21-28 and the newly-loaded memory uses CCs 1-8, the clip launchers stop working. So immediately after loading/importing an older memory, import setCCfadersTo21-28.mid and save/export the updated memory.*
-  
-  *You can use one split's CCs for launching and the other split's CCs as usual for faders. Thus in addition to setCCfadersTo21-28.mid there is setLeftCCfadersTo21-28.mid and setRightCCfadersTo21-28.mid.*
+  *Beware: loading a memory (or importing one) overwrites the launcher/fader CC choices. If your DAW responds to CCs 21-28 and the newly-loaded memory uses CCs 1-8, the launching buttons stop working. So immediately after loading/importing an older memory, import setFaderCCsTo21-28.mid and save/export the updated memory.*
 
   *To set up Reaper to launch midi clips:*
-  * *Download clipLaunchingActions.ReaperKeyMap to create 16 custom actions triggered by CCs 21-28*
-  * * *Or download clipLaunchingActionsLeft or clipLaunchingActionsRight to create 8 custom actions*
-  * * *Import it into Reaper using actions/showActionList/keyMap*
-  * *Either set the fader CCs on your LinnStrument to 21-28, or else edit the shortcuts of the custom actions to match your LinnStrument*
   * *In Reaper options/preferences/midiInputs, enable your LinnStrument's input for control messages*
+  * *Download clipLaunchingActions.ReaperKeyMap (or clipLaunchingActionsLeft or clipLaunchingActionsRight)*
+  * *Import it into Reaper using actions/showActionList/keyMap to create 16 custom actions triggered by CCs 21-28*
+  * *Either set the CCs on your LinnStrument to 21-28, or else edit the shortcuts of the custom actions*
   * *Download clipLauncher.rpp from the LinnWiki, open it, and put a midi clip (or clips) on each track*
   * *Open your usual performance reaper project (or projects) in a new tab and move clipLauncher.rpp to the last tab*
   * *Tapping the launching buttons will launch the clips in tracks 1-16 of the last tab's project*
-  * * *You can create clipLauncher2.rpp loaded with different clips and use it instead by simply moving it to the last tab*
-
-  possible modes: 
-  * touch sends 127, release sends nothing (current mode)
-  * touch sends 127, release sends 0 
-  * touch sends 127, then 0, release sends nothing (what a fader split 1 column wide does)
+  * *You can create clipLauncher2.rpp loaded with different clips and use it instead by simply moving it to the last tab*
 
 CC SUGGESTIONS
 
@@ -631,7 +627,7 @@ Your linnstrument can send a CC message immediately before every note-on indicat
 
   *The CC value is the midi group number, 1-8. Within a group, midi notes run from 0 to 127. Thus note 128 becomes midi note 0 in group 2. The number of groups needed depends on how many notes your tuning uses. MicroLinn automatically calculates the number of groups and indicates it by a vertical stack of 1-8 dots after the "CC".*
 
-  *See the LinnStrument Community wiki for microLinnMidiGroupFilter.jsfx, a plug-in for Reaper, and microLinnMidiGroupDemo.RPP, an example Reaper project. Upon receiving a grouping CC, the filtering effect assigns a group (the CC's value) to the CC's channel. It then only passes midi data from those channels that have been assigned to a certain group.*
+  *See the LinnWiki for microLinnMidiGroupFilter.jsfx, a plug-in for Reaper, and microLinnMidiGroupDemo.RPP, an example Reaper project. Upon receiving a grouping CC, the filtering effect assigns a group (the CC's value) to the CC's channel. It then only passes midi data from those channels that have been assigned to a certain group.*
 
   *The jsfx filter effect runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this simple effect in Abelton's Max 4 Live, FL Studio's MIDI scripts, Bitwig's Grid, StreamByter (free macOS/iOS AU plugin) and other platforms.)*
 
@@ -668,7 +664,7 @@ Rechanneling indicates the midi group by sending certain midi notes to channels 
 
   *Details: Turn on rechanneling by swiping past "CC" to "RCH". This will automatically set the current split to use channel-per-note mode and a certain block of channels. Midi group 1 uses this block, and the other midi groups are sent to other blocks. MicroLinn automatically calculates the number of groups and indicates it by a vertical stack of 1, 2, 3 or 4 dots after the "RCH". (If there are more tha 4 groups, "RCH" will be displayed in red.) In the Per-Split display, the additional midi channel blocks are displayed in the accent color. Beware: make sure the other split doesn't also use these channels!*
 
-  *Your DAW should send each block of channels plus the main channel to a different instance of your synth. See the LinnStrument Community wiki for midiChannelFilter.jsfx, a plug-in for Reaper, and microLinnRechannelingDemo.RPP, an example Reaper project. In each track, the filter effect only lets certain midi channels thru. (Sysexes and realtime messages are always passed thru.) On each synth instance, set the anchor note and frequency similar to the grouping CCs method.*
+  *Your DAW should send each block of channels plus the main channel to a different instance of your synth. See the LinnWiki for midiChannelFilter.jsfx, a plug-in for Reaper, and microLinnRechannelingDemo.RPP, an example Reaper project. In each track, the filter effect only lets certain midi channels thru. (Sysexes and realtime messages are always passed thru.) On each synth instance, set the anchor note and frequency similar to the grouping CCs method.*
 
   *If you can't open the reaper project microLinnRechannelingDemo.RPP, follow the steps above for microLinnMidiGroupDemo.RPP. But use midiChannelFilter instead of microLinnMidiGroupFilter, and don't go past group 4.*
 
