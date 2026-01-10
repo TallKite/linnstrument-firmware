@@ -441,13 +441,12 @@ void handleMidiInput(unsigned long nowMicros) {
             if (lastRpnMsb != 127 || lastRpnLsb != 127) {
               lastDataLsb = midiData2;
               receivedRpn(midiChannel, (lastRpnMsb<<7)+lastRpnLsb, (lastDataMsb<<7)+lastDataLsb);
-              break;
             }
-            if (lastNrpnMsb != 127 || lastNrpnLsb != 127) {
+            else if (lastNrpnMsb != 127 || lastNrpnLsb != 127) {
               lastDataLsb = midiData2;
               receivedNrpn((lastNrpnMsb<<7)+lastNrpnLsb, (lastDataMsb<<7)+lastDataLsb, midiChannel);
-              break;
             }
+            break;
           case 98:
             lastNrpnLsb = midiData2;
             break;
