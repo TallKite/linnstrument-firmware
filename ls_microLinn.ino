@@ -59,6 +59,7 @@ https://github.com/jimsnow/linnstrument-firmware-ml/compare/main...TallKite:linn
 https://github.com/TallKite/linnstrument-firmware/compare/cf85bb7...TallKite:linnstrument-firmware:main
 https://github.com/rogerlinndesign/linnstrument-firmware/compare/master...TallKite:linnstrument-firmware:Brightness-control.patch
 
+MUST-DO #1: UNINSTALL
 
   16    72.1
 11692              sizeof(config)
@@ -96,7 +97,7 @@ explain JI breifly
 explain the kite guitar breifly
 
 
-MUST-DO #2
+MUST-DO #2 -- MICROTONALIZE
 
 use virtual edosteps to get the midi to work
 done for playing
@@ -196,8 +197,8 @@ any advantage to using "inline"?
 https://www.kvraudio.com/forum/viewtopic.php?t=539894 bug, CC faders don't respond to received CCs
 https://www.kvraudio.com/forum/viewtopic.php?t=539553 bug, sequencer mute light doesn't work
 
-https://www.kvraudio.com/forum/viewtopic.php?t=603578 per-split custom LED patterns, for use with CC faders
-https://www.kvraudio.com/forum/viewtopic.php?t=588669 Add Quantize Hold to list of Foot/Panel Switch assignments, Roger approves
+https://www.kvraudio.com/forum/viewtopic.php?t=603578 per-split custom LED patterns, for use with CC faders - done
+https://www.kvraudio.com/forum/viewtopic.php?t=588669 Add Quantize Hold to list of Foot/Panel Switch assignments, Roger approves - done
 https://www.kvraudio.com/forum/viewtopic.php?t=534636 pitch bend behavior when in OneChannel/ChannelPerRow modes, Roger approves
 https://www.kvraudio.com/forum/viewtopic.php?t=550383&start=30 brightness knob
 https://www.youtube.com/watch?v=N5E57qRu8zw Bach on the linnstrument, could have been in 12-of-31edo meantone
@@ -213,6 +214,33 @@ https://www.kvraudio.com/forum/viewtopic.php?t=527141 foot pedal option to advan
 https://www.kvraudio.com/forum/viewtopic.php?t=523104 Sequencer workarounds or feature requests
 https://www.kvraudio.com/forum/viewtopic.php?t=520315 weird bug when playing 5 notes in 2 columns (+6 D1 B1 D2 F3 D3)
 https://www.kvraudio.com/forum/viewtopic.php?t=520863 clip launching
+https://www.kvraudio.com/forum/viewtopic.php?t=508560&start=30 Y-data initial strike only, Roger approves
+https://www.kvraudio.com/forum/viewtopic.php?t=459910 relative value for CC faders, see below
+https://www.kvraudio.com/forum/viewtopic.php?t=509054 footswitch sends low keyswitch
+   would default to C0 = note 24, needs Global.pedalNote[5], 5 bytes per preset for the note = 35 bytes total
+https://www.kvraudio.com/forum/viewtopic.php?t=505385 velocity sensing details, it works less well in low power mode
+https://www.kvraudio.com/forum/viewtopic.php?t=502776 control Y-data maximum with the low row, Roger said no
+  fix: when low row and other rows send the same CC, use the low row value to scale all future CCs from the other rows by N/127
+  needs two 1-bye runtime vars, Yscale and Zscale, initialized to 127, plus Split.scaleWithLowRow boolean
+https://www.kvraudio.com/forum/viewtopic.php?t=501443 mark low row and CC faders centerpoint 64 somehow, meh
+https://www.kvraudio.com/forum/viewtopic.php?t=448987 velocity averaging, better than compression, do this in jsfx!!!
+https://www.kvraudio.com/forum/viewtopic.php?t=448987 long thread on velocity sensing, Geert explains the algorithm
+  see also https://www.kvraudio.com/forum/viewtopic.php?f=263&t=448737
+https://www.kvraudio.com/forum/viewtopic.php?t=487255&start=30 chord player (one pad = a full chord), John's 7x7 grid
+  https://www.youtube.com/watch?v=o7on7jdkc3o&list=PLeA4gTa6twkrIPzGynL76aDoawd53y_Md&index=17 chordPlayer for the linn
+https://www.kvraudio.com/forum/viewtopic.php?t=493869
+  "in 2.1.0, Geert changed the CELL lights so that they always track your finger position."
+https://www.kvraudio.com/forum/viewtopic.php?t=493413 minimum note length, was 70ms, now it's 35/70, see isPastDebounceDelay()
+https://www.kvraudio.com/forum/viewtopic.php?t=491827 the sensor internally puts out 4096 levels of velocity
+https://www.kvraudio.com/forum/viewtopic.php?t=489565 footswitch disable Y-data, could launch 1 NRPN pedal down, another pedal up
+https://www.kvraudio.com/forum/viewtopic.php?t=489846 [feature request] high resolution faders - meh
+https://www.kvraudio.com/forum/viewtopic.php?t=487209 Roger: "I'm thinking of adding a mode to allow independent Row Offsets per split"
+https://www.kvraudio.com/forum/viewtopic.php?t=484230 2.1.0 firmware, remove notes from latched arp by playimg them again -- yes!
+https://www.kvraudio.com/forum/viewtopic.php?t=486303&start=15 set arp swing to dotted, Roger approves
+https://www.kvraudio.com/forum/viewtopic.php?t=485767 strumming via a strum split - before 2.0.2 it had tapping but no hammer-ons
+https://www.kvraudio.com/forum/viewtopic.php?t=479863 Low row idea - bow controller -- maybe
+https://www.kvraudio.com/forum/viewtopic.php?t=477209 TJ Shredder asks for locating CCs, Roger says no
+https://www.kvraudio.com/forum/viewtopic.php?t=477257 user firmware mode in one split only, no response
 
 
 test unninstalling more
@@ -251,8 +279,6 @@ test CC faders bug: https://www.kvraudio.com/forum/viewtopic.php?t=450198
 
 check that microLinnCalcLowestEdostepEtc() and others take into account condensing
 
-on the note lights screen, when long-pressing a scale button to reset the scale, it should blink
-
 tuning table modes: 55ed(4/3-50c) = 440/3 notes per octave, 1024 total notes means 1024x3/440 = 384/55 = 7 octaves
 
 decide, should tuning table notes be transposable?
@@ -265,10 +291,16 @@ color-code the menu buttons? makes them more memorable
 
 low row sustain mode - make it latch on a short press? or on a double-press like the joystick mode? or both?
 
+MINOR BUGS
+
 import types 9-11: warning excess data
 import type 14, 15: various data failures
 
 fix bug with anchor row = 0 and guitar tuning, strings preview note are off by one
+
+when showing custom light pattern in 1 split, sometimes its low row spills over into the other split
+
+anchor pad chooser is blank when displaying a custom light pattern, search for bug: doesn't load anything
 
 colorAccent can be set to 0, if so my code should use some fixed color
 
@@ -312,6 +344,21 @@ col 16) Global microtonal settings
   row 6) Sweetening amount in tenths of cents (OFF, 0.1 to 6.0)
   row 7) Large EDO for fine tuning (OFF, various 56-311, 1200)
 
+relative mode for CC faders? https://www.kvraudio.com/forum/viewtopic.php?t=459910 and ls_faders.ino
+  short-press to set the fader position absolutely. swipe starting and ending anywhere to adjust relatively
+  swiping X pads right moves the fader position exactly X pads right, swipe from below to max out, swipe from above to turn off
+  an unmoving long-press is relative and does nothing
+  what about two touches at once, a sort of hammer-on/pull-off?
+
+low row restrike mode alternates between downstrokes and upstrokes, which delay certain notes, steal from arp code?
+  downstroke on touch, upstroke on release? play alternating fingers legato = no upstrokes?
+  pads alternate colors, green = downstroke, blue = upstroke?
+  speed of the stroke comes from the Y-data?
+low row restrike mode has some way of doing palm mutes? (o just let orange tree samples use velocity)
+  low-Z on the held notes make short midi notes?
+  playing in the crack (off-X) makes a mute?
+  pads alternate colors, green = regular, blue = muted?
+
 improve XYZ behavior with Nathan Kopp's code?
   https://github.com/nathankopp/linnstrument-firmware/wiki
   https://github.com/rogerlinndesign/linnstrument-firmware/compare/master...nathankopp:linnstrument-firmware:63bd3af
@@ -325,9 +372,12 @@ qanun-style mandals: set one split to CC faders and set the 1st CC to 129 = MND 
   if one scale note is moved past another, the notes are reordered
 
 make the red dot follow a slide to the next pad? see transferFromSameRowCell() and handleSlideTransferCandidate()
-  It already follows if played mode is CELL
+  It already follows if played mode is CELL (starting with firmware 2.1.0)
   editing handleSlideTransferCandidate to use inRange(playedTouchMode, playedCell, playedBlink) sort of works, 
   but it leaves stray dots behind and the twin dots don't follow
+
+Upon receiving a locating CC, the linn colors that pad with the color implied by the CC's channel?
+  But what if the locating CCs overlap with the painting CCs 20-25?
 
 Roger's idea for a transpose function for the low row
 https://www.kvraudio.com/forum/viewtopic.php?t=594760 
@@ -458,6 +508,9 @@ I also use 2 controllers on the left hand split, only 3 cells wide, to control r
 
 John Savage says: I use X-axis to modify the sound a number of different ways, but my favourite is to introduce overtones or feedback 
 and a little high-pass filtering on long slides. Gives it an electric guitar feel.
+
+pdxindy says: I have a number of percussive presets that have env decay short and release long so if I tap the key it rings out 
+but hold it, it is short and muted. Makes for a pleasing playing style. (linn min note length is 35/70ms)
 
 WHEN DONE:
 change microLinnOSVersion from 000 to 001
@@ -1202,9 +1255,6 @@ short microLinnImportCounter = 0;
 boolean microLinnImportXen = true;                              // don't import xen data for most presets if rawEDO == 4
 boolean microLinnImportingOn = false;
 unsigned long microLinnLastMomentMidiPP;                        // for timeout calculations, not yet used
-
-// debugging vars, delete later
-//int MLdebug[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 /************** math functions ************************/
 
@@ -2143,6 +2193,7 @@ void loadMicroLinnRainbowAndFretboard() {          // called from loadSettingsFr
 
 void microLinnSetupKitesPersonalPrefs() {          // speed up debugging cycle, delete later once things are more stable
   microLinnImportingOn = true;
+  fxd4CurrentTempo = FXD4_FROM_INT(60);
 
   // the 2nd from bottom preset (#5) is the kite guitar preset
   config.preset[5].global.activeNotes = 8;                            // 41edo fretboard
@@ -2163,6 +2214,7 @@ void microLinnSetupKitesPersonalPrefs() {          // speed up debugging cycle, 
     config.preset[p].global.customSwitchAssignment[SWITCH_SWITCH_2] = ASSIGNED_MICROLINN_EDO_DOWN;
     config.preset[p].global.customSwitchAssignment[SWITCH_FOOT_L]   = ASSIGNED_REVERSE_PITCH_X;
     config.preset[p].global.customSwitchAssignment[SWITCH_FOOT_R]   = ASSIGNED_MICROLINN_8VE_UP;
+    config.preset[p].global.arpDirection = ArpUp;
     config.preset[p].global.microLinn.dotsCarryOver = true;
     //config.preset[p].Global.microLinn.locatingCC1 = 29;
     //config.preset[p].Global.microLinn.locatingCC2 = 30;
@@ -2197,13 +2249,13 @@ void microLinnSetupKitesPersonalPrefs() {          // speed up debugging cycle, 
 
   for (byte p = 0; p <= 5; ++p) {
     for (byte side = 0; side < NUMSPLITS; ++side) {
-      for (byte i = 0; i < 8; ++i) {
+      for (byte i = 0; i < 8; ++i) {                               // for all 6 memories, set the fader/launcher CCs to 21-28
         config.preset[p].split[side].ccForFader[i] = 28 - i;       // 28-i not 21+i because ccForFader[0] is on row 0 not row 7
       }
     }
   }
 
-  config.preset[4].split[0].microLinn.setPullOffMode(0);
+  config.preset[4].split[0].microLinn.setPullOffMode(0);           // for testing, delete later
   config.preset[4].split[1].microLinn.setPullOffMode(1);
   config.preset[5].split[0].microLinn.setPullOffMode(2);
   config.preset[5].split[1].microLinn.setPullOffMode(3);
@@ -2946,7 +2998,7 @@ void paintMicroLinnNormalDisplayCell(byte split, byte col, byte row) {
     if (row == 0) {
       clearLed(col, row, LED_LAYER_LOWROW);
     }
-    // custom LEDs shows up underneath the note lights
+    // custom LEDs shows up underneath the note lights (possible bug? should have used the custom layer)
     byte pattern = Split[split].microLinn.showCustomLEDs;
     if (pattern > 3 && cellDisplay == cellOff) {
       colour = Device.customLeds[pattern - 4][col + MAXCOLS * row] >> 3;
@@ -3293,7 +3345,6 @@ void handleMicroLinnConfigNewTouch() {
     case 14: if (isMicroLinnOn()) microLinnHandlePerSplitXenSettingsNewTouch(); break;
     case 16: if (isMicroLinnOn()) microLinnHandleGlobalXenSettingsNewTouch(); break;
   }
-  updateDisplay();
 }
 
 boolean microLinnIsDisabledConfigButton() {                // a button that doesn't work because we're not in an edo
@@ -3407,6 +3458,7 @@ void microLinnHandleRowOffsetNewTouch() {
   signed char rowOffset = Split[side].microLinn.rowOffset;                           // stored as -26=OFF, -25..25, 26=NOVR 
   if (sensorCol == 1 && sensorRow == 7 && abs(rowOffset) <= MICROLINN_MAX_ROW_OFFSET) {
     Split[side].microLinn.rowOffset *= -1;
+    updateDisplay();
   } else {
     // convert from "stored as" format to "appears as" format
     boolean isPositive = inRange(rowOffset, 0, MICROLINN_MAX_ROW_OFFSET);
@@ -4449,7 +4501,7 @@ boolean handleMicroLinnClipLauncher(byte CCval) {
   }
 
   byte channel = (side == LEFT) ? 1 : 16;
-  midiSendControlChange(Split[side].ccForFader[CCpointer], CCval, channel, true);
+  preSendControlChange(side, Split[side].ccForFader[CCpointer], CCval, true);
   if (CCval == 127) {
     microLinnLastClipLaunched = CCpointer + 8 * side + 1;
     paintMicroLinnClipLauncher();
@@ -4789,6 +4841,11 @@ void microLinnSendPolyPressure(byte data1, byte data2, byte channel) {   // chan
 
 // called when nrpn 300 is received
 void importMicroLinnData(int value) {
+  if (microLinnImportType > 0) {
+    microLinnImportType = 0;
+    microLinnScrollSmall("IMPORT FAILURE SIMULTANEOUS IMPORTS");
+    return;
+  }
   byte importType = value >> 7;
   byte EDO = value & 127;
   microLinnImportType = 0;
@@ -4866,8 +4923,7 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
     if (data1 > Device.version || data2 > Device.microLinn.MLversion) {         // cancel imports from future versions
       microLinnImportType = 0;
       microLinnScrollSmall("IMPORT FAILURE UNKNOWN DATA VERSION " + String(data1) + " " + String(data2));
-    } else if (microLinnImportType == 15 &&
-              (data1 != Device.version || data2 != Device.microLinn.MLversion)) {
+    } else if (microLinnImportType == 15 && (data1 != Device.version || data2 != Device.microLinn.MLversion)) {
       microLinnImportType = 0;
       microLinnScrollSmall("IMPORT FAILURE DATA VERSION MISMATCH " + String(data1) + " " + String(data2));
     } else {
@@ -4888,7 +4944,17 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
     } else if (data1 != microLinnImportType) { 
       microLinnScrollSmall("IMPORT WARNING FOOTER MISMATCH");
     } else {
-      microLinnScrollSmall("IMPORT SUCCESS");
+      if (displayMode != displayPreset) {
+        microLinnScrollSmall("IMPORT SUCCESS");
+      } else {
+        for (byte col = 1; col < NUMCOLS; ++col) {
+          for (byte row = 0; row < NUMROWS; ++row) {
+            setLed(col, row, COLOR_GREEN, cellOn);
+          }
+        }
+        delayUsec(250000);      // quarter-second green flash
+        updateDisplay();
+      }
     }
     if (microLinnImportType > 4) setupMicroLinn();
     setMidiChannelSelect();

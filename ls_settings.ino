@@ -1936,9 +1936,9 @@ void handlePresetRelease() {
       // if releasing anywhere else besides the split selector, send the PC message
       else if (!(inRange(sensorCol, 15, 16) && sensorRow == 7)) applyMidiPreset();
     }
-    // if holding the blue dot while releasing another touch, send the Bank Select message
+    // if holding the blue dot while releasing another touch, send the Bank Select message (CC0)
     if (cellsTouched == 1 && touchInfo[1][0].touched == touchedCell)
-      midiSendControlChange (0, midiBank[Global.currentPerSplit], Split[Global.currentPerSplit].midiChanMain, true);
+      preSendControlChange(Global.currentPerSplit, 0, midiBank[Global.currentPerSplit], true);
     // if releasing the blue dot while holding another touch, update the number and its color
     if (cellsTouched == 1 && sensorCol == 1 && sensorRow == 0) updateDisplay();
   }

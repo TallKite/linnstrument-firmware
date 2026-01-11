@@ -972,7 +972,7 @@ void receivedNrpn(int parameter, int value, int channel) {
     // Global Main Note Lights
     case 203: case 204: case 205: case 206: case 207: case 208:
     case 209: case 210: case 211: case 212: case 213: case 214:
-      if (inRange(value, 0, 1)) {
+      if (inRange(value, 0, 1) && Global.activeNotes < 9) {                    // microLinn avoids scales 10-12
         if (value) {
           Global.mainNotes[Global.activeNotes] |= (1 << (parameter-203));
         }
@@ -984,7 +984,7 @@ void receivedNrpn(int parameter, int value, int channel) {
     // Global Accent Note Lights
     case 215: case 216: case 217: case 218: case 219: case 220:
     case 221: case 222: case 223: case 224: case 225: case 226:
-      if (inRange(value, 0, 1)) {
+      if (inRange(value, 0, 1) && Global.activeNotes < 9) {
         if (value) {
           Global.accentNotes[Global.activeNotes] |= (1 << (parameter-215));
         }
@@ -1509,10 +1509,12 @@ void sendNrpnParameter(int parameter, int channel) {
     case 203: case 204: case 205: case 206: case 207: case 208:
     case 209: case 210: case 211: case 212: case 213: case 214:
       value = (Global.mainNotes[Global.activeNotes] & (1 << (param-203))) != 0;
+      value &= Global.activeNotes < 9;                                                   // microLinn avoids scales 10-12
       break;
     case 215: case 216: case 217: case 218: case 219: case 220:
     case 221: case 222: case 223: case 224: case 225: case 226:
       value = (Global.accentNotes[Global.activeNotes] & (1 << (param-215))) != 0;
+      value &= Global.activeNotes < 9;
       break;
     case 227:
       value = Global.rowOffset;

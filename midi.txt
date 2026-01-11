@@ -74,8 +74,8 @@ CC Number   Used for
 23			Make current custom cell colors persistent as pattern (0-2) 
 24			Clear persisted custom cell colors pattern (0-2)
 
-NRPN input
-==========
+RPN / NRPN input
+================
 
 NRPN messages are a series of MIDI CC messages that allow changing more parameters than are supported by
 the standard MIDI CC message list. LinnStrument always expects an exact series of 6 MIDI CC messages to be
@@ -84,7 +84,7 @@ next two set the NRPN parameter value (both MSB and LSB are used), and the last 
 parameter number. Failure to reset the NPRN parameter number can result in other MIDI input messages to
 behave unpredictably.
 
-This is an overview of the message chain:
+This is an overview of the NRPN message chain:
 
 1011nnnn   01100011 ( 99)  0vvvvvvv         NRPN parameter number MSB CC
 1011nnnn   01100010 ( 98)  0vvvvvvv         NRPN parameter number LSB CC
@@ -92,6 +92,15 @@ This is an overview of the message chain:
 1011nnnn   00100110 ( 38)  0vvvvvvv         NRPN parameter value LSB CC
 1011nnnn   01100101 (101)  01111111 (127)   RPN parameter number Reset MSB CC
 1011nnnn   01100100 (100)  01111111 (127)   RPN parameter number Reset LSB CC
+
+RPNs are the same except CCs 99 and 98 are replaced with CCs 101 and 100.
+
+The following table lists all the RPN input values that LinnStrument understands.
+
+RPN    MSB Value   Description
+-------------------------------------------------------------------------------------------------------------
+0      1-96        Set pitch bend range for both splits to 1-96 semitones
+6      0-15        Set up MPE on one split (channel 0 = L, 15 = R) for 1-15 channels, or if value is 0, turn off MPE
 
 The following table lists all the NRPN input values that LinnStrument understands.
 
@@ -234,9 +243,9 @@ NRPN   Value   Description
 200    0-1     Global Split Active (0: Inactive, 1: Active)
 201    0-1     Global Selected Split (0: Left Split, 1: Right Split)
 202 *  2-25    Global Split Point Column
-203    0-1     Global Main Note Light C (0: Off, 1: On)
-204    0-1     Global Main Note Light C# (0: Off, 1: On)
-205    0-1     Global Main Note Light D (0: Off, 1: On)
+203    0-1     Global Main Note Light C (0: Off, 1: On)     overwrites the currently selected scale
+204    0-1     Global Main Note Light C# (0: Off, 1: On)    if user is in a custom light pattern, nothing happens
+205    0-1     Global Main Note Light D (0: Off, 1: On)     call NRPN 1300 afterwards only if condense to scale is on
 206    0-1     Global Main Note Light D# (0: Off, 1: On)
 207    0-1     Global Main Note Light E (0: Off, 1: On)
 208    0-1     Global Main Note Light F (0: Off, 1: On)
@@ -246,9 +255,9 @@ NRPN   Value   Description
 212    0-1     Global Main Note Light A (0: Off, 1: On)
 213    0-1     Global Main Note Light A# (0: Off, 1: On)
 214    0-1     Global Main Note Light B (0: Off, 1: On)
-215    0-1     Global Accent Note Light C (0: Off, 1: On)
-216    0-1     Global Accent Note Light C# (0: Off, 1: On)
-217    0-1     Global Accent Note Light D (0: Off, 1: On)
+215    0-1     Global Accent Note Light C (0: Off, 1: On)   overwrites the currently selected scale
+216    0-1     Global Accent Note Light C# (0: Off, 1: On)  if user is in a custom light pattern, nothing happens
+217    0-1     Global Accent Note Light D (0: Off, 1: On)   call NRPN 1300 afterwards only if condense to scale is on
 218    0-1     Global Accent Note Light D# (0: Off, 1: On)
 219    0-1     Global Accent Note Light E (0: Off, 1: On)
 220    0-1     Global Accent Note Light F (0: Off, 1: On)
@@ -260,7 +269,7 @@ NRPN   Value   Description
 226    0-1     Global Accent Note Light B (0: Off, 1: On)
 227 *  0-13    Global Row Offset (only supports, 0: No overlap, 3 4 5 6 7 12: Intervals, 13: Guitar, 127: 0 offset)
 228    0-21    Global Switch 1 Assignment   (0: 8ve Down, 1: 8ve Up, 2: Sustain, 3: CC65, 4: Arp, 5: Alt Split, 6: Auto Octave, 7: Tap Tempo...)
-229    0-21    Global Switch 2 Assignment   (...8: Legato, 9: Latch, 10: Preset Up, 11: Preset Down, 12: Reverse Pitch X, 13: Sequencer Play...)
+229    0-21    Global Switch 2 Assignment   (...8: Legato, 9: Latch, 10/11: Program Change Up/Down, 12: Reverse Pitch X, 13: Sequencer Play...)
 230    0-21    Global Foot Left Assignment  (...14: Sequencer Previous, 15: Sequencer Next, 16: Send MIDI Clock, 17: Sequencer Mute...)
 231    0-21    Global Foot Right Assignment (...18: MicroLinn 8ve Up, 19: MicroLinn 8ve Down, 20: MicroLinn EDO Up, 21: MicroLinn EDO Down)
 232    0-3     Global Velocity Sensitivity (0: Low, 1: Medium, 2: High, 3: Fixed)
@@ -274,7 +283,7 @@ NRPN   Value   Description
 240    0-1     Global Switch 2 Both Splits (0: Off, 1: On)
 241    0-1     Global Foot Left Both Splits (0: Off, 1: On)
 242    0-1     Global Foot Right Both Splits (0: Off, 1: On)
-243 *  0-5     Global Settings Preset Load
+243 *  0-5     Global Settings Preset (Memory) Load
 244    0-1     Global Pressure Aftertouch (0: Off, 1: On)
 245    0-1     Device User Firmware Mode (0: Off, 1: On)
 246 *  0-1     Device Left Handed Operation (0: Off, 1: On)
@@ -396,15 +405,15 @@ Type        # of data bytes     Settings exported                    Notes
  8          28 + 3 * edo        All data for the current edo         equave, equaveStretch, useRainbow, col/row offsets, guitarTuning
 
  9          1530                Scales for all 51 edos                    
-10          765                 Rainbows for all 51 edos                
+10          1530                Rainbows for all 51 edos                
 11          1530                Fretboards for all 51 edos                   
-12          3825                All 3 arrays for all 51 edos         no equave, equaveStretch, useRainbow, col/row offsets, guitarTuning
+12          4590                All 3 arrays for all 51 edos         no equave, equaveStretch, useRainbow, col/row offsets, guitarTuning
 
 13          592                 Global & Split settings              
-14          3552                All 6 presets                        
+14          3552                All 6 presets (memories)             
 15          9880                All user settings                    no calibration data or sequencer projects
 
-The overall size of the midi file in bytes will be 1.5 * (# of data bytes) + 24
+The total size of the midi file in bytes will be 1.5 * (# of data bytes) + 24
 
 Import failure error messages:
 INVALID IMPORT TYPE (type must be 1-15)
@@ -415,6 +424,7 @@ NOT ENOUGH DATA = too few data bytes
 EXCESS DATA = too many data bytes
 FOOTER MISMATCH = import type mismatch between NRPN 300 MSB and polypressure footer MSB
 IMPORT FAILURE M N = M is microLinnImportCounter, Nth midi message was invalid, N is 1-indexed, includes the NRPN's 6 CCs
+IMPORT FAILURE SIMULTANEOUS IMPORTS = a 2nd NRPN 300 was received before the first one finished
 lack of "SUCCESS" message = no footer
 
 

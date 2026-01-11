@@ -190,7 +190,7 @@ byte NUMROWS = 8;                    // number of touch sensor rows
 #define ASSIGNED_TAP_TEMPO              7
 #define ASSIGNED_LEGATO                 8
 #define ASSIGNED_LATCH                  9
-#define ASSIGNED_PRESET_UP              10
+#define ASSIGNED_PRESET_UP              10         // Preset means program change 0-127, not memory 0-5
 #define ASSIGNED_PRESET_DOWN            11
 #define ASSIGNED_REVERSE_PITCH_X        12
 #define ASSIGNED_SEQUENCER_PLAY         13
@@ -662,6 +662,7 @@ struct MicroLinnSplit {
   byte flags;                             // Byxwrhhqs, s = sendX, q = quantize, hh = quantize hold, r = pitch reset, yxw = joystick WXY CCs
   byte reserved1;                         // reserved for future use, 1 byte per empty menu row
   byte reserved2;                         //    "
+//boolean onlyInitialY;                   // possible new feature, only send Y-data from the first strike, doesn't apply to relative mode
 };
 
 // per-split settings
@@ -831,7 +832,7 @@ struct MicroLinnGlobal {
   inline byte EDO()                  {return (packedByte1 & B11111100) >> 2;}
   inline void setDrumPadMode(byte b) {packedByte1 = (packedByte1 & B11111100) | b;} 
   inline void setEDO(byte b)         {packedByte1 = (packedByte1 & B00000011) | (b << 2);} 
-  inline byte anchorCol()            {return anchorColRow & B111;}
+  inline byte anchorCol()            {return anchorColRow & B00000111;}
   inline byte anchorRow()            {return (anchorColRow & B11111000) >> 3;}
   inline void setAnchorCol(byte b)   {anchorColRow = (anchorColRow & B11111000) | b;} 
   inline void setAnchorRow(byte b)   {anchorColRow = (anchorColRow & B00000111) | (b << 3);} 
