@@ -315,7 +315,9 @@ On an actual guitar, middle-C played on the 2nd string 1st fret sounds very diff
 
   *For cols 1-16, the CC's data value is (row - 1) + 8 * (col - 1). For cols 17-25, the data value is (row - 1) + 8 * (col - 17). Row 1 is the top row and column 1 is the leftmost column. The CC is sent on the same channel as the note-on. Assuming the default 235 microseconds between USB MIDI bytes, sending locating CCs delays note-ons by 705 microseconds.*
 
-  *If your DAW isn't programmable, download microLinnLocatingCCs.jsfx from the LinnWiki. It defines a rectangular region on the LinnStrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. It runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live, FL Studio MIDI scripts, and other platforms.)*
+  *Reaper users: download microLinnLocatingCCs.jsfx from the LinnWiki. It defines a rectangular region on the LinnStrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. Download microLinnLocatingCCsDemo.RPP and microLinnLocatingCCsDemo.mid for an example usage that creates a drum pad.*
+  
+  *Non-Reaper users: if your DAW isn't programmable, you may still be able to run microLinnLocatingCCs.jsfx. It runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live, FL Studio MIDI scripts, and other platforms.)*
   
   *Thanks to KVR forum member vorp40 for the locating CC idea!*
 
@@ -377,9 +379,9 @@ MINI CLIP-LAUNCHER
 
 The Preset display has 16 new buttons that use the 16 CCs from the Per-Split Special mode CC Faders. Tapping a button sends a simple on/off pair of CC messages to your DAW. Whereas the faders are for precise control, these new buttons are for launching a midi or audio clip. They give quick access to all 16 CCs at once and don't require a dedicated split.
 
-Besides the obvious musical usages such as playing backing tracks, your DAW can send a midi clip to the LinnStrument that imports settings, perhaps between songs while on stage.
+Besides the obvious musical usages such as playing backing tracks, your DAW can send a midi clip back to the LinnStrument that imports settings, perhaps between songs while on stage.
 
-Importing lets you access more than 6 memories and more than 3 light patterns. A launching button can bulk import a single memory or all 6 memories. One button can even do multiple bulk imports. You can import multiple settings after loading a memory, allowing combo setups e.g. memory A plus import B plus import C. (This is why the launching buttons are next to the 6 memory buttons.) For example, the 6 memories might correspond to various synths, the first 4 clips might assign various functions to the left foot pedal, the next 4 likewise for the right foot pedal, and the last 8 CCs might be used as faders in the right split.
+Importing lets you access more than 6 memories and more than 3 light patterns. A launching button can bulk import a single memory or all 6 memories. One button can even do multiple bulk imports. You can import multiple settings after loading a memory, allowing combo setups e.g. memory A plus import B plus import C. (This is why the launching buttons are next to the 6 memory buttons.) For example, the 6 memories might correspond to various synths, the first 4 launching buttons might assign various functions to the left foot pedal, the next 4 likewise for the right foot pedal, and the last 8 CCs might be used as faders in the right split.
 
   *Details: When bulk importing, instead of scrolling "IMPORT SUCCESS", all 200 pads briefly flash green. This makes multiple imports quicker. Always wait for one bulk import to end before starting another!*
   
@@ -428,6 +430,10 @@ CC SUGGESTIONS
 
   *If any of these pads (CC1, X, etc.) are light blue, a hidden setting may be allowing the use of another CC beyond these. Also beware of the very powerful channel mode messages (CCs 120-127). Only use them if your DAW reliably intercepts every single such CC before it can reach your synth.*
 
+SET THE NOTE LIGHTS REMOTELY VIA MIDI -- NOW 3X FASTER
+
+MicroLinn duplicates the effect on the LinnStrument of CCs 20-22 with either CC25 (cols 1-16) or CC26 (cols 17-25). The color is encoded in the midi channel, and the pad location is encoded exactly like locating CCs. Unlike CCs 20-22, you needn't be in the performance display or editing a custom light pattern for the CCs to take effect.
+
 DISABLE MAIN MIDI CHANNEL VIA NRPN
 
 Disable it by sending NRPN 1 or 101 with a value of 0. Must be in ChannelPerNote or ChannelPerRow mode. Using NRPN 299 to read the main midi channel reports a disabled main channel as channel 0. See midi.txt and https://www.kvraudio.com/forum/viewtopic.php?p=8322723#p8322723.
@@ -435,6 +441,10 @@ Disable it by sending NRPN 1 or 101 with a value of 0. Must be in ChannelPerNote
 SET ARPEGGIATOR TO QUARTER-NOTE TEMPO VIA NRPN
 
 Send NRPN 236 with a value of 0. See midi.txt and https://www.kvraudio.com/forum/viewtopic.php?p=6809095#p6809095. Can also be done via low row by sliding all the way to the left.
+
+MISC SMALL BUG FIXES
+
+* Respond to midi input on the main channel when in ChanPerNote mode
 
 
 #  MICROTONAL FEATURES  
@@ -653,7 +663,7 @@ Your LinnStrument can send a CC message immediately before every note-on indicat
   * *Create a send from "group 1" to "effects", only audio, no midi*
   * * *This will send the output of all the softsynths into one set of effects, more efficient*
   * * *In Reaper, you can instead position the effects track above the "group 1" track and make it be a folder header*
-  * * *DO NOT make the "all groups" track be a folder header, because that will mute all the synths*
+  * * *In Reaper, DO NOT make the "all groups" track be a folder header, because that will mute all the synths*
   * *Select the "group 1" track and duplicate it, and check that both sends are also duplicated*
   * *Rename the new track "group 2", and in the filter effect set the midi group number to 2*
   * *Repeat as needed, you can have up to 8 midi groups*
@@ -666,7 +676,7 @@ Your LinnStrument can send a CC message immediately before every note-on indicat
 
   *All this assumes your synths are MPE-compatible and can handle midi channels independently. If not, each group synth must be replaced by up to 16 separate synths, each receiving only 1 midi channel.*
 
-  *Grouping CCs are sent before locating CCs, so that locating CCs can be filtered out. Assuming the default 235 microseconds between USB MIDI bytes, sending both grouping and locating CCs delays note-ons by 1.4 milliseconds.*
+  *Grouping CCs are sent before locating CCs, so that locating CCs can be filtered out. Assuming the default 235 microseconds between USB MIDI bytes, sending grouping CCs delays note-ons by 705 microseconds, and sending both grouping and locating CCs delays note-ons by 1.41 milliseconds.*
 
 TUNING TABLE MODE WITH RECHANNELING
 

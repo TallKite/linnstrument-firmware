@@ -60,8 +60,9 @@ byte lastRpnMsb = 127;
 byte lastRpnLsb = 127;
 byte lastNrpnMsb = 127;
 byte lastNrpnLsb = 127;
-byte lastDataMsb = 0;
-byte lastDataLsb = 0;
+signed char lastDataMsb = -1;
+signed char lastDataLsb = -1;
+signed char lastCC = -1;
 
 boolean isMidiUsingDIN() {
   return Global.midiIO == 0;
@@ -352,9 +353,17 @@ void handleMidiInput(unsigned long nowMicros) {
       case MIDIControlChange:
       {
         switch (midiData1) {
+          case 0:
+            if (split != -1) {
+              midiBank[split] = midiData2;
+              if (displayMode == displayPreset) {
+                updateDisplay();
+              }
+            }
+            break;
           case 6:
             // if an NRPN or RPN parameter was selected, start constituting the data
-            // otherwise control the fader of MIDI CC 6
+            // otherwise control the fader of MIDI CC 6 via an intentional fall-through to cases 1-8
             if ((lastRpnMsb != 127 || lastRpnLsb != 127) ||
                 (lastNrpnMsb != 127 || lastNrpnLsb != 127)) {
               lastDataMsb = midiData2;
@@ -443,36 +452,61 @@ void handleMidiInput(unsigned long nowMicros) {
               storeSettings();
             }
             break;
+          // microLinn duplicates the effect of CCs 20-22 with either CC25 or CC26, 3x faster!
+          case 25:
+          case 26:
+          {
+            midiCellRowCC = 7 - (midiData2 & B0000111);
+            midiCellColCC = (midiData2 >> 3) + 1;
+            if (midiData1 == 26) midiCellColCC += 16;
+            if (midiCellColCC >= NUMCOLS) break;
+            byte color = (midiChannel <= COLOR_PINK ? midiChannel : COLOR_OFF);
+            CellDisplay cellDisplay = (color == COLOR_OFF ? cellOff : cellOn);
+            byte layer = (userFirmwareActive ? LED_LAYER_CUSTOM2 : LED_LAYER_CUSTOM1);
+            setLed(midiCellColCC, midiCellRowCC, color, cellDisplay, layer);
+            checkRefreshLedColumn(micros());
+            break;
+          }
+          // RPN/NRPN handling guards against the DAW resetting CC values to zero and accidentally creating RPN 0 or NRPN 0
+          // RPN/NRPN CCs must be received in adjacent pairs: first 99/98, then one or more 6/38 pairs, finally 101/100
+          // RPN input and NRPN input are mutually exclusive, so 99/98 disables RPNs and 101/100 disables NRPNs
           case 38:
-            // microLinn does NRPNs first and RPNs last, otherwise the 2nd bulk export request is ignored
-            if (lastNrpnMsb != 127 || lastNrpnLsb != 127) {
-              receivedNrpn((lastNrpnMsb<<7)+lastNrpnLsb, (lastDataMsb<<7)+midiData2, midiChannel);
-            } else if (lastRpnMsb != 127 || lastRpnLsb != 127) {
-              receivedRpn(midiChannel, (lastRpnMsb<<7)+lastRpnLsb, (lastDataMsb<<7)+midiData2);
+            if ((lastRpnMsb != 127 || lastRpnLsb != 127) && lastCC == 6 && lastDataMsb != -1) {
+              lastDataLsb = midiData2;
+              receivedRpn(midiChannel, (lastRpnMsb<<7)+lastRpnLsb, (lastDataMsb<<7)+lastDataLsb);
             }
+            else if ((lastNrpnMsb != 127 || lastNrpnLsb != 127) && lastCC == 6 && lastDataMsb != -1) {
+              lastDataLsb = midiData2;
+              receivedNrpn((lastNrpnMsb<<7)+lastNrpnLsb, (lastDataMsb<<7)+lastDataLsb, midiChannel);
+            }
+            lastDataMsb = -1;
             break;
           case 98:
-            lastNrpnLsb = midiData2;
+            lastRpnMsb = lastRpnLsb = 127;
+            lastDataMsb = -1;
+            if (lastCC == 99) {lastNrpnLsb = midiData2;}
+            else              {lastNrpnMsb = lastNrpnLsb = 127;}
             break;
           case 99:
-            lastNrpnMsb = midiData2;
+            lastRpnMsb = lastRpnLsb = 127;
+            lastDataMsb = -1;
+            if (lastCC != 98) {lastNrpnMsb = midiData2;}
+            else              {lastNrpnMsb = lastNrpnLsb = 127;}
             break;
           case 100:
-            lastRpnLsb = midiData2;
-            // resetting RPN numbers also resets NRPN numbers
-            if (lastRpnLsb == 127 && lastRpnMsb == 127) {
-              lastNrpnLsb = 127;
-              lastNrpnMsb = 127;
-            }
+            lastNrpnMsb = lastNrpnLsb = 127;
+            lastDataMsb = -1;
+            if (lastCC == 101) {lastRpnLsb = midiData2;}
+            else               {lastRpnMsb = lastRpnLsb = 127;}
             break;
           case 101:
-            lastRpnMsb = midiData2;
-            if (lastRpnLsb == 127 && lastRpnMsb == 127) {
-              lastNrpnLsb = 127;
-              lastNrpnMsb = 127;
-            }
+            lastNrpnMsb = lastNrpnLsb = 127;
+            lastDataMsb = -1;
+            if (lastCC != 100) {lastRpnMsb = midiData2;}
+            else               {lastRpnMsb = lastRpnLsb = 127;}
             break;
         }
+        lastCC = midiData1;
         break;
       }
 
@@ -501,7 +535,8 @@ signed char determineSplitForChannel(byte channel) {
         }
         break;
       case channelPerNote:
-        if (Split[split].midiChanSet[channel] == true) {
+        if (Split[split].midiChanSet[channel] ||
+           (Split[split].midiChanMain-1 == channel && Split[split].midiChanMainEnabled)) {          // microLinn bug fix
           return split;
         }
         break;

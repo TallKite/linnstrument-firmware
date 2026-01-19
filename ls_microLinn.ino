@@ -39,8 +39,9 @@ If so, use lastValueMidiNotesOn to count up the noteOns and send a series of mat
 
 Misc small bug fixes, not in the readme file, line numbers are for the official 2.3.4 firmware:
   ls_fonts.ino      line 587      "static Character small_Q = { 4,"          4 -> 5
-  ls_midi.ino       line 441-450  move NRPN if-block up before RPN if-block
-                    line 451      add new line, "break;" just before "case 98:"
+  ls_midi.ino       line 63-64
+                    line 440-467  rewrite NRPN code to be more robust
+                    line 495      add line to listen to main channel when in ChanPerNote mode
                     line 1814     "preSendTimbre(split, 0, note, ch);"       ch -> ch+1
                     line 1815     "preSendLoudness(split, 0, 0, note, ch);"  ch -> ch+1
                     line 900      "if (inRange(value, 0, 14)) {"             14 -> 15
@@ -194,7 +195,7 @@ RAM usage: why so stable? what's a safe number?
 does packing a preset work?
 any advantage to using "inline"?
 
-https://www.kvraudio.com/forum/viewtopic.php?t=539894 bug, CC faders don't respond to received CCs
+https://www.kvraudio.com/forum/viewtopic.php?t=539894 bug, CC faders don't respond to received CCs on main channel -- fixed
 https://www.kvraudio.com/forum/viewtopic.php?t=539553 bug, sequencer mute light doesn't work
 
 https://www.kvraudio.com/forum/viewtopic.php?t=603578 per-split custom LED patterns, for use with CC faders - done
@@ -241,7 +242,8 @@ https://www.kvraudio.com/forum/viewtopic.php?t=485767 strumming via a strum spli
 https://www.kvraudio.com/forum/viewtopic.php?t=479863 Low row idea - bow controller -- maybe
 https://www.kvraudio.com/forum/viewtopic.php?t=477209 TJ Shredder asks for locating CCs, Roger says no
 https://www.kvraudio.com/forum/viewtopic.php?t=477257 user firmware mode in one split only, no response
-
+https://www.kvraudio.com/forum/viewtopic.php?t=473610 per-split row offsets
+https://www.kvraudio.com/forum/viewtopic.php?t=468592 Geert discusses the 2.0 firmware velocity algorithm
 
 test unninstalling more
 
@@ -260,6 +262,9 @@ make drum pads work with the arpeggiator
 
 finish pullOffModes
 
+make locating CCs enabled/disabled per split without having to change the CC numbers - why add latency unless necessary?
+  counterarguement, just turn it on or off in columns 1-16 or 17-25 (but that wouldn't work on a linn128)
+
 Punch -- avoid a sluggish attack, scale the first 50 ms of Z to the velocity, stop scaling if Z > V
   T = time in ms since note-on, Z = (T/50)*Z + (1-T/50)*V, or with wet/dry W = 0..1, W*(T/50)*Z + W*(1-T/50)*V + (1-W)*Z
   code it up in jsfx first for testing, vars are Tmax and W
@@ -270,8 +275,6 @@ Punch -- avoid a sluggish attack, scale the first 50 ms of Z to the velocity, st
 
 
 Global.microLinn.fineTune[27]?? is a packed array of nybbles, -8..+7 cents/edosteps, fine-tunes all but the tonic
-
-swap my 8ve up/down footswitch with roger's? ask the users after release? mine works better as a footswitch, his as panel switches
 
 test CC faders bug: https://www.kvraudio.com/forum/viewtopic.php?t=450198
   faders should respond to input from the DAW, even when not set to CCs 1-8
@@ -1873,7 +1876,7 @@ signed char prepareMicroLinnHammerOn(byte side, byte row) {
   unsigned long lastTouch;
   unsigned long latestTouchSoFar = 0;
   signed char latestChannel = -1;
-  for (byte col = startCol; col <= endCol; col++) {
+  for (byte col = startCol; col <= endCol; ++col) {
     lastTouch = touchInfo[col][row].lastTouch;
     if (touchInfo[col][row].touched == touchedCell &&
         calcTimeDelta(millis(), lastTouch) > wait &&
@@ -1889,7 +1892,7 @@ signed char prepareMicroLinnHammerOn(byte side, byte row) {
   // the 2nd pass mutes up to 2 notes and keeps a list of notes on the latest channel for later un-muting
   short note = -1;
   signed char channel = -1;
-  for (byte col = startCol; col <= endCol; col++) {
+  for (byte col = startCol; col <= endCol; ++col) {
     if (touchInfo[col][row].touched == touchedCell &&
         //colsInRowTouched & (1 << (col)) &&
         calcTimeDelta(millis(), touchInfo[col][row].lastTouch) > wait &&
@@ -1908,7 +1911,7 @@ signed char prepareMicroLinnHammerOn(byte side, byte row) {
         DEBUGPRINT((0,"  microLinnNumHammerOns=")); DEBUGPRINT((0,(int)microLinnNumHammerOns));
         DEBUGPRINT((0,"\n"));      
       }
-      resetPossibleNoteCells (side, note);
+      resetPossibleNoteCells(side, note);
       if (isMicroLinnOn()) {
         note = getMicroLinnMidiNote(side, note, sensorCell->microLinnGroup);         // bug delete group
         channel = rechannelMicroLinnGroup(side, channel, sensorCell->microLinnGroup);
@@ -1960,10 +1963,7 @@ bugs:
 void microLinnDeleteHammeredNote (byte i) {
   microLinnNumHammerOns -= 1;
   memcpy(&microLinnHammerOns[i], &microLinnHammerOns[i + 1], 4 * (microLinnNumHammerOns - i));
-  microLinnHammerOns[microLinnNumHammerOns].note = -1;
-  microLinnHammerOns[microLinnNumHammerOns].channel = -1;
-  microLinnHammerOns[microLinnNumHammerOns].col = -1;
-  microLinnHammerOns[microLinnNumHammerOns].row = -1;
+  memset(&microLinnHammerOns[microLinnNumHammerOns], -1, 4);
 }
 
 // called by sendReleasedNote() in ls_handleTouches.ino
@@ -4500,7 +4500,6 @@ boolean handleMicroLinnClipLauncher(byte CCval) {
     side = (sensorRow == 7) ? LEFT : RIGHT;
   }
 
-  byte channel = (side == LEFT) ? 1 : 16;
   preSendControlChange(side, Split[side].ccForFader[CCpointer], CCval, true);
   if (CCval == 127) {
     microLinnLastClipLaunched = CCpointer + 8 * side + 1;

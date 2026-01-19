@@ -61,7 +61,9 @@ MIDI Control Change input
 
 CC Number   Used for
 -------------------------------------------------------------------------------------------------------------
+0           Set the active bank for a split, the split is determined by its active MIDI mode channels
 1-8         Change the position of the CC faders, the split is determined by its active MIDI mode channels
+6           Data entry for RPNs and NRPNs, but if CC6 occurs outside of an RPN/NRPN, it controls a CC fader instead
 9           Configure User Firmware X-axis row slide, the channel specifies the row (0: disable, 1: enable)
 10          Configure User Firmware X-axis data, the channel specifies the row, default is off (0: disable, 1: enable)
 11          Configure User Firmware Y-axis data, the channel specifies the row, default is off (0: disable, 1: enable)
@@ -73,6 +75,10 @@ CC Number   Used for
             see color value table below, 11+: default color
 23			Make current custom cell colors persistent as pattern (0-2) 
 24			Clear persisted custom cell colors pattern (0-2)
+25, 26      MicroLinn duplicates the effect of CCs 20-22 with either CC25 or CC26, 3x faster!
+            The color is encoded in the midi channel, and the pad location is encoded exactly like locating CCs
+38          Data entry for RPNs and NRPNs
+98-101      Parameter number of RPNs and NRPNs
 
 RPN / NRPN input
 ================
@@ -94,6 +100,9 @@ This is an overview of the NRPN message chain:
 1011nnnn   01100100 (100)  01111111 (127)   RPN parameter number Reset LSB CC
 
 RPNs are the same except CCs 99 and 98 are replaced with CCs 101 and 100.
+
+CC98 must immediately follow CC99, CC38 must immediately follow CC6, and CC100 must immediately follow CC101. 
+Between the 99/98 pair and the 101/100 pair, multiple 6/38 pairs are allowed.
 
 The following table lists all the RPN input values that LinnStrument understands.
 
