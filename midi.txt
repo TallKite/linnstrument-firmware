@@ -302,7 +302,8 @@ NRPN   Value   Description
 250    1-127   Global Maximum Value For Velocity
 251    1-127   Global Value For Fixed Velocity
 252    0-512   Device Minimum Interval Between MIDI Bytes Over USB
-253 *  0-33    Global Custom Row Offset Instead Of Octave (0-32: -16-16 semitone intervals, 33: inverted Guitar)
+253 *  0-33    Global Custom Row Offset Instead Of Octave (0-32: -16-16 semitone intervals, 33: inverted Guitar)...
+    *  0-50    ...or if an edo has been chosen, (0..50: -25..25 edosteps)
 254    0-1     Device MIDI Through (0: Off, 1: On)
 255    0-127   Global MIDI CC For Foot Left CC65
 256    0-127   Global MIDI CC For Foot Right CC65
@@ -321,6 +322,7 @@ NRPN   Value   Description
 269 *  0-127   Global Note Number For Guitar Tuning Row 7
 270 *  0-127   Global Note Number For Guitar Tuning Row 8
 299    <any>   Send the current value of a particular NRPN configuration parameter, when possible
+300    1-15    MicroLinn Bulk Import/Export, see below
 
 * be sure to follow up these NRPNs that affect the tuning with a NRPN 1300!
 
@@ -355,13 +357,13 @@ NRPN   Value   Description
 1203    0-127, 255  Global locatingCC2, 0..127 = CC number, 255 = OFF, always 255 for the Linn128
 1250 *  4-55        Global EDO, ranges 5-55, plus 4 for OFF
 1251    0-1         Global useRainbow, 1 = yes, 0 = no
-1252 *  1-25        Global anchorCol
-1253 *  0-7         Global anchorRow, 0 = bottom row, 7 = top row
+1252 *  1-25        Global anchorCol, cols 17-25 are allowed for the Linn128
+1253 *  1-8         Global anchorRow, 1 = top row, 8 = bottom row
 1254 *  0-127       Global anchorNote (any midi note)
 1255 *  0-120       Global anchorCents ranges -60..60, so add/subtract 60 to convert it
-1256 *  5-36        Global equaveSemitones
+1256 *  5-36        Global equaveSemitones (perfect 4th to a triple octave)
 1257 *  0-100       Global equaveStretch ranges -50..50, so add/subtract 50 to convert it
-1258 *  0-60        Global sweeten (in tenths of a cent)
+1258 *  0-60        Global sweeten (in tenths of a cent) (not yet implemented)
 1259                (not yet used)    
 1260 *  0-1         Global microtonal guitarTuning[0] (diatonic/chromatic flag for condensed guitar tunings)
 1261 *  0-640       Global microtonal guitarTuning[1] ranges -320..320, so add/subtract 320 to convert it
@@ -439,15 +441,16 @@ lack of "SUCCESS" message = no footer
 
 Color Values
 ============
-0   as set in Note Lights settings
+0   Off = as set in Note Lights settings
 1   Red
 2   Yellow
 3   Green
 4   Cyan
 5   Blue
 6   Magenta
-7   Off
+7   Black
 8   White
 9   Orange
 10  Lime
 11  Pink
+12  Violet

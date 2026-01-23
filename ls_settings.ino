@@ -1196,18 +1196,22 @@ void setSplitMpeMode(byte split, boolean enabled) {
 
 // Return the next color in the color cycle (1 through 6)
 byte colorCycle(byte color, boolean includeOff) {
-  color += 1;
-  if (color == COLOR_BLACK) {
-    color += 1;
+  switch (color) { 
+    case COLOR_WHITE:   color = COLOR_RED;     break;   // cycle through the colors in rainbow order
+    case COLOR_RED:     color = COLOR_ORANGE;  break;
+    case COLOR_ORANGE:  color = COLOR_YELLOW;  break;
+    case COLOR_YELLOW:  color = COLOR_LIME;    break;
+    case COLOR_LIME:    color = COLOR_GREEN;   break;
+    case COLOR_GREEN:   color = COLOR_CYAN;    break;
+    case COLOR_CYAN:    color = COLOR_BLUE;    break;
+    case COLOR_BLUE:    color = COLOR_VIOLET;  break;
+    case COLOR_VIOLET:  color = COLOR_MAGENTA; break;
+    case COLOR_MAGENTA: color = COLOR_PINK;    break;
+    case COLOR_PINK:    color = COLOR_OFF;     break;
+    case COLOR_OFF:     color = COLOR_WHITE;   break;
+    default:            color = COLOR_WHITE;   break;   // black? bad data? start over at white
   }
-  if (color > 11) {
-    if (includeOff) {
-      color = 0;
-    }
-    else {
-      color = 1;
-    }
-  }
+  if (color == COLOR_OFF && !includeOff) color = COLOR_WHITE;
   return color;
 }
 

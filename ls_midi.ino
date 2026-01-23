@@ -431,7 +431,7 @@ void handleMidiInput(unsigned long nowMicros) {
               if (userFirmwareActive) {
                 layer = LED_LAYER_CUSTOM2;
               }
-              if (midiData2 <= COLOR_PINK && midiData2 != COLOR_OFF) {
+              if (midiData2 <= COLOR_LAST && midiData2 != COLOR_OFF) {
                 setLed(midiCellColCC, midiCellRowCC, midiData2, cellOn, layer);
               }
               else {
@@ -460,7 +460,7 @@ void handleMidiInput(unsigned long nowMicros) {
             midiCellColCC = (midiData2 >> 3) + 1;
             if (midiData1 == 26) midiCellColCC += 16;
             if (midiCellColCC >= NUMCOLS) break;
-            byte color = (midiChannel <= COLOR_PINK ? midiChannel : COLOR_OFF);
+            byte color = (midiChannel <= COLOR_LAST ? midiChannel : COLOR_OFF);
             CellDisplay cellDisplay = (color == COLOR_OFF ? cellOff : cellOn);
             byte layer = (userFirmwareActive ? LED_LAYER_CUSTOM2 : LED_LAYER_CUSTOM1);
             setLed(midiCellColCC, midiCellRowCC, color, cellDisplay, layer);
@@ -717,25 +717,25 @@ void receivedNrpn(int parameter, int value, int channel) {
       break;
     // Split Color Main
     case 30:
-      if (inRange(value, 1, 11)) {
+      if (inRange(value, 1, COLOR_LAST)) {
         Split[split].colorMain = value;
       }
       break;
     // Split Color Accent
     case 31:
-      if (inRange(value, 1, 11)) {
+      if (inRange(value, 1, COLOR_LAST)) {
         Split[split].colorAccent = value;
       }
       break;
     // Split Color Played
     case 32:
-      if (inRange(value, 0, 11)) {
+      if (inRange(value, 0, COLOR_LAST)) {
         Split[split].colorPlayed = value;
       }
       break;
     // Split Color LowRow
     case 33:
-      if (inRange(value, 1, 11)) {
+      if (inRange(value, 1, COLOR_LAST)) {
         Split[split].colorLowRow = value;
       }
       break;

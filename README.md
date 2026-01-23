@@ -263,7 +263,7 @@ FOOTSWITCH / PANEL SWITCH: PCH (pitch)
 
 FOOTSWITCH / PANEL SWITCH: OCTAVE TOGGLE
 
-Two new functions for footswitches and panel switches. 8VE± toggles between Octave Up and normal. This lets you switch octaves while playing using only one footswitch, instead of two for Octave Up and Octave Down. 8VE-+ toggles to Octave Down. Long-pressing either makes them momentary (non-latching). Access them both by long-pressing TAP TEMPO and swiping.
+8VE± toggles between Octave Up and normal. This lets you switch octaves while playing using only one footswitch, instead of two for Octave Up and Octave Down. 8VE-+ toggles to Octave Down. Long-pressing either makes them momentary (non-latching).
 
 PRESET DISPLAY: PROGRAM CHANGE AND BANK SELECT
 
@@ -286,6 +286,8 @@ MISCELLANEOUS GRAPHICS IMPROVEMENTS
     *Details: In your DAW, send the synth's output to two tracks, each hard-panned to opposite sides. Each track receives the LinnStrument's midi from one of the 2 main midi channels (usually 1 and 16). Each track has a gain effect which you midi-learn to the volume CC. Now one volume fader will control your amp and the other will control  your earbud.*
 
   CC FADERS USE TWO COLORS: When a split is set to SPECIAL = CC FADERS, the 8 faders always alternate between the main and accent colors, making it much easier to locate the right fader. Incidentally, the CC faders are and always have been more accurate than their appearance suggests. Move sideways within a pad for fine adjustments. They also do and always have done something similar to hammer-ons and pull-offs.
+
+  NEW COLOR: Violet. Also, the colors now cycle in rainbow order WROYLGCBVMP.
 
   MULTI-COLORED NOTE LIGHTS: Each of the 12 notes can be any color. Transposable. Accessed through the microLinn menu after setting the edo to 12.
 
@@ -335,7 +337,7 @@ You can back up various settings and/or share them with others via midi files. T
   
   *Exporting: Download an export-request file from the wiki. In your DAW, set the input of midi track A and the output of midi track B to your LinnStrument. Put the export-request midi file at the start of track B. Then start recording on track A. When your LinnStrument stops sending midi, stop recording. Save the midi on track A to a midi file (i.e. export it from your DAW), preferably as format 0. Name it something informative such as "lightPattern31edoFretboard.mid" or "22edoScales.mid". Later on you can import this file to restore your settings. Or share it on the wiki.*
 
-  *A single NRPN will import/export one setting. You can create your own NRPN files by editing a copy of an export request file and changing the last number in the first 4 messages. You can change multiple settings with a midi file containing multiple NRPNs. For an example of this, see below setCCfadersTo21-28.mid for clip launching. Bulk exports consist of a single NRPN followed by multiple polypressure messages. A midi file can contain multiple NRPNs and/or multiple bulk exports. See https://github.com/TallKite/linnstrument-firmware/blob/main/midi.txt for the details.*
+  *A single NRPN will import/export one setting. You can create your own NRPN files by editing a copy of an export request file and changing the last number in the 3rd and 4th messages. You can change multiple settings with a midi file containing multiple NRPNs. For an example of this, see below setCCfadersTo21-28.mid for clip launching. Bulk exports consist of a single NRPN followed by multiple polypressure messages. A midi file can contain multiple NRPNs and/or multiple bulk exports. See https://github.com/TallKite/linnstrument-firmware/blob/main/midi.txt for the details.*
 
   *Exporting multiple requests: 1st method: Record each export individually. Then position those midi clips next to each other in your DAW, and save them all as one file. 2nd method: Send the first request and see in your DAW where the LinnStrument stops sending midi. Position the next request file in track B about 1/10 of a second after that. Position additional request files similarly. Record all requests at once, and save the midi to a file as before.*
 
@@ -379,17 +381,19 @@ MINI CLIP-LAUNCHER
 
 The Preset display has 16 new buttons that use the 16 CCs from the Per-Split Special mode CC Faders. Tapping a button sends a simple on/off pair of CC messages to your DAW. Whereas the faders are for precise control, these new buttons are for launching a midi or audio clip. They give quick access to all 16 CCs at once and don't require a dedicated split.
 
-Besides the obvious musical usages such as playing backing tracks, your DAW can send a midi clip back to the LinnStrument that imports settings, perhaps between songs while on stage.
+Besides the obvious musical usages such as playing backing tracks, your DAW can send a midi clip back to the LinnStrument that imports settings. This lets you avoid lengthy menu-diving and swiping while on stage.
 
 Importing lets you access more than 6 memories and more than 3 light patterns. A launching button can bulk import a single memory or all 6 memories. One button can even do multiple bulk imports. You can import multiple settings after loading a memory, allowing combo setups e.g. memory A plus import B plus import C. (This is why the launching buttons are next to the 6 memory buttons.) For example, the 6 memories might correspond to various synths, the first 4 launching buttons might assign various functions to the left foot pedal, the next 4 likewise for the right foot pedal, and the last 8 CCs might be used as faders in the right split.
 
-  *Details: When bulk importing, instead of scrolling "IMPORT SUCCESS", all 200 pads briefly flash green. This makes multiple imports quicker. Always wait for one bulk import to end before starting another!*
+  *Details: Be sure to set Allow Importing to IMP. When bulk importing, instead of scrolling "IMPORT SUCCESS", all 200 pads briefly flash green. This makes multiple imports quicker. Always wait for one bulk import to end before starting another.*
   
   *The upper 8 buttons on the Preset display send the left split's fader CCs on channel 1, and the lower 8 send the right split's fader CCs on channel 16. You can send a left-split CC while in the right split and vice versa. The most-recently tapped button is accented.*
   
-  *Each launching button sends a CC with value 127 when touched and 0 when released. Whereas a CC Faders split 1 column wide acts as a toggle: when touched it sends a value alternating between 0 and 127, and when released it sends nothing. Thus to launch a clip via a CC Faders split you must double-tap. (Best to double-tap from on to off to on, so that the identifying colors are shown.) A clip can also be launched via a Sustain or CC65 panel switch or footswitch by long-pressing Sustain or CC65 to set the CC.*
+  *Each launching button sends a CC with value 127 when touched and 0 when released. Whereas a CC Faders split 1 column wide acts as a toggle: when touched it sends a value alternating between 0 and 127, and when released it sends nothing. Thus to launch a clip via a CC Faders split you must double-tap. (Best to double-tap from on to off to on, so that the identifying colors are shown.) A clip can also be launched via a panel switch or footswitch set to Sustain or CC65, long-press the Sustain or CC65 pad to set the CC.*
 
-  *The CC types default to 1-8 (in reverse order) for both splits. Beware, CC1 is also sent by the low row and CC7 is also sent by the Volume display. We wouldn't want to accidentally launch a clip when we adjust the volume, or vice versa! Better to use one set of CCs to control your synths and another set of CCs to control your DAW. A good choice for the latter is CCs 21-28 (see CC SUGGESTIONS below). To select these CCs, long-press the CC Faders button and swipe. Or download setFaderCCsTo21-28.mid from the LinnWiki and import it into your LinnStrument. If you want to use only one split's CCs for launching, import setLeftFaderCCsTo21-28.mid or setRightFaderCCsTo21-28.mid. To undo, import setFaderCCsTo1-8.mid.* 
+  *To make a midi clip that imports various settings, first set up your LinnStrument manually. Then send it one or more NRPN-299s. Record the midi that the LinnStrument sends in response.*
+
+  *The CC types default to 1-8 (in reverse order) for both splits. Beware, CC1 is also sent by the low row and CC7 is also sent by the Volume display. We wouldn't want to accidentally launch a clip when we adjust the volume, or vice versa! Better to use one set of CCs to control your synths and another set of CCs to control your DAW. A good choice for the latter is CCs 21-28 (see CC SUGGESTIONS below). To select these CCs, long-press the CC Faders button and swipe. Or download setFaderCCsTo21-28.mid from the LinnWiki and import it into your LinnStrument. If you want to use only one split's CCs for launching, import setLeftFaderCCsTo21-28.mid or setRightFaderCCsTo21-28.mid. To undo, import setFaderCCsTo8-1.mid.* 
 
   *Beware: loading a memory (or importing one) overwrites the launcher/fader CC choices. If your DAW responds to CCs 21-28 and the newly-loaded memory uses fader CCs 1-8, the launching buttons stop working. So immediately after loading/importing an older memory, import setFaderCCsTo21-28.mid and save/export the updated memory.*
 
@@ -428,7 +432,7 @@ CC SUGGESTIONS
   * *CC 65 = portamento (when Assign Switch = CC65)*
   * *CC 74 = brightness (when Timbre/Y = CC74)*
 
-  *If any of these pads (CC1, X, etc.) are light blue, a hidden setting may be allowing the use of another CC beyond these. Also beware of the very powerful channel mode messages (CCs 120-127). Only use them if your DAW reliably intercepts every single such CC before it can reach your synth.*
+  *If any of these pads (CC1, X, CC Faders, etc.) are light blue, a hidden setting may be allowing the use of another CC beyond these. Also beware of the very powerful channel mode messages (CCs 120-127). Only use them if your DAW reliably intercepts every single such CC before it can reach your synth.*
 
 SET THE NOTE LIGHTS REMOTELY VIA MIDI -- NOW 3X FASTER
 

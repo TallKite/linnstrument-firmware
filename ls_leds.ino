@@ -355,6 +355,12 @@ void refreshLedColumn(unsigned long now) {
           case COLOR_PINK:
             color = COLOR_YELLOW;
             break;
+          case COLOR_VIOLET:
+            color = COLOR_BLUE;
+            break;
+          case COLOR_DIMGREEN:
+            color = COLOR_BLACK;
+            break;
         }
       }
 
@@ -371,6 +377,7 @@ void refreshLedColumn(unsigned long now) {
           green = green | (B00000001 << rowCount);
           break;
         case COLOR_GREEN:
+        case COLOR_DIMGREEN:
           green = green | (B00000001 << rowCount);
           break;
         case COLOR_CYAN:
@@ -381,6 +388,7 @@ void refreshLedColumn(unsigned long now) {
           blue = blue | (B00000001 << rowCount);
           break;
         case COLOR_MAGENTA:
+        case COLOR_VIOLET:
           blue = blue | (B00000001 << rowCount);
           red = red | (B00000001 << rowCount);
           break;

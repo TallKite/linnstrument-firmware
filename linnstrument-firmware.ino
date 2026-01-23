@@ -99,6 +99,9 @@ byte NUMROWS = 8;                    // number of touch sensor rows
 #define COLOR_ORANGE   9
 #define COLOR_LIME     10
 #define COLOR_PINK     11
+#define COLOR_VIOLET   12
+#define COLOR_LAST     12
+#define COLOR_DIMGREEN 16    // only used in microLinn's note lights display, so violet is still in effect the last color
 
 // Special row offset values, for legacy reasons
 #define ROWOFFSET_NOOVERLAP        0x00

@@ -244,8 +244,31 @@ https://www.kvraudio.com/forum/viewtopic.php?t=477209 TJ Shredder asks for locat
 https://www.kvraudio.com/forum/viewtopic.php?t=477257 user firmware mode in one split only, no response
 https://www.kvraudio.com/forum/viewtopic.php?t=473610 per-split row offsets
 https://www.kvraudio.com/forum/viewtopic.php?t=468592 Geert discusses the 2.0 firmware velocity algorithm
+https://www.kvraudio.com/forum/viewtopic.php?t=465788 strum split has 2 cols for plucking, 1 for xyz and 1 for muting -- meh
+
 
 test unninstalling more
+
+tried to add a few more colors, but only violet was distinct enough from the other colors
+  RED = r, GREEN = g, BLUE = b
+  YELLOW = rg, CYAN = gb, MAGENTA = rb
+  WHITE = rgb/b, ORANGE = r/rg, LIME = g/rg, PINK = rg/rb
+  SPRING_GREEN = g/gb, AZURE = gb/b, VIOLET = rb/b, ROSE = r/rb, DIMGREEN = g/__
+  rrgg=Y, ggbb=C, rrbb=M
+  rrg=O,  rrb=RO, rrgb=P
+  rgg=L,  ggb=SG, rggb=G2
+  rbb=VI, gbb=AZ, rgbb=B2
+  rrggb,  rrgbb,  rggbb=W, rrggbb, rgb
+
+  BLACK  r=R'   rr=R       b=B'    rb=M'    rrb=RO      bb=B    rbb=V    rrbb=M
+  g=G'   rg=Y'  rrg=O      gb=C'   rgb      rrgb=P      gbb=AZ  rgbb=B2  rrgbb
+  gg=G   rgg=L  rrgg=Y     ggb=SG  rggb=G2  rrggb       ggbb=C  rggbb=W  rrggbb
+
+  rr rrgb rrg rrgg rgg gg rggb ggb ggbb gbb bb rgbb rbb rrbb rrb rr
+  r            rg      g            gb      b            rb      r
+  R   P    O   Y    L  G   G2  SG   C   AZ  B   B2   VI  M   RO        W   
+                               N        N            Y       N
+
 
 CC faders special mode: make vertical faders, slightly glitchy because of the horizontal separator strips
   scale the Y data down from 0..127 to 16*row..16*row+15
@@ -387,10 +410,6 @@ https://www.kvraudio.com/forum/viewtopic.php?t=594760
 https://www.kvraudio.com/forum/viewtopic.php?t=596619
 
 midi looper?
-
-add a few custom colors? user can set the rgb values themselves. use jay sullivan's code:
-https://github.com/rogerlinndesign/linnstrument-firmware/commit/5ea10702f9f98afa2af1cda266b8d4e90e5483ea
-add new color between lime and green for neutral intervals?
 
 drum pad mode, besides ON and OFF, add MRMB/MRB for marimba mode
   this adds an 8th column and gets the midi notes from the current scale, transposable
@@ -3825,15 +3844,20 @@ void microLinnPaintNoteLights() {
       }
       col += 1; 
     }
-    col = MICROLINN_SCALEROWS[edo][0];                                                // orangish-yellow borders
+
+    col = MICROLINN_SCALEROWS[edo][0];                                                // dim green borders
+    color = COLOR_DIMGREEN;
+    if (!Global.microLinn.useRainbow && 
+        Split[Global.currentPerSplit].colorMain == COLOR_GREEN)
+      color = COLOR_BLUE;
     for (stepspan = 0; stepspan < 7; ++stepspan) {
-      setLed(col + 13, 7 - stepspan, COLOR_YELLOW, cellOn);
+      setLed(col + 13, 7 - stepspan, color, cellOn);
     }
     col = MICROLINN_SCALEROWS[edo][1] - MICROLINN_SCALEROWS[edo][0];                  // 2nd - 1sn = major 2nd
     col = max (col, MICROLINN_SCALEROWS[edo][3] - MICROLINN_SCALEROWS[edo][2]);       // 4th - 3rd = minor 2nd
     col -= MICROLINN_SCALEROWS[edo][0];
     for (stepspan = 0; stepspan < 7; ++stepspan) {
-      setLed(12 - col, 7 - stepspan, COLOR_YELLOW, cellOn);
+      setLed(12 - col, 7 - stepspan, color, cellOn);
     }
   } else if (currScale == 8) {
     paintMicroLinnFretboardEditor(false);                                                 // blue dots
@@ -3842,35 +3866,21 @@ void microLinnPaintNoteLights() {
   for (byte scaleNum = 0; scaleNum < 7; ++scaleNum) {                                     // the 7 scale buttons
     setLed(1, 7 - scaleNum, microLinnGetColor(scaleNum == currScale), cellOn);
   }
-  setLed(3, 7, microLinnGetColor(currScale == 7), cellOn);                                // color editor
-  if (Global.activeNotes <= 7) 
-    setLed(3, 6, Global.microLinn.useRainbow ? COLOR_LIME : COLOR_GREEN, cellOn);         // rainbow enabler
-  setLed(3, 4, microLinnGetColor(currScale == 8), cellOn);                                // fretboard selector
-//if (Global.microLinn.largeEDO > 0 && Global.activeNotes <= 7)
-//  setLed(3, 2, COLOR_LIME, cellOn);                                                     // fine-tuning editor
-}
-
-void microLinnCycleRainbow(byte& color) {
-  switch (color) {                   // cycle through the colors in rainbow order
-    case 8:  color = 1;  break;      // white to red
-    case 1:  color = 9;  break;      // red to orange
-    case 9:  color = 2;  break;      // orange
-    case 2:  color = 10; break;      // yellow (not used)
-    case 10: color = 3;  break;      // lime (used as yellow)
-    case 3:  color = 4;  break;      // green
-    case 4:  color = 5;  break;      // cyan
-    case 5:  color = 6;  break;      // blue
-    case 6:  color = 11; break;      // magenta
-    case 11: color = 8;  break;      // pink
-    default: color = 8;  break;      // bad data? start over at white
-  }
+  col = (edo == 54) ? 2 : 3;                                                              // 54edo is sharp-8, needs more room
+  setLed(col, 7, microLinnGetColor(currScale == 7), cellOn);                              // color editor
+  color = Global.microLinn.useRainbow ? COLOR_LIME : COLOR_GREEN;
+  if (currScale <= 7) setLed(col, 6, color, cellOn);                                      // rainbow enabler
+  setLed(col, 4, microLinnGetColor(currScale == 8), cellOn);                              // fretboard selector
+//if (Global.microLinn.largeEDO > 0 && currScale <= 7)
+//  setLed(col, 2, COLOR_LIME, cellOn);                                                   // fine-tuning editor
 }
 
 void microLinnHandleNoteLightsNewTouch() {
+  byte col = (edo == 54) ? 2 : 3;                                             // 54edo is sharp-8, needs more room
   if ((sensorCol == 1 && sensorRow > 0) ||                                    // scale selectors or
-      (sensorCol == 3 && (sensorRow == 7 || sensorRow == 4))) {               // rainbow editor or fretboard selector
+      (sensorCol == col && (sensorRow == 7 || sensorRow == 4))) {             // rainbow editor or fretboard selector
     byte currScale = 7 - sensorRow;                                           // currScale = what the user just touched
-    if (sensorCol == 3) currScale = (sensorRow == 7 ? 7 : 8);
+    if (sensorCol == col) currScale = (sensorRow == 7 ? 7 : 8);
     if (Global.activeNotes != currScale) {                                    // did user touch a green button?
       if (Global.activeNotes > 8) {
         loadCustomLedLayer(getActiveCustomLedPattern());
@@ -3886,7 +3896,7 @@ void microLinnHandleNoteLightsNewTouch() {
     return;
   }
 
-  if (sensorCol == 3 && sensorRow == 6 && Global.activeNotes <= 7) {          // rainbow enabler
+  if (sensorCol == col && sensorRow == 6 && Global.activeNotes <= 7) {          // rainbow enabler
     Global.microLinn.useRainbow = !Global.microLinn.useRainbow;
     updateDisplay(); 
     return;
@@ -3902,7 +3912,7 @@ void microLinnHandleNoteLightsNewTouch() {
     if (Global.activeNotes == 7) {                                            // rainbow editor
       if (!Global.microLinn.useRainbow) return;                               // don't let the user make changes they can't see
       short i = microLinnTriIndex(edo, edostep);
-      microLinnCycleRainbow(Device.microLinn.rainbows[i]);
+      Device.microLinn.rainbows[i] = colorCycle(Device.microLinn.rainbows[i], false);
     } else if (Global.activeNotes < 7) {
       Device.microLinn.scales[microLinnTriIndex(edo, edostep)] ^= (1 << Global.activeNotes);      // xor to toggle the bit
       if (Device.microLinn.scales[microLinnTriIndex(edo, edostep)] & (1 << Global.activeNotes)) {
@@ -3932,13 +3942,14 @@ void microLinnHandleNoteLightsHold() {
     return;
   }
   // color editor button, reset the rainbow
-  if (currScale == 7 && sensorCol == 3 && sensorRow == 7) {
+  byte col = (edo == 54) ? 2 : 3;                                                 // 54edo is sharp-8, needs more room
+  if (currScale == 7 && sensorCol == col && sensorRow == 7) {
     memcpy (&Device.microLinn.rainbows[start], &MICROLINN_RAINBOWS[start], edo); 
     updateDisplay();
     return;
   }
   // fretboard selector button, reset the fretboard
-  if (currScale == 8 && sensorCol == 3 && sensorRow == 4) {
+  if (currScale == 8 && sensorCol == col && sensorRow == 4) {
     microLinnResetFretboard(edo);
     updateDisplay();
   }
@@ -3948,9 +3959,10 @@ void microLinnHandleNoteLightsRelease() {
   if (!isCellPastConfirmHoldWait()) {                                           // short-press
 
     byte currScale = Global.activeNotes;
+    byte col = (edo == 54) ? 2 : 3;                                             // 54edo is sharp-8, needs more room
     if ((sensorCol == 1 && sensorRow >= 1 && currScale == 7 - sensorRow) ||     // scale selector
-        (sensorCol == 3 && sensorRow == 7 && currScale == 7) ||                 // rainbow editor
-        (sensorCol == 3 && sensorRow == 4 && currScale == 8)) {                 // fretboard selector
+        (sensorCol == col && sensorRow == 7 && currScale == 7) ||               // rainbow editor
+        (sensorCol == col && sensorRow == 4 && currScale == 8)) {               // fretboard selector
       if (microLinnCanBacktrack) {
         Global.activeNotes = microLinnPrevScale;                                // backtrack
         microLinnPrevScale = currScale;
@@ -3960,7 +3972,7 @@ void microLinnHandleNoteLightsRelease() {
       }
     }
 
-    if (sensorCol > 3 && sensorRow > 0 && Global.activeNotes == 8) {            // enter fretboard editor
+    if (sensorCol > col && sensorRow > 0 && Global.activeNotes == 8) {          // enter fretboard editor
       setDisplayMode(displayMicroLinnFretboardEditor);
       updateDisplay();
       return;
@@ -4576,7 +4588,7 @@ void sendMicroLinnNrpnParameter(int parameter, int channel) {
     case 1250: value = Global.microLinn.EDO; break;
     case 1251: value = Global.microLinn.useRainbow ? 1 : 0; break;
     case 1252: value = Global.microLinn.anchorCol; break;
-    case 1253: value = Global.microLinn.anchorRow; break;
+    case 1253: value = 8 - Global.microLinn.anchorRow; break;
     case 1254: value = Global.microLinn.anchorNote; break;
     case 1255: value = Global.microLinn.anchorCents + 60; break;
     case 1256: value = Global.microLinn.equaveSemitones; break;
@@ -4633,7 +4645,7 @@ void receivedMicroLinnNrpn(int parameter, int value) {
     case 1250: if (inRange(value, 4, 55))  Global.microLinn.EDO = value; break;
     case 1251: if (inRange(value, 0, 1))   Global.microLinn.useRainbow = (value == 1); break;
     case 1252: if (inRange(value, 1, 25))  Global.microLinn.anchorCol = value; break;
-    case 1253: if (inRange(value, 0, 7))   Global.microLinn.anchorRow = value; break;
+    case 1253: if (inRange(value, 1, 8))   Global.microLinn.anchorRow = 8 - value; break;
     case 1254: if (inRange(value, 0, 127)) Global.microLinn.anchorNote = value; break;
     case 1255: if (inRange(value, 0, 120)) Global.microLinn.anchorCents = value - 60; break;
     case 1256: if (inRange(value, 5, 36))  Global.microLinn.equaveSemitones = value; break;
@@ -4988,16 +5000,16 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
     case 1:   // 1 custom light pattern
       m = Global.activeNotes - 9;
       if ((data1 & 7) > 2 || (data2 & 7) > 2) microLinnCancelImport();
-      if (microLinnInRange(data1 >> 3, 0, COLOR_PINK)) Device.customLeds[m][i]   = data1;
-      if (microLinnInRange(data2 >> 3, 0, COLOR_PINK)) Device.customLeds[m][i+1] = data2;
+      if (microLinnInRange(data1 >> 3, 0, COLOR_LAST)) Device.customLeds[m][i]   = data1;
+      if (microLinnInRange(data2 >> 3, 0, COLOR_LAST)) Device.customLeds[m][i+1] = data2;
       break;
 
     case 2:   // all 3 custom light patterns
       m = i / LED_LAYER_SIZE;
       n = i % LED_LAYER_SIZE;
       if ((data1 & 7) > 2 || (data2 & 7) > 2) microLinnCancelImport();
-      if (microLinnInRange(data1 >> 3, 0, COLOR_PINK)) Device.customLeds[m][n]   = data1;
-      if (microLinnInRange(data2 >> 3, 0, COLOR_PINK)) Device.customLeds[m][n+1] = data2;
+      if (microLinnInRange(data1 >> 3, 0, COLOR_LAST)) Device.customLeds[m][n]   = data1;
+      if (microLinnInRange(data2 >> 3, 0, COLOR_LAST)) Device.customLeds[m][n+1] = data2;
       break;
 
     case 3:   // 1 audience message
@@ -5052,9 +5064,9 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
       break;
 
     case 6:   // 1 rainbow
-      if (microLinnInRange(data1, 0, COLOR_PINK)) Device.microLinn.rainbows[n+i]   = data1;
+      if (microLinnInRange(data1, 0, COLOR_LAST)) Device.microLinn.rainbows[n+i]   = data1;
       if (i+1 >= edo) break;
-      if (microLinnInRange(data2, 0, COLOR_PINK)) Device.microLinn.rainbows[n+i+1] = data2;
+      if (microLinnInRange(data2, 0, COLOR_LAST)) Device.microLinn.rainbows[n+i+1] = data2;
       break;
 
     case 7:   // 1 fretboard
@@ -5101,9 +5113,9 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
         if (i - 25 >= edo) break;
         if (microLinnInRange(data2, 0, 127)) Device.microLinn.scales[n + i - 25] = data2;
       } else if (i < 26 + 2 * m) {
-        if (microLinnInRange(data1, 0, COLOR_PINK)) Device.microLinn.rainbows[n + i - 26 - m] = data1;
+        if (microLinnInRange(data1, 0, COLOR_LAST)) Device.microLinn.rainbows[n + i - 26 - m] = data1;
         if (i - 25 - m >= edo) break;
-        if (microLinnInRange(data2, 0, COLOR_PINK)) Device.microLinn.rainbows[n + i - 25 - m] = data2;
+        if (microLinnInRange(data2, 0, COLOR_LAST)) Device.microLinn.rainbows[n + i - 25 - m] = data2;
       } else if (i < 26 + 3 * m) {
         Device.microLinn.fretboards[n + i - 26 - 2 * m] = data1;
         if (i - 25 - 2 * m >= edo) break;
@@ -5120,8 +5132,8 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
       break;
 
     case 10:   // all 51 rainbows
-      if (microLinnInRange(data1, 0, COLOR_PINK)) Device.microLinn.rainbows[i]   = data1;
-      if (microLinnInRange(data2, 0, COLOR_PINK)) Device.microLinn.rainbows[i+1] = data2;
+      if (microLinnInRange(data1, 0, COLOR_LAST)) Device.microLinn.rainbows[i]   = data1;
+      if (microLinnInRange(data2, 0, COLOR_LAST)) Device.microLinn.rainbows[i+1] = data2;
       break;
 
     case 11:   // all 51 fretboards
@@ -5135,8 +5147,8 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
         if (microLinnInRange(data2, 0, 127)) Device.microLinn.scales[i+1] = data2;
       }
       else if (i < 2 * MICROLINN_ARRAY_SIZE) {
-        if (microLinnInRange(data1, 0, COLOR_PINK)) Device.microLinn.rainbows[i]   = data1;
-        if (microLinnInRange(data2, 0, COLOR_PINK)) Device.microLinn.rainbows[i+1] = data2;
+        if (microLinnInRange(data1, 0, COLOR_LAST)) Device.microLinn.rainbows[i]   = data1;
+        if (microLinnInRange(data2, 0, COLOR_LAST)) Device.microLinn.rainbows[i+1] = data2;
       }
       else if (i < 3 * MICROLINN_ARRAY_SIZE) {
         Device.microLinn.fretboards[i]   = data1;
@@ -5259,16 +5271,16 @@ void microLinnImportDevice(byte data1, byte data2, unsigned short i) {          
     if (microLinnInRange(number, -1, 15)) Device.lastLoadedProject = number;
   } else if (i <= 724) {    // LED_LAYER_SIZE = 26 * 8 = 208
     if ((data1 & 7) > 2 || (data2 & 7) > 2) microLinnCancelImport();
-    if (microLinnInRange(data1 >> 3, 0, COLOR_PINK)) Device.customLeds[0][i-518] = data1;
-    if (microLinnInRange(data2 >> 3, 0, COLOR_PINK)) Device.customLeds[0][i-517] = data2;
+    if (microLinnInRange(data1 >> 3, 0, COLOR_LAST)) Device.customLeds[0][i-518] = data1;
+    if (microLinnInRange(data2 >> 3, 0, COLOR_LAST)) Device.customLeds[0][i-517] = data2;
   } else if (i <= 932) {
     if ((data1 & 7) > 2 || (data2 & 7) > 2) microLinnCancelImport();
-    if (microLinnInRange(data1 >> 3, 0, COLOR_PINK)) Device.customLeds[1][i-726] = data1;
-    if (microLinnInRange(data2 >> 3, 0, COLOR_PINK)) Device.customLeds[1][i-725] = data2;
+    if (microLinnInRange(data1 >> 3, 0, COLOR_LAST)) Device.customLeds[1][i-726] = data1;
+    if (microLinnInRange(data2 >> 3, 0, COLOR_LAST)) Device.customLeds[1][i-725] = data2;
   } else if (i <= 1140) {
     if ((data1 & 7) > 2 || (data2 & 7) > 2) microLinnCancelImport();
-    if (microLinnInRange(data1 >> 3, 0, COLOR_PINK)) Device.customLeds[2][i-934] = data1;
-    if (microLinnInRange(data2 >> 3, 0, COLOR_PINK)) Device.customLeds[2][i-933] = data2;
+    if (microLinnInRange(data1 >> 3, 0, COLOR_LAST)) Device.customLeds[2][i-934] = data1;
+    if (microLinnInRange(data2 >> 3, 0, COLOR_LAST)) Device.customLeds[2][i-933] = data2;
   } else if (i == 1142) {
     // ignore data1 = microLinn.MLversion and data2 = Device.microLinn.uninstall
     Device.microLinn.uninstall = false;
@@ -5276,8 +5288,8 @@ void microLinnImportDevice(byte data1, byte data2, unsigned short i) {          
     if (microLinnInRange(data1, 0, 127)) Device.microLinn.scales[i-1144] = data1;
     if (microLinnInRange(data2, 0, 127)) Device.microLinn.scales[i-1143] = data2;
   } else if (i <= 4202) {
-    if (microLinnInRange(data1, 0, COLOR_PINK)) Device.microLinn.rainbows[i-2674] = data1;
-    if (microLinnInRange(data2, 0, COLOR_PINK)) Device.microLinn.rainbows[i-2673] = data2;
+    if (microLinnInRange(data1, 0, COLOR_LAST)) Device.microLinn.rainbows[i-2674] = data1;
+    if (microLinnInRange(data2, 0, COLOR_LAST)) Device.microLinn.rainbows[i-2673] = data2;
   } else if (i <= 5732) {  
     Device.microLinn.fretboards[i-4204] = data1;
     Device.microLinn.fretboards[i-4203] = data2;
@@ -5380,10 +5392,10 @@ void microLinnImportGlobal(byte data1, byte data2, unsigned short i, byte preset
     }
     if (microLinnInRange(data2, 4, 55)) g->microLinn.EDO = data2;
   } else if (i <= 222) {
-    if (microLinnInRange(data1, 0, COLOR_PINK)) g->microLinn.rainbow[i-170] = data1;
-    if (microLinnInRange(data2, 0, COLOR_PINK)) g->microLinn.rainbow[i-169] = data2;
+    if (microLinnInRange(data1, 0, COLOR_LAST)) g->microLinn.rainbow[i-170] = data1;
+    if (microLinnInRange(data2, 0, COLOR_LAST)) g->microLinn.rainbow[i-169] = data2;
   } else if (i == 224) {
-    if (microLinnInRange(data1, 0, COLOR_PINK)) g->microLinn.rainbow[54] = data1;
+    if (microLinnInRange(data1, 0, COLOR_LAST)) g->microLinn.rainbow[54] = data1;
     g->microLinn.fretboard[0] = data2;
   } else if (i <= 278) {
     g->microLinn.fretboard[i-225] = data1;
@@ -5474,16 +5486,16 @@ void microLinnImportSplits(byte data1, byte data2, unsigned short i,  byte prese
   } else if (i <= 64) {
     if (microLinnInRange(number, 0, 128)) spl->ccForFader[(i-50)/2] = number;
   } else if (i == 66) {
-    if (microLinnInRange(data1, 0, COLOR_PINK)) spl->colorMain = data1;
-    if (microLinnInRange(data2, 0, COLOR_PINK)) spl->colorAccent = data2;
+    if (microLinnInRange(data1, 0, COLOR_LAST)) spl->colorMain = data1;
+    if (microLinnInRange(data2, 0, COLOR_LAST)) spl->colorAccent = data2;
   } else if (i == 68) {
-    if (microLinnInRange(data1, 0, COLOR_PINK)) spl->colorPlayed = data1;
-    if (microLinnInRange(data2, 0, COLOR_PINK)) spl->colorLowRow = data2;
+    if (microLinnInRange(data1, 0, COLOR_LAST)) spl->colorPlayed = data1;
+    if (microLinnInRange(data2, 0, COLOR_LAST)) spl->colorLowRow = data2;
   } else if (i == 70) {
-    if (microLinnInRange(data1, 0, COLOR_PINK)) spl->colorSequencerEmpty = data1;
-    if (microLinnInRange(data2, 0, COLOR_PINK)) spl->colorSequencerEvent = data2;
+    if (microLinnInRange(data1, 0, COLOR_LAST)) spl->colorSequencerEmpty = data1;
+    if (microLinnInRange(data2, 0, COLOR_LAST)) spl->colorSequencerEvent = data2;
   } else if (i == 72) {
-    if (microLinnInRange(data1, 0, COLOR_PINK)) spl->colorSequencerDisabled = data1;
+    if (microLinnInRange(data1, 0, COLOR_LAST)) spl->colorSequencerDisabled = data1;
     if (microLinnInRange(data2, 0, 16))   spl->playedTouchMode = data2;
   } else if (i == 74) {
     if (microLinnInRange(data1, 0, 7))    spl->lowRowMode = data1;
@@ -6105,7 +6117,12 @@ boolean microLinnHighlightExactNoteCell(byte split, byte notenum, byte channel, 
   }
 }
 
-
-
+code for ls_leds.ino to change the colors on the global display
+    if (cellDisplay) {
+      if (color == globalColor && (displayMode == displayGlobal || displayMode == displayGlobalWithTempo) && 
+          rowCount <= 3 && (inRange(actualCol, 2, 4) || inRange(actualCol, 12, 14))) {
+        color = COLOR_DIMGREEN;
+      }
+      // construct composite colors
 
 **********************************************************************************************/
