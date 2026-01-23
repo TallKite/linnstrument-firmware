@@ -245,7 +245,7 @@ https://www.kvraudio.com/forum/viewtopic.php?t=477257 user firmware mode in one 
 https://www.kvraudio.com/forum/viewtopic.php?t=473610 per-split row offsets
 https://www.kvraudio.com/forum/viewtopic.php?t=468592 Geert discusses the 2.0 firmware velocity algorithm
 https://www.kvraudio.com/forum/viewtopic.php?t=465788 strum split has 2 cols for plucking, 1 for xyz and 1 for muting -- meh
-
+https://www.kvraudio.com/forum/viewtopic.php?t=450198 CC faders only respond to CCs 1-8 even if linked to other CCs -- fixed
 
 test unninstalling more
 
@@ -298,10 +298,6 @@ Punch -- avoid a sluggish attack, scale the first 50 ms of Z to the velocity, st
 
 
 Global.microLinn.fineTune[27]?? is a packed array of nybbles, -8..+7 cents/edosteps, fine-tunes all but the tonic
-
-test CC faders bug: https://www.kvraudio.com/forum/viewtopic.php?t=450198
-  faders should respond to input from the DAW, even when not set to CCs 1-8
-  both sides should work, left seems to need different CCs from the right?
 
 check that microLinnCalcLowestEdostepEtc() and others take into account condensing
 

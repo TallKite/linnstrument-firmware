@@ -449,6 +449,8 @@ Send NRPN 236 with a value of 0. See midi.txt and https://www.kvraudio.com/forum
 MISC SMALL BUG FIXES
 
 * Respond to midi input on the main channel when in ChanPerNote mode
+* If the DAW resets CCs 98-101, RPN/NRPN handling is unaffected
+* Receiving CC1 used to always move the 1st fader, CC2 moved the 2nd fader, etc. even when the faders were not linked to CCs 1-8. Faders now respond to the proper CC. Note that other uses of the CC take priority. For example, CC6 can move a fader only if it's not part of a NRPN.
 
 
 #  MICROTONAL FEATURES  

@@ -352,57 +352,45 @@ void handleMidiInput(unsigned long nowMicros) {
 
       case MIDIControlChange:
       {
+        boolean ccWasUsed = false;
         switch (midiData1) {
           case 0:
             if (split != -1) {
               midiBank[split] = midiData2;
-              if (displayMode == displayPreset) {
-                updateDisplay();
-              }
+              if (displayMode == displayPreset) updateDisplay();
+              ccWasUsed = true;
             }
             break;
           case 6:
             // if an NRPN or RPN parameter was selected, start constituting the data
-            // otherwise control the fader of MIDI CC 6 via an intentional fall-through to cases 1-8
             if ((lastRpnMsb != 127 || lastRpnLsb != 127) ||
                 (lastNrpnMsb != 127 || lastNrpnLsb != 127)) {
               lastDataMsb = midiData2;
-              break;
-            }
-          case 1:
-          case 2:
-          case 3:
-          case 4:
-          case 5:
-          case 7:
-          case 8:
-            if (split != -1) {
-              unsigned short ccForFader = Split[split].ccForFader[midiData1-1];
-              ccFaderValues[split][ccForFader] = midiData2;
-              if ((displayMode == displayNormal && Split[split].ccFaders) ||
-                  displayMode == displayVolume) {
-                updateDisplay();
-              }
+              ccWasUsed = true;
             }
             break;
           case 9:
             if (userFirmwareActive && midiChannel < NUMROWS && (midiData2 == 0 || midiData2 == 1)) {
               userFirmwareSlideMode[midiChannel] = midiData2;
+              ccWasUsed = true;
             }
             break;
           case 10:
             if (userFirmwareActive && midiChannel < NUMROWS && (midiData2 == 0 || midiData2 == 1)) {
               userFirmwareXActive[midiChannel] = midiData2;
+              ccWasUsed = true;
             }
             break;
           case 11:
             if (userFirmwareActive && midiChannel < NUMROWS && (midiData2 == 0 || midiData2 == 1)) {
               userFirmwareYActive[midiChannel] = midiData2;
+              ccWasUsed = true;
             }
             break;
           case 12:
             if (userFirmwareActive && midiChannel < NUMROWS && (midiData2 == 0 || midiData2 == 1)) {
               userFirmwareZActive[midiChannel] = midiData2;
+              ccWasUsed = true;
             }
             break;
           case 13:
@@ -410,17 +398,20 @@ void handleMidiInput(unsigned long nowMicros) {
               unsigned long rate = midiData2 * 1000;
               if (Device.operatingLowPower == 1 || rate > LOWPOWER_MIDI_DECIMATION) {
                 midiDecimateRate = rate;
+                ccWasUsed = true;
               }
             }
             break;
           case 20:
             if (midiData2 < NUMCOLS) {
               midiCellColCC = midiData2;
+              ccWasUsed = true;
             }
             break;
           case 21:
             if (midiData2 < NUMROWS) {
               midiCellRowCC = midiData2;
+              ccWasUsed = true;
             }
             break;
           case 22:
@@ -438,18 +429,21 @@ void handleMidiInput(unsigned long nowMicros) {
                 setLed(midiCellColCC, midiCellRowCC, COLOR_OFF, cellOff, layer);
               }
               checkRefreshLedColumn(micros());
+              ccWasUsed = true;
             }
             break;
           case 23:
             if (midiData2 < LED_PATTERNS) {
               storeCustomLedLayer(midiData2);
               storeSettings();
+              ccWasUsed = true;
             }
             break;
           case 24:
             if (midiData2 < LED_PATTERNS) {
               clearStoredCustomLedLayer(midiData2);
               storeSettings();
+              ccWasUsed = true;
             }
             break;
           // microLinn duplicates the effect of CCs 20-22 with either CC25 or CC26, 3x faster!
@@ -465,6 +459,7 @@ void handleMidiInput(unsigned long nowMicros) {
             byte layer = (userFirmwareActive ? LED_LAYER_CUSTOM2 : LED_LAYER_CUSTOM1);
             setLed(midiCellColCC, midiCellRowCC, color, cellDisplay, layer);
             checkRefreshLedColumn(micros());
+            ccWasUsed = true;
             break;
           }
           // RPN/NRPN handling guards against the DAW resetting CC values to zero and accidentally creating RPN 0 or NRPN 0
@@ -474,10 +469,12 @@ void handleMidiInput(unsigned long nowMicros) {
             if ((lastRpnMsb != 127 || lastRpnLsb != 127) && lastCC == 6 && lastDataMsb != -1) {
               lastDataLsb = midiData2;
               receivedRpn(midiChannel, (lastRpnMsb<<7)+lastRpnLsb, (lastDataMsb<<7)+lastDataLsb);
+              ccWasUsed = true;
             }
             else if ((lastNrpnMsb != 127 || lastNrpnLsb != 127) && lastCC == 6 && lastDataMsb != -1) {
               lastDataLsb = midiData2;
               receivedNrpn((lastNrpnMsb<<7)+lastNrpnLsb, (lastDataMsb<<7)+lastDataLsb, midiChannel);
+              ccWasUsed = true;
             }
             lastDataMsb = -1;
             break;
@@ -486,25 +483,41 @@ void handleMidiInput(unsigned long nowMicros) {
             lastDataMsb = -1;
             if (lastCC == 99) {lastNrpnLsb = midiData2;}
             else              {lastNrpnMsb = lastNrpnLsb = 127;}
+            ccWasUsed = true;
             break;
           case 99:
             lastRpnMsb = lastRpnLsb = 127;
             lastDataMsb = -1;
             if (lastCC != 98) {lastNrpnMsb = midiData2;}
             else              {lastNrpnMsb = lastNrpnLsb = 127;}
+            ccWasUsed = true;
             break;
           case 100:
             lastNrpnMsb = lastNrpnLsb = 127;
             lastDataMsb = -1;
             if (lastCC == 101) {lastRpnLsb = midiData2;}
             else               {lastRpnMsb = lastRpnLsb = 127;}
+            ccWasUsed = true;
             break;
           case 101:
             lastNrpnMsb = lastNrpnLsb = 127;
             lastDataMsb = -1;
             if (lastCC != 100) {lastRpnMsb = midiData2;}
             else               {lastRpnMsb = lastRpnLsb = 127;}
+            ccWasUsed = true;
             break;
+        }
+        // only move faders if the CC wasn't used for something else
+        if (!ccWasUsed && split != -1) {
+          for (byte i = 0; i < 8; ++i) {
+            if (Split[split].ccForFader[i] == midiData1) {
+              ccFaderValues[split][midiData1] = midiData2;
+              if ((displayMode == displayNormal && Split[split].ccFaders) ||
+                   displayMode == displayVolume) {
+                updateDisplay();
+              }
+            }
+          }
         }
         lastCC = midiData1;
         break;
