@@ -269,6 +269,22 @@ tried to add a few more colors, but only violet was distinct enough from the oth
   R   P    O   Y    L  G   G2  SG   C   AZ  B   B2   VI  M   RO        W   
                                N        N            Y       N
 
+          case 38:
+            if ((lastRpnMsb != 127 || lastRpnLsb != 127) && lastCC == 6 && lastDataMsb != -1) {
+              lastDataLsb = midiData2;
+              receivedRpn(midiChannel, (lastRpnMsb<<7)+lastRpnLsb, (lastDataMsb<<7)+lastDataLsb);
+              ccWasUsed = true;
+            }
+            else if ((lastNrpnMsb != 127 || lastNrpnLsb != 127) && lastCC == 6 && lastDataMsb != -1) {
+              lastDataLsb = midiData2;
+              receivedNrpn((lastNrpnMsb<<7)+lastNrpnLsb, (lastDataMsb<<7)+lastDataLsb, midiChannel);
+              ccWasUsed = true;
+            }
+            lastDataMsb = -1;
+            break;
+
+Make hammer-on zone/wait work in reverse when in OneChannel mode!!!!
+  2 notes played within the wait time that are more than a zone apart use 2 channels!!!!
 
 CC faders special mode: make vertical faders, slightly glitchy because of the horizontal separator strips
   scale the Y data down from 0..127 to 16*row..16*row+15

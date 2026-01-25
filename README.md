@@ -211,6 +211,10 @@ Just like a guitar, except you can hammer-on to either the right or the left, or
 
   *Hammer-ons require ChanPerNote or ChanPerRow mode. The note-on that sounds the hammer-on note is sent immediately after the note-off that mutes the earlier note. (The opposite is true during a OneChan trill in "X" or "X+Z" mode, to allow single-trigger).*
 
+DOUBLE-STOPS: Hammer-ons change polyphonic to monophonic when inside the zone and outside the wait time. In OneChannel mode, double-stops change monophonic to polyphonic when *outside* the zone and *inside* the wait time. Great for fiddle music! (not yet implemented)
+
+  *Details: The new note is sent to a new midi channel one greater (1 --> 2, 2--> 3, etc., but 16 --> 15). When a 3rd note is played, it takes the place of the note nearest in pitch, and as a tiebreaker, the nearest row.*
+
 LOW ROW XYZ JOYSTICK MODE
 
 Joystick mode lets you shape your sound as you're playing, much as the Touche SE from Expressive E would, or the Lightpad Block from Roli. Control 3 to 5 additional CCs at once by rolling your fingertip within a single pad on the low row. Joystick mode is actually WXYZ, because a 6th CC, the W CC, is optionally sent when you first touch the low row. That CC's value is the velocity of that initial touch.
