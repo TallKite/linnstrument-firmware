@@ -357,22 +357,22 @@ void performArpeggiatorToggle() {
 }
 
 void performReverseSendXToggle(byte side) {
-  // microLinn: PCH now toggles between the current and previous settings of all 5 cells in the PITCH/X column
+  // microLinn: PCH now toggles between the current and alternate settings of all 5 cells in the PITCH/X column
   boolean swap = Split[side].sendX;
-  Split[side].sendX = Split[side].microLinn.prevSendX();
-  Split[side].microLinn.setPrevSendX(swap);
+  Split[side].sendX = Split[side].microLinn.altSendX();
+  Split[side].microLinn.setAltSendX(swap);
 
   swap = Split[side].pitchCorrectQuantize;
-  Split[side].pitchCorrectQuantize = Split[side].microLinn.prevPitchCorrectQuantize();
-  Split[side].microLinn.setPrevPitchCorrectQuantize(swap);
+  Split[side].pitchCorrectQuantize = Split[side].microLinn.altPitchCorrectQuantize();
+  Split[side].microLinn.setAltPitchCorrectQuantize(swap);
 
   byte swap2 = Split[side].pitchCorrectHold;
-  Split[side].pitchCorrectHold = Split[side].microLinn.prevPitchCorrectHold();
-  Split[side].microLinn.setPrevPitchCorrectHold(swap2);
+  Split[side].pitchCorrectHold = Split[side].microLinn.altPitchCorrectHold();
+  Split[side].microLinn.setAltPitchCorrectHold(swap2);
 
   swap = Split[side].pitchResetOnRelease;
-  Split[side].pitchResetOnRelease = Split[side].microLinn.prevPitchResetOnRelease();
-  Split[side].microLinn.setPrevPitchResetOnRelease(swap);
+  Split[side].pitchResetOnRelease = Split[side].microLinn.altPitchResetOnRelease();
+  Split[side].microLinn.setAltPitchResetOnRelease(swap);
 
   if (displayMode == displayPerSplit) {
     updateDisplay();

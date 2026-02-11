@@ -32,96 +32,60 @@ Don't uninstall when updating to a newer version of microLinn, because you'll ne
 
 To go to the main microLinn menu, on the Global Settings screen, long-press the lower left pad (VIEW MAIN). Once the edo (notes per octave) is set to anything other than OFF, VIEW MAIN turns yellow and you can simply tap it. You can also tap the yellow button in column 17 (column 16 on a LinnStrument 128).
 
-Main MicroLinn menu, *LONG-PRESS EACH BUTTON* to see its function as a scrolling message, and tap anywhere to stop the scrolling.
+Main MicroLinn menu, *_LONG-PRESS EACH BUTTON_* to see its function as a scrolling message, and tap anywhere to stop the scrolling.
 
-
-  col 2) Per-split column offset (OFF, 2 to 10)
-  
-
-  col 4) Per-split row offset (OFF, NOVR = no overlap, 0 to 25, tap the blue button for positive/negative offsets)
-  
-
-  col 6) Per-split non-microtonal settings
- 
-    row 1) Monophonic mode (OFF, X, Z, X+Z) (X = Pitch, Z = Loudness)
-
-    row 2) Hammer-on mode (OFF, R, L, R+L) (R = right, L = left)
-
-    row 3) Hammer-on zone in semitones (1, 2, 3... 12, ALL) or if in an edo (0.1, 0.2, 0.3... 12.0, ALL)
-  
-    row 4) Hammer-on wait in milliseconds (0, 10, 20... 500)
-
-    row 5) Show custom light pattern (OFF, A, A#, B, A', A#', B')
-
-
-  col 8) Global non-microtonal settings
-
-    row 1) Drum pad mode (OFF, 2x3, 3x3)
-
-    row 2) SAME/BLINK dots carry over to the other split (OFF, ON)
-  
-    row 3) Allow importing (OFF, IMP)
-
-    row 4) Locating CC #1 (OFF, 0 to 127) (used for the first 16 columns)
-  
-    row 5) Locating CC #2 (OFF, 0 to 127) (used for the last 9 columns, hidden on the Linn128)
-  
-
-  col 10) EDO (notes per octave) (OFF, 5 to 55)
-
-
-  col 12) Microtonal note lights
-
-    col 1, row 1-7) Select scales 1-7 (long-press to reset the notes)
-
-    col 3, row 1) Rainbow editor (long-press to reset the colors)
-
-    col 3, row 2) Rainbow enabler (yellow = ON, green = OFF)
-
-    col 3, row 4) Fretboard editor (long-press to reset the dots)
-
-    columns 5-16) (tap here to select notes, colors or fretboard dots)
-  
-
-  col 14) Per-split microtonal settings
-
-    row 1) Condense to scale (OFF, VAR = variable bend per pad, 1 to N = bend per pad in edosteps)
-
-    row 2) Default layout (OFF, Bosanquet 1 & 2, Accordion, Wicki-Hayden 1 & 2, Array Mbira 1 & 2)
-
-    row 3) Tuning table mode (OFF, ON, CC = send midi grouping CCs, RCH = rechannel)
-
-    row 4) Midi grouping CC (OFF, 0 to 119, used in tuning table CC mode)
-
-
-  col 16) Global microtonal settings
-
-    row 1) Anchor pad (row 1 to row 8, column 1 to column 25)
-
-    row 2) Anchor note (C-2 to G8, middle-C is C3)
-
-    row 3) Anchor cents (-60 to 60)
-
-    row 4) Equave semitones (5 to 36)
-
-    row 5) Equave cents (-50 to 50)
-
+  * col 2) Per-split column offset (OFF, 2 to 10)
+  * col 4) Per-split row offset (OFF, NOVR = no overlap, 0 to 25, tap the blue button for positive/negative offsets)
+  * col 6) Per-split non-microtonal settings
+  * * row 1) Monophonic mode (OFF, X, Z, X+Z) (X = Pitch, Z = Loudness)
+  * * row 2) Hammer-on mode (OFF, R, L, R+L) (R = right, L = left)
+  * * row 3) Hammer-on zone in semitones (1, 2, 3... 12, ALL) or if in an edo (0.1, 0.2, 0.3... 12.0, ALL)
+  * * row 4) Hammer-on wait in milliseconds (0, 10, 20... 500)
+  * * row 5) Show custom light pattern (OFF, A, A#, B, A', A#', B')
+  * col 8) Global non-microtonal settings
+  * * row 1) Drum pad mode (OFF, 2x3, 3x3)
+  * * row 2) SAME/BLINK dots carry over to the other split (OFF, ON)
+  * * row 3) Allow importing (OFF, IMP)
+  * * row 4) Locating CC #1 (OFF, 0 to 127) (used for the first 16 columns)
+  * * row 5) Locating CC #2 (OFF, 0 to 127) (used for the last 9 columns, hidden on the Linn128)
+  * col 10) EDO (notes per octave) (OFF, 5 to 55)
+  * col 12) Microtonal note lights
+  * * col 1, row 1-7) Select scales 1-7 (long-press to reset the notes)
+  * * col 3, row 1) Rainbow editor (long-press to reset the colors)
+  * * col 3, row 2) Rainbow enabler (yellow = ON, green = OFF)
+  * * col 3, row 4) Fretboard editor (long-press to reset the dots)
+  * * columns 5-16) (tap here to select notes, colors or fretboard dots)
+  * col 14) Per-split microtonal settings
+  * * row 1) Condense to scale (OFF, VAR = variable bend per pad, 1 to N = bend per pad in edosteps)
+  * * row 2) Default layout (OFF, Bosanquet 1 & 2, Accordion, Wicki-Hayden 1 & 2, Array Mbira 1 & 2)
+  * * row 3) Tuning table mode (OFF, ON, CC = send midi grouping CCs, RCH = rechannel)
+  * * row 4) Midi grouping CC (OFF, 0 to 119, used in tuning table CC mode)
+  * col 16) Global microtonal settings
+  * * row 1) Anchor pad (row 1 to row 8, column 1 to column 25)
+  * * row 2) Anchor note (C-2 to G8, middle-C is C3)
+  * * row 3) Anchor cents (-60 to 60)
+  * * row 4) Equave semitones (5 to 36)
+  * * row 5) Equave cents (-50 to 50)
 
 Additions to other menus:
 * PerSplit display: long-press Low Row XYZ, additional option JOY with additional options for W, X' and Y' CCs
 * Preset display: blue Bank Select button in lower left, 16 clip launching buttons on the right (top/bottom on Linn128)
-* Volume display: upper fader for the left split, lower fader for the right split
+* Volume display: double faders, one for each split
 * Octave/Transpose display: when microtonal, additional option for transposing by major 2nds
-* Global display: yellow MicroLinn menu buttons, long-press Tap Tempo and swipe for new options, double-tap Low Power
+* Global display: 
+* * yellow microLinn menu buttons
+* * long-press Tap Tempo and swipe for new options
+* * double-tap Low Power for dim-but-fast
+* * double-tap Update OS to uninstall
 
 
 # IMPORTANT TERMINOLOGY
 
-Glide: a large bend to a new pad, as opposed to a small bend that stays within one pad.
+Slide: a large bend to a new pad, as opposed to a small bend that stays within one pad.
 
-Consistent gliding: when you glide to a note and then play it again without gliding, the bent pitch matches the unbent pitch.
+Consistent sliding: when you slide to a note and then play it again without sliding, the bent pitch matches the unbent pitch.
 
-Mismatched bend ranges: deliberately mismatching the ranges of your LinnStrument and your synth. Causes inconsistent glides.
+Mismatched bend ranges: deliberately mismatching the ranges of your LinnStrument and your synth. Causes inconsistent slides.
 
 Bend slope: The bend slope is normally 1 semitone per pad, which is about 6¢/mm. Mismatched bend ranges change the bend slope.
 
@@ -148,9 +112,9 @@ When you power up your LinnStrument, if the two offsets are identical and are no
 
   *Details: Beware, if the column offset is 2 and the row offset is an even number, you lose half the notes and only get a whole-tone scale. In general, the column offset and the row offset should not have any common factors. If they do, both offsets will be displayed in red.*
 
-  *Playing melodies with pitch bending can be tricky. An offset of +2 changes the bend slope from 6¢/mm to 12¢/mm, +3 makes it 18¢/mm, etc.  Thus to play in tune with a large column offset you may need both Pitch/X Quantize and Pitch/X Quantize Hold to be on. (But if your column offset is +2, setting Quantize on and Quantize Hold off lets you play the skipped notes fairly accurately by gliding into the gap between pads. In fact, you can easily play 24edo quartertones on a normal 12edo LinnStrument this way.)*
+  *Playing melodies with pitch bending can be tricky. An offset of +2 changes the bend slope from 6¢/mm to 12¢/mm, +3 makes it 18¢/mm, etc.  Thus to play in tune with a large column offset you may need both Pitch/X Quantize and Pitch/X Quantize Hold to be on. (But if your column offset is +2, setting Quantize on and Quantize Hold off lets you play the skipped notes fairly accurately by sliding into the gap between pads. In fact, you can easily play 24edo quartertones on a normal 12edo LinnStrument this way.)*
 
-  *You can also use mismatched bend ranges. With a column offset of +2, set your LinnStrument's range to twice your synth's range. Now the bend slope is the usual 1 semitone/pad. Bends are easier to control, but glides are inconsistent. So this method works best when only small bends are used.*
+  *You can also use mismatched bend ranges. With a column offset of +2, set your LinnStrument's range to twice your synth's range. Now the bend slope is the usual 1 semitone/pad. Bends are easier to control, but slides are inconsistent. So this method works best when only small bends are used.*
 
   *In the Octave/Transpose screen, "Transpose Lights" tranposes by columns not semitones. If your column offset is +2, transposing the lights by 1 shifts everything over 1 column, changing the pitch of each pad by 2 semitones.*
 
@@ -166,15 +130,15 @@ Make the unlit pads go away! Bending still works. Accessed through the microLinn
 
   *Details: Condensing uses various microtonal features (see below). Set the edo to 12 and select one of the 7 microtonal scales. If your scale is all one color (e.g. the 12edo major scale is all white notes), fix that in the note lights screen. Adjust the color of one or more notes with the rainbow editor, or simply turn off the rainbow enabler to use the usual 2 colors.*
 
-  *In the Per-split Microtonal Settings menu, change Condense To Scale from OFF to VAR, which stands for variable bend slope. Glides are consistent. When traversing a minor 2nd the bend slope is the usual 6¢/mm, but over a major 2nd it doubles to 12¢/mm. The bend slope changes sharply at the center of the pad.*
+  *In the Per-split Microtonal Settings menu, change Condense To Scale from OFF to VAR, which stands for variable bend slope. Slides are consistent. When traversing a minor 2nd the bend slope is the usual 6¢/mm, but over a major 2nd it doubles to 12¢/mm. The bend slope changes sharply at the center of the pad.*
 
-  *This variable bend slope causes certain issues. (1) It makes vibrato on certain notes lopsided. For example, a normal vibrato on C of a C major scale will tend to be wider when sharpening and narrower when flattening, making the C note sound slightly sharp. So you might want to do a slightly off-center vibrato, going closer to B than to D. (2) When gliding slowly at a steady speed through a large interval, you may notice the bending becoming faster and slower. So you might want to glide through minor 2nds faster than major 2nds.*
+  *This variable bend slope causes certain issues. (1) It makes vibrato on certain notes lopsided. For example, a normal vibrato on C of a C major scale will tend to be wider when sharpening and narrower when flattening, making the C note sound slightly sharp. So you might want to do a slightly off-center vibrato, going closer to B than to D. (2) When sliding slowly at a steady speed through a large interval, you may notice the bending becoming faster and slower. So you might want to slide through minor 2nds faster than major 2nds.*
 
-  *If you rarely do large bends, you might prefer a constant bend slope. This avoids lopsided vibrato. You can set the slope to a specific number of semitones per pad, ranging from 1 to whatever the largest step is. For example, the largest step in a 12edo major scale is 2 semitones, so you can swipe Condense To Scale past VAR to either 1 or 2. You can still do large bends, but they can be tricky. If you choose 1 semitone, overshoot and bend by ear. If you choose 2 semitones, set QUANTIZE HOLD off and you can glide into the gap between pads to reach all the notes of the scale.*
+  *If you rarely do large bends, you might prefer a constant bend slope. This avoids lopsided vibrato. You can set the slope to a specific number of semitones per pad, ranging from 1 to whatever the largest step is. For example, the largest step in a 12edo major scale is 2 semitones, so you can swipe Condense To Scale past VAR to either 1 or 2. You can still do large bends, but they can be tricky. If you choose 1 semitone, overshoot and bend by ear. If you choose 2 semitones, set QUANTIZE HOLD off and you can slide into the gap between pads to reach all the notes of the scale.*
 
   *When condensing is on, you can freely change scales in the Global Settings display. The bend slope won't change automatically. Thus you can choose a pentatonic scale, set the bend slope to 3 (the largest step size), and switch back to a diatonic scale.*
 
-  *You can also experiment with changing the pitch bend range on the LinnStrument to the number of notes in your scale, or some multiple of that. For a 7 note scale, change 12 to 7, 24 to 14, etc. Leave your synth set to 12 or 24, so that the bend ranges don't match. With Condense To Scale set to 1, this makes your actual bend slope 1.7 semitones per pad = 10¢/mm. This is good for very large bends, because the octaves are easy to glide to.*
+  *You can also experiment with changing the pitch bend range on the LinnStrument to the number of notes in your scale, or some multiple of that. For a 7 note scale, change 12 to 7, 24 to 14, etc. Leave your synth set to 12 or 24, so that the bend ranges don't match. With Condense To Scale set to 1, this makes your actual bend slope 1.7 semitones per pad = 10¢/mm. This is good for very large bends, because the octaves are easy to slide to.*
 
   *If you turn off pitch bending (thus avoiding all these issues), there's no difference between VAR, 1, and 2.*
 
@@ -184,12 +148,12 @@ There's a school of thought that says there's only 12 notes, it's not that hard 
 
 MONO MODE
 
-In OneChannel and ChannelPerRow modes, one midi channel can have mutiple midi notes. The LinnStrument's default behavior when this happens is designed for compatibility with non-MPE polyphonic synths. For example, when more than one pad is played, glides are quantized to the nearest semitone. Mono mode adds 2 new behaviors that are designed for compatibility with non-MPE *monophonic* synths. 
+In OneChannel and ChannelPerRow modes, one midi channel can have mutiple midi notes. The LinnStrument's default behavior when this happens is designed for compatibility with non-MPE polyphonic synths. For example, when more than one pad is played, slides are quantized to the nearest semitone. Mono mode adds 2 new behaviors that are designed for compatibility with non-MPE *monophonic* synths. 
 
   PITCH/X FIXES: 
-  * Selecting "X" or "X+Z" allows unquantized glides.
+  * Selecting "X" or "X+Z" allows unquantized slides.
   * You can trill on a single note by using a pad on another row that plays the same note.
-  * When the latest-played pad is released, the most recent bend for the new latest-played pad is sent, so you can trill while gliding.
+  * When the latest-played pad is released, the most recent bend for the new latest-played pad is sent, so you can trill while sliding.
 
   MAXIMIZE LOUDNESS/Z: The LinnStrument's default behavior is to send Z data from the latest note only. By necessity, a pad's Z data must start and end with a zero value. Thus holding one pad and playing a 2nd pad causes an abrupt jump in loudness to 0, and releasing that pad causes an abrupt jump from 0 to the Z-value of the 1st pad. Selecting "Z" or "X+Z" maximizes the Z data via a "soft takeover" as opposed to a "hard takeover". Z data is sent only from whichever pad is currently being pressed the hardest.
 
@@ -199,11 +163,11 @@ In OneChannel and ChannelPerRow modes, one midi channel can have mutiple midi no
 
 HAMMER-ONS AND PULL-OFFS
 
-Just like a guitar, except you can hammer-on to either the right or the left, or both (highest, lowest or latest priority). Hammer-ons happen with any nearby pad on the same row. Works well with Mono Mode Z-maximizing. Accessed through the microLinn menu.
+Just like a guitar, except you can hammer-on to either the right or the left, or both (highest, lowest or latest priority). Hammer-ons happen with any nearby pad on the same row. Works well with Z-maximizing. Accessed through the microLinn menu.
 
   *Details: Set the hammer-on zone to perhaps 2 semitones. Play two notes 1 or 2 pads apart on the same row. The later note will mute the earlier note. When you release it, a pull-off retriggers (unmutes) the earlier note, using the later note's note-off velocity. So lift your finger off quickly for a loud pull-off, slowly for a soft one.*
 
-  *If you want to play 2 notes a 2nd apart simultaneously, play them on 2 different rows. Or, set the wait time to perhaps 100ms. This prevents a note from being hammered on until it has been held for that long. Now you can play a simultaneous 2nd on one row by playing both notes at once.*
+  *If you want to play 2 notes a 2nd apart simultaneously, play them on 2 different rows. Or, slide to the first note from outside the zone before hammering. Or, set the wait time to perhaps 100ms. This prevents a note from being hammered on until it has been held for that long. Now you can play a simultaneous 2nd on one row by playing both notes at once.*
 
   *What happens when you play 3 or more notes within the zone and release one of them? Releasing a muted note doesn't do anything. In Right+Left mode, releasing the latest note (the sounding note) retriggers the latest muted note. But in Right-only or Left-only modes, it's the nearest muted note.*
 
@@ -211,9 +175,9 @@ Just like a guitar, except you can hammer-on to either the right or the left, or
 
   *Hammer-ons require ChanPerNote or ChanPerRow mode. The note-on that sounds the hammer-on note is sent immediately after the note-off that mutes the earlier note. (The opposite is true during a OneChan trill in "X" or "X+Z" mode, to allow single-trigger).*
 
-DOUBLE-STOPS: Hammer-ons change polyphonic to monophonic when inside the zone and outside the wait time. In OneChannel mode, double-stops change monophonic to polyphonic when *outside* the zone and *inside* the wait time. Great for fiddle music! (not yet implemented)
+DOUBLE-STOPS: Hammer-ons change polyphonic to monophonic when on the same row, inside the zone and outside the wait time. Double-stops change monophonic to polyphonic when *not* on the same row, *outside* the zone and *inside* the wait time. Great for fiddle music! (not yet implemented)
 
-  *Details: The new note is sent to a new midi channel one greater (1 --> 2, 2--> 3, etc., but 16 --> 15). When a 3rd note is played, it takes the place of the note nearest in pitch, and as a tiebreaker, the nearest row.*
+  *Details: Double-stops use the same zone and wait settings as hammer-ons. Requires OneChannel mode. The new note is sent to a new midi channel one greater (1 -> 2, 2 -> 3, etc., but 16 -> 15), so you'll need an extra instance of your mono synth. If a 3rd note is played, it takes the place of the note on the nearest row, and as a tiebreaker, nearest in pitch.*
 
 LOW ROW XYZ JOYSTICK MODE
 
@@ -323,8 +287,8 @@ On an actual guitar, middle-C played on the 2nd string 1st fret sounds very diff
 
   *Reaper users: download microLinnLocatingCCs.jsfx from the LinnWiki. It defines a rectangular region on the LinnStrument, within which it can either transpose each note to a specific note (good for drum pads) or transform it into a CC message in a variety of ways. It can also filter out other midi either inside or outside of this region. Download microLinnLocatingCCsDemo.RPP and microLinnLocatingCCsDemo.mid for an example usage that creates a drum pad.*
   
-  *Non-Reaper users: if your DAW isn't programmable, you may still be able to run microLinnLocatingCCs.jsfx. It runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Max 4 Live, FL Studio MIDI scripts, and other platforms.)*
-  
+  *Non-Reaper users: if your DAW isn't programmable, you may still be able to run microLinnLocatingCCs.jsfx. It runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this effect in Abelton's Max 4 Live, FL Studio's MIDI scripts, Logic's Scripter, Bitwig's Grid, StreamByter (free macOS/iOS AU plugin) and other platforms.)*
+    
   *Thanks to KVR forum member vorp40 for the locating CC idea!*
 
 IMPORTING/EXPORTING
@@ -397,7 +361,7 @@ Importing lets you access more than 6 memories and more than 3 light patterns. A
 
   *To make a midi clip that imports various settings, first set up your LinnStrument manually. Then send it one or more NRPN-299s. Record the midi that the LinnStrument sends in response.*
 
-  *The CC types default to 1-8 (in reverse order) for both splits. Beware, CC1 is also sent by the low row and CC7 is also sent by the Volume display. We wouldn't want to accidentally launch a clip when we adjust the volume, or vice versa! Better to use one set of CCs to control your synths and another set of CCs to control your DAW. A good choice for the latter is CCs 21-28 (see CC SUGGESTIONS below). To select these CCs, long-press the CC Faders button and swipe. Or download setFaderCCsTo21-28.mid from the LinnWiki and import it into your LinnStrument. If you want to use only one split's CCs for launching, import setLeftFaderCCsTo21-28.mid or setRightFaderCCsTo21-28.mid. To undo, import setFaderCCsTo8-1.mid.* 
+  *The CC types default to 1-8 for both splits. Beware, CC1 is also sent by the low row and CC7 is also sent by the Volume display. We wouldn't want to accidentally launch a clip when we adjust the volume, or vice versa! Better to use one set of CCs to control your synths and another set of CCs to control your DAW. A good choice for the latter is CCs 21-28 (see CC SUGGESTIONS below). To select these CCs, long-press the CC Faders button and swipe. Or download setFaderCCsTo21-28.mid from the LinnWiki and import it into your LinnStrument. If you want to use only one split's CCs for launching, import setLeftFaderCCsTo21-28.mid or setRightFaderCCsTo21-28.mid. To undo, import setFaderCCsTo1-8.mid.* 
 
   *Beware: loading a memory (or importing one) overwrites the launcher/fader CC choices. If your DAW responds to CCs 21-28 and the newly-loaded memory uses fader CCs 1-8, the launching buttons stop working. So immediately after loading/importing an older memory, import setFaderCCsTo21-28.mid and save/export the updated memory.*
 
@@ -419,7 +383,7 @@ Importing lets you access more than 6 memories and more than 3 light patterns. A
 
 CC SUGGESTIONS
 
-  * Low row joystick: W=CC15, X=CC16, Y=CC17, Z=CC18, X'=CC19 or CC16, Y'=CC20 or CC17
+  * Low row joystick: W=CC15 or OFF, X=CC16, Y=CC17, Z=CC18, X'=CC19 or CC16 or OFF, Y'=CC20 or CC17 or OFF
   * Clip launching: CCs 21-28
   * Locating: CC29 and CC30 (LinnStrument 128: CC29 only)
   * Grouping: CC31 for both splits
@@ -549,8 +513,9 @@ The 9 scales in Global Settings columns 2-4 are now microtonal and change for ea
                blue = bbb                   blue = trup/trud (triple up/down)
                pink = x#
              purple = bbbb
-                red = xx
-    orangish-yellow = bbbbb = xx#
+             violet = xx
+                red = bbbbb
+    orangish-yellow = xx#
 
   * *In perfect edos (7, 14, 21, 28 and 35) and pentatonic edos (5, 10, 15, 20, 25 and 30) the tonic is pink, to help it stand out*
   * *In pentatonic edos and in supersharp edos (8, 13 and 18), there are only 5 white notes*
@@ -631,6 +596,8 @@ The 2nd memory from the bottom emulates the [Kite guitar](https://KiteGuitar.com
 
 The 3rd memory from the bottom is a 31edo Bosanquet layout, row/col offset of (+3 +5). The guitar tuning is the standard one.
 
+To go beyond 6 memories, use the mini clip-launcher to bulk import memories.
+
 BEYOND EDOS: TUNING TABLE MODE 
 
 Tuning table mode is meant for non-edo tunings such as just intonation or rank-2 temperaments. Tuning table mode is also needed for a polyphonic synth that doesn't have MPE (thus pitch bends on one channel affect notes on other channels), but does allow retuning by other methods. It's also needed for a synth that doesn't respond to pitch bends at all, for example certain piano and organ synths.
@@ -639,11 +606,11 @@ Once an edo is selected, the LinnStrument usually outputs standard midi notes wi
 
 The midi note number each pad outputs is determined entirely by the column and row offsets. In theory, the edo you select doesn't matter. But when the edo is set correctly, transposing works better and the note lights make more sense.
 
-When fine-tuning, each note of an N-note scale is somewhat sharp or flat from N-edo. The LinnStrument doesn't know what those discrepancies are, and thus doesn't know what note to bend to. Thus glides are inconsistent. However this is often only a comma difference even on long glides. You have to bend by ear, just like on a guitar.
+When fine-tuning, each note of an N-note scale is somewhat sharp or flat from N-edo. The LinnStrument doesn't know what those discrepancies are, and thus doesn't know what note to bend to. Thus slides are inconsistent. However this is often only a comma difference even on long slides. You have to bend by ear, just like on a guitar.
 
   *Example: Suppose you want to use Harry Partch's 43-note JI tuning. Set the edo to 43 and turn on Tuning Table mode. Load the appropriate scala file into your synth. Since the anchor pad and anchor note have no effect in Tuning Table mode, you may need to load a keyboard mapping file (file type .kbm) into your synth as well. This file sets a specific midi note to a specific frequency and another specific midi note to be the first note of your tuning. For example, midi note 69 = A above middle-C might be set to 440hz. But since Harry Partch used G for 1/1, using A for our anchor midi note is not ideal. Since there are 43 notes per octave but only 128 midi notes, we can only get about 3 octaves. Let's center our 3 octaves around middle-C. Set midi note 0 to 98hz, which is the G about 1.5 octaves below middle-C. Set the starting note to midi note 0. (Setting anchor note 43 to 196hz and/or setting the starting note to 43 would work just as well.)*
 
-There are only 128 midi notes. What if your tuning spans more than 128 notes? (For example, 4 octaves of Partch.) One solution is to use splits. Each split has up to 128 notes, so there can be a total of 256 pitches. But you can't glide across the split point. Also a large edo combined with large column and row offsets can actually exceed 256 edosteps. See the next two sections for two other solutions.
+There are only 128 midi notes. What if your tuning spans more than 128 notes? (For example, 4 octaves of Partch.) One solution is to use splits. Each split has up to 128 notes, so there can be a total of 256 pitches. But you can't slide across the split point. Also a large edo combined with large column and row offsets can actually exceed 256 edosteps. See the next two sections for two other solutions.
 
   *When tuning table is set to ON (no CCs or rechanneling), all notes above 127 become dead pads.*
 
@@ -659,9 +626,9 @@ Your LinnStrument can send a CC message immediately before every note-on indicat
 
   *See the LinnWiki for microLinnMidiGroupFilter.jsfx, a plug-in for Reaper, and microLinnMidiGroupDemo.RPP, an example Reaper project. Upon receiving a grouping CC, the filtering effect assigns a group (the CC's value) to the CC's channel. It then only passes midi data from those channels that have been assigned to a certain group.*
 
-  *The jsfx filter effect runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this simple effect in Abelton's Max 4 Live, FL Studio's MIDI scripts, Bitwig's Grid, StreamByter (free macOS/iOS AU plugin) and other platforms.)*
+  *The jsfx filter effect runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. (Hopefully someone can duplicate this simple effect in Abelton's Max 4 Live, FL Studio's MIDI scripts, Logic's Scripter, Bitwig's Grid, StreamByter (free macOS/iOS AU plugin) and other platforms.)*
 
-  *If you can't open the reaper project microLinnMidiGroupDemo.RPP, follow these steps:*
+  *To duplicate the Reaper project microLinnMidiGroupDemo.RPP in other DAWs, follow these steps:*
   * *In your DAW, create a track named "all groups" that receives midi from the LinnStrument*
   * *Create a track named "group 1" that doesn't receive any midi or audio directly*
   * *Create a send from "all groups" to "group 1", only midi, no audio*
@@ -696,7 +663,7 @@ Rechanneling indicates the midi group by sending certain midi notes to channels 
 
   *Your DAW should send each block of channels plus the main channel to a different instance of your synth. See the LinnWiki for midiChannelFilter.jsfx, a plug-in for Reaper, and microLinnRechannelingDemo.RPP, an example Reaper project. In each track, the filter effect only lets certain midi channels thru. (Sysexes and realtime messages are always passed thru.) On each synth instance, set the anchor note and frequency similar to the grouping CCs method.*
 
-  *If you can't open the reaper project microLinnRechannelingDemo.RPP, follow the steps above for microLinnMidiGroupDemo.RPP. But use midiChannelFilter instead of microLinnMidiGroupFilter, and don't go past group 4.*
+  *To duplicate the Reaper project microLinnRechannelingDemo.RPP in other DAWs, follow the steps above for microLinnMidiGroupDemo.RPP. But use midiChannelFilter instead of microLinnMidiGroupFilter, and don't go past group 4.*
 
   *The jsfx filter effect runs natively in Reaper and can run in any Windows DAW using ReaJS, a free jsfx-to-VST wrapper. If you can't use it, try one of these plug-ins:*
   * *MIDIChFilter (free, Windows VST) https://www.codefn42.com/midichfilter/index.html*

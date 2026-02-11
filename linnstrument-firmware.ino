@@ -631,15 +631,15 @@ struct MicroLinnSplit {
   inline byte pullOffMode()           {return (hammerOnModes & B00001100) >> 2;}
   inline void setHammerOnMode(byte b) {hammerOnModes = (hammerOnModes & B11111100) | b;} 
   inline void setPullOffMode(byte b)  {hammerOnModes = (hammerOnModes & B11110011) | (b << 2);} 
-  // used for PCH footswitch, store the previous pitch quantization settings
-  inline boolean prevSendX()                      {return bitRead(flags, 0);}
-  inline boolean prevPitchCorrectQuantize()       {return bitRead(flags, 1);}
-  inline byte    prevPitchCorrectHold()           {return (flags & B1100) >> 2;}      
-  inline boolean prevPitchResetOnRelease()        {return bitRead(flags, 4);}
-  inline void setPrevSendX(boolean b)             {bitWrite(flags, 0, b);}
-  inline void setPrevPitchCorrectQuantize(bool b) {bitWrite(flags, 1, b);}
-  inline void setPrevPitchCorrectHold(byte b)     {flags = (flags & B11110011) | (b << 2);} 
-  inline void setPrevPitchResetOnRelease(bool b)  {bitWrite(flags, 4, b);}
+  // used for PCH footswitch, store the alternate pitch quantization settings
+  inline boolean altSendX()                      {return bitRead(flags, 0);}
+  inline boolean altPitchCorrectQuantize()       {return bitRead(flags, 1);}
+  inline byte    altPitchCorrectHold()           {return (flags & B1100) >> 2;}      
+  inline boolean altPitchResetOnRelease()        {return bitRead(flags, 4);}
+  inline void setAltSendX(boolean b)             {bitWrite(flags, 0, b);}
+  inline void setAltPitchCorrectQuantize(bool b) {bitWrite(flags, 1, b);}
+  inline void setAltPitchCorrectHold(byte b)     {flags = (flags & B11110011) | (b << 2);} 
+  inline void setAltPitchResetOnRelease(bool b)  {bitWrite(flags, 4, b);}
   // used in low row XYZ mode with joystick behavior, reset W, X and Y CCs to either 64 (true) or 0 (false)
   inline boolean WccCentered()    {return bitRead(flags, 5);}
   inline boolean XccCentered()    {return bitRead(flags, 6);}
@@ -1154,7 +1154,7 @@ boolean switchFootBothReleased = false;               // keep track of whether t
 
 boolean doublePerSplit = false;                     // false when only one per split is active, true if they both are
 
-byte switchSelect = SWITCH_FOOT_L;                  // determines which switch setting is being displayed/changed
+byte switchSelect = SWITCH_SWITCH_1;                // determines which switch setting is being displayed/changed
 byte midiChannelSelect = MIDICHANNEL_MAIN;          // determines which midi channel setting is being displayed/changed
 byte lightSettings = LIGHTS_MAIN;                   // determines which Lights array is being displayed/changed
 

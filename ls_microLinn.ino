@@ -195,6 +195,14 @@ RAM usage: why so stable? what's a safe number?
 does packing a preset work?
 any advantage to using "inline"?
 
+video on playability: X+Z, hammer-ons/pull-offs, double-stops, drum pads, joystick, PCH switch, 8VE± switch
+video on layouts: col offsets, row offsets, condensing
+video on graphics: double volume faders, CC fader colors, violet, dim mode, blink, same/blink carry over, doubled channels
+video on sequencer: pattern chaining, PREV/NEXT/STOP/MUTE footswitches
+video on power user: program change swiping, bank select, painting CCs, locating CCs, importing/exporting, mini clip launcher
+video on microtonal: edos, scales, anchor pad/note/cents
+video on microtonal power user: EDO± switches, default layouts, tuning table mode, equave
+
 https://www.kvraudio.com/forum/viewtopic.php?t=539894 bug, CC faders don't respond to received CCs on main channel -- fixed
 https://www.kvraudio.com/forum/viewtopic.php?t=539553 bug, sequencer mute light doesn't work
 
@@ -246,6 +254,14 @@ https://www.kvraudio.com/forum/viewtopic.php?t=473610 per-split row offsets
 https://www.kvraudio.com/forum/viewtopic.php?t=468592 Geert discusses the 2.0 firmware velocity algorithm
 https://www.kvraudio.com/forum/viewtopic.php?t=465788 strum split has 2 cols for plucking, 1 for xyz and 1 for muting -- meh
 https://www.kvraudio.com/forum/viewtopic.php?t=450198 CC faders only respond to CCs 1-8 even if linked to other CCs -- fixed
+https://www.kvraudio.com/forum/viewtopic.php?p=6451948#p6451948 - Geert discusses the 1.2.4 velocity-sensing algorithm
+https://www.kvraudio.com/forum/viewtopic.php?t=448737 fork of the 1.2.4 code to make staccato be legato
+https://www.kvraudio.com/forum/viewtopic.php?t=439107 4th post, feature request, set split to CC faders and use low row for bends
+https://www.kvraudio.com/forum/viewtopic.php?t=437647 hacking the code to make hammer-ons
+https://www.kvraudio.com/forum/viewtopic.php?t=437069
+  "Internally, the AD converter samples at 12 bit resolution, which provides 4096 steps, or about 163 left/right steps per note pad."
+
+
 
 test unninstalling more
 
@@ -270,9 +286,8 @@ tried to add a few more colors, but only violet was distinct enough from the oth
                                N        N            Y       N
 
 
-
-Make hammer-on zone/wait work in reverse when in OneChannel mode!!!!
-  2 notes played within the wait time that are more than a zone apart use 2 channels!!!!
+add double-stops, finish pullOffModes
+add M/P footswitch? Mono/Poly, force hammer-ons or double-stops
 
 CC faders special mode: make vertical faders, slightly glitchy because of the horizontal separator strips
   scale the Y data down from 0..127 to 16*row..16*row+15
@@ -286,8 +301,6 @@ make drum pads work with the arpeggiator
   low row arp sends 5 notes at once, special arp sends the wrong notes
   using getDrumPadMidiNote() doesn't work, because it uses sensorCol and sensorRow, but it does make cool spacey sounds
   should be able to play both an arp split and a non-arp split at once
-
-finish pullOffModes
 
 make locating CCs enabled/disabled per split without having to change the CC numbers - why add latency unless necessary?
   counterarguement, just turn it on or off in columns 1-16 or 17-25 (but that wouldn't work on a linn128)
@@ -341,13 +354,15 @@ fix custom LED bugs: completelyRefreshLeds, startBufferedLeds, finishBufferedLed
 test octave up/down footswitches while playing and sliding, does the calcTuning call make it glitchy?
   if so, copy how the original code does transposing
 
-debug same/blink applying to the other side for note-offs, search for resetPossibleNoteCells
+debug same/blink carrry over for note-offs, search for resetPossibleNoteCells
+same/blink carry over should have OFF, L->R, L<-R and L+R
+a dot played on left split and carried over to the right split should use the left color
 bug, when in an edo and in lefty mode, the playedSame dots are off
 bug, red playedSame dots are wrong when the number of virtual edosteps is > 128, needs the group number
 bug, condensing messes up the red dots
 bug, sending midi noteOns to the linn lights up the wrong notes if in an edo
 try implementing getMicroLinnNoteNumColumn()
-try code that mimics receiving a note-on from the DAW from a channel for the other split
+try code that mimics receiving a note-on from the DAW from a channel for the other split?
 
 OLD WAY
 The colors use the rainbow metaphor, red-yellow-green-blue = sharp-to-flat = supermajor-to-subminor. There's a rainbow of 2nds, a rainbow of 3rds, etc.
@@ -533,6 +548,10 @@ and a little high-pass filtering on long slides. Gives it an electric guitar fee
 
 pdxindy says: I have a number of percussive presets that have env decay short and release long so if I tap the key it rings out 
 but hold it, it is short and muted. Makes for a pleasing playing style. (linn min note length is 35/70ms)
+
+https://vi-control.net/community/threads/what-i-would-like-to-see-in-the-audio-modeling-swam-viola-and-cello.169483/
+https://www.youtube.com/watch?v=9cNMm53CqBs continuum raga
+
 
 WHEN DONE:
 change microLinnOSVersion from 000 to 001
@@ -2113,7 +2132,7 @@ void initializeMicroLinn() {
     Split[side].microLinn.ccForLowRowW = 255;
     Split[side].microLinn.ccForLowRowX = 255;
     Split[side].microLinn.ccForLowRowY = 255;
-    Split[side].microLinn.flags = 0;                        // prev sendX/quant/hold = OFF, joystick W=0, X=0, Y=0
+    Split[side].microLinn.flags = 0;                        // alternate sendX/quant/hold = OFF, joystick reset W=0, X=0, Y=0
   }
 
   for (byte p = 0; p < NUMPRESETS; ++p) {
@@ -4576,6 +4595,10 @@ void sendMicroLinnNrpnParameter(int parameter, int channel) {
     case 1010: value = Split[side].microLinn.WccCentered() ? 1 : 0; break;
     case 1011: value = Split[side].microLinn.XccCentered() ? 1 : 0; break;
     case 1012: value = Split[side].microLinn.YccCentered() ? 1 : 0; break;
+    case 1013: value = Split[side].microLinn.altSendX() ? 1 : 0; break;
+    case 1014: value = Split[side].microLinn.altPitchCorrectQuantize() ? 1 : 0; break;
+    case 1015: value = Split[side].microLinn.altPitchCorrectHold(); break;
+    case 1016: value = Split[side].microLinn.altPitchResetOnRelease() ? 1 : 0; break;
     case 1050: value = Split[side].microLinn.condensedBendPerPad; break;
     case 1051: value = Split[side].microLinn.defaultLayout; break;
     case 1052: value = Split[side].microLinn.tuningTable; break;
@@ -4633,6 +4656,10 @@ void receivedMicroLinnNrpn(int parameter, int value) {
     case 1010: if (inRange(value, 0, 1))   Split[side].microLinn.setWccCentered(value == 1); break;
     case 1011: if (inRange(value, 0, 1))   Split[side].microLinn.setXccCentered(value == 1); break;
     case 1012: if (inRange(value, 0, 1))   Split[side].microLinn.setYccCentered(value == 1); break;
+    case 1013: if (inRange(value, 0, 1))   Split[side].microLinn.setAltSendX(value == 1); break;
+    case 1014: if (inRange(value, 0, 1))   Split[side].microLinn.setAltPitchCorrectQuantize(value == 1); break;
+    case 1015: if (inRange(value, 0, 3))   Split[side].microLinn.setAltPitchCorrectHold(value); break;
+    case 1016: if (inRange(value, 0, 1))   Split[side].microLinn.setAltPitchResetOnRelease(value == 1); break;
     case 1050: if (inRange(value, 0, 55))  Split[side].microLinn.condensedBendPerPad = value; break;
     case 1051: if (inRange(value, 0, 7))   Split[side].microLinn.defaultLayout = value; break;
     case 1052: if (inRange(value, 0, 3))   Split[side].microLinn.tuningTable = value; break;

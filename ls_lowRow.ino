@@ -489,9 +489,10 @@ void lowRowStop() {
               if (Split[sensorSplit].lowRowCCXYZBehavior != lowRowCCFader &&
                   !lowRowJoystickLatched[sensorSplit]) {
                 // reset CCs for lowRowXYZ since no low row touch is active anymore
-                byte resetVal = Split[sensorSplit].microLinn.XccCentered() ? 64 : 0;
+                byte resetVal;
+                resetVal = Split[sensorSplit].microLinn.XccCentered() ? 64 : 0;
                 preSendControlChange(sensorSplit, Split[sensorSplit].ccForLowRowX, resetVal, false);
-                     resetVal = Split[sensorSplit].microLinn.YccCentered() ? 64 : 0;
+                resetVal = Split[sensorSplit].microLinn.YccCentered() ? 64 : 0;
                 preSendControlChange(sensorSplit, Split[sensorSplit].ccForLowRowY, resetVal, false);
                 preSendControlChange(sensorSplit, Split[sensorSplit].ccForLowRowZ, 0, false);
                 if (Split[sensorSplit].lowRowCCXYZBehavior == lowRowJoystick) {

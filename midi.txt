@@ -101,8 +101,10 @@ This is an overview of the NRPN message chain:
 
 RPNs are the same except CCs 99 and 98 are replaced with CCs 101 and 100.
 
-CC98 must immediately follow CC99, CC38 must immediately follow CC6, and CC100 must immediately follow CC101. 
+CC98 must be the very next CC message after CC99, likewise for CC38 and CC6, and for CC100 and CC101.
 Between the 99/98 pair and the 101/100 pair, multiple 6/38 pairs are allowed.
+
+Beware, setting a split's CC Fader to any CC from 98 to 101 will block RPNs and NRPNs sent on that split's channels.
 
 The following table lists all the RPN input values that LinnStrument understands.
 
@@ -116,7 +118,7 @@ The following table lists all the NRPN input values that LinnStrument understand
 NRPN   Value   Description
 -------------------------------------------------------------------------------------------------------------
 0      0-2     Split Left MIDI Mode (0: One Channel, 1: Channel Per Note, 2: Channel Per Row)
-1      0-16    Split Left MIDI Main Channel (0 = disable main channel / report main channel is disabled)
+1      0-16    Split Left MIDI Main Channel (0 = disable main channel / report that main channel is disabled)
 2      0-1     Split Left MIDI Per Note Channel 1 (0: Off, 1: On)
 3      0-1     Split Left MIDI Per Note Channel 2 (0: Off, 1: On)
 4      0-1     Split Left MIDI Per Note Channel 3 (0: Off, 1: On)
@@ -183,7 +185,7 @@ NRPN   Value   Description
 65     0-3     Split Left Sequencer Select Pattern Number
 66     1       Split Left Sequencer Toggle Mute
 100    0-2     Split Right MIDI Mode (0: One Channel, 1: Channel Per Note, 2: Channel Per Row)
-101    0-16    Split Right MIDI Main Channel (0 = disable main channel / report main channel is disabled)
+101    0-16    Split Right MIDI Main Channel (0 = disable main channel / report that main channel is disabled)
 102    0-1     Split Right MIDI Per Note Channel 1 (0: Off, 1: On)
 103    0-1     Split Right MIDI Per Note Channel 2 (0: Off, 1: On)
 104    0-1     Split Right MIDI Per Note Channel 3 (0: Off, 1: On)
@@ -343,6 +345,10 @@ NRPN   Value   Description
 1010    0-1         Split Left WccCentered, used in low row XYZ joystick mode, 1 = reset to 64, 0 = reset to 0
 1011    0-1         Split Left XccCentered, used in low row XYZ joystick mode, 1 = reset to 64, 0 = reset to 0
 1012    0-1         Split Left YccCentered, used in low row XYZ joystick mode, 1 = reset to 64, 0 = reset to 0
+1013    0-1         Split Left Alternate Send X (0: Off, 1: On)
+1014    0-1         Split Left Alternate Pitch Quantize (0: Off, 1: On)
+1015    0-3         Split Left Alternate Pitch Quantize Hold (0: Off, 1: Medium, 2: Fast, 3: Slow)
+1016    0-1         Split Left Alternate Pitch Reset On Release (unprinted parameter, 0: Off, 1: On)
 1050 *  0-56        Split Left condensedBendPerPad, 0 = OFF, 1 = VAR, 2..L+1 = 1..L (L = largest scale step)
 1051 *  0-7         Split Left defaultLayout, 0..7, OFF, Bosanquet 1 & 2, Accordion, Wicki-Hayden 1 & 2, Array Mbira 1 & 2
 1052 *  0-3         Split Left tuningTable, 0..3 = OFF/ON/CC/RCH
