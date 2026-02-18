@@ -221,11 +221,11 @@ When playing in one split and using the other split as a sequencer, it's no long
 
   *But from within a chain, NEXT and PREV operate relative to the upcoming sequence in the chain, not the current one. Thus pressing PREV repeats the current sequence and pressing NEXT goes forward two sequences, not one. One exception: from the rightmost sequence of a chain, NEXT exits the chain. (Otherwise you could never exit.)*
 
-FOOTSWITCH / PANEL SWITCH: PCH (pitch)
+FOOTSWITCH / PANEL SWITCH: IMPROVE PCH (pitch)
 
 "PCH" used to simply toggle the PITCH/X pad on and off. Now it swaps the current PITCH/X, Quantize and Quantize Hold settings with the previous settings. You can switch back and forth between any two settings in the PITCH/X column, e.g. Quantize Hold fast vs. slow.
 
-  *Details: Set the pads in the PITCH/X column as desired. The previous PCH setting defaults to everything off, so when used the very first time, PCH turns off all the pads. Change this all-off setting to something new. Press PCH again to return to your old setting. Press again to return to your new setting.*
+  *Details: Set the pads in the PITCH/X column as desired. Pressing PCH for the very first time turns off all the pads. Change this all-off setting to something new. Press PCH again to return to your old settings. Press again to go to your new settings.*
   
   *PCH affects the active split only, unless Both Splits is selected and both splits are visible. PCH also controls the hidden setting Pitch Reset On Release. Both the current and previous settings are stored in the 6 memories. If the PCH switch seems to stop working, check that you aren't simply switching between two identical settings. As before, long-pressing PCH makes it momentary (non-latching). As before, the panel switch light helps you keep track of which setting is in use.*
 
@@ -295,7 +295,9 @@ IMPORTING/EXPORTING
 
 You can back up various settings and/or share them with others via midi files. The 6 memories, the 3 custom light patterns, the 16 audience messages, microtonal data, and all settings combined. A memory or light pattern imports in about 1 second, doable on stage in between songs. You can use the clip launcher (see below) to trigger an import on stage, giving you dozens of memories, one for each song on the set list! Check the LinnWiki for export-request files and importable settings files.
 
-  *Details: To import, download a settings file from the wiki. On your LinnStrument, set Allow Importing to IMP. In your DAW, set the output of a midi track to your LinnStrument. Load the settings file into that track and press play. Your LinnStrument should scroll "IMPORT SUCCESS". To stop the scrolling, tap anywhere. If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #9 below.*
+  *Details: NOT COMPATIBLE WITH ABLETON LIVE, because of the use of multiple midi channels.*
+
+  *To import, download a settings file from the wiki. On your LinnStrument, set Allow Importing to IMP. In your DAW, set the output of a midi track to your LinnStrument. Load the settings file into that track and press play. Your LinnStrument should scroll "IMPORT SUCCESS". To stop the scrolling, tap anywhere. If you see "IMPORT FAILURE", try again. If you don't see anything, see troubleshooting #9 below.*
 
   *To import a custom light pattern, before you press play, you must first display the one you want to overwrite. To import an audience message, before you press play, you must first load for editing the one you want to overwrite. (You needn't actually edit it.)*
 
@@ -404,7 +406,7 @@ CC SUGGESTIONS
 
 SET THE NOTE LIGHTS REMOTELY VIA MIDI -- NOW 3X FASTER
 
-MicroLinn duplicates the effect on the LinnStrument of CCs 20-22 with either CC25 (cols 1-16) or CC26 (cols 17-25). The color is encoded in the midi channel, and the pad location is encoded exactly like locating CCs. Unlike CCs 20-22, you needn't be in the performance display or editing a custom light pattern for the CCs to take effect.
+MicroLinn duplicates the effect on the LinnStrument of CCs 20-22 with either CC25 (cols 1-16) or CC26 (cols 17-25). CC25's data value is (row - 1) + 8 * (col - 1). CC26's data value is (row - 1) + 8 * (col - 17). Row 1 is the top row and column 1 is the leftmost column. The color is encoded in the midi channel (1 = red, 2 = yellow, etc.). Unlike CCs 20-22, you needn't be in the performance display or editing a custom light pattern for the CCs to take effect.
 
 DISABLE MAIN MIDI CHANNEL VIA NRPN
 
@@ -416,9 +418,9 @@ Send NRPN 236 with a value of 0. See midi.txt and https://www.kvraudio.com/forum
 
 MISC SMALL BUG FIXES
 
-* Respond to midi input on the main channel when in ChanPerNote mode
+* Respond to midi input on the main channel when in ChanPerNote or ChanPerRow mode
 * If the DAW resets CCs 98-101, RPN/NRPN handling is unaffected
-* Receiving CC1 used to always move the 1st fader, CC2 moved the 2nd fader, etc. even when the faders were not linked to CCs 1-8. Faders now respond to the proper CC. Note that other uses of the CC take priority. For example, CC6 can move a fader only if it's not part of a NRPN.
+* Receiving CC1 used to always move the 1st fader, CC2 moved the 2nd fader, etc. even when the faders were not linked to CCs 1-8. Faders now respond to the proper CC. But CC6 and CC38 can move a fader only if they're not part of an RPN or an NRPN.
 
 
 #  MICROTONAL FEATURES  

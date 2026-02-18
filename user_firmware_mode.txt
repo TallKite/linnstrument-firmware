@@ -11,12 +11,12 @@ API to control LEDs for user feedback of the custom functionalities through MIDI
 Activating User Firmware Mode
 =============================
 
-User Mode can be activated by sending LinnStrument the value 1 for MIDI NRPN 245 on any MIDI channel, sending value 0
-will turn it off. When User Mode is active, all standard firmware features will be disabled and all LEDs will be turned
-off, except for the Global Settings panel. This panel will only have settings available for Velocity Sensitivity,
-Pressure Sensitivity, MIDI I/O and Actions, the others will be disabled. When the Global Settings panel is active, no
-User Mode nor LED control features will be active. When User Mode is active, the Global Settings switch will be lit
-yellow.
+User Mode can be activated by sending LinnStrument the value 1 for MIDI [NRPN](https://en.wikipedia.org/wiki/NRPN) 245
+on any MIDI channel, sending value 0 will turn it off. When User Mode is active, all standard firmware features will be
+disabled and all LEDs will be turned off, except for the Global Settings panel. This panel will only have settings
+available for Velocity Sensitivity, Pressure Sensitivity, MIDI I/O and Actions, the others will be disabled. When the
+Global Settings panel is active, no User Mode nor LED control features will be active. When User Mode is active, the
+Global Settings switch will be lit yellow.
 
 By default only Cell Presses will be active in User Firmware mode, 3D Touch Data data can be activated for each axis and
 for each row individually (see below).
@@ -101,6 +101,7 @@ MIDI Message Summary
 Outgoing MIDI messages:
 -----------------------
 
+```
 Note On                    Cell Down,    Note Number: Column,  Channel: Row,  Velocity: Strike Velocity
 Note Off                   Cell Up,      Note Number: Column,  Channel: Row,  Velocity: Release Velocity
 Polyphonic Pressure        Z data,       Note Number: Column,  Channel: Row,      Data: Per Cell Z Position
@@ -110,10 +111,12 @@ CC 64-89                   Y data,      CC Number-64: Column,  Channel: Row,    
 CC 119                     Cell Slide,                         Channel: Row,      Data: Transitioning Column
  - After CC 119 Note On    Target Cell,  Note Number: Column,  Channel: Row,  Velocity: First Slide Cell's Velocity
  - After CC 119 Note Off   Source Cell,  Note Number: Column,  Channel: Row,  Velocity: Slide Target Column
+ ```
 
 Configuration MIDI messages:
 ----------------------------
 
+```
 NRPN 245    Enabling/disabling User Firmware mode (0: disable, 1: enable)
 CC 9        Configure User Firmware X-axis row slide, the channel specifies the row (0: disable, 1: enable)
 CC 10       Configure User Firmware X-axis data, the channel specifies the row, default is off (0: disable, 1: enable)
@@ -124,14 +127,14 @@ CC 20       Column coordinate for cell color change with CC 22 (starts from 0)
 CC 21       Row coordinate for cell color change with CC 22 (starts from 0)
 CC 22       Change the color of the cell with the provided column and row coordinates
             see color value table in midi.txt, 7+: default color
-
+```
 
 Examples
 ========
 
 In practice a single cell press could result in messages like this in non-slide mode:
 
-
+```
 Ch3 Note On 12 Velocity 120
 
 Ch3 PolyPressure Key 12 Value Z
@@ -140,9 +143,11 @@ Ch3 CC 44 Value X LSB
 Ch3 CC 76 Value Y
 
 Ch3 Note Off 12 Velocity 0
+```
 
 In practice a cell transition could result in messages like this in slide mode:
 
+```
 Ch3 Note On 12 Velocity 120
 
 Ch3 PolyPressure Key 12 Value Z
@@ -158,3 +163,4 @@ Ch3 CC 45 Value X LSB
 Ch3 CC 77 Value Y
 
 Ch3 Note Off 13 Velocity 0
+```

@@ -244,6 +244,14 @@ void switchTransposeOctave(byte split, int interval) {
   updateDisplay();
 }
 
+void switchTransposePitch(byte split, int interval) {
+  signed char pitch = constrain(Split[split].transposePitch + interval, -12, 12);
+  Split[split].transposePitch = pitch;
+  displayModeStart = millis();
+  blinkMiddleRootNote = true;
+  updateDisplay();
+}
+
 void performSwitchAssignmentOn(byte whichSwitch, byte assignment, byte split) {
   switch (assignment)
   {
@@ -315,6 +323,14 @@ void performSwitchAssignmentOn(byte whichSwitch, byte assignment, byte split) {
 
     case ASSIGNED_SEQUENCER_MUTE:
       sequencerToggleMute(split);
+      break;
+
+    case ASSIGNED_TRANSPOSE_DOWN:
+      switchTransposePitch(split, -1);
+      break;
+
+    case ASSIGNED_TRANSPOSE_UP:
+      switchTransposePitch(split, 1);
       break;
 
     case ASSIGNED_MICROLINN_8VE_UP:

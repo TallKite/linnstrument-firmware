@@ -582,6 +582,37 @@ signed char determineSplitForChannel(byte channel) {
   return -1;
 }
 
+// unused, delete later
+signed char determineControlChangeSplitForChannel(byte channel) {
+  if (channel > 15) {
+    return -1;
+  }
+
+  for (byte split = LEFT; split <= RIGHT; ++split) {
+    switch (Split[split].midiMode) {
+      case oneChannel:
+        if (Split[split].midiChanMain-1 == channel) {
+          return split;
+        }
+        break;
+      case channelPerNote:
+        if ((Split[split].midiChanMainEnabled && Split[split].midiChanMain-1 == channel) ||
+            Split[split].midiChanSet[channel] == true) {
+          return split;
+        }
+        break;
+      case channelPerRow:
+        if ((Split[split].midiChanMainEnabled && Split[split].midiChanMain-1 == channel) ||
+            calculateRowPerChannelRow(split, channel) < NUMROWS) {
+          return split;
+        }
+        break;
+    }
+  }
+
+  return -1;
+}
+
 inline boolean inRange(int value, int lower, int upper) {
   return value >= lower && value <= upper;
 }
@@ -1940,10 +1971,11 @@ void preResetMidiExpression(byte split) {
     {
       for (byte ch = 0; ch < 16; ++ch) {
         if (Split[split].midiChanSet[ch]) {
-          midiSendPitchBend(0, ch+1);
+          byte channel = ch + 1;
+          midiSendPitchBend(0, channel);
           byte note = 128; // this is invalid on purpose
-          preSendTimbre(split, 0, note, ch+1);
-          preSendLoudness(split, 0, 0, note, ch+1);
+          preSendTimbre(split, 0, note, channel);
+          preSendLoudness(split, 0, 0, note, channel);
         }
       }
       break;

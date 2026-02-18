@@ -36,6 +36,7 @@ displayLimitsForZ             : min and max value selection for Z expression
 displayCCForZ                 : custom CC number selection for Z expression
 displayPlayedTouchModeConfig  : custom display mode for played notes upon touch
 displayCCForFader             : custom CC number selection for a CC fader
+displayLowRowBendConfig       : low row bend configuration
 displayLowRowCCXConfig        : custom CC number selection and behavior for LowRow in CCX mode
 displayLowRowCCXYZConfig      : custom CC number selection and behavior for LowRow in CCXYZ mode
 displayCCForSwitchCC65        : custom CC number selection and behavior for Switches in CC65 mode
@@ -162,6 +163,9 @@ void updateDisplay() {
     case displayCCForFader:
       paintCCForFaderDisplay(Global.currentPerSplit);
       break;
+    case displayLowRowBendConfig:
+      paintLowRowBendConfigDisplay(Global.currentPerSplit);
+      break;      
     case displayLowRowCCXConfig:
       paintLowRowCCXConfigDisplay(Global.currentPerSplit);
       break;
@@ -412,6 +416,10 @@ void paintNormalDisplay() {
     paintNormalDisplaySplit(RIGHT, divider, NUMCOLS);
   }
 
+  paintOctaveTransposeLed();
+}
+
+void paintOctaveTransposeLed() {
   // light the octave/transpose switch if the pitch is transposed
   if ((Split[LEFT].transposePitch < 0 && Split[RIGHT].transposePitch < 0) ||
       (Split[LEFT].transposePitch < 0 && Split[RIGHT].transposePitch == 0) ||
@@ -458,6 +466,9 @@ void paintNormalDisplaySplit(byte split, byte leftEdge, byte rightEdge) {
       }
 
       if (!userFirmwareActive && row == 0 && Split[split].lowRowMode != lowRowNormal) {
+        if (Split[split].lowRowMode == lowRowBend && Split[split].lowRowBendBehavior == lowRowBendTranspose) {
+          paintLowRowTranspose(split);
+        }        
         if (Split[split].lowRowMode == lowRowCCX && Split[split].lowRowCCXBehavior == lowRowCCFader) {
           paintCCFaderDisplayRow(split, 0, Split[split].colorLowRow, Split[split].ccForLowRow, faderLeft, faderLength, LED_LAYER_LOWROW);
         }
@@ -468,6 +479,50 @@ void paintNormalDisplaySplit(byte split, byte leftEdge, byte rightEdge) {
     }
 
     performContinuousTasks();
+  }
+}
+
+void paintLowRowTranspose(byte split) {
+  byte row = 0;
+  byte lowCol, highCol;
+  // if both splits are set to low row transpose, and split is active,
+  // combine both split's low rows into a single full-width low row transpose
+  // only render the currently focused split
+  if (Split[LEFT].lowRowMode == lowRowBend && Split[LEFT].lowRowBendBehavior == lowRowBendTranspose &&
+      Split[RIGHT].lowRowMode == lowRowBend && Split[RIGHT].lowRowBendBehavior == lowRowBendTranspose &&
+      (Global.splitActive || displayMode == displaySplitPoint)) {
+    if (split != Global.currentPerSplit) {
+      return;
+    }
+    lowCol = 1;
+    highCol = NUMCOLS;
+  }
+  else {
+    getSplitBoundaries(split, lowCol, highCol);
+  }
+
+  // ensure that no LEDs from lower layers can shine through
+  for (byte col = lowCol; col < highCol; ++col) {
+    setLed(col, row, COLOR_BLACK, cellOff, LED_LAYER_LOWROW);
+  }
+
+  // calculate the sensor cell position
+  byte midCol = lowCol + (highCol - lowCol - 1) / 2;
+
+  // paint the center cell of the transpose range
+  setLed(midCol, row, Split[split].colorAccent, cellOn, LED_LAYER_LOWROW);
+
+  // paint the semitone offset from the center cell
+  short transpose = Split[split].transposePitch;
+  byte color = Split[split].colorLowRow;
+  if (transpose != 0) {
+    int colFrom = (transpose < 0) ? (midCol + transpose) : (midCol + 1);
+    int colTo = (transpose > 0) ? (midCol + transpose) : (midCol - 1);
+    for (int c = colFrom; c <= colTo; ++c) {
+      if (c >= lowCol && c <= highCol) {
+        setLed(c, row, color, cellOn, LED_LAYER_LOWROW);
+      }
+    }
   }
 }
 
@@ -586,9 +641,12 @@ void paintNormalDisplayCell(byte split, byte col, byte row) {
   }
 
   // if the low row is anything but normal, set it to the appropriate color
-  if (row == 0 && Split[split].lowRowMode != lowRowNormal) {
-    if ((Split[split].lowRowMode == lowRowCCX && Split[sensorSplit].lowRowCCXBehavior == lowRowCCFader) ||
-        (Split[split].lowRowMode == lowRowCCXYZ && Split[sensorSplit].lowRowCCXYZBehavior == lowRowCCFader)) {
+  if (row == 0 && Split[split].lowRowMode == lowRowBend && Split[split].lowRowBendBehavior == lowRowBendTranspose) {
+    // do nothing, this is handled in the paintLowRowTranspose method for all situations 
+  }
+  else if (row == 0 && Split[split].lowRowMode != lowRowNormal) {
+    if ((Split[split].lowRowMode == lowRowCCX && Split[split].lowRowCCXBehavior == lowRowCCFader) ||
+        (Split[split].lowRowMode == lowRowCCXYZ && Split[split].lowRowCCXYZBehavior == lowRowCCFader)) {
       colour = COLOR_BLACK;
       cellDisplay = cellOff;
     }
@@ -754,7 +812,7 @@ void paintPerSplitDisplay(byte side) {
       setLed(13, 7, Split[side].colorMain, cellOn);
       break;
     case lowRowBend:
-      setLed(13, 6, Split[side].colorMain, cellOn);
+      setLed(13, 6, getLowRowBendColor(side), cellOn);
       break;
     case lowRowCCX:
       setLed(13, 5, getLowRowCCXColor(side), cellOn);
@@ -847,6 +905,14 @@ byte getLimitsForZColor(byte side) {
 byte getCCForZColor(byte side) {
   byte color = Split[side].colorMain;
   if (Split[side].customCCForZ != 11) {
+    color = Split[side].colorAccent;
+  }
+  return color;
+}
+
+byte getLowRowBendColor(byte side) {
+  byte color = Split[side].colorMain;
+  if (Split[side].lowRowBendBehavior != lowRowBendBend) {
     color = Split[side].colorAccent;
   }
   return color;
@@ -1124,6 +1190,18 @@ void paintPlayedTouchModeDisplay(byte side) {
   paintShowSplitSelection(side);
 }
 
+void paintLowRowBendConfigDisplay(byte side) {
+  switch (Split[Global.currentPerSplit].lowRowBendBehavior) {
+    case lowRowBendBend:
+      adaptfont_draw_string(0, 0, "BEND", Split[side].colorMain, true);
+      break;
+    case lowRowBendTranspose:
+      adaptfont_draw_string(0, 0, "TRNS", Split[side].colorMain, true);
+      break;
+  }
+  paintShowSplitSelection(side);
+}
+
 void paintLowRowCCXConfigDisplay(byte side) {
   clearDisplay();
   switch (lowRowCCXConfigState) {
@@ -1304,6 +1382,12 @@ void paintCustomSwitchAssignmentConfigDisplay() {
       break;
     case ASSIGNED_SEQUENCER_MUTE:
       adaptfont_draw_string(0, 0, "MUTE", globalColor, true);
+      break;
+    case ASSIGNED_TRANSPOSE_DOWN:
+      adaptfont_draw_string(0, 0, "TRN-", globalColor, true);
+      break;
+    case ASSIGNED_TRANSPOSE_UP:
+      adaptfont_draw_string(0, 0, "TRN+", globalColor, true);
       break;
     case ASSIGNED_MICROLINN_8VE_UP:
       adaptfont_draw_string(0, 0, "8VE", globalColor, true);
@@ -1636,10 +1720,12 @@ void paintTranspose(byte color, byte row, short transpose) {
 
   if (transpose != 0) {
     if (0 == color) color = transpose < 0 ? COLOR_RED : COLOR_GREEN;
-    byte col_from = (transpose < 0) ? (midcol + transpose) : (midcol + 1);
-    byte col_to = (transpose > 0) ? (midcol + transpose) : (midcol - 1);
-    for (byte c = col_from; c <= col_to; ++c) {
-      setLed(c, row, color, cellOn);
+    int col_from = (transpose < 0) ? (midcol + transpose) : (midcol + 1);
+    int col_to = (transpose > 0) ? (midcol + transpose) : (midcol - 1);
+    for (int c = col_from; c <= col_to; ++c) {
+      if (c > 0) {
+        setLed(c, row, color, cellOn);
+      }
     }
   }
 }
@@ -1679,6 +1765,8 @@ void paintSwitchAssignment(byte mode) {
     case ASSIGNED_SEQUENCER_NEXT:
     case ASSIGNED_STANDALONE_MIDI_CLOCK:
     case ASSIGNED_SEQUENCER_MUTE:
+    case ASSIGNED_TRANSPOSE_DOWN:
+    case ASSIGNED_TRANSPOSE_UP:
     case ASSIGNED_MICROLINN_8VE_UP:
     case ASSIGNED_MICROLINN_8VE_DOWN:
     case ASSIGNED_MICROLINN_EDO_UP:

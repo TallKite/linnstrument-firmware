@@ -201,10 +201,12 @@ byte NUMROWS = 8;                    // number of touch sensor rows
 #define ASSIGNED_SEQUENCER_NEXT         15
 #define ASSIGNED_STANDALONE_MIDI_CLOCK  16
 #define ASSIGNED_SEQUENCER_MUTE         17
-#define ASSIGNED_MICROLINN_8VE_UP       18
-#define ASSIGNED_MICROLINN_8VE_DOWN     19
-#define ASSIGNED_MICROLINN_EDO_UP       20
-#define ASSIGNED_MICROLINN_EDO_DOWN     21
+#define ASSIGNED_TRANSPOSE_DOWN         18
+#define ASSIGNED_TRANSPOSE_UP           19
+#define ASSIGNED_MICROLINN_8VE_UP       20
+#define ASSIGNED_MICROLINN_8VE_DOWN     21
+#define ASSIGNED_MICROLINN_EDO_UP       22
+#define ASSIGNED_MICROLINN_EDO_DOWN     23
 #define MAX_ASSIGNED                    ASSIGNED_MICROLINN_EDO_DOWN
 #define ASSIGNED_DISABLED               255
 
@@ -478,6 +480,7 @@ enum DisplayMode {
   displayCCForZ,
   displayPlayedTouchModeConfig,
   displayCCForFader,
+  displayLowRowBendConfig,
   displayLowRowCCXConfig,
   displayLowRowCCXYZConfig,
   displayCCForSwitchCC65,
@@ -572,6 +575,11 @@ enum LowRowMode {
   lowRowBend,
   lowRowCCX,
   lowRowCCXYZ
+};
+
+enum LowRowBendBehavior {
+  lowRowBendBend = 0,
+  lowRowBendTranspose = 1
 };
 
 enum LowRowCCBehavior {
@@ -709,7 +717,8 @@ struct SplitSettings {
   byte playedTouchMode;                   // see PlayedTouchMode values
   byte lowRowMode;                        // see LowRowMode values
   byte lowRowCCXBehavior;                 // see LowRowCCBehavior values
-  unsigned short ccForLowRow;             // 0-128 (with 128 being placeholder for ChannelPressure)
+  byte ccForLowRow;                       // 0-128 (with 128 being placeholder for ChannelPressure)
+  byte lowRowBendBehavior;                // see LowRowBendBehavior values (assumes little-endian byte order)
   byte lowRowCCXYZBehavior;               // see LowRowCCBehavior values
 //byte padding4;                          // see padding1
   unsigned short ccForLowRowX;            // 0-128 (with 128 being placeholder for ChannelPressure)
@@ -842,7 +851,7 @@ struct MicroLinnGlobal {
   inline byte sweeten()              {return (packedByte2 & B00111111);}
   inline bool useRainbow()           {return bitRead(packedByte2, 6);}
   inline bool dotsCarryOver()        {return bitRead(packedByte2, 7);}
-  inline byte setSweeten()           {packedByte2 = (flags2 & B11000000) | b;}
+  inline void setSweeten()           {packedByte2 = (flags2 & B11000000) | b;}
   inline void setUseRainbow(bool b)  {bitWrite(packedByte2, 6, b);}
   inline void setDotsCarryOver()     {bitWrite(packedByte2, 7, b);}
   ***********************/

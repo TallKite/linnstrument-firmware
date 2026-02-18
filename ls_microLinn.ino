@@ -42,8 +42,6 @@ Misc small bug fixes, not in the readme file, line numbers are for the official 
   ls_midi.ino       line 63-64
                     line 440-467  rewrite NRPN code to be more robust
                     line 495      add line to listen to main channel when in ChanPerNote mode
-                    line 1814     "preSendTimbre(split, 0, note, ch);"       ch -> ch+1
-                    line 1815     "preSendLoudness(split, 0, 0, note, ch);"  ch -> ch+1
                     line 900      "if (inRange(value, 0, 14)) {"             14 -> 15
   ls_settings.ino   line 722      "midiPreset[0] = 0;"                       [0] -> [s]
                     line 2154     "handleNumericDataReleaseCol(true);"       true -> false   (microLinn issue #5)
@@ -53,12 +51,16 @@ Misc small bug fixes, not in the readme file, line numbers are for the official 
 
 Current beta testers: Kite, Gordon, Austin, Max, (Ira)
 
+settings.ino line 381: set version from 17 back to 16?
+
 ======================= TO DO ==============================
 
 sample comparisons, add ".diff" to the url to get a diff file
 https://github.com/jimsnow/linnstrument-firmware-ml/compare/main...TallKite:linnstrument-firmware:main
 https://github.com/TallKite/linnstrument-firmware/compare/cf85bb7...TallKite:linnstrument-firmware:main
 https://github.com/rogerlinndesign/linnstrument-firmware/compare/master...TallKite:linnstrument-firmware:Brightness-control.patch
+https://github.com/rogerlinndesign/linnstrument-firmware/compare/5258d4a...rogerlinndesign:linnstrument-firmware:master
+
 
 MUST-DO #1: UNINSTALL
 
@@ -197,11 +199,12 @@ any advantage to using "inline"?
 
 video on playability: X+Z, hammer-ons/pull-offs, double-stops, drum pads, joystick, PCH switch, 8VE± switch
 video on layouts: col offsets, row offsets, condensing
-video on graphics: double volume faders, CC fader colors, violet, dim mode, blink, same/blink carry over, doubled channels
+video on CC faders and volume faders: appearance, numeric display, tap=set/slide=adjust, footswitch to access, send to other split
+video on graphics: violet, dim mode, blink, same/blink carry over, doubled channels
 video on sequencer: pattern chaining, PREV/NEXT/STOP/MUTE footswitches
 video on power user: program change swiping, bank select, painting CCs, locating CCs, importing/exporting, mini clip launcher
 video on microtonal: edos, scales, anchor pad/note/cents
-video on microtonal power user: EDO± switches, default layouts, tuning table mode, equave
+video on microtonal power user: EDO± switches, default layouts, tuning table mode, equave stretch
 
 https://www.kvraudio.com/forum/viewtopic.php?t=539894 bug, CC faders don't respond to received CCs on main channel -- fixed
 https://www.kvraudio.com/forum/viewtopic.php?t=539553 bug, sequencer mute light doesn't work
@@ -260,6 +263,14 @@ https://www.kvraudio.com/forum/viewtopic.php?t=439107 4th post, feature request,
 https://www.kvraudio.com/forum/viewtopic.php?t=437647 hacking the code to make hammer-ons
 https://www.kvraudio.com/forum/viewtopic.php?t=437069
   "Internally, the AD converter samples at 12 bit resolution, which provides 4096 steps, or about 163 left/right steps per note pad."
+https://www.kvraudio.com/forum/viewtopic.php?t=436427 low row sends program changes -- no, the footswitch PR+ or PR- does this
+https://www.kvraudio.com/forum/viewtopic.php?t=436448 info on extremely low-level hardware, use the ISP to modify the chip
+https://www.kvraudio.com/forum/viewtopic.php?t=433526 footswitch to toggle CC Faders mode - yes! 1st CC sent on channel 1, 2nd on 2 - meh
+https://www.kvraudio.com/forum/viewtopic.php?t=433966 vertical faders -- maybe, triple split mode -- too much work
+https://www.kvraudio.com/forum/viewtopic.php?t=432884 Geert discusses user firmware mode
+https://www.kvraudio.com/forum/viewtopic.php?t=434332 when receiving noteOns, note color is based on velocity
+https://www.kvraudio.com/forum/viewtopic.php?t=433791 Geert discusses source code best practices
+https://www.kvraudio.com/forum/viewtopic.php?t=429418 midi looper
 
 
 
@@ -287,9 +298,54 @@ tried to add a few more colors, but only violet was distinct enough from the oth
 
 
 add double-stops, finish pullOffModes
-add M/P footswitch? Mono/Poly, force hammer-ons or double-stops
 
-CC faders special mode: make vertical faders, slightly glitchy because of the horizontal separator strips
+add Y-maximizing option: OFF X Z X+Z Y X+Y Y+Z XYZ
+
+add M/P (Mono/Poly) footswitch? force hammer-ons or double-stops
+
+bulk import/export: move 13-15 to 14-16 and add 13 = export per-split settings for current side only, overwrite current side when importing
+
+CC FADERS IMPROVEMENTS
+on the long-press display that sets CC numbers, on the rightmost column, alternate the colors main/accented
+  row % 2 == 0 ? Split[split].colorMain : Split[split].colorAccent
+  indicate the currently edited fader with the played color
+  see paintCCForFaderDisplay() in ls_displayModes.ino
+  how does the 128 fit the 8 buttons around the split selector?
+show the number 0-127 in the other split when you touch it, in the played color, using the same font as global tempo
+  an unmoving long-press will read it without setting it
+  maybe a tap should display the number after release for a half-second
+  if you touch two faders at once, what happens?
+relative mode for CC faders https://www.kvraudio.com/forum/viewtopic.php?t=459910 and ls_faders.ino
+  tap to set the fader position absolutely on release, swipe starting and ending anywhere to adjust relatively
+  swiping X pads right moves the fader position exactly X pads right, swipe from below to max out, swipe from above to turn off
+  an unmoving long-press is relative and does nothing
+  if two touches at once, a sort of hammer-on/pull-off, the 2nd touch is always absolute
+add a panel switch function that enters/exits CC Faders mode
+  affects the current split only, unless Both Splits is on
+  does it send an all sound off?
+  long-pressing the switch is momentary, so if using two hands you can adjust a fader very quickly
+  runtime var byte prevSpecialMode[NUMSPLITS] stores what mode to return to
+  if pressed when the user is in CC Faders mode, maybe goes to normal mode? or maybe nothing happens?
+  what if the user holds a note and then long-presses the footswitch? can they adjust the fader and hear the result immediately?
+  what if the user long-presses the footswitch and then manually enters a special mode?
+add an option to send CCs to the other split's channels, for side-by-side faders and playing, avoids having to fiddle with the channels
+  in Split struct, boolean ccFaders becomes byte containing 2 booleans (so 4 values), ccFaders, useChannelsOfOtherSplit
+  so user can set useOtherChannels once and toggle ccFaders repeatedly
+  add this to the long-press display that sets CC numbers, maybe on the left, maybe right below the split selector
+  a 2x2 square of dots, top row is left/right main colors, bottom row is same, but tapping them toggles them
+  normal is indicated by (LR)(LR), R split using L channels is (LR)(LL), both swapped is (LR)(RL)
+  does this affect the mini clip launcher's colors or output?
+add marks every 4th pad like the volume fader? using the low row color?
+volume fader, make marks better spaced: every 4th pad starting from 5: 5 9 13 17 22
+  paintVolumeDisplayRow(), for (byte col = N; col <= NUMCOLS-1; col += 4) { 
+volume fader, display the 2 numbers, maybe permanently?
+volume fader, tap to set, slide to adjust
+low row
+
+add PR± footswitch option, like 8VE± does with 8VE+
+  test, what if PR+ happens while playing, do we get hanging notes?
+
+maybe CC faders special mode: make vertical faders, slightly glitchy because of the horizontal separator strips
   scale the Y data down from 0..127 to 16*row..16*row+15
   lets you have a split 3 cols wide with 3 8-pad sliders not 8 3-pad sliders
   if the split is more than 8 cols wide, the extra cols are blank
@@ -300,15 +356,16 @@ CC faders special mode: make vertical faders, slightly glitchy because of the ho
 make drum pads work with the arpeggiator
   low row arp sends 5 notes at once, special arp sends the wrong notes
   using getDrumPadMidiNote() doesn't work, because it uses sensorCol and sensorRow, but it does make cool spacey sounds
-  should be able to play both an arp split and a non-arp split at once
+  set the left split to non-arp and right split to 16th or 32nd note arp, great for fast fills!
 
-make locating CCs enabled/disabled per split without having to change the CC numbers - why add latency unless necessary?
+maybe make locating CCs enabled/disabled per split without having to change the CC numbers - why add latency unless necessary?
   counterarguement, just turn it on or off in columns 1-16 or 17-25 (but that wouldn't work on a linn128)
 
 Punch -- avoid a sluggish attack, scale the first 50 ms of Z to the velocity, stop scaling if Z > V
   T = time in ms since note-on, Z = (T/50)*Z + (1-T/50)*V, or with wet/dry W = 0..1, W*(T/50)*Z + W*(1-T/50)*V + (1-W)*Z
   code it up in jsfx first for testing, vars are Tmax and W
   OR, layer the sound with a 2nd "clicky" synth that has very fast attack and decay and doesn't listen to Z-data at all
+  https://www.kvraudio.com/forum/viewtopic.php?p=8600701#p8600701
   https://www.kvraudio.com/forum/viewtopic.php?t=584971
   https://www.kvraudio.com/forum/viewtopic.php?t=522304&hilit=vcv 
   https://www.kvraudio.com/forum/viewtopic.php?t=512436
@@ -326,7 +383,7 @@ after bulk importing, or after unplugging, bend slope is sometimes too big, goin
 
 when bulk importing/exporting, clear screen and display "IMP" or "EXP"?
 
-color-code the menu buttons? makes them more memorable
+color-code the menu buttons? makes them more memorable. Per-split can be green & yellow, global can be orange and cyan
 
 low row sustain mode - make it latch on a short press? or on a double-press like the joystick mode? or both?
 
@@ -342,6 +399,8 @@ when showing custom light pattern in 1 split, sometimes its low row spills over 
 anchor pad chooser is blank when displaying a custom light pattern, search for bug: doesn't load anything
 
 colorAccent can be set to 0, if so my code should use some fixed color
+
+fix doublePerSplit, it should only apply to the volume display
 
 test if changing splits always triggers a calctuning call, if so, just calc the displayed split(s)
 
@@ -385,12 +444,6 @@ col 16) Global microtonal settings
   row 6) Sweetening amount in tenths of cents (OFF, 0.1 to 6.0)
   row 7) Large EDO for fine tuning (OFF, various 56-311, 1200)
 
-relative mode for CC faders? https://www.kvraudio.com/forum/viewtopic.php?t=459910 and ls_faders.ino
-  short-press to set the fader position absolutely. swipe starting and ending anywhere to adjust relatively
-  swiping X pads right moves the fader position exactly X pads right, swipe from below to max out, swipe from above to turn off
-  an unmoving long-press is relative and does nothing
-  what about two touches at once, a sort of hammer-on/pull-off?
-
 low row restrike mode alternates between downstrokes and upstrokes, which delay certain notes, steal from arp code?
   downstroke on touch, upstroke on release? play alternating fingers legato = no upstrokes?
   pads alternate colors, green = downstroke, blue = upstroke?
@@ -407,7 +460,7 @@ improve XYZ behavior with Nathan Kopp's code?
 
 qanun-style mandals: set one split to CC faders and set the 1st CC to 129 = MND = mandals
   condense, the faders alter the scale notes by edosteps
-  top row = tonic, 2nd row = 2nd, etc.
+  top row = tonic, 2nd row = 2nd, etc., max 8 notes
   write directly to Device.microLinn.scales using microLinnScale array, then call calcCondensedTuning()
   if one scale note is moved to be on top of another, they merge into one
   if one scale note is moved past another, the notes are reordered

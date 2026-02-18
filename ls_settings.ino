@@ -378,6 +378,7 @@ void storeSettingsToPreset(byte p) {
 // The first time after new code is loaded into the Linnstrument, this sets the initial defaults of all settings.
 // On subsequent startups, these values are overwritten by loading the settings stored in flash.
 void initializeDeviceSettings() {
+  // when a new mainstream version is released, update 16 to 17 to reflect Geert's Feb 2026 changes
   Device.version = 16 + MICROLINN_VERSION_OFFSET;          // 16 is the latest non-MicroLinn version (created in 2023)
   Device.serialMode = false;
   Device.sleepAnimationActive = false;
@@ -496,6 +497,7 @@ void initializeNoteLights(GlobalSettings& g) {
     g.mainNotes[8] |= 1 << 8;
     g.mainNotes[8] |= 1 << 10;
 
+/******* no longer needed since the 3 custom light patterns replace these 3 scales
     // Spanish (Phrygian Dominant)
     g.mainNotes[9] |= 1 << 0;
     g.mainNotes[9] |= 1 << 1;
@@ -522,6 +524,7 @@ void initializeNoteLights(GlobalSettings& g) {
     g.mainNotes[11] |= 1 << 6;
     g.mainNotes[11] |= 1 << 8;
     g.mainNotes[11] |= 1 << 10;
+***************************************/
 }
 
 void initializeGuitarTuning(GlobalSettings& g) {
@@ -667,6 +670,7 @@ void initializePresetSettings() {
         p.split[s].colorSequencerEvent = COLOR_ORANGE;
         p.split[s].colorSequencerDisabled = COLOR_LIME;
         p.split[s].playedTouchMode = playedCell;
+        p.split[s].lowRowBendBehavior = lowRowBendBend;        
         p.split[s].lowRowCCXBehavior = lowRowCCHold;
         p.split[s].ccForLowRow = 1;
         p.split[s].lowRowCCXYZBehavior = lowRowCCHold;
@@ -1446,7 +1450,7 @@ void handlePerSplitSettingNewTouch() {
           Split[Global.currentPerSplit].lowRowMode = lowRowSustain;
           break;
         case 6:
-          Split[Global.currentPerSplit].lowRowMode = lowRowBend;
+          // handled in release
           break;
         case 5:
           // handled in release
@@ -1556,6 +1560,9 @@ void handlePerSplitSettingNewTouch() {
 
     case 13:
       switch (sensorRow) {
+        case 6:
+          setLed(sensorCol, sensorRow, getLowRowBendColor(sensorSplit), cellSlowPulse);
+          break;
         case 5:
           setLed(sensorCol, sensorRow, getLowRowCCXColor(sensorSplit), cellSlowPulse);
           break;
@@ -1657,6 +1664,11 @@ void handlePerSplitSettingHold() {
 
       case 13:
         switch (sensorRow) {
+          case 6:
+            resetNumericDataChange();
+            setDisplayMode(displayLowRowBendConfig);
+            updateDisplay();
+            break;          
           case 5:
             lowRowCCXConfigState = 1;
             resetNumericDataChange();
@@ -1767,6 +1779,12 @@ void handlePerSplitSettingRelease() {
 
     case 13:
       switch (sensorRow) {
+        case 6:
+          if (ensureCellBeforeHoldWait(getLowRowBendColor(Global.currentPerSplit),
+                                       Split[Global.currentPerSplit].lowRowMode == lowRowBend ? cellOn : cellOff)) {
+            Split[Global.currentPerSplit].lowRowMode = lowRowBend;
+          }
+          break;
         case 5:
           if (ensureCellBeforeHoldWait(getLowRowCCXColor(Global.currentPerSplit),
                                        Split[Global.currentPerSplit].lowRowMode == lowRowCCX ? cellOn : cellOff)) {
@@ -2070,6 +2088,14 @@ void handleCCForFaderRelease() {
   if (sensorCol < NUMCOLS-1) {
     handleNumericDataReleaseCol(true);
   }
+}
+
+void handleLowRowBendConfigNewTouch() {
+  handleNumericDataNewTouchCol(Split[Global.currentPerSplit].lowRowBendBehavior, 0, 1, false);
+}
+
+void handleLowRowBendConfigRelease() {
+  handleNumericDataReleaseCol(true);
 }
 
 void handleLowRowCCXConfigNewTouch() {
@@ -2446,12 +2472,12 @@ void handleOctaveTransposeNewTouchSplit(byte side) {
 
   }
   else if (sensorRow == SWITCH_1_ROW) {
-    if (sensorCol > 0 && sensorCol < 16) {
+    if (sensorCol > 0) {
       Split[side].transposePitch = sensorCol - 8;
     }
   }
   else if (sensorRow == lightsRow) {
-    if (sensorCol > 0 && sensorCol < 16) {
+    if (sensorCol > 0) {
       Split[side].transposeLights = sensorCol - 8;
     }
   }
