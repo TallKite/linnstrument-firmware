@@ -307,7 +307,7 @@ You can back up various settings and/or share them with others via midi files. T
   
   *Exporting: Download an export-request file from the wiki. In your DAW, set the input of midi track A and the output of midi track B to your LinnStrument. Put the export-request midi file at the start of track B. Then start recording on track A. When your LinnStrument stops sending midi, stop recording. Save the midi on track A to a midi file (i.e. export it from your DAW), preferably as format 0. Name it something informative such as "lightPattern31edoFretboard.mid" or "22edoScales.mid". Later on you can import this file to restore your settings. Or share it on the wiki.*
 
-  *A single NRPN will import/export one setting. You can create your own NRPN files by editing a copy of an export request file and changing the last number in the 3rd and 4th messages. You can change multiple settings with a midi file containing multiple NRPNs. For an example of this, see below setCCfadersTo21-28.mid for clip launching. Bulk exports consist of a single NRPN followed by multiple polypressure messages. A midi file can contain multiple NRPNs and/or multiple bulk exports. See https://github.com/TallKite/linnstrument-firmware/blob/main/midi.txt for the details.*
+  *A single NRPN will import/export one setting. You can create your own NRPN files by editing a copy of an export request file and changing the last number in the 3rd and 4th messages. You can change multiple settings with a midi file containing multiple NRPNs. For an example of this, see below setCCfadersTo21-28.mid for clip launching. Bulk exports consist of a single NRPN followed by multiple polypressure messages. A midi file can contain multiple NRPNs and/or multiple bulk exports. See https://github.com/TallKite/linnstrument-firmware/blob/main/midi.md for the details.*
 
   *Exporting multiple requests: 1st method: Record each export individually. Then position those midi clips next to each other in your DAW, and save them all as one file. 2nd method: Send the first request and see in your DAW where the LinnStrument stops sending midi. Position the next request file in track B about 1/10 of a second after that. Position additional request files similarly. Record all requests at once, and save the midi to a file as before.*
 
@@ -341,9 +341,10 @@ Export request files available on the LinnWiki:
 * 11-requestFretboardsAllEDOs.mid
 * 12-requestScalesRainbowsFretboardsAllEDOs.mid
 
-* 13-requestCurrentSettings.mid (exports the Global and Split settings, importing overwrites same)
-* 14-requestAllMemories.mid
-* 15-requestAllUserSettings.mid
+* 13-requestSettingsCurrentSplit.mid (exports the Per-Split settings for the current split, importing overwrites same)
+* 14-requestCurrentSettings.mid (exports the Global settings and both Per-Split settings, importing overwrites same)
+* 15-requestAllMemories.mid (exports all 6 memories but not the Global and Per-Split settings, importing overwrites same)
+* 16-requestAllUserSettings.mid (exports everything except calibration data and sequencer projects, importing overwrites same)
 
 MINI CLIP-LAUNCHER
 
@@ -410,11 +411,11 @@ MicroLinn duplicates the effect on the LinnStrument of CCs 20-22 with either CC2
 
 DISABLE MAIN MIDI CHANNEL VIA NRPN
 
-Disable it by sending NRPN 1 or 101 with a value of 0. Must be in ChannelPerNote or ChannelPerRow mode. Using NRPN 299 to read the main midi channel reports a disabled main channel as channel 0. See midi.txt and https://www.kvraudio.com/forum/viewtopic.php?p=8322723#p8322723.
+Disable it by sending NRPN 1 or 101 with a value of 0. Must be in ChannelPerNote or ChannelPerRow mode. Using NRPN 299 to read the main midi channel reports a disabled main channel as channel 0. See https://github.com/TallKite/linnstrument-firmware/blob/main/midi.md and https://www.kvraudio.com/forum/viewtopic.php?p=8322723#p8322723.
 
 SET ARPEGGIATOR TO QUARTER-NOTE TEMPO VIA NRPN
 
-Send NRPN 236 with a value of 0. See midi.txt and https://www.kvraudio.com/forum/viewtopic.php?p=6809095#p6809095. Can also be done via low row by sliding all the way to the left.
+Send NRPN 236 with a value of 0. See https://github.com/TallKite/linnstrument-firmware/blob/main/midi.md and https://www.kvraudio.com/forum/viewtopic.php?p=6809095#p6809095. Can also be done via low row by sliding all the way to the left.
 
 MISC SMALL BUG FIXES
 

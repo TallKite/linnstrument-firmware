@@ -403,18 +403,18 @@ All importing is blocked unless "Allow Importing" is manually turned on. All exp
 Importing is automatically turned off every time the user unplugs the Linnstrument, for security reasons.
 
 bulk export request format:
-NRPN 299 = (MSB 2, LSB 43), channel 0, value = 2048 + export type = (MSB 16, LSB 1-15)
+NRPN 299 = (MSB 2, LSB 43), channel 1, value = 2048 + export type = (MSB 16, LSB 1-15)
 
 bulk export format:
-NRPN 300 = (MSB 2, LSB 44), channel 0, value: MSB = export type = 1-15, LSB = current edo if export type = 5..8
-Polypressure header, channel 8, value: LSB = Device.version, MSB = Device.microLinn.MLversion
+NRPN 300 = (MSB 2, LSB 44), channel 1, value: MSB = export type = 1-15, LSB = current edo if export type = 5..8
+Polypressure header, channel 9, value: LSB = Device.version, MSB = Device.microLinn.MLversion
 (multiple polypressure data messages on channels 0..3)
-Polypressure footer, channel 12, value: MSB = export type = 1-15, LSB = 0
+Polypressure footer, channel 13, value: MSB = export type = 1-15, LSB = 0
 In each polypressure message, the MSB appears as the note number and the LSB appears as the velocity
 
-For the polypressure data messages, channels 1-3 are used to store the 8th bit of each byte:
-channel 1 or 3 = add 128 to LSB when importing 
-channel 2 or 3 = add 128 to MSB when importing
+For the polypressure data messages, channels 2-4 are used to store the 8th bit of each byte:
+channel 2 or 4 = add 128 to LSB when importing 
+channel 3 or 4 = add 128 to MSB when importing
 
 Type        # of data bytes     Settings exported                    Notes
 -------------------------------------------------------------------------------------------------------

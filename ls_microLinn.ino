@@ -299,7 +299,9 @@ tried to add a few more colors, but only violet was distinct enough from the oth
 
 add double-stops, finish pullOffModes
 
-add Y-maximizing option: OFF X Z X+Z Y X+Y Y+Z XYZ
+add the existing Y-maximizing option? OFF X Z X+Z Y X+Y Y+Z XYZ (still jumpy when going small-Y to large-Y)
+  use averaging instead of maximizing?
+  what if user wants to be jumpy?
 
 add M/P (Mono/Poly) footswitch? force hammer-ons or double-stops
 
@@ -4878,33 +4880,39 @@ void exportMicroLinnData(int exportType) {
                                   Device.microLinn.fretboards[i+1]);
       }
       break;
-    case 13:   // export the Global and Split structs
+    case 13:   // export one Split struct
+      array = (byte *) &config.settings.split[Global.currentPerSplit];
+      for (unsigned short i = 0; i < sizeof(SplitSettings); i += 2) {
+        microLinnSendPolyPressure(array[i], array[i+1]);
+      }
+      break;
+    case 14:   // export the Global and Split structs
       array = (byte *) &config.settings;
       for (unsigned short i = 0; i < sizeof(PresetSettings); i += 2) {
         microLinnSendPolyPressure(array[i], array[i+1]);
       }
       break;
-    case 14:   // export all 6 presets
+    case 15:   // export all 6 presets/memories
       array = (byte *) &config.preset[0];
       for (unsigned short i = 0; i < NUMPRESETS * sizeof(PresetSettings); i += 2) {
         microLinnSendPolyPressure(array[i], array[i+1]);
       }
       break;
-    case 15:   // export All User Settings
+    case 16:   // export All User Settings
       array = (byte *) &config.device.minUSBMIDIInterval;                // skip over version, serialMode, and all calibration data
       n = (byte *) &config.project - array;                              // stop short of the current sequencer project
       for (unsigned short i = 0; i < n; i += 2) {
         microLinnSendPolyPressure(array[i], array[i+1]);
       }
       break;
-    case 16:   // export calibration data (experimental)
+    case 17:   // export calibration data (experimental, use at your own risk!)
       array = (byte *) &Device.calRows;
       n = sizeof(Device.calRows) + sizeof(Device.calCols) + sizeof(Device.calCrc) + 3 * sizeof(boolean);  
       for (unsigned short i = 0; i < n; i += 2) {
         microLinnSendPolyPressure(array[i], array[i+1]);
       }
       break;
-    case 17:   // full dump of config, for debugging updating/importing, only exported never imported, no NRPN 300 or header
+    case 18:   // full dump of config, for debugging updating/importing, only exported never imported, no NRPN 300 or header
       array = (byte *) &Device;
       for (unsigned short i = 1; i < sizeof(config); i += 1) {           // start at 1 to align with Reaper's 1-indexed numbering
         microLinnSendPolyPressure(0, array[i]);                          // only 1 byte per midi message, for easy readability
@@ -4986,19 +4994,23 @@ void microLinnDeduceImportSize(byte version, byte MLversion) {
     case 12:  // 3 edo arrays for all edos
       microLinnImportSize = 3 * MICROLINN_ARRAY_SIZE;
       break;
-    case 13:  // 1 preset
+    case 13:  // settings for the current split
+      if (version == Device.version && MLversion == Device.microLinn.MLversion)
+        microLinnImportSize = sizeof(SplitSettings);
+      break;
+    case 14:  // Global settings and both Split settings
       if (version == Device.version && MLversion == Device.microLinn.MLversion)
         microLinnImportSize = sizeof(PresetSettings);
       break;
-    case 14:  // all 6 presets
+    case 15:  // all 6 presets/memories
       if (version == Device.version && MLversion == Device.microLinn.MLversion)
         microLinnImportSize = NUMPRESETS * sizeof(PresetSettings);
       break;
-    case 15:  // all user settings
+    case 16:  // all user settings
       arrayPtr = (byte *) &config.device.minUSBMIDIInterval;          // skip over version, serialMode, and all calibration data
       microLinnImportSize = (byte *) &config.project - arrayPtr;      // stop short of the current sequencer project
       break;
-    case 16:  // calibration data, 1803 bytes (experimental)
+    case 17:  // calibration data, 1803 bytes (experimental)
       microLinnImportSize = sizeof(Device.calRows) + sizeof(Device.calCols) + sizeof(Device.calCrc) + 3 * sizeof(boolean); 
       break;
   }
@@ -5236,7 +5248,12 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
       }
       break;
 
-    case 13:   // 1 preset = 596 bytes for version 72.1
+    case 13:   // 1 split = 113 bytes for version 72.1
+      if (i == 0) microLinnImportXen = true;
+      microLinnImportSplit(data1, data2, i, 0, Global.currentPerSplit);
+      break;
+
+    case 14:   // Global and both Split settings = 596 bytes for version 72.1
       if (i == 0) microLinnImportXen = true;
       if (i < sizeof(GlobalSettings)) {
         microLinnImportGlobal(data1, data2, i, 0);               // import into Global and Split
@@ -5245,7 +5262,7 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
       }
       break;
 
-    case 14:   // all 6 presets = 3576 bytes for version 72.1
+    case 15:   // all 6 presets = 3576 bytes for version 72.1
       m = i % sizeof(PresetSettings);                            // m = index into the preset
       n = (i - m) / NUMPRESETS;                                  // n = which preset
       if (m == 0) microLinnImportXen = true;                     // reset the flag for each new preset
@@ -5256,7 +5273,7 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
       }
       break;
 
-    case 15:   // all user settings = 8508 bytes for version 72.0
+    case 16:   // all user settings = 8508 bytes for version 72.0
       ptrStart = (byte *) &Device.minUSBMIDIInterval;            // start at Device.minUSBMIDIInterval, after calibration data
       ptrEnd = (byte *) &Global;                                 // stop short of Global
       m = ptrEnd - ptrStart;                                     // m = size of Device settings in the import
@@ -5275,7 +5292,7 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
       }
       break;
 
-    case 16:   // calibration data (experimental)
+    case 17:   // calibration data (experimental)
       array = (byte *) &Device.calRows;
       array[i] = data1; 
       if (i+1 < microLinnImportSize) array[i+1] = data2;
@@ -5508,10 +5525,14 @@ void microLinnImportGlobal(byte data1, byte data2, unsigned short i, byte preset
   }
 }
 
-void microLinnImportSplits(byte data1, byte data2, unsigned short i,  byte presetNum) {       // version 72.1 size is 113 bytes per side
-  if (i < 0 || i >= 2 * sizeof(SplitSettings)) return;
+void microLinnImportSplits(byte data1, byte data2, unsigned short i,  byte presetNum) {
   byte side = (i < sizeof(SplitSettings) ? LEFT : RIGHT);
   if (side == RIGHT) i -= sizeof(SplitSettings);
+  microLinnImportSplit(data1, data2, i, presetNum, side);
+}
+
+void microLinnImportSplit(byte data1, byte data2, unsigned short i,  byte presetNum, byte side) {       // version 72.1 size is 113 bytes per side
+  if (i < 0 || i >= sizeof(SplitSettings)) return;
   SplitSettings *spl = (presetNum == 0 ? &Split[side] : &config.preset[presetNum - 1].split[side]);
   if (i >= 102 && !microLinnImportXen) return;
   unsigned short number = data1 | (data2 << 8);
