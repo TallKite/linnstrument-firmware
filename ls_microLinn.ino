@@ -64,6 +64,8 @@ https://github.com/rogerlinndesign/linnstrument-firmware/compare/5258d4a...roger
 
 MUST-DO #1: UNINSTALL
 
+in shorts and longs, data is stored LSB first (little-endian)
+
   16    72.1
 11692              sizeof(config)
        11692       sizeof(ConfigurationVLatest)
@@ -616,11 +618,11 @@ cleanup: search for "delete", "uncomment", "later" and "bug"
 ********************************************************************************************************************/
 
 #ifdef DEBUG_ENABLED
-  const byte MAX_IMPORT_TYPE = 16;     // 16 = calibration data, convenience for devs and safety for beta testers
-  const byte MAX_EXPORT_TYPE = 17;     // 17 = full data dump of config, not importable, used for examining the data
+  const byte MAX_IMPORT_TYPE = 17;     // 17 = calibration data, convenience for devs and safety for beta testers
+  const byte MAX_EXPORT_TYPE = 18;     // 18 = full data dump of config, not importable, used for examining the data
 #else
-  const byte MAX_IMPORT_TYPE = 15;
-  const byte MAX_EXPORT_TYPE = 15;
+  const byte MAX_IMPORT_TYPE = 16;
+  const byte MAX_EXPORT_TYPE = 16;
 #endif
 
 // virtual edosteps needed = 7 * maxRowOffset + 24 * maxColOffset + 1 = 368 max, but up it to 512 to give the guitar tuning more leeway
@@ -4757,7 +4759,7 @@ void exportMicroLinnData(int exportType) {
   if (exportType == 3 && audienceMessageToEdit == -1)         {microLinnScrollSmall("FIRST EDIT AN AUDIENCE MESSAGE"); return;}
   if (exportType >= 6 && exportType <= 8 && !isMicroLinnOn()) {microLinnScrollSmall("FIRST SELECT AN EDO"); return;}
 
-  if (exportType < 17) {        // 17 is for debugging, has no NRPN 300 or header
+  if (exportType < 18) {        // 18 is for debugging, has no NRPN 300 or header
     byte midiData = inRange(exportType, 5, 8) ? Global.microLinn.EDO : 0;             // the edo says where to load import types 5-8
     midiSendNRPN(300, (exportType << 7) + midiData, 1);
     microLinnSendPolyPressure(Device.version, Device.microLinn.MLversion, 9);         // export header, channel is 1-indexed

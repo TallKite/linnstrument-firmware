@@ -718,7 +718,7 @@ struct SplitSettings {
   byte lowRowMode;                        // see LowRowMode values
   byte lowRowCCXBehavior;                 // see LowRowCCBehavior values
   byte ccForLowRow;                       // 0-128 (with 128 being placeholder for ChannelPressure)
-  byte lowRowBendBehavior;                // see LowRowBendBehavior values (assumes little-endian byte order)
+  byte lowRowBendBehavior;                // see LowRowBendBehavior values
   byte lowRowCCXYZBehavior;               // see LowRowCCBehavior values
 //byte padding4;                          // see padding1
   unsigned short ccForLowRowX;            // 0-128 (with 128 being placeholder for ChannelPressure)
