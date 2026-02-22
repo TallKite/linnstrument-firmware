@@ -1048,6 +1048,12 @@ void receivedNrpn(int parameter, int value, int channel) {
         sequencerToggleMute(split);
       }
       break;
+    // Split Low Row Bend Behavior
+    case 67:
+      if (inRange(value, 0, 1)) {
+        Split[split].lowRowBendBehavior = value;
+      }
+      break;
     // Global Split Active
     case 200:
       if (inRange(value, 0, 1)) {
@@ -1594,6 +1600,12 @@ void sendNrpnParameter(int parameter, int channel) {
     case 65:
       value = sequencerCurrentPatternNumber(split);
       break;
+    case 66:
+      // Split Sequencer Toggle Mute
+      break;
+    case 67:
+      value = Split[split].lowRowBendBehavior;
+      break;
     case 200:
       value = Global.splitActive;
       break;
@@ -2113,14 +2125,17 @@ boolean isLowRowSendingCC(byte side, byte CC) {
   // check whether a CC is being used by an active low row, if so temporarily disable sending it via normal play
   if (isLowRowCCXActive(side) && CC == Split[side].ccForLowRow) return true;
   if (!isLowRowCCXYZActive(side)) return false;
+  // check the XYZ CCs, starting with the 3 non-joystick CCs
   boolean isSending;
+  isSending  = CC == Split[side].ccForLowRowX ||
+               CC == Split[side].ccForLowRowY ||
+               CC == Split[side].ccForLowRowZ;
+  if (isSending) return true;
+  // next check the 3 additional CCs used in joystick mode
+  if (Split[side].lowRowCCXYZBehavior != lowRowJoystick) return false;
   isSending  = CC == Split[side].microLinn.ccForLowRowW ||
                CC == Split[side].microLinn.ccForLowRowX ||
                CC == Split[side].microLinn.ccForLowRowY;
-  isSending &= Split[side].lowRowCCXYZBehavior == lowRowJoystick;
-  isSending |= CC == Split[side].ccForLowRowX ||
-               CC == Split[side].ccForLowRowY ||
-               CC == Split[side].ccForLowRowZ;
   return isSending;
 }
 

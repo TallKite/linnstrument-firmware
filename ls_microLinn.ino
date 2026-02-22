@@ -481,7 +481,11 @@ Roger's idea for a transpose function for the low row
 https://www.kvraudio.com/forum/viewtopic.php?t=594760 
 https://www.kvraudio.com/forum/viewtopic.php?t=596619
 
-midi looper?
+turn the sequencer into a midi looper? just needs live input
+
+NRPNs 62/162 (toggle sequencer play) and 66/166 (toggle sequencer mute) could return the current play or mute state
+  value = seqState[split].running or value = seqState[split].muted
+  but seqState is not a global var, it's local to sequencer.ino
 
 drum pad mode, besides ON and OFF, add MRMB/MRB for marimba mode
   this adds an 8th column and gets the midi notes from the current scale, transposable
@@ -606,6 +610,8 @@ and a little high-pass filtering on long slides. Gives it an electric guitar fee
 pdxindy says: I have a number of percussive presets that have env decay short and release long so if I tap the key it rings out 
 but hold it, it is short and muted. Makes for a pleasing playing style. (linn min note length is 35/70ms)
 
+The Reaper script "MIDI CC Mapper X" can remap any MIDI input along a user-drawn curve.
+
 https://vi-control.net/community/threads/what-i-would-like-to-see-in-the-audio-modeling-swam-viola-and-cello.169483/
 https://www.youtube.com/watch?v=9cNMm53CqBs continuum raga
 
@@ -624,6 +630,8 @@ cleanup: search for "delete", "uncomment", "later" and "bug"
   const byte MAX_IMPORT_TYPE = 16;
   const byte MAX_EXPORT_TYPE = 16;
 #endif
+
+const short MICROLINN_BULK_EXPORT_DELAY = 1200;            // microseconds delay in microLinnSendPolyPressure()
 
 // virtual edosteps needed = 7 * maxRowOffset + 24 * maxColOffset + 1 = 368 max, but up it to 512 to give the guitar tuning more leeway
 const byte MICROLINN_MAX_ROW_OFFSET = 25;                  // if this is changed, change it in initMicroLinnData() too
@@ -4935,7 +4943,7 @@ void microLinnSendPolyPressure(byte data1, byte data2) {
 void microLinnSendPolyPressure(byte data1, byte data2, byte channel) {   // channel is 1-indexed
   if (data1 > 127) {data1 -= 128; channel += 1;}                         // convert 8 bits to 7, store the 8th bit in the channel
   if (data2 > 127) {data2 -= 128; channel += 2;} 
-  delayUsec(1200);                                                       // don't overflow the midi queue, see handlePendingMidi()
+  delayUsec(MICROLINN_BULK_EXPORT_DELAY);                                // don't overflow the midi queue, see handlePendingMidi()
   resetLastMidiPolyPressure(data1, channel);                             // to ensure it isn't screened out as redundant
   midiSendPolyPressure(data1, data2, channel);
 }
@@ -5604,7 +5612,8 @@ void microLinnImportSplit(byte data1, byte data2, unsigned short i,  byte preset
     if (microLinnInRange(data1, 0, 7))    spl->lowRowMode = data1;
     if (microLinnInRange(data2, 0, 1))    spl->lowRowCCXBehavior = data2;
   } else if (i == 76) {
-    if (microLinnInRange(number, 0, 128)) spl->ccForLowRow = number;
+    if (microLinnInRange(data1, 0, 128))  spl->ccForLowRow = data1;
+    if (microLinnInRange(data2, 0, 1))    spl->lowRowBendBehavior = data2;
   } else if (i == 78) {
     if (microLinnInRange(data1,  0, 2))   spl->lowRowCCXYZBehavior = data1;      // ignore data2 = padding
   } else if (i == 80) {
