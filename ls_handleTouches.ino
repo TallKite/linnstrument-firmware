@@ -260,12 +260,9 @@ boolean isPhantomTouchContextual() {
                cell(sensorCol, touchedRow).isHigherPhantomPressure(sensorCell->currentRawZ) &&
                cell(touchedCol, sensorRow).isHigherPhantomPressure(sensorCell->currentRawZ))) {
 
-            // store coordinates of the rectangle, which also serves as an indicator that we
-            // should stop looking for a phantom press
+            // Only set phantom flags on the rejected cell to avoid contaminating
+            // real corners' pitch/pressure state.
             cell(sensorCol, sensorRow).setPhantoms(sensorCol, touchedCol, sensorRow, touchedRow);
-            cell(touchedCol, touchedRow).setPhantoms(sensorCol, touchedCol, sensorRow, touchedRow);
-            cell(sensorCol, touchedRow).setPhantoms(sensorCol, touchedCol, sensorRow, touchedRow);
-            cell(touchedCol, sensorRow).setPhantoms(sensorCol, touchedCol, sensorRow, touchedRow);
 
             return true;
           }
@@ -856,7 +853,7 @@ boolean handleXYZupdate() {
       return true;
 
     case velocityNew:
-      if (isPhantomTouchIndividual() || isPhantomTouchContextual()) {
+      if (cellsTouched <= 3 ? isPhantomTouchIndividual() : isPhantomTouchContextual()) {
         cellTouched(untouchedCell);
         return false;
       }
@@ -1602,7 +1599,10 @@ short handleXExpression() {
 
   // determine if the last X movement was a rogue sweep
   sensorCell->rogueSweepX = (deltaX >= ROGUE_SWEEP_X_THRESHOLD);
-        
+
+  // Always update baseline so pitch resumes smoothly after suppression.
+  sensorCell->lastMovedX = movedX;
+
   if ((countTouchesInColumn() < 2 ||
        sensorCell->currentRawZ > (Device.sensorLoZ + SENSOR_PITCH_Z)) &&  // when there are multiple touches in the same column, reduce the pitch bend Z sensitivity to prevent unwanted pitch slides
       sensorCell->hasUsableX()) {                                         // if no phantom presses are active, send the pitch bend change, otherwise only send those changes that are small and gradual to prevent rogue pitch sweeps
@@ -1610,9 +1610,6 @@ short handleXExpression() {
     // calculate the average rate of X value changes over a number of samples
     sensorCell->fxdRateX -= FXD_DIV(sensorCell->fxdRateX, fxdRateXSamples);
     sensorCell->fxdRateX += FXD_DIV(FXD_FROM_INT(deltaX), fxdRateXSamples);
-
-    // remember the last X movement
-    sensorCell->lastMovedX = movedX;
 
     // if pitch quantize on hold is disabled, just output the current touch pitch
     if (!doQuantizeHold()) {
