@@ -131,7 +131,7 @@ byte NUMROWS = 8;                    // number of touch sensor rows
 #define DEFAULT_SENSOR_RANGE_Z        648      // default range of the pressure
 #define MAX_SENSOR_RANGE_Z            1016     // upper value of the pressure                          
 
-#define MAX_TOUCHES_IN_COLUMN  3
+#define MAX_TOUCHES_IN_COLUMN  MAXROWS
 
 // Sequencer constants
 #define MAX_PROJECTS              16
@@ -380,6 +380,7 @@ struct __attribute__ ((packed)) TouchInfo {
   byte velocity:7;                           // velocity from 0 to 127
   boolean shouldRefreshZ:1;                  // indicate whether it's necessary to refresh Z
   byte velocityZ:7;                          // the Z value with velocity sensitivity
+  unsigned short peakRawZ:12;                // peak raw Z seen during this touch, for ghost note release detection
 };
 TouchInfo touchInfo[MAXCOLS][MAXROWS];       // store as much touch information instances as there are cells
 
