@@ -72,12 +72,18 @@ boolean isStatefulSwitchAssignment(byte assignment) {
          assignment == ASSIGNED_REVERSE_PITCH_X ||
          assignment == ASSIGNED_STANDALONE_MIDI_CLOCK ||
          assignment == ASSIGNED_MICROLINN_8VE_UP ||
-         assignment == ASSIGNED_MICROLINN_8VE_DOWN;
+         assignment == ASSIGNED_MICROLINN_8VE_DOWN ||
+         assignment == ASSIGNED_MICROLINN_PREV_PRESET ||
+         assignment == ASSIGNED_MICROLINN_PREV_MEMORY ||
+         assignment == ASSIGNED_MICROLINN_PREV_SCALE;
 }
 
 void doSwitchPressed(byte whichSwitch) {
   byte assignment = Global.switchAssignment[whichSwitch];
-  if (!Global.splitActive || assignment == ASSIGNED_ALTSPLIT || !Global.switchBothSplits[whichSwitch]) {
+  if (!Global.splitActive || !Global.switchBothSplits[whichSwitch] ||
+      assignment == ASSIGNED_ALTSPLIT ||
+      assignment == ASSIGNED_MICROLINN_PREV_MEMORY ||
+      assignment == ASSIGNED_MICROLINN_PREV_SCALE) {
     doSwitchPressedForSplit(whichSwitch, assignment, Global.currentPerSplit);
   }
   else {
@@ -138,7 +144,10 @@ void doSwitchTriggeredForSplit(byte whichSwitch, byte assignment, byte split) {
 
 void doSwitchReleased(byte whichSwitch) {
   byte assignment = Global.switchAssignment[whichSwitch];
-  if (!Global.splitActive || assignment == ASSIGNED_ALTSPLIT || !Global.switchBothSplits[whichSwitch]) {
+  if (!Global.splitActive || !Global.switchBothSplits[whichSwitch] ||
+      assignment == ASSIGNED_ALTSPLIT ||
+      assignment == ASSIGNED_MICROLINN_PREV_MEMORY ||
+      assignment == ASSIGNED_MICROLINN_PREV_SCALE) {
     doSwitchReleasedForSplit(whichSwitch, assignment, Global.currentPerSplit);
   }
   else {
@@ -341,19 +350,50 @@ void performSwitchAssignmentOn(byte whichSwitch, byte assignment, byte split) {
       switchTransposeOctave(split, switchState[whichSwitch][split] ? 12 : -12);
       break;
 
+    case ASSIGNED_MICROLINN_PREV_PRESET:
+      setPresetAndBank(prevMidiPreset[split], prevMidiBank[split]);
+      break;
+
+    case ASSIGNED_MICROLINN_PREV_MEMORY:
+      if (prevLastLoadedPreset != -1) {
+        loadSettingsFromPreset(prevLastLoadedPreset);
+        updateDisplay();
+      }
+      break;
+
+    case ASSIGNED_MICROLINN_PREV_SCALE:
+      performMicroLinnLoadScale(microLinnPrevScale);
+      break;
+
     case ASSIGNED_MICROLINN_EDO_UP:
-      changeMicroLinnEDO(1);
+      performMicroLinnEDOdelta(1);
       break;
 
     case ASSIGNED_MICROLINN_EDO_DOWN:
-      changeMicroLinnEDO(-1);
+      performMicroLinnEDOdelta(-1);
       break;
   }
 }
 
 void performPresetDelta(int delta) {
-  midiPreset[Global.currentPerSplit] = min(max(midiPreset[Global.currentPerSplit] + delta, 0), 127);
+  byte side = Global.currentPerSplit;
+  if (!inRange(midiPreset[side] + delta, 0, 127)) return;
+  prevMidiPreset[side] = midiPreset[side];
+  midiPreset[side] += delta;
   applyMidiPreset();
+  if (displayMode == displayPreset) {
+    updateDisplay();
+  }
+}
+
+void setPresetAndBank(byte preset, byte bank) {
+  byte side = Global.currentPerSplit;
+  prevMidiPreset[side] = midiPreset[side];
+  midiPreset[side] = preset;
+  prevMidiBank[side] = midiBank[side];
+  midiBank[side] = bank;
+  applyMidiPreset();
+  preSendControlChange(side, 0, bank, false);       // CC0 = bank select
   if (displayMode == displayPreset) {
     updateDisplay();
   }
@@ -373,7 +413,7 @@ void performArpeggiatorToggle() {
 }
 
 void performReverseSendXToggle(byte side) {
-  // microLinn: PCH now toggles between the current and alternate settings of all 5 cells in the PITCH/X column
+  // microLinn: PCH toggles between the current and alternate settings of all 5 cells in the PITCH/X column
   boolean swap = Split[side].sendX;
   Split[side].sendX = Split[side].microLinn.altSendX();
   Split[side].microLinn.setAltSendX(swap);
@@ -421,6 +461,9 @@ void performSwitchAssignmentHoldOff(byte whichSwitch, byte assignment, byte spli
     case ASSIGNED_STANDALONE_MIDI_CLOCK:
     case ASSIGNED_MICROLINN_8VE_UP:
     case ASSIGNED_MICROLINN_8VE_DOWN:
+    case ASSIGNED_MICROLINN_PREV_PRESET:
+    case ASSIGNED_MICROLINN_PREV_MEMORY:
+    case ASSIGNED_MICROLINN_PREV_SCALE:
       performSwitchAssignmentOff(whichSwitch, assignment, split);
       break;
 
@@ -464,6 +507,21 @@ void performSwitchAssignmentOff(byte whichSwitch, byte assignment, byte split) {
 
     case ASSIGNED_MICROLINN_8VE_DOWN:
       switchTransposeOctave(split, switchState[whichSwitch][split] ? 12 : -12);
+      break;
+
+    case ASSIGNED_MICROLINN_PREV_PRESET:
+      setPresetAndBank(prevMidiPreset[split], prevMidiBank[split]);
+      break;
+
+    case ASSIGNED_MICROLINN_PREV_MEMORY:
+      if (prevLastLoadedPreset != -1) {
+        loadSettingsFromPreset(prevLastLoadedPreset);
+        updateDisplay();
+      }
+      break;
+
+    case ASSIGNED_MICROLINN_PREV_SCALE:
+      performMicroLinnLoadScale(microLinnPrevScale);
       break;
   }
 }

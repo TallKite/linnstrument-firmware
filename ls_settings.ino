@@ -328,6 +328,7 @@ void applySystemState() {
 }
 
 void loadSettingsFromPreset(byte p) {
+  prevLastLoadedPreset = Device.lastLoadedPreset;
   Device.lastLoadedPreset = p;
 
   if (config.preset[p].global.microLinn.EDO > 4 || p == 4) {
@@ -756,6 +757,8 @@ void initializePresetSettings() {
     currentEditedCCFader[s] = 0;
     midiPreset[s] = 0;
     midiBank[s] = 0;
+    prevMidiPreset[s] = 0;
+    prevMidiBank[s] = 0;
     arpTempoDelta[s] = 0;
     splitChannels[s].clear();
   }
@@ -1842,7 +1845,7 @@ boolean handleShowSplit() {
       hit = true;
     }
 
-    if (hit && !doublePerSplit) {
+    if (hit && !(displayMode == displayOctaveTranspose && doublePerSplit)) {
       // if we're in sub-menus of the per-split settings and the active split cell is tapped again
       // it goes back to the main per-split settings menu
       if (Global.currentPerSplit == newSplit) {
@@ -1878,12 +1881,21 @@ void handlePresetNewTouch() {
   boolean isBank = touchInfo[1][0].touched == touchedCell;
   byte side = Global.currentPerSplit;
   byte number = isBank ? midiBank[side] : midiPreset[side];
-  if ((sensorCol == 1 && sensorRow == 7 && number < 127) ||
-      (sensorCol == 1 && sensorRow == 6 && number > 0)) {
+  if ((sensorCol == 1 && sensorRow == 7) ||
+      (sensorCol == 1 && sensorRow == 6)) {
+    if (sensorRow == 7 && number == 127) return;
+    if (sensorRow == 6 && number == 0)   return;
     lastControlPress[PRESET_ROW] = millis() - SWITCH_HOLD_DELAY;
-    if (isBank) midiBank[side] += (sensorRow == 7 ? 1 : -1);
-    else      midiPreset[side] += (sensorRow == 7 ? 1 : -1);
+    if (isBank) {
+      prevMidiBank[side] = midiBank[side];
+      midiBank[side] += (sensorRow == 7 ? 1 : -1);
+    }
+    else {
+      prevMidiPreset[side] = midiPreset[side];
+      midiPreset[side] += (sensorRow == 7 ? 1 : -1);
+    }
     updateDisplay();
+    return;
   }
 
   // don't change presets on the row that has the split selection
@@ -1905,8 +1917,22 @@ void handlePresetNewTouch() {
     if ((sensorCol == 1 && sensorRow == 0) || (isBank && cellsTouched == 2)) {
       resetNumericDataChangeCol();
     }
-    if (isBank) handleNumericDataNewTouchCol(midiBank[side],   0, 127, true);
-    else        handleNumericDataNewTouchCol(midiPreset[side], 0, 127, true);
+    if (!isBank) {
+      // store the previous value so that the PRE footswitch can backtrack to it
+      // but a swipe should store that only on the initial touch, not on subsequent sliding touches
+      // so that swiping from 1 to 5 results in a previous value of 1 not 4
+      // neither if(sensorCell->touched != transferCell) nor if(!sensorCell->slideTransfer) can identify the initial touch
+      // so instead we check if handleNumericDataNewTouchCol() had an effect or not
+      // because it won't on the initial touch, but will on a slide transfer touch
+      byte data = midiPreset[side];
+      handleNumericDataNewTouchCol(midiPreset[side], 0, 127, true);
+      if (midiPreset[side] == data) prevMidiPreset[side] = midiPreset[side];
+    }
+    else if (!(sensorCol == 1 && sensorRow == 0)) {
+      byte data = midiBank[side];
+      handleNumericDataNewTouchCol(midiBank[side], 0, 127, true);
+      if (midiBank[side] == data) prevMidiBank[side] = midiBank[side];
+    }
     updateDisplay();
   }
 }
@@ -2750,6 +2776,7 @@ void handleGlobalSettingNewTouch() {
               }
               break;
             case LIGHTS_ACTIVE:
+              microLinnPrevScale = Global.activeNotes;
               Global.activeNotes = sensorCol-2 + (sensorRow*3);
               loadCustomLedLayer(getActiveCustomLedPattern());
               break;

@@ -193,7 +193,7 @@ byte NUMROWS = 8;                    // number of touch sensor rows
 #define ASSIGNED_TAP_TEMPO              7
 #define ASSIGNED_LEGATO                 8
 #define ASSIGNED_LATCH                  9
-#define ASSIGNED_PRESET_UP              10         // Preset means program change 0-127, not memory 0-5
+#define ASSIGNED_PRESET_UP              10
 #define ASSIGNED_PRESET_DOWN            11
 #define ASSIGNED_REVERSE_PITCH_X        12
 #define ASSIGNED_SEQUENCER_PLAY         13
@@ -201,12 +201,15 @@ byte NUMROWS = 8;                    // number of touch sensor rows
 #define ASSIGNED_SEQUENCER_NEXT         15
 #define ASSIGNED_STANDALONE_MIDI_CLOCK  16
 #define ASSIGNED_SEQUENCER_MUTE         17
-#define ASSIGNED_TRANSPOSE_DOWN         18
-#define ASSIGNED_TRANSPOSE_UP           19
+#define ASSIGNED_TRANSPOSE_UP           18
+#define ASSIGNED_TRANSPOSE_DOWN         19
 #define ASSIGNED_MICROLINN_8VE_UP       20
 #define ASSIGNED_MICROLINN_8VE_DOWN     21
-#define ASSIGNED_MICROLINN_EDO_UP       22
-#define ASSIGNED_MICROLINN_EDO_DOWN     23
+#define ASSIGNED_MICROLINN_PREV_PRESET  22         // Preset means program change 0-127, not memory 0-5
+#define ASSIGNED_MICROLINN_PREV_MEMORY  23
+#define ASSIGNED_MICROLINN_PREV_SCALE   24
+#define ASSIGNED_MICROLINN_EDO_UP       25
+#define ASSIGNED_MICROLINN_EDO_DOWN     26
 #define MAX_ASSIGNED                    ASSIGNED_MICROLINN_EDO_DOWN
 #define ASSIGNED_DISABLED               255
 
@@ -673,6 +676,7 @@ struct MicroLinnSplit {
   byte flags;                             // Byxwrhhqs, s = sendX, q = quantize, hh = quantize hold, r = pitch reset, yxw = joystick WXY CCs
   byte reserved1;                         // reserved for future use, 1 byte per empty menu row
   byte reserved2;                         //    "
+  byte reserved3;                         //    "
 //boolean onlyInitialY;                   // possible new feature, only send Y-data from the first strike, doesn't apply to relative mode
 };
 
@@ -734,7 +738,6 @@ struct SplitSettings {
   boolean sequencer;                      // true when the sequencer of this split is enabled
   SequencerView sequencerView;            // see SequencerView
   MicroLinnSplit microLinn;               // microtonal data
-//byte padding5;                          // added by the compiler, makes the SplitSettings struct an even number of bytes
 };
 
 #define Split config.settings.split
@@ -1147,7 +1150,11 @@ unsigned long tempoLedOn = 0;                       // indicates when the tempo 
 
 ChannelBucket splitChannels[NUMSPLITS];             // the MIDI channels that are being handed out
 byte midiPreset[NUMSPLITS];                         // preset number 0-127, for sending Program Change messages
-byte midiBank[NUMSPLITS];                           // bank number 0-127, for sending Bank Select messages (CC0)
+byte midiBank[NUMSPLITS];                           // bank number 0-127, for sending CC0 Bank Select messages (microLinn)
+byte prevMidiPreset[NUMSPLITS];                     // used by microLinn's PRE footswitch
+byte prevMidiBank[NUMSPLITS];                       // ditto
+signed char prevLastLoadedPreset = -1;              // ued by microLinn's MEM footswitch, preset means memory
+signed char microLinnPrevScale = -1;                // ued by microLinn's SCL footswitch
 byte ccFaderValues[NUMSPLITS][129];                 // the current values of the CC faders
 byte currentEditedCCFader[NUMSPLITS];               // the current CC fader number that is being edited
 signed char arpTempoDelta[NUMSPLITS];               // ranges from -24 to 24 to apply a speed difference to the selected arpeggiator speed
@@ -1161,7 +1168,7 @@ boolean footSwitchOffState[5];                        // holds the OFF state of 
 unsigned long prevFootSwitchTimerCount;               // time interval (in microseconds) between foot switch reads
 boolean switchFootBothReleased = false;               // keep track of whether the last release was for both switches, in order to prevent individual releases to happen
 
-boolean doublePerSplit = false;                     // false when only one per split is active, true if they both are
+boolean doublePerSplit = false;                     // false when only one per split is active on the Octave/Transpose display, true if they both are
 
 byte switchSelect = SWITCH_SWITCH_1;                // determines which switch setting is being displayed/changed
 byte midiChannelSelect = MIDICHANNEL_MAIN;          // determines which midi channel setting is being displayed/changed

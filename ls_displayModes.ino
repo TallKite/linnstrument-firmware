@@ -674,9 +674,7 @@ void paintNormalDisplayCell(byte split, byte col, byte row) {
 // paintPerSplitDisplay:
 // paints all cells with per-split settings for a given split
 void paintPerSplitDisplay(byte side) {
-  clearDisplay();
-
-  doublePerSplit = false;  
+  clearDisplay(); 
 
   // set Midi Mode and channel lights
   switch (Split[side].midiMode) {
@@ -986,10 +984,10 @@ byte getGuitarTuningColor() {
 // paint one of the two leds that indicate which split is being controlled
 // (e.g. when you're changing per-split settings, or changing the preset or volume)
 void paintShowSplitSelection(byte side) {
-  if (side == LEFT || doublePerSplit) {
+  if (side == LEFT || (displayMode == displayOctaveTranspose && doublePerSplit)) {
     setLed(15, 7, Split[LEFT].colorMain, cellOn);
   }
-  if (side == RIGHT || doublePerSplit) {
+  if (side == RIGHT || (displayMode == displayOctaveTranspose && doublePerSplit)) {
     setLed(16, 7, Split[RIGHT].colorMain, cellOn);
   }
 }
@@ -1119,9 +1117,10 @@ void paintCCForZDisplay(byte side) {
 void paintCCForFaderDisplay(byte side) {
   clearDisplay();
   for (byte r = 0; r < NUMROWS; ++r) {
-    setLed(NUMCOLS-1, r, globalColor, cellOn);
+    byte color = r % 2 == 0 ? Split[side].colorMain : Split[side].colorAccent;
+    setLed(NUMCOLS-1, r, color, cellOn);
   }
-  setLed(NUMCOLS-1, currentEditedCCFader[side], COLOR_GREEN, cellOn);
+  setLed(NUMCOLS-1, currentEditedCCFader[side], Split[side].colorPlayed, cellOn);
   unsigned short cc = Split[side].ccForFader[currentEditedCCFader[side]];
   if (cc == 128) {
     condfont_draw_string(0, 0, "CHPRS", Split[side].colorMain, false);
@@ -1383,11 +1382,11 @@ void paintCustomSwitchAssignmentConfigDisplay() {
     case ASSIGNED_SEQUENCER_MUTE:
       adaptfont_draw_string(0, 0, "MUTE", globalColor, true);
       break;
-    case ASSIGNED_TRANSPOSE_DOWN:
-      adaptfont_draw_string(0, 0, "TRN-", globalColor, true);
-      break;
     case ASSIGNED_TRANSPOSE_UP:
       adaptfont_draw_string(0, 0, "TRN+", globalColor, true);
+      break;
+    case ASSIGNED_TRANSPOSE_DOWN:
+      adaptfont_draw_string(0, 0, "TRN-", globalColor, true);
       break;
     case ASSIGNED_MICROLINN_8VE_UP:
       adaptfont_draw_string(0, 0, "8VE", globalColor, true);
@@ -1396,6 +1395,15 @@ void paintCustomSwitchAssignmentConfigDisplay() {
     case ASSIGNED_MICROLINN_8VE_DOWN:
       adaptfont_draw_string(0, 0, "8VE", globalColor, true);
       paintMicroLinnMinusPlus();
+      break;
+    case ASSIGNED_MICROLINN_PREV_PRESET:
+      adaptfont_draw_string(0, 0, "PRE", globalColor, true);
+      break;
+    case ASSIGNED_MICROLINN_PREV_MEMORY:
+      adaptfont_draw_string(0, 0, "MEM", globalColor, true);
+      break;
+    case ASSIGNED_MICROLINN_PREV_SCALE:
+      adaptfont_draw_string(0, 0, "SCL", globalColor, true);
       break;
     case ASSIGNED_MICROLINN_EDO_UP:
       adaptfont_draw_string(0, 0, "EDO+", globalColor, true);
@@ -1611,10 +1619,10 @@ void paintVolumeDisplay(byte side) {
 void paintVolumeDisplayRow(byte side) {
   byte row = (side == LEFT ? 6 : 1);
   paintCCFaderDisplayRow(side, row, Split[side].colorMain, 7, 1, NUMCOLS-2);
-  // microLinn paints every Nth dot in the accent color
-  byte N = (isLinn200() ? 5 : 4);
+  // microLinn paints every 4th dot in the accent color
+  byte N = (isLinn200() ? 2 : 1);
   int32_t fxdFaderPosition = fxdCalculateFaderPosition(ccFaderValues[side][7], 1, NUMCOLS-2);
-  for (byte col = N; col <= NUMCOLS-1; col += N) {      
+  for (byte col = N+3; col <= NUMCOLS-N; col += 4) {      
     if (Device.calRows[col][0].fxdReferenceX - FXD_CALX_HALF_UNIT <= fxdFaderPosition)
       setLed (col, row, Split[side].colorAccent, cellOn, LED_LAYER_MAIN);
   }
@@ -1765,10 +1773,13 @@ void paintSwitchAssignment(byte mode) {
     case ASSIGNED_SEQUENCER_NEXT:
     case ASSIGNED_STANDALONE_MIDI_CLOCK:
     case ASSIGNED_SEQUENCER_MUTE:
-    case ASSIGNED_TRANSPOSE_DOWN:
     case ASSIGNED_TRANSPOSE_UP:
+    case ASSIGNED_TRANSPOSE_DOWN:
     case ASSIGNED_MICROLINN_8VE_UP:
     case ASSIGNED_MICROLINN_8VE_DOWN:
+    case ASSIGNED_MICROLINN_PREV_PRESET:
+    case ASSIGNED_MICROLINN_PREV_MEMORY:
+    case ASSIGNED_MICROLINN_PREV_SCALE:
     case ASSIGNED_MICROLINN_EDO_UP:
     case ASSIGNED_MICROLINN_EDO_DOWN:
       setLed(9, 3, getSwitchTapTempoColor(), cellOn);

@@ -16,7 +16,7 @@ Low Row playing     LowRow = Sustain        X movement = Control Change (CC64 = 
 Special playing     Special = CC Faders     X movement = Control Change
 
 Panel switch        Sustain or CC65         Control Change
-or footswitch       PR+ or PR-              Program Change
+or footswitch       PR+ or PR- or PRE       Program Change (PRE can also send CC0 = Bank Select)
 
 Per-Split display   Change the midi mode    XYZ reset messages
  
@@ -64,7 +64,7 @@ MIDI Control Change input
 
 If the CC faders are assigned to any other CC numbers than the default 1-8 CC numbers, those will be
 used for control change input of the faders. If the CC numbers conflict with internal LinnStrument
-features, than the CC faders will take precedence.
+features, than the CC faders will take precedence. Exception: CC6 or CC38 when part of an RPN or NRPN.
 
 | CC Number     | Used for
 | --------------|--------------------------------------------------------------------------------------------------
@@ -83,7 +83,7 @@ features, than the CC faders will take precedence.
 | 24            | Clear persisted custom cell colors pattern (0-2)
 | 25, 26        | MicroLinn duplicates the effect of CCs 20-22 with either CC25 or CC26, 3x faster!
 |               | The color is encoded in the midi channel, and the pad location is encoded exactly like locating CCs
-| 38            | Data entry for RPNs and NRPNs
+| 38            | Data entry for RPNs and NRPNs, but if CC38 occurs outside of an RPN/NRPN, it controls a CC fader instead
 | 98-101        | Parameter number of RPNs and NRPNs
 
 RPN / NRPN input
@@ -289,10 +289,10 @@ The following table lists all the NRPN input values that LinnStrument understand
 | 225   | 0-1   | Global Accent Note Light A# (0: Off, 1: On)
 | 226   | 0-1   | Global Accent Note Light B (0: Off, 1: On)
 | 227 * | 0-13  | Global Row Offset (only supports, 0: No overlap, 3 4 5 6 7 12: Intervals, 13: Guitar, 127: 0 offset)
-| 228   | 0-23  | Global Switch 1 Assignment  (0: Oct Down, 1: Oct Up, 2: Sustain, 3: CC65, 4: Arp, 5: Alt Split, 6: Auto Octave, 7: Tap Tempo...)
-| 229   | 0-23  | Global Switch 2 Assignment  (...8: Legato, 9: Latch, 10/11: Program Change Up/Down, 12: Reverse Pitch X, 13: Sequencer Play...)
-| 230   | 0-23  | Global Foot Left Assignment (...14: Sequencer Previous, 15: Sequencer Next, 16: Send MIDI Clock, 17: Sequencer Mute...)
-| 231   | 0-23  | Global Foot Right Assignment (...18: Transpose Down, 19: Transpose Up:, 20/21: MicroLinn 8ve Up/Down, 22/23: MicroLinn EDO Up/Down)
+| 228   | 0-26  | Global Switch 1 Assignment  (0: Oct Down, 1: Oct Up, 2: Sustain, 3: CC65, 4: Arp, 5: Alt Split, 6: Auto Octave, 7: Tap Tempo...)
+| 229   | 0-26  | Global Switch 2 Assignment  (...8: Legato, 9: Latch, 10/11: Program Change Up/Down, 12: Reverse Pitch X, 13: Sequencer Play...)
+| 230   | 0-26  | Global Foot Left Assignment (...14: Sequencer Previous, 15: Sequencer Next, 16: Send MIDI Clock, 17: Sequencer Mute...)
+| 231   | 0-26  | Global Foot Right Assignment (...18/19: Transpose Up/Down, 20/21: 8ve Up/Down, 22/24: Previous Preset/Memory/Scale, 25/26: EDO Up/Down)
 | 232   | 0-3   | Global Velocity Sensitivity (0: Low, 1: Medium, 2: High, 3: Fixed)
 | 233   | 0-2   | Global Pressure Sensitivity (0: Low, 1: Medium, 2: High)
 | 234   | 0-1   | Device MIDI I/O (0: MIDI Jacks, 1: USB)
@@ -408,9 +408,9 @@ bulk export request format:
 NRPN 299 = (MSB 2, LSB 43), channel 1, value = 2048 + export type = (MSB 16, LSB 1-15)
 
 bulk export format:
-NRPN 300 = (MSB 2, LSB 44), channel 1, value: MSB = export type = 1-15, LSB = current edo if export type = 5..8
+NRPN 300 = (MSB 2, LSB 44), channel 1, value: MSB = export type = 1-16, LSB = current edo if export type = 5..8
 Polypressure header, channel 9, value: LSB = Device.version, MSB = Device.microLinn.MLversion
-(multiple polypressure data messages on channels 0..3)
+(multiple polypressure data messages on channels 1..4)
 Polypressure footer, channel 13, value: MSB = export type = 1-15, LSB = 0
 In each polypressure message, the MSB appears as the note number and the LSB appears as the velocity
 
@@ -418,26 +418,32 @@ For the polypressure data messages, channels 2-4 are used to store the 8th bit o
 channel 2 or 4 = add 128 to LSB when importing 
 channel 3 or 4 = add 128 to MSB when importing
 
-Type        # of data bytes     Settings exported                    Notes
--------------------------------------------------------------------------------------------------------
- 1          208                 Currently-displayed light pattern    imports into the currently-displayed pattern
- 2          624                 All 3 light patterns                 
- 3          30                  Last-edited audience message         imports into the currently last-edited message
- 4          480                 All 16 audience messages             
+Type    # of data bytes   Settings exported                    Notes
+-----------------------------------------------------------------------------------------------------------
+ 1      208               Currently-displayed light pattern    imports into the currently-displayed pattern
+ 2      624               All 3 light patterns                 
+ 3      30                Last-edited audience message         imports into the last-edited message
+ 4      480               All 16 audience messages             
 
- 5          edo                 Current edo's 7 scales               for odd edos, add 1 byte of padding to the size
- 6          ceil(edo/2)         Current edo's rainbow                    "
- 7          edo                 Current edo's fretboard                  "
- 8          28 + 3 * edo        All data for the current edo         equave, equaveStretch, useRainbow, col/row offsets, guitarTuning
+ 5      edo               Current edo's 7 scales               for odd edos, add 1 byte of padding to the size
+ 6      edo               Current edo's rainbow                    "
+ 7      edo               Current edo's fretboard                  "
+ 8      28 + 3 * edo      All data for the current edo         includes equave, equaveStretch, useRainbow, col/row offsets, guitarTuning
 
- 9          1530                Scales for all 51 edos                    
-10          1530                Rainbows for all 51 edos                
-11          1530                Fretboards for all 51 edos                   
-12          4590                All 3 arrays for all 51 edos         no equave, equaveStretch, useRainbow, col/row offsets, guitarTuning
+ 9      1530              Scales for all 51 edos               
+10      1530              Rainbows for all 51 edos             
+11      1530              Fretboards for all 51 edos           
+12      4590              All 3 arrays for all 51 edos         no equave, equaveStretch, useRainbow, col/row offsets, guitarTuning
 
-13          592                 Global & Split settings              
-14          3552                All 6 presets (memories)             
-15          9880                All user settings                    no calibration data or sequencer projects
+13      114               Settings for current split only     
+14      592               Global & Split settings              
+15      3552              All 6 presets (memories)             
+16      16156             All user settings                    only the current sequencer project, not the other 16
+
+17      14                14 sequencer drum notes              for the current split's sequencer, good for drum pad mode                 
+18      3136              current split's sequencer            doesn't include the project tempo
+19      6276              current sequencer project            both splits' sequencers + the tempo
+20      16 x 6276         all 16 sequencer projects            not the current project, which gets overwritten when importing/exporting
 
 The total size of the midi file in bytes will be 1.5 * (# of data bytes) + 24
 

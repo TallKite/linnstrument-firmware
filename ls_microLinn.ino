@@ -39,14 +39,15 @@ If so, use lastValueMidiNotesOn to count up the noteOns and send a series of mat
 
 Misc small bug fixes, not in the readme file, line numbers are for the official 2.3.4 firmware:
   ls_fonts.ino      line 587      "static Character small_Q = { 4,"          4 -> 5
-  ls_midi.ino       line 63-64
-                    line 440-467  rewrite NRPN code to be more robust
+  ls_midi.ino       line 63-64    rewrite NRPN code to be more robust
+                    line 440-467  ditto
                     line 495      add line to listen to main channel when in ChanPerNote mode
                     line 900      "if (inRange(value, 0, 14)) {"             14 -> 15
   ls_settings.ino   line 722      "midiPreset[0] = 0;"                       [0] -> [s]
                     line 2154     "handleNumericDataReleaseCol(true);"       true -> false   (microLinn issue #5)
   midi.txt          line 127      NRPN 61, limits should be 0-15, also in the list playedCell is missing
   various files, search for "avoid transposeLights working backwards when lefty"
+  various files, search for "doublePerSplit", it now only applies to the octave/transpose display
 
 
 Current beta testers: Kite, Gordon, Austin, Max, (Ira)
@@ -199,7 +200,7 @@ RAM usage: why so stable? what's a safe number?
 does packing a preset work?
 any advantage to using "inline"?
 
-video on playability: X+Z, hammer-ons/pull-offs, double-stops, drum pads, joystick, PCH switch, 8VE± switch
+video on playability: X+Z, hammer-ons/pull-offs, double-stops, drum pads, joystick, PCH switch, TRNS, 8VE±, PRE and MEM switches
 video on layouts: col offsets, row offsets, condensing
 video on CC faders and volume faders: appearance, numeric display, tap=set/slide=adjust, footswitch to access, send to other split
 video on graphics: violet, dim mode, blink, same/blink carry over, doubled channels
@@ -210,6 +211,8 @@ video on microtonal power user: EDO± switches, default layouts, tuning table mo
 
 https://www.kvraudio.com/forum/viewtopic.php?t=539894 bug, CC faders don't respond to received CCs on main channel -- fixed
 https://www.kvraudio.com/forum/viewtopic.php?t=539553 bug, sequencer mute light doesn't work
+https://www.kvraudio.com/forum/viewtopic.php?p=8897812#p8897812 pianoteq velocity curves, prescale setting of 75/90
+https://www.kvraudio.com/forum/viewtopic.php?t=624925 linnstrument scale tool, emulates the ableton push, requires python
 
 https://www.kvraudio.com/forum/viewtopic.php?t=603578 per-split custom LED patterns, for use with CC faders - done
 https://www.kvraudio.com/forum/viewtopic.php?t=588669 Add Quantize Hold to list of Foot/Panel Switch assignments, Roger approves - done
@@ -273,52 +276,30 @@ https://www.kvraudio.com/forum/viewtopic.php?t=432884 Geert discusses user firmw
 https://www.kvraudio.com/forum/viewtopic.php?t=434332 when receiving noteOns, note color is based on velocity
 https://www.kvraudio.com/forum/viewtopic.php?t=433791 Geert discusses source code best practices
 https://www.kvraudio.com/forum/viewtopic.php?t=429418 midi looper
-
-
+https://www.kvraudio.com/forum/viewtopic.php?p=6050499#p6050499 feature request, advance to next memory via footswitch, done
+https://www.kvraudio.com/forum/viewtopic.php?t=429646 feature request, 2 4x25 splits, face to face playing mode, 2 people like it - meh
+  microLinn can set one split to lefty and a negative row offset, can play face to face that way (needs testing)
 
 test unninstalling more
 
-tried to add a few more colors, but only violet was distinct enough from the other colors
-  RED = r, GREEN = g, BLUE = b
-  YELLOW = rg, CYAN = gb, MAGENTA = rb
-  WHITE = rgb/b, ORANGE = r/rg, LIME = g/rg, PINK = rg/rb
-  SPRING_GREEN = g/gb, AZURE = gb/b, VIOLET = rb/b, ROSE = r/rb, DIMGREEN = g/__
-  rrgg=Y, ggbb=C, rrbb=M
-  rrg=O,  rrb=RO, rrgb=P
-  rgg=L,  ggb=SG, rggb=G2
-  rbb=VI, gbb=AZ, rgbb=B2
-  rrggb,  rrgbb,  rggbb=W, rrggbb, rgb
-
-  BLACK  r=R'   rr=R       b=B'    rb=M'    rrb=RO      bb=B    rbb=V    rrbb=M
-  g=G'   rg=Y'  rrg=O      gb=C'   rgb      rrgb=P      gbb=AZ  rgbb=B2  rrgbb
-  gg=G   rgg=L  rrgg=Y     ggb=SG  rggb=G2  rrggb       ggbb=C  rggbb=W  rrggbb
-
-  rr rrgb rrg rrgg rgg gg rggb ggb ggbb gbb bb rgbb rbb rrbb rrb rr
-  r            rg      g            gb      b            rb      r
-  R   P    O   Y    L  G   G2  SG   C   AZ  B   B2   VI  M   RO        W   
-                               N        N            Y       N
-
+fix SCL footswitch leaving hanging notes, see how 8VE+ footswitch handles it
+  mainstream bug -- play a note, press 8VE+, it goes down not up!
 
 add double-stops, finish pullOffModes
 
-add the existing Y-maximizing option? OFF X Z X+Z Y X+Y Y+Z XYZ (still jumpy when going small-Y to large-Y)
-  use averaging instead of maximizing?
-  what if user wants to be jumpy?
-
 add M/P (Mono/Poly) footswitch? force hammer-ons or double-stops
 
-bulk import/export: move 13-15 to 14-16 and add 13 = export per-split settings for current side only, overwrite current side when importing
+DOUBLE-STOPS: Hammer-ons change polyphonic to monophonic when on the same row, inside the zone and outside the wait time. 
+  Double-stops change monophonic to polyphonic when *not* on the same row, *outside* the zone and *inside* the wait time. 
+  Great for fiddle music! (not yet implemented)
+  *Details: Double-stops use the same zone and wait settings as hammer-ons. Requires OneChannel mode. The new note is sent to a 
+  new midi channel one greater (1 -> 2, 2 -> 3, etc., but 16 -> 15), so you'll need an extra instance of your mono synth. 
+  If a 3rd note is played, it takes the place of the note on the nearest row, and as a tiebreaker, nearest in pitch.*
+
+make export #16 allSettings include the current sequencer project, more convenient
+  done, needs error checking, needs testing
 
 CC FADERS IMPROVEMENTS
-on the long-press display that sets CC numbers, on the rightmost column, alternate the colors main/accented
-  row % 2 == 0 ? Split[split].colorMain : Split[split].colorAccent
-  indicate the currently edited fader with the played color
-  see paintCCForFaderDisplay() in ls_displayModes.ino
-  how does the 128 fit the 8 buttons around the split selector?
-show the number 0-127 in the other split when you touch it, in the played color, using the same font as global tempo
-  an unmoving long-press will read it without setting it
-  maybe a tap should display the number after release for a half-second
-  if you touch two faders at once, what happens?
 relative mode for CC faders https://www.kvraudio.com/forum/viewtopic.php?t=459910 and ls_faders.ino
   tap to set the fader position absolutely on release, swipe starting and ending anywhere to adjust relatively
   swiping X pads right moves the fader position exactly X pads right, swipe from below to max out, swipe from above to turn off
@@ -339,15 +320,17 @@ add an option to send CCs to the other split's channels, for side-by-side faders
   a 2x2 square of dots, top row is left/right main colors, bottom row is same, but tapping them toggles them
   normal is indicated by (LR)(LR), R split using L channels is (LR)(LL), both swapped is (LR)(RL)
   does this affect the mini clip launcher's colors or output?
+show the number 0-127 in the other split when you touch it, in the played color, using the same font as global tempo
+  an unmoving long-press will read it without setting it
+  maybe a tap should display the number after release for a half-second
+  if you touch two faders at once, what happens?
 add marks every 4th pad like the volume fader? using the low row color?
-volume fader, make marks better spaced: every 4th pad starting from 5: 5 9 13 17 22
-  paintVolumeDisplayRow(), for (byte col = N; col <= NUMCOLS-1; col += 4) { 
+fix linn128 bug: the upper right corner pad sets the CC for fader #8 but doesn't change to the right split
+  workaround: the user can exit to the per-split screen and change to the right split there, then re-enter the CC faders screen
 volume fader, display the 2 numbers, maybe permanently?
+  attempted, see paintVolumeDisplayRow() in obsolete code section, buggy and I'm not sure it's a good idea
 volume fader, tap to set, slide to adjust
-low row
-
-add PR± footswitch option, like 8VE± does with 8VE+
-  test, what if PR+ happens while playing, do we get hanging notes?
+low row does the same?
 
 maybe CC faders special mode: make vertical faders, slightly glitchy because of the horizontal separator strips
   scale the Y data down from 0..127 to 16*row..16*row+15
@@ -374,6 +357,7 @@ Punch -- avoid a sluggish attack, scale the first 50 ms of Z to the velocity, st
   https://www.kvraudio.com/forum/viewtopic.php?t=522304&hilit=vcv 
   https://www.kvraudio.com/forum/viewtopic.php?t=512436
 
+add NRPNs for 5th switch SWITCH_FOOT_B?
 
 Global.microLinn.fineTune[27]?? is a packed array of nybbles, -8..+7 cents/edosteps, fine-tunes all but the tonic
 
@@ -396,6 +380,11 @@ MINOR BUGS
 import types 9-11: warning excess data
 import type 14, 15: various data failures
 
+make full power dim green the same as low power dim green
+
+Panel switches 8VE±, PCH, PRE and MEM aren't true toggles
+because when it's on, a long-press turns it off but releasing a long-press doesn't turn it on again
+
 fix bug with anchor row = 0 and guitar tuning, strings preview note are off by one
 
 when showing custom light pattern in 1 split, sometimes its low row spills over into the other split
@@ -403,8 +392,6 @@ when showing custom light pattern in 1 split, sometimes its low row spills over 
 anchor pad chooser is blank when displaying a custom light pattern, search for bug: doesn't load anything
 
 colorAccent can be set to 0, if so my code should use some fixed color
-
-fix doublePerSplit, it should only apply to the volume display
 
 test if changing splits always triggers a calctuning call, if so, just calc the displayed split(s)
 
@@ -417,7 +404,7 @@ fix custom LED bugs: completelyRefreshLeds, startBufferedLeds, finishBufferedLed
 test octave up/down footswitches while playing and sliding, does the calcTuning call make it glitchy?
   if so, copy how the original code does transposing
 
-debug same/blink carrry over for note-offs, search for resetPossibleNoteCells
+debug same/blink carry over for note-offs, search for resetPossibleNoteCells
 same/blink carry over should have OFF, L->R, L<-R and L+R
 a dot played on left split and carried over to the right split should use the left color
 bug, when in an edo and in lefty mode, the playedSame dots are off
@@ -448,6 +435,14 @@ col 16) Global microtonal settings
   row 6) Sweetening amount in tenths of cents (OFF, 0.1 to 6.0)
   row 7) Large EDO for fine tuning (OFF, various 56-311, 1200)
 
+Bulk import/export sequencer projects:
+  17 = current project, current split, only the 14 drum notes
+  18 = current project, current split, everything
+  19 = current project, both splits, everything
+  20 = all 16 projects, both splits, everything
+  #20 must overwrite the current project to access the 16 stored projects
+  see loadProject() and writeProjectToFlash() in ls_settings.ino
+
 low row restrike mode alternates between downstrokes and upstrokes, which delay certain notes, steal from arp code?
   downstroke on touch, upstroke on release? play alternating fingers legato = no upstrokes?
   pads alternate colors, green = downstroke, blue = upstroke?
@@ -471,7 +466,7 @@ qanun-style mandals: set one split to CC faders and set the 1st CC to 129 = MND 
 
 make the red dot follow a slide to the next pad? see transferFromSameRowCell() and handleSlideTransferCandidate()
   It already follows if played mode is CELL (starting with firmware 2.1.0)
-  editing handleSlideTransferCandidate to use inRange(playedTouchMode, playedCell, playedBlink) sort of works, 
+  editing handleSlideTransferCandidate() to use inRange(playedTouchMode, playedCell, playedBlink) sort of works, 
   but it leaves stray dots behind and the twin dots don't follow
 
 Upon receiving a locating CC, the linn colors that pad with the color implied by the CC's channel?
@@ -492,6 +487,7 @@ drum pad mode, besides ON and OFF, add MRMB/MRB for marimba mode
   if microLinn is off, the scale starts at lo-C = 48
   if on, it starts at the anchor note (needs to include tuning bends)
   if custom light pattern or if microLinn fretboard, use the previous scale or else the 1st scale
+  or make a midi file with 14 NRPNs
 
 hammerons/pulloffs screen, select for each split,
   see colsInRowsTouched[MAXROWS]
@@ -579,8 +575,14 @@ Add the ability to set the split point to col 1? enables single-tap mode to swit
 
 make system reset be a long press not a short press?
 
+make foot switches be momentary on a long press like panel switches are?
+  unconventional, would be weird for sustain, but useful for PCH, PRE, MEM, 8VE±
+
 run the arpeggiator and the sequencer both at once, so that the arpeggiator uses the sequencer's rhythm & velocity?
 
+add the existing Y-maximizing option? OFF X Z X+Z Y X+Y Y+Z XYZ (still jumpy when going small-Y to large-Y)
+  use averaging instead of maximizing?
+  what if user wants to be jumpy?
 
 POSSIBLE PULL REQUESTS (every non-microtonal feature that doesn't require a new user setting, test thoroughly first)
   sequencer: foot pedal fix, pattern-chaining feature, 4x4 array fix
@@ -610,10 +612,21 @@ and a little high-pass filtering on long slides. Gives it an electric guitar fee
 pdxindy says: I have a number of percussive presets that have env decay short and release long so if I tap the key it rings out 
 but hold it, it is short and muted. Makes for a pleasing playing style. (linn min note length is 35/70ms)
 
-The Reaper script "MIDI CC Mapper X" can remap any MIDI input along a user-drawn curve.
+SWAM Viola: https://vi-control.net/community/threads/what-i-would-like-to-see-in-the-audio-modeling-swam-viola-and-cello.169483/
+1) vibrato on all notes without any limit or condition
+   set the String Model to "Virtual Adaptive" on the Advanced / INSTRUMENT page
+2) Automatic adjustment of the bow pressure and bow distance in relation to the bridge so that the sound is always the best possible
+   SWAM already does it; for more, set the "Interactive Bow Compensation" all the way right and UNASSIGN the Bow/Pizz Position from Y-data
+3) disable scratching on notes, something that bothers me a lot and makes the sound ugly
+   keep a Bow Pressure value around 0.5, limit the Velocity (let's say up to 90 / 95, but you need to experiment) using the remapping curve,
+   set the Bow Pressure Accent all the way left.
+4) transform my viola into a "viola profonda" in G (1 fifth below the viola) and have the sound remain excellent
+   you can set SWAM Viola to start from G#, not G, Advanced / INSTRUMENT -> "String Tuning" all the way left
+5) Possibility of making the sound extremely soft and dark on the viola, so that it doesn't become shrill
+   enable Sordino, act on the EQ on the Timbre / CAPTURE page, enable the Timbral Correction on th Timbre / SOURCE page, 
+   and tweak Harmonic A and Harmonic B as desired
 
-https://vi-control.net/community/threads/what-i-would-like-to-see-in-the-audio-modeling-swam-viola-and-cello.169483/
-https://www.youtube.com/watch?v=9cNMm53CqBs continuum raga
+The Reaper script "MIDI CC Mapper X" can remap any MIDI input along a user-drawn curve.
 
 
 WHEN DONE:
@@ -623,16 +636,7 @@ cleanup: search for "delete", "uncomment", "later" and "bug"
 
 ********************************************************************************************************************/
 
-#ifdef DEBUG_ENABLED
-  const byte MAX_IMPORT_TYPE = 17;     // 17 = calibration data, convenience for devs and safety for beta testers
-  const byte MAX_EXPORT_TYPE = 18;     // 18 = full data dump of config, not importable, used for examining the data
-#else
-  const byte MAX_IMPORT_TYPE = 16;
-  const byte MAX_EXPORT_TYPE = 16;
-#endif
-
 const short MICROLINN_BULK_EXPORT_DELAY = 1200;            // microseconds delay in microLinnSendPolyPressure()
-
 // virtual edosteps needed = 7 * maxRowOffset + 24 * maxColOffset + 1 = 368 max, but up it to 512 to give the guitar tuning more leeway
 const byte MICROLINN_MAX_ROW_OFFSET = 25;                  // if this is changed, change it in initMicroLinnData() too
 const byte MICROLINN_MAX_COL_OFFSET = 10;                  // 10 is the M2 of 54edo, for 53 and 55 it's 9
@@ -1137,8 +1141,8 @@ const byte MICROLINN_SCALES[MICROLINN_ARRAY_SIZE] = {
   B0001010,  //
   B0000101,  //
   B0001000,  // M2
-  B0000110,  // m3
-  B0001001,  //
+  B0001110,  // m3
+  B0000001,  //
   B0001000,  //
   B0000110,  // M3
   B0001001,  // P4
@@ -1148,8 +1152,8 @@ const byte MICROLINN_SCALES[MICROLINN_ARRAY_SIZE] = {
   B0001111,  // P5
   B0000000,  // m6
   B0001100,  //
-  B0000011,  //
-  B0001000,  // M6
+  B0001011,  //
+  B0000000,  // M6
   B0001100,  // m7
   B0000011,  //
   B0001100,  //
@@ -1204,7 +1208,33 @@ const byte MICROLINN_SCALES[MICROLINN_ARRAY_SIZE] = {
   B0001110,  // M7
   B0000000,  //  
   
-  127, 0,64, 0,67, 0,66, 0,65, 0,67, 0,64,64, 0,67, 0,66, 0,65, 0,66, 0,65, 0, // 25
+  // 25edo  4L3s(4:3), 7L2s(3:2), 3L8s(3:2), 1L11s(3:2)
+  B1111111,  // P1
+  B0000000,  // 
+  B0001100,  // 
+  B0000010,  // 
+  B0001101,  // 
+  B0000000,  // M2/m3
+  B0001110,  // 
+  B0000000,  // 
+  B0001001,  // 
+  B0000110,  // 
+  B0001000,  // M3/P4
+  B0000101,  // 
+  B0000010,  // 
+  B0001100,  // 
+  B0000010,  // 
+  B0001101,  // P5/m6
+  B0000000,  // 
+  B0001010,  // 
+  B0000101,  // 
+  B0001000,  // 
+  B0000110,  // M6/m7
+  B0001000,  // 
+  B0000101,  // 
+  B0001010,  // 
+  B0000000,  // 
+
   // 26: #3 = sagugu halberstadt
   127, 0,68,64,71,64,68,66,68,65, 0,71, 0,64, 0,71, 0,70,64,69,64,68,66,68,65, 0, // 26
   127,64,64, 0,67,64,64,66, 0,65,64,67, 0,64,64, 0,67,64,66, 0,65,64,64,66, 0,65,64, // 27
@@ -1351,13 +1381,12 @@ boolean microLinnColOffsetLinked;                               // true if colum
 boolean microLinnRowOffsetLinked; 
 boolean microLinnPerSplitSettingsLinked[MAXROWS];               // each setting has a separate flag
 boolean microLinnPerSplitXenSettingsLinked[MAXROWS];
-byte microLinnPrevScale;                                        // for backtracking to the previous scale easily
 boolean microLinnCanBacktrack = false;                          // true if newly touching an already selected scale button
 
 // importing vars
 byte microLinnImportType = 0;                                   // 0 means no import is currently happening
-short microLinnImportSize = 0;                                  // size = the # of data bytes, 2 data bytes per 3-byte polypressure msg
-short microLinnImportCounter = 0;
+long microLinnImportSize = 0;                                   // size = the # of data bytes, 2 data bytes per 3-byte polypressure msg
+long microLinnImportCounter = 0;
 boolean microLinnImportXen = true;                              // don't import xen data for most presets if rawEDO == 4
 boolean microLinnImportingOn = false;
 unsigned long microLinnLastMomentMidiPP;                        // for timeout calculations, not yet used
@@ -2304,19 +2333,23 @@ void microLinnSetupKitesPersonalPrefs() {          // speed up debugging cycle, 
   config.preset[5].global.microLinn.anchorCol = 6;
   config.preset[5].global.microLinn.anchorNote = 62;                  // D = 0 cents
   config.preset[5].global.microLinn.anchorCents = 0;
+  config.preset[5].global.switchAssignment[SWITCH_SWITCH_1] = ASSIGNED_MICROLINN_EDO_UP;
+  config.preset[5].global.switchAssignment[SWITCH_SWITCH_2] = ASSIGNED_MICROLINN_EDO_DOWN;
+  config.preset[5].global.customSwitchAssignment[SWITCH_SWITCH_1] = ASSIGNED_MICROLINN_EDO_UP;
+  config.preset[5].global.customSwitchAssignment[SWITCH_SWITCH_2] = ASSIGNED_MICROLINN_EDO_DOWN;
 
   // the bottom preset (#4) is a 12edo preset
   config.preset[4].global.rowOffset = 4;                              // 12edo major 3rds
+  config.preset[4].global.switchAssignment[SWITCH_SWITCH_1] = ASSIGNED_MICROLINN_8VE_UP;
+  config.preset[4].global.switchAssignment[SWITCH_SWITCH_2] = ASSIGNED_REVERSE_PITCH_X;
+  config.preset[4].global.customSwitchAssignment[SWITCH_SWITCH_1] = ASSIGNED_MICROLINN_8VE_UP;
+  config.preset[4].global.customSwitchAssignment[SWITCH_SWITCH_2] = ASSIGNED_REVERSE_PITCH_X;
   
   for (byte p = 4; p <= 5; ++p) {
-    config.preset[p].global.switchAssignment[SWITCH_SWITCH_1] = ASSIGNED_MICROLINN_EDO_UP;
-    config.preset[p].global.switchAssignment[SWITCH_SWITCH_2] = ASSIGNED_MICROLINN_EDO_DOWN;
-    config.preset[p].global.switchAssignment[SWITCH_FOOT_L]   = ASSIGNED_REVERSE_PITCH_X;
-    config.preset[p].global.switchAssignment[SWITCH_FOOT_R]   = ASSIGNED_MICROLINN_8VE_UP;
-    config.preset[p].global.customSwitchAssignment[SWITCH_SWITCH_1] = ASSIGNED_MICROLINN_EDO_UP;
-    config.preset[p].global.customSwitchAssignment[SWITCH_SWITCH_2] = ASSIGNED_MICROLINN_EDO_DOWN;
-    config.preset[p].global.customSwitchAssignment[SWITCH_FOOT_L]   = ASSIGNED_REVERSE_PITCH_X;
-    config.preset[p].global.customSwitchAssignment[SWITCH_FOOT_R]   = ASSIGNED_MICROLINN_8VE_UP;
+    config.preset[p].global.switchAssignment[SWITCH_FOOT_L] = ASSIGNED_REVERSE_PITCH_X;
+    config.preset[p].global.switchAssignment[SWITCH_FOOT_R] = ASSIGNED_MICROLINN_8VE_UP;
+    config.preset[p].global.customSwitchAssignment[SWITCH_FOOT_L] = ASSIGNED_REVERSE_PITCH_X;
+    config.preset[p].global.customSwitchAssignment[SWITCH_FOOT_R] = ASSIGNED_MICROLINN_8VE_UP;
     config.preset[p].global.arpDirection = ArpUp;
     config.preset[p].global.microLinn.dotsCarryOver = true;
     //config.preset[p].Global.microLinn.locatingCC1 = 29;
@@ -2335,7 +2368,6 @@ void microLinnSetupKitesPersonalPrefs() {          // speed up debugging cycle, 
       config.preset[p].split[side].microLinn.groupingCC = 31;
       config.preset[p].split[side].microLinn.flags = B00000001;        // joystick WXY uncentered, pitch completely unquantized
     }
-    config.preset[p].split[LEFT].colorAccent = COLOR_ORANGE;
     config.preset[p].split[RIGHT].colorMain = COLOR_LIME;
     config.preset[p].split[RIGHT].colorLowRow = COLOR_GREEN;
     // set up the right side for SWAM instruments
@@ -2346,8 +2378,8 @@ void microLinnSetupKitesPersonalPrefs() {          // speed up debugging cycle, 
     config.preset[p].split[RIGHT].ccForLowRowX = 16;
     config.preset[p].split[RIGHT].ccForLowRowY = 17;
     config.preset[p].split[RIGHT].ccForLowRowZ = 18;
-    config.preset[p].split[RIGHT].microLinn.ccForLowRowX = 19;
-    config.preset[p].split[RIGHT].microLinn.ccForLowRowY = 20;
+    config.preset[p].split[RIGHT].microLinn.ccForLowRowX = 255;
+    config.preset[p].split[RIGHT].microLinn.ccForLowRowY = 255;
   }
 
   for (byte p = 0; p <= 5; ++p) {
@@ -2371,7 +2403,6 @@ boolean microLinnIsLinked (byte leftVal, byte rightVal, byte offVal) {      // d
 void setupMicroLinn() {                              // runs when the Linnstrument powers up or a preset is loaded
   edo = Global.microLinn.EDO;
   if (edo == 4) edo = 12;                            // because "OFF" is 4edo which is really 12edo
-  microLinnPrevScale = Global.activeNotes;           // to disable backtracking
   if (isMicroLinnOn()) lightSettings = LIGHTS_ACTIVE;
   microLinnColOffsetLinked = microLinnIsLinked(Split[LEFT].microLinn.colOffset, Split[RIGHT].microLinn.colOffset, 1);
   microLinnRowOffsetLinked = microLinnIsLinked(Split[LEFT].microLinn.rowOffset, Split[RIGHT].microLinn.rowOffset, -MICROLINN_MAX_ROW_OFFSET-1);
@@ -2901,9 +2932,9 @@ void microLinnCalcCondensedScale() {
   // calc microLinnNumNotes, microLinnLargestStep, microLinnScale and microLinnScaleLookup
   // for a 12edo major scale we get 7, 2, (0 2 4 5 7 9 11 12 0 0 0 0) and (0 0 1 0 2 3 0 4 0 5 0 6 7)
   byte currScale = Global.activeNotes;
-  if (currScale >= 7) currScale = microLinnPrevScale;
-  if (currScale >= 7) currScale = 0;  
-  microLinnNumNotes = 1;                                                  // tonic is always part of the scale       
+  if (currScale >= 8) currScale = microLinnPrevScale;                     // avoid the custom light patterns
+  if (currScale >= 8 || currScale < 0) currScale = 8;                     // fall back to the full rainbow
+  microLinnNumNotes = 1;                                                  // the tonic is always part of the scale       
   microLinnLargestStep = 1;
   memset (&microLinnScale, 0, sizeof(microLinnScale));
   memset (&microLinnScaleLookup, 0, sizeof(microLinnScaleLookup));
@@ -3017,7 +3048,19 @@ void microLinnCalcTuningTable(byte side){
 
 /************** footswitch functions called in ls_switches.ino ************************/
 
-void changeMicroLinnEDO(signed char delta) {
+void performMicroLinnLoadScale(signed char scale) {                          // works with 12edo too
+  if (scale < 0) return;
+  microLinnPrevScale = Global.activeNotes;
+  Global.activeNotes = scale;
+  if (isMicroLinnOn() && 
+      (Split[0].microLinn.condensedBendPerPad > 0 ||
+       Split[1].microLinn.condensedBendPerPad > 0)) {
+    setupMicroLinn();
+  }
+  updateDisplay();
+}
+
+void performMicroLinnEDOdelta(signed char delta) {
   if (!isMicroLinnOn()) return;
   Global.microLinn.EDO += delta;
   if (Global.microLinn.EDO < 5) Global.microLinn.EDO = MICROLINN_MAX_EDO;        // wrap around
@@ -3956,7 +3999,7 @@ void microLinnPaintNoteLights() {
   if (currScale <= 7) setLed(col, 6, color, cellOn);                                      // rainbow enabler
   setLed(col, 4, microLinnGetColor(currScale == 8), cellOn);                              // fretboard selector
 //if (Global.microLinn.largeEDO > 0 && currScale <= 7)
-//  setLed(col, 2, COLOR_LIME, cellOn);                                                   // fine-tuning editor
+//  setLed(col, 2, COLOR_LIME, cellOn);                                                   // fine-tuning editor, delete later?
 }
 
 void microLinnHandleNoteLightsNewTouch() {
@@ -3974,13 +4017,13 @@ void microLinnHandleNoteLightsNewTouch() {
       microLinnCanBacktrack = false;
       updateDisplay(); 
     } else {
-      microLinnCanBacktrack = microLinnPrevScale <= 8;                        // can't backtrack to a custom light pattern
+      microLinnCanBacktrack = inRange(microLinnPrevScale, 0, 8);              // can't backtrack to a custom light pattern
     }
     setLed(sensorCol, sensorRow, microLinnGetColor(true), cellSlowPulse);
     return;
   }
 
-  if (sensorCol == col && sensorRow == 6 && Global.activeNotes <= 7) {          // rainbow enabler
+  if (sensorCol == col && sensorRow == 6 && Global.activeNotes <= 7) {        // rainbow enabler
     Global.microLinn.useRainbow = !Global.microLinn.useRainbow;
     updateDisplay(); 
     return;
@@ -4122,12 +4165,12 @@ void microLinnPaintPerSplitXenSettings() {
     case 6:
       switch (Split[side].microLinn.defaultLayout) {
         case 0: smallfont_draw_string(2, 1, "OFF",         color, false); break;
-        case 1: microLinn_draw_string(2, 1, "BSQ",         color, false); break;
+        case 1: microLinn_draw_string(2, 1, "BSQ1", "BSQ", color, false); break;
         case 2: microLinn_draw_string(2, 1, "BSQ2", "BS2", color, false); break; 
         case 3: microLinn_draw_string(2, 1, "ACC",         color, false); break;
-        case 4: microLinn_draw_string(2, 1, "W-H",  "WH",  color, false); break;
+        case 4: microLinn_draw_string(2, 1, "W-H1", "WH1", color, false); break;
         case 5: microLinn_draw_string(2, 1, "W-H2", "WH2", color, false); break;    // the hyphen keeps the tall 2 away from the split buttons
-        case 6: microLinn_draw_string(2, 1, "ARR",         color, false); break;
+        case 6: microLinn_draw_string(2, 1, "ARR1", "ARR", color, false); break;
         case 7: microLinn_draw_string(2, 1, "ARR2", "AR2", color, false); break;
       }
       break;
@@ -4762,28 +4805,34 @@ void receivedMicroLinnNrpn(int parameter, int value) {
 // so we must overwrite as soon as we receive each byte, so the sysex's CRC would be useless anyway
 void exportMicroLinnData(int exportType) {
   exportType -= 2048;
-  if (exportType < 1 || exportType > MAX_EXPORT_TYPE)         {microLinnScrollSmall("INVALID EXPORT TYPE"); return;}
-  if (exportType == 1 && Global.activeNotes < 9)              {microLinnScrollSmall("FIRST SELECT A LIGHT PATTERN"); return;}
-  if (exportType == 3 && audienceMessageToEdit == -1)         {microLinnScrollSmall("FIRST EDIT AN AUDIENCE MESSAGE"); return;}
-  if (exportType >= 6 && exportType <= 8 && !isMicroLinnOn()) {microLinnScrollSmall("FIRST SELECT AN EDO"); return;}
+  boolean isValidExportType = inRange(exportType, 1, 20);
+#ifdef DEBUG_ENABLED
+  isValidExportType |= inRange(exportType, 126, 127);
+#endif  
+  if (!isValidExportType)                              {microLinnScrollSmall("INVALID EXPORT TYPE"); return;}
+  if (exportType == 1 && Global.activeNotes < 9)       {microLinnScrollSmall("FIRST SELECT A LIGHT PATTERN"); return;}
+  if (exportType == 3 && audienceMessageToEdit == -1)  {microLinnScrollSmall("FIRST EDIT AN AUDIENCE MESSAGE"); return;}
+  if (inRange(exportType, 6, 8) && !isMicroLinnOn())   {microLinnScrollSmall("FIRST SELECT AN EDO"); return;}
 
-  if (exportType < 18) {        // 18 is for debugging, has no NRPN 300 or header
-    byte midiData = inRange(exportType, 5, 8) ? Global.microLinn.EDO : 0;             // the edo says where to load import types 5-8
+  if (exportType != 126) {                                                        // 126 is for debugging, has no NRPN 300 or header
+    byte midiData = inRange(exportType, 5, 8) ? Global.microLinn.EDO : 0;         // the edo says where to load import types 5-8
     midiSendNRPN(300, (exportType << 7) + midiData, 1);
-    microLinnSendPolyPressure(Device.version, Device.microLinn.MLversion, 9);         // export header, channel is 1-indexed
+    microLinnSendPolyPressure(Device.version, Device.microLinn.MLversion, 9);     // export header, channel is 1-indexed
   }
   
   byte* array;   // used to configure complex structs as a simple array of bytes
   short n = microLinnTriIndex(edo, 0);
 
   switch (exportType) {
-    case 1:
+
+    case 1:  // export the current custom light pattern
       for (unsigned short i = 0; i < LED_LAYER_SIZE; i += 2) {
         microLinnSendPolyPressure(Device.customLeds[Global.activeNotes - 9][i], 
                                   Device.customLeds[Global.activeNotes - 9][i+1]);
       }
       break;
-    case 2:
+
+    case 2:  // export all 3 custom light patterns
       for (byte i = 0; i < 3; ++i) {
         for (unsigned short j = 0; j < LED_LAYER_SIZE; j += 2) {
           microLinnSendPolyPressure(Device.customLeds[i][j], 
@@ -4791,13 +4840,15 @@ void exportMicroLinnData(int exportType) {
         }
       }
       break;
-    case 3:
+
+    case 3:  // export the current audience message
       for (byte i = 0; i < 30; i += 2) {                                        // don't send the final null-terminator
         microLinnSendPolyPressure(Device.audienceMessages[audienceMessageToEdit][i], 
                                   Device.audienceMessages[audienceMessageToEdit][i+1]);
       }
       break;
-    case 4:
+
+    case 4:  // export all 16 audience messages
       for (byte i = 0; i < 16; ++i) {
         for (byte j = 0; j < 30; j += 2) {
           microLinnSendPolyPressure(Device.audienceMessages[i][j], 
@@ -4805,7 +4856,8 @@ void exportMicroLinnData(int exportType) {
         }
       }
       break;
-    case 5: 
+
+    case 5:  // export the current edo's scales
       if (Global.microLinn.EDO == 4) {
         for (byte i = 0; i < 9; i += 1) {microLinnSendPolyPressure(Global.mainNotes[i]);}      // export longs as shorts
         for (byte i = 0; i < 9; i += 1) {microLinnSendPolyPressure(Global.accentNotes[i]);}
@@ -4816,18 +4868,21 @@ void exportMicroLinnData(int exportType) {
         }
       }
       break;
-    case 6:
+
+    case 6:  // export the current edo's rainbow
       for (byte i = 0; i < edo; i += 2) {
         microLinnSendPolyPressure(Device.microLinn.rainbows[n+i],
                                   Device.microLinn.rainbows[n+i+1]);
       }
       break;
-    case 7:
+
+    case 7:  // export the current edo's fretboard
       for (byte i = 0; i < edo; i += 2) {
         microLinnSendPolyPressure(Device.microLinn.fretboards[n+i],
                                   Device.microLinn.fretboards[n+i+1]);
       }
       break;
+
     case 8:   // export all edo data for the current edo only
       microLinnSendPolyPressure(Global.microLinn.EDO, 
                                 Global.microLinn.useRainbow ? 1 : 0);
@@ -4858,25 +4913,29 @@ void exportMicroLinnData(int exportType) {
                                 0);
       }
       break;
-    case 9: 
+
+    case 9:   // export the 7 scales for all 51 edos
       for (short i = 0; i < MICROLINN_ARRAY_SIZE; i += 2) {
         microLinnSendPolyPressure(Device.microLinn.scales[i], 
                                   Device.microLinn.scales[i+1]);
       }
       break;
-    case 10:
+
+    case 10:   // export the rainbows for all 51 edos
       for (short i = 0; i < MICROLINN_ARRAY_SIZE; i += 2) {
         microLinnSendPolyPressure(Device.microLinn.rainbows[i], 
                                   Device.microLinn.rainbows[i+1]);
       }
       break;
-    case 11:
+
+    case 11:   // export the fretboards for all 51 edos
       for (short i = 0; i < MICROLINN_ARRAY_SIZE; i += 2) {
         microLinnSendPolyPressure(Device.microLinn.fretboards[i], 
                                   Device.microLinn.fretboards[i+1]);
       }
       break;
-    case 12: 
+
+    case 12:   // export the scales/rainbows/fretboards for all 51 edos
       for (short i = 0; i < MICROLINN_ARRAY_SIZE; i += 2) {
         microLinnSendPolyPressure(Device.microLinn.scales[i], 
                                   Device.microLinn.scales[i+1]);
@@ -4890,42 +4949,79 @@ void exportMicroLinnData(int exportType) {
                                   Device.microLinn.fretboards[i+1]);
       }
       break;
+
     case 13:   // export one Split struct
       array = (byte *) &config.settings.split[Global.currentPerSplit];
       for (unsigned short i = 0; i < sizeof(SplitSettings); i += 2) {
         microLinnSendPolyPressure(array[i], array[i+1]);
       }
       break;
+
     case 14:   // export the Global and Split structs
       array = (byte *) &config.settings;
       for (unsigned short i = 0; i < sizeof(PresetSettings); i += 2) {
         microLinnSendPolyPressure(array[i], array[i+1]);
       }
       break;
+
     case 15:   // export all 6 presets/memories
       array = (byte *) &config.preset[0];
       for (unsigned short i = 0; i < NUMPRESETS * sizeof(PresetSettings); i += 2) {
         microLinnSendPolyPressure(array[i], array[i+1]);
       }
       break;
+
     case 16:   // export All User Settings
       array = (byte *) &config.device.minUSBMIDIInterval;                // skip over version, serialMode, and all calibration data
-      n = (byte *) &config.project - array;                              // stop short of the current sequencer project
+      n = (byte *) &config.project.tempo + 2 - array;                    // include the current sequencer project, sizeof(tempo) = 2
       for (unsigned short i = 0; i < n; i += 2) {
         microLinnSendPolyPressure(array[i], array[i+1]);
       }
       break;
-    case 17:   // export calibration data (experimental, use at your own risk!)
+
+    case 17:   // export the 14 drum notes in the current split's sequencer
+      for (byte i = 0; i < 14; i += 2) {
+        microLinnSendPolyPressure(Project.sequencer[Global.currentPerSplit].seqDrumNotes[i], 
+                                  Project.sequencer[Global.currentPerSplit].seqDrumNotes[i+1]);
+      }
+      break;
+
+    case 18:   // export the current split's sequencer
+      array = (byte *) &config.project.sequencer[Global.currentPerSplit];
+      for (unsigned short i = 0; i < sizeof(StepSequencer); i += 2) {
+        microLinnSendPolyPressure(array[i], array[i+1]);
+      }
+      break;
+
+    case 19:   // export the entire current project = both sequencers + the tempo
+      array = (byte *) &config.project;
+      for (unsigned short i = 0; i < sizeof(SequencerProject); i += 2) {
+        microLinnSendPolyPressure(array[i], array[i+1]);
+      }
+      break;
+
+    case 20:   // export all 16 projects, overwriting the current project in the process
+      array = (byte *) &config.project;
+      for (byte n = 0; n < MAX_PROJECTS; ++n) {
+        loadProject(n);
+        for (unsigned short i = 0; i < sizeof(SequencerProject); i += 2) {
+          microLinnSendPolyPressure(array[i], array[i+1]);
+        }
+      }
+      break;
+
+    case 126:  // full dump of config, for examining the data and debugging updating/importing, not importable, no NRPN 300 or header
+      array = (byte *) &Device;
+      for (unsigned short i = 1; i < sizeof(config); i += 1) {           // start at 1 to align with Reaper's 1-indexed numbering
+        microLinnSendPolyPressure(0, array[i]);                          // only 1 byte per midi message, for easy readability
+      }
+      break;
+
+    case 127:  // export calibration data, convenience for devs and safety backup for beta testers, experimental, use at your own risk!
       array = (byte *) &Device.calRows;
       n = sizeof(Device.calRows) + sizeof(Device.calCols) + sizeof(Device.calCrc) + 3 * sizeof(boolean);  
       for (unsigned short i = 0; i < n; i += 2) {
         microLinnSendPolyPressure(array[i], array[i+1]);
-      }
-      break;
-    case 18:   // full dump of config, for debugging updating/importing, only exported never imported, no NRPN 300 or header
-      array = (byte *) &Device;
-      for (unsigned short i = 1; i < sizeof(config); i += 1) {           // start at 1 to align with Reaper's 1-indexed numbering
-        microLinnSendPolyPressure(0, array[i]);                          // only 1 byte per midi message, for easy readability
       }
       break;
   }
@@ -4959,12 +5055,17 @@ void importMicroLinnData(int value) {
   byte EDO = value & 127;
   microLinnImportType = 0;
 
+  boolean isValidImportType = inRange(importType, 1, 20);
+#ifdef DEBUG_ENABLED
+  isValidImportType |= (importType == 127);
+#endif  
+
   if (!microLinnImportingOn)                           {microLinnScrollSmall("FIRST TURN ON IMPORTING"); return;}
-  if (importType < 1 || importType > MAX_IMPORT_TYPE)  {microLinnScrollSmall("IMPORT FAILURE INVALID IMPORT TYPE " + String(importType)); return;}
+  if (!isValidImportType)                              {microLinnScrollSmall("IMPORT FAILURE INVALID IMPORT TYPE " + String(importType)); return;}
   if (importType == 1 && Global.activeNotes < 9)       {microLinnScrollSmall("FIRST SELECT A LIGHT PATTERN"); return;}
   if (importType == 3 && audienceMessageToEdit == -1)  {microLinnScrollSmall("FIRST EDIT AN AUDIENCE MESSAGE"); return;}
   if (importType >= 5 && importType <= 8) {
-    byte minEDO = importType == 5 ? 4 : 5;
+    byte minEDO = importType == 5 ? 4 : 5;             // importing scales works with 12edo too
     if (EDO < minEDO || EDO > MICROLINN_MAX_EDO)       {microLinnScrollSmall("IMPORT FAILURE INVALID EDO " + String(EDO)); return;}
     edo = Global.microLinn.EDO = EDO;                  // switch to the edo if it's valid
     if (edo == 4) edo = 12;
@@ -5017,10 +5118,22 @@ void microLinnDeduceImportSize(byte version, byte MLversion) {
         microLinnImportSize = NUMPRESETS * sizeof(PresetSettings);
       break;
     case 16:  // all user settings
-      arrayPtr = (byte *) &config.device.minUSBMIDIInterval;          // skip over version, serialMode, and all calibration data
-      microLinnImportSize = (byte *) &config.project - arrayPtr;      // stop short of the current sequencer project
+      arrayPtr = (byte *) &config.device.minUSBMIDIInterval;                    // skip over version, serialMode, and all calibration data
+      microLinnImportSize = (byte *) &config.project.tempo + 2 - arrayPtr;      // include the current sequencer project
       break;
-    case 17:  // calibration data, 1803 bytes (experimental)
+    case 17:  // the 14 drum notes in the current split's sequencer
+      microLinnImportSize = SEQ_DRUM_NOTES;
+      break;
+    case 18:  // the current split's sequencer
+      microLinnImportSize = sizeof(StepSequencer);
+      break;
+    case 19:  // both sequencers + the sequencer's tempo
+      microLinnImportSize = sizeof(SequencerProject);
+      break;
+    case 20:  // all 16 sequencer projects
+      microLinnImportSize = MAX_PROJECTS * sizeof(SequencerProject);
+      break;
+    case 127: // calibration data, 1803 bytes, experimental, use at your own risk!
       microLinnImportSize = sizeof(Device.calRows) + sizeof(Device.calCols) + sizeof(Device.calCrc) + 3 * sizeof(boolean); 
       break;
   }
@@ -5069,7 +5182,7 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
         updateDisplay();
       }
     }
-    if (microLinnImportType > 4) setupMicroLinn();
+    if (inRange(microLinnImportType, 4, 16)) setupMicroLinn();
     setMidiChannelSelect();
     microLinnImportType = 0;
     updateDisplay();
@@ -5084,7 +5197,7 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
   unsigned short i = microLinnImportCounter;
   if (i >= microLinnImportSize) {                             // ignore excess bytes
     microLinnScrollSmall("IMPORT WARNING EXCESS DATA " + String(i) + " " +  String(i/2+8));
-    if (microLinnImportType > 4) setupMicroLinn();
+    if (inRange(microLinnImportType, 4, 16)) setupMicroLinn();
     setMidiChannelSelect();
     microLinnImportType = 0;
     updateDisplay();
@@ -5099,14 +5212,14 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
 
   switch (microLinnImportType) {
 
-    case 1:   // 1 custom light pattern
+    case 1:   // import 1 custom light pattern
       m = Global.activeNotes - 9;
       if ((data1 & 7) > 2 || (data2 & 7) > 2) microLinnCancelImport();
       if (microLinnInRange(data1 >> 3, 0, COLOR_LAST)) Device.customLeds[m][i]   = data1;
       if (microLinnInRange(data2 >> 3, 0, COLOR_LAST)) Device.customLeds[m][i+1] = data2;
       break;
 
-    case 2:   // all 3 custom light patterns
+    case 2:   // import all 3 custom light patterns
       m = i / LED_LAYER_SIZE;
       n = i % LED_LAYER_SIZE;
       if ((data1 & 7) > 2 || (data2 & 7) > 2) microLinnCancelImport();
@@ -5114,7 +5227,7 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
       if (microLinnInRange(data2 >> 3, 0, COLOR_LAST)) Device.customLeds[m][n+1] = data2;
       break;
 
-    case 3:   // 1 audience message
+    case 3:   // import 1 audience message
       m = audienceMessageToEdit;
       if (inRange(data1, 1, 31)) {
         Device.audienceMessages[m][i] = '\0';
@@ -5151,7 +5264,7 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
       }
       break;
 
-    case 5:   // scales for 1 edo
+    case 5:   // import the 7 scales for 1 edo
       if (Global.microLinn.EDO == 4) {
         m = data1 | (data2 << 8);
         if (microLinnInRange(m, 0, (1 << 12) - 1)) {
@@ -5165,19 +5278,19 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
       }
       break;
 
-    case 6:   // 1 rainbow
+    case 6:   // import 1 rainbow
       if (microLinnInRange(data1, 0, COLOR_LAST)) Device.microLinn.rainbows[n+i]   = data1;
       if (i+1 >= edo) break;
       if (microLinnInRange(data2, 0, COLOR_LAST)) Device.microLinn.rainbows[n+i+1] = data2;
       break;
 
-    case 7:   // 1 fretboard
+    case 7:   // import 1 fretboard
       Device.microLinn.fretboards[n+i] = data1;
       if (i+1 >= edo) break;
       Device.microLinn.fretboards[n+i+1] = data2;
       break;
 
-    case 8:   // all edo data for 1 edo only
+    case 8:   // import all edo data for 1 edo only
       m = edo + (edo % 2);                                  // round an odd edo up to an even number
       if (i == 0) {
         if (data1 != Global.microLinn.EDO) microLinnCancelImport();       // edo was set by the nrpn
@@ -5228,22 +5341,22 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
       }
       break;
 
-    case 9:   // all 51 sets of 7 scales
+    case 9:   // import all 51 sets of 7 scales
       if (microLinnInRange(data1, 0, 127)) Device.microLinn.scales[i]   = data1;
       if (microLinnInRange(data2, 0, 127)) Device.microLinn.scales[i+1] = data2;
       break;
 
-    case 10:   // all 51 rainbows
+    case 10:   // import all 51 rainbows
       if (microLinnInRange(data1, 0, COLOR_LAST)) Device.microLinn.rainbows[i]   = data1;
       if (microLinnInRange(data2, 0, COLOR_LAST)) Device.microLinn.rainbows[i+1] = data2;
       break;
 
-    case 11:   // all 51 fretboards
+    case 11:   // import all 51 fretboards
       Device.microLinn.fretboards[i]   = data1;
       Device.microLinn.fretboards[i+1] = data2;
       break;
 
-    case 12:   // all 3 arrays for all 51 edos
+    case 12:   // import all 3 arrays for all 51 edos
       if (i < MICROLINN_ARRAY_SIZE) {
         if (microLinnInRange(data1, 0, 127)) Device.microLinn.scales[i]   = data1;
         if (microLinnInRange(data2, 0, 127)) Device.microLinn.scales[i+1] = data2;
@@ -5258,23 +5371,23 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
       }
       break;
 
-    case 13:   // 1 split = 113 bytes for version 72.1
+    case 13:   // import 1 split = 113 bytes for version 72.1
       if (i == 0) microLinnImportXen = true;
       microLinnImportSplit(data1, data2, i, 0, Global.currentPerSplit);
       break;
 
-    case 14:   // Global and both Split settings = 596 bytes for version 72.1
+    case 14:   // import Global and both Split settings = 596 bytes for version 72.1
       if (i == 0) microLinnImportXen = true;
       if (i < sizeof(GlobalSettings)) {
-        microLinnImportGlobal(data1, data2, i, 0);               // import into Global and Split
+        microLinnImportGlobal(data1, data2, i, 0);
       } else {
         microLinnImportSplits(data1, data2, i - sizeof(GlobalSettings), 0);
       }
       break;
 
-    case 15:   // all 6 presets = 3576 bytes for version 72.1
-      m = i % sizeof(PresetSettings);                            // m = index into the preset
-      n = (i - m) / NUMPRESETS;                                  // n = which preset
+    case 15:   // import all 6 presets = 3576 bytes for version 72.1
+      m = i % sizeof(PresetSettings);                            // m = index into the Nth preset
+      n = (i - m) / sizeof(PresetSettings);                      // n = which preset
       if (m == 0) microLinnImportXen = true;                     // reset the flag for each new preset
       if (m < sizeof(GlobalSettings)) {
         microLinnImportGlobal(data1, data2, m, n+1);
@@ -5283,7 +5396,7 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
       }
       break;
 
-    case 16:   // all user settings = 8508 bytes for version 72.0
+    case 16:   // import all user settings = 11,458 bytes for version 72.0
       ptrStart = (byte *) &Device.minUSBMIDIInterval;            // start at Device.minUSBMIDIInterval, after calibration data
       ptrEnd = (byte *) &Global;                                 // stop short of Global
       m = ptrEnd - ptrStart;                                     // m = size of Device settings in the import
@@ -5292,17 +5405,45 @@ void receiveMicroLinnPolyPressure(byte data1, byte data2, byte channel) {
         break;
       }
       i -= m;
-      m = i % sizeof(PresetSettings);                            // m = index into the preset
-      n = (i - m) / NUMPRESETS;                                  // 0 = Global/Split, 1-6 = presets 0-5
-      if (m == 0) microLinnImportXen = true;                     // reset the flag for each new preset
-      if (m < sizeof(GlobalSettings)) {
-        microLinnImportGlobal(data1, data2, m, n);
-      } else {
-        microLinnImportSplits(data1, data2, m - sizeof(GlobalSettings), n);
+      ptrStart = (byte *) &Global;                               // start at the current settings
+      ptrEnd = (byte *) &Project;                                // stop short of the current sequencer project
+      m = ptrEnd - ptrStart;                                     // m = size of the current settings + the 6 memories
+      if (i < m) {
+        m = i % sizeof(PresetSettings);                          // m = index into the Nth preset
+        n = (i - m) / sizeof(PresetSettings);                    // n = which preset, 0 = Global/Split, 1-6 = presets 0-5
+        if (m == 0) microLinnImportXen = true;                   // reset the flag for each new preset
+        if (m < sizeof(GlobalSettings)) {
+          microLinnImportGlobal(data1, data2, m, n);
+        } else {
+          microLinnImportSplits(data1, data2, m - sizeof(GlobalSettings), n);
+        }
+        break;
       }
+      i -= m;
+      microLinnImportSequencerProject(data1, data2, i);
       break;
 
-    case 17:   // calibration data (experimental)
+    case 17:   // import the 14 drum notes in the current split's sequencer
+      Project.sequencer[Global.currentPerSplit].seqDrumNotes[i]   = data1;
+      Project.sequencer[Global.currentPerSplit].seqDrumNotes[i+1] = data2;
+      break;
+
+    case 18:   // import the current split's sequencer
+      microLinnImportSequencer(data1, data2, i, Global.currentPerSplit);
+      break;
+  
+    case 19:   // import the current project = both sequencers + the tempo
+      microLinnImportSequencerProject(data1, data2, i);
+      break;
+
+    case 20:   // import all 16 sequencer projects, overwriting the current project in the process
+      m = i % sizeof(SequencerProject);                                  // m = index into the Nth project
+      n = (i - m) / sizeof(SequencerProject);                            // n = which project, there are MAX_PROJECTS = 16 total
+      microLinnImportSequencerProject(data1, data2, m);
+      if (m == sizeof(SequencerProject) - 2) writeProjectToFlash(n);
+      break;
+
+    case 127:  // calibration data, convenience for devs and safety backup for beta testers, experimental, use at your own risk!
       array = (byte *) &Device.calRows;
       array[i] = data1; 
       if (i+1 < microLinnImportSize) array[i+1] = data2;
@@ -5315,14 +5456,14 @@ void microLinnCancelImport() {
   short i = microLinnImportCounter;                // i = the counter, 0-indexed
   short j = microLinnImportCounter / 2 + 8;        // j = which midi message, 1-indexed, include the headers
   microLinnScrollSmall("IMPORT FAILURE " + String(i) + " " +  String(j));
-  if (microLinnImportType > 4) setupMicroLinn();
+  if (inRange(microLinnImportType, 4, 16)) setupMicroLinn();
   microLinnImportType = 0;
   setMidiChannelSelect();
   updateDisplay();
 }
 
 boolean microLinnInRange (short data, short lo, short hi) {
-  if (microLinnImportType == 0) return false;      // avoid loading 2nd polypressure byte if the 1st byte is invalid
+  if (microLinnImportType == 0) return false;      // avoid importing the 2nd polypressure byte if the 1st byte is invalid
   boolean result = data >= lo && data <= hi;
   if (!result) microLinnCancelImport();
   return result;
@@ -5389,7 +5530,7 @@ void microLinnImportDevice(byte data1, byte data2, unsigned short i) {          
     if (microLinnInRange(data1 >> 3, 0, COLOR_LAST)) Device.customLeds[2][i-934] = data1;
     if (microLinnInRange(data2 >> 3, 0, COLOR_LAST)) Device.customLeds[2][i-933] = data2;
   } else if (i == 1142) {
-    // ignore data1 = microLinn.MLversion and data2 = Device.microLinn.uninstall
+    // ignore data1 = Device.microLinn.MLversion and data2 = Device.microLinn.uninstall
     Device.microLinn.uninstall = false;
   } else if (i <= 2672) {   // MICROLINN_ARRAY_SIZE = 1530
     if (microLinnInRange(data1, 0, 127)) Device.microLinn.scales[i-1144] = data1;
@@ -5676,8 +5817,58 @@ void microLinnImportSplit(byte data1, byte data2, unsigned short i,  byte preset
     if (microLinnInRange(n, -1, 127))    spl->microLinn.ccForLowRowY = data2;
   } else if (i == 110) {
     if (microLinnInRange(data1, 0, 255)) spl->microLinn.flags = data1;
-    // ignore bytes 111-112 = reserved for future use and 113 = padding
+    // ignore bytes 111-113 = reserved for future use
   }
+}
+
+void microLinnImportSequencerProject(byte data1, byte data2, unsigned short i) {         // 6276 bytes
+  if (i < 0 || i >= sizeof(SequencerProject)) return;
+  short seqSize = sizeof(StepSequencer);
+  if (i < seqSize) {
+    microLinnImportSequencer(data1, data2, i, LEFT);
+  } else if (i < 2 * seqSize) {
+    microLinnImportSequencer(data1, data2, i - seqSize, RIGHT);
+  } else if (i < 2 * seqSize + 2) {
+    short number = data1 | (data2 << 8);
+    if (microLinnInRange(number, 1, 360)) Project.tempo = number;
+    // the last 2 bytes are padding
+  }
+}
+
+void microLinnImportSequencer(byte data1, byte data2, unsigned short i, byte side) {      // 3136 bytes
+  // import 4 patterns + 14 drum notes (the tempo is imported elsewhere)
+  // 1 pattern = 768 bytes of stepData + 5 bytes of other data + 7 bytes padding = 780 bytes
+  if (i < 0 || i >= sizeof(StepSequencer)) return;                   // i = index into the current split's sequencer
+  short m = i % sizeof(SequencerPattern);                            // m = index into the Nth pattern
+  short n = (i - m) / sizeof(SequencerPattern);                      // n = which pattern, there are MAX_SEQUENCER_PATTERNS = 4 total
+  if (n < MAX_SEQUENCER_PATTERNS) {
+    if (m < 768) {
+      byte* array = (byte *) &Project.sequencer[side].patterns[n];
+      array[m]   = data1;                                            // import into Project.sequencer[side].patterns[n].steps
+      array[m+1] = data2;                                            // struct StepEvent is packed, so steps can't be error checked 
+    } else if (m == 768) {
+      switch (data1) {
+        case 4: case 6: case 8: case 9: case 12: case 16: case 18: case 24: case 36:        // look for valid step sizes
+          Project.sequencer[side].patterns[n].stepSize = (SequencerStepSize)data1;
+          break;
+        default: microLinnCancelImport();
+      }
+      // bytes 769-771 are padding
+    } else if (m == 772) {
+      if (microLinnInRange(data2, 0, 2))  Project.sequencer[side].patterns[n].sequencerDirection = (SequencerDirection)data2;
+      // bytes 773-775 are padding
+    } else if (m == 776) {
+      if (microLinnInRange(data1, 0, 1))  Project.sequencer[side].patterns[n].loopScreen = (data1 == 1);
+      if (microLinnInRange(data2, 0, 1))  Project.sequencer[side].patterns[n].swing = (data2 == 1);
+    } else if (m == 778) {
+      if (microLinnInRange(data1, 1, 32)) Project.sequencer[side].patterns[n].length = data1;
+      // byte 779 is padding
+    }
+  } else if (n == MAX_SEQUENCER_PATTERNS && m < SEQ_DRUM_NOTES) {
+    if (microLinnInRange(data1, 0, 127))  Project.sequencer[side].seqDrumNotes[m]   = data1;
+    if (microLinnInRange(data2, 0, 127))  Project.sequencer[side].seqDrumNotes[m+1] = data2;
+    // the last 2 bytes are padding
+  } 
 }
 
 
@@ -5848,16 +6039,6 @@ note to self:  "if (sensorCell->velocity)" means if another touch is already dow
 according to the comment by handleFaderRelease in ls_faders.ino
 
 
-
-// for testing only, not useful enough for regular usage
-// ASSIGNED_MICROLINN_SCALE_UP and ASSIGNED_MICROLINN_SCALE_DOWN appear as "SCL+" and "SCL-"
-void changeMicroLinnScale(int delta) {                                // called via switch1, switch2 or footswitch press, works with 12edo too
-  signed char newScale = Global.activeNotes + delta;                  // use a signed char because we can't set a byte to -1
-  if (newScale > 8) newScale = 0;                                     // wrap around
-  if (newScale < 0) newScale = 8;
-  Global.activeNotes = newScale;
-  updateDisplay();
-}
   
 void microLinnSendDebugMidi (byte channel, byte CCnum, short data) {                 // channels are numbered 1-16
   if (data < 0) {channel += 1; data = -data;}
@@ -6236,5 +6417,38 @@ code for ls_leds.ino to change the colors on the global display
         color = COLOR_DIMGREEN;
       }
       // construct composite colors
+
+
+
+I tried to add a few more colors, but only violet was distinct enough from the other colors
+  RED = r, GREEN = g, BLUE = b
+  YELLOW = rg, CYAN = gb, MAGENTA = rb
+  WHITE = rgb/b, ORANGE = r/rg, LIME = g/rg, PINK = rg/rb
+  SPRING_GREEN = g/gb, AZURE = gb/b, VIOLET = rb/b, ROSE = r/rb, DIMGREEN = g/__
+  rrgg=Y, ggbb=C, rrbb=M
+  rrg=O,  rrb=RO, rrgb=P
+  rgg=L,  ggb=SG, rggb=G2
+  rbb=VI, gbb=AZ, rgbb=B2
+  rrggb,  rrgbb,  rggbb=W, rrggbb, rgb
+colors as a 3x3x3 cube (X' = dim X)
+  BLACK  r=R'   rr=R       b=B'    rb=M'    rrb=RO      bb=B    rbb=V    rrbb=M
+  g=G'   rg=Y'  rrg=O      gb=C'   rgb      rrgb=P      gbb=AZ  rgbb=B2  rrgbb
+  gg=G   rgg=L  rrgg=Y     ggb=SG  rggb=G2  rrggb       ggbb=C  rggbb=W  rrggbb
+colors as a rainbow:
+  rr rrgb rrg rrgg rgg gg rggb ggb ggbb gbb bb rgbb rbb rrbb rrb rr
+  r            rg      g            gb      b            rb      r
+  R   P    O   Y    L  G   G2  SG   C   AZ  B   B2   VI  M   RO        W   
+                               N        N            Y       N
+
+   
+  // void paintVolumeDisplayRow() code to display the volume as a number, buggy, needs calls to updateDisplay()
+  char str[4];
+  const char* format = "%3d";
+  snprintf(str, sizeof(str), format, ccFaderValues[side][7]);
+  byte col = ccFaderValues[side][7] > 64 ? 0 : NUMCOLS - 11;
+  row = (side == LEFT ? 4 : 0);
+  tinyfont_draw_string(col, row, str, Split[side].colorMain);
+
+
 
 **********************************************************************************************/
